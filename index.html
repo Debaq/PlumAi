@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlumaAI - Editor de Novelas con IA</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/components.css">
+
+    <!-- Lucide Icons (CDN) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body x-data="app" x-cloak>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">
+                <i data-lucide="pen-line" width="24" height="24"></i>
+                <span x-text="$store.i18n.t('header.title')">PlumaAI</span>
+            </div>
+            <div class="project-title" x-show="$store.project.projectInfo.id !== null" x-text="$store.project.projectInfo.title || 'Sin título'"></div>
+        </div>
+        <div class="header-right">
+            <!-- Selector de idioma -->
+            <button class="btn-icon" @click="$store.i18n.setLocale($store.i18n.currentLocale === 'es' ? 'en' : 'es')" title="Cambiar idioma">
+                <i data-lucide="globe" width="20" height="20"></i>
+            </button>
+            <button class="btn-icon" @click="$store.ui.openModal('export')" title="Exportar proyecto">
+                <i data-lucide="download" width="20" height="20"></i>
+            </button>
+            <button class="btn-icon" @click="$store.ui.openModal('projectsList')" title="Mis proyectos">
+                <i data-lucide="folder-open" width="20" height="20"></i>
+            </button>
+            <button class="btn-icon" @click="$store.ui.openModal('projectSettings')" title="Configuración">
+                <i data-lucide="settings" width="20" height="20"></i>
+            </button>
+            <button class="btn-primary" @click="if($store.project.saveProject()) { $store.ui.success($store.i18n.t('notifications.success.projectSaved'), ''); }" x-text="$store.i18n.t('header.saveProject')">Guardar</button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" :class="{ 'collapsed': $store.ui.sidebarCollapsed }">
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item" :class="{ 'active': $store.ui.currentView === 'dashboard' }" @click.prevent="$store.ui.setView('dashboard')">
+                    <i data-lucide="layout-dashboard" width="20" height="20"></i>
+                    <span x-text="$store.i18n.t('sidebar.dashboard')">Dashboard</span>
+                </a>
+
+                <a href="#" class="nav-item" :class="{ 'active': $store.ui.currentView === 'characters' }" @click.prevent="$store.ui.setView('characters')">
+                    <i data-lucide="users" width="20" height="20"></i>
+                    <span x-text="$store.i18n.t('sidebar.characters')">Personajes</span>
+                    <span class="badge" x-text="$store.project.characters.length"></span>
+                </a>
+
+                <a href="#" class="nav-item" :class="{ 'active': $store.ui.currentView === 'chapters' }" @click.prevent="$store.ui.setView('chapters')">
+                    <i data-lucide="book-open" width="20" height="20"></i>
+                    <span x-text="$store.i18n.t('sidebar.chapters')">Capítulos</span>
+                    <span class="badge" x-text="$store.project.chapters.length"></span>
+                </a>
+
+                <a href="#" class="nav-item" :class="{ 'active': $store.ui.currentView === 'scenes' }" @click.prevent="$store.ui.setView('scenes')">
+                    <i data-lucide="film" width="20" height="20"></i>
+                    <span x-text="$store.i18n.t('sidebar.scenes')">Escenas</span>
+                    <span class="badge" x-text="$store.project.scenes.length"></span>
+                </a>
+
+                <a href="#" class="nav-item" :class="{ 'active': $store.ui.currentView === 'locations' }" @click.prevent="$store.ui.setView('locations')">
+                    <i data-lucide="map-pin" width="20" height="20"></i>
+                    <span x-text="$store.i18n.t('sidebar.locations')">Ubicaciones</span>
+                    <span class="badge" x-text="$store.project.locations.length"></span>
+                </a>
+
+                <a href="#" class="nav-item" :class="{ 'active': $store.ui.currentView === 'timeline' }" @click.prevent="$store.ui.setView('timeline')">
+                    <i data-lucide="clock" width="20" height="20"></i>
+                    <span x-text="$store.i18n.t('sidebar.timeline')">Línea Temporal</span>
+                    <span class="badge" x-text="$store.project.timeline.length"></span>
+                </a>
+
+                <div class="nav-divider"></div>
+
+                <a href="#" class="nav-item" :class="{ 'active': $store.ui.currentView === 'aiAssistant' }" @click.prevent="$store.ui.setView('aiAssistant')">
+                    <i data-lucide="sparkles" width="20" height="20"></i>
+                    <span x-text="$store.i18n.t('sidebar.aiAssistant')">Asistente IA</span>
+                    <span class="status-indicator" :class="{ 'active': $store.ai.isActive }"></span>
+                </a>
+            </nav>
+
+            <button class="sidebar-toggle" @click="$store.ui.toggleSidebar()">
+                <i data-lucide="chevron-left" width="16" height="16"></i>
+            </button>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard View -->
+            <div x-show="$store.ui.currentView === 'dashboard'" class="view">
+                <div class="view-header">
+                    <div>
+                        <h1 x-text="$store.i18n.t('dashboard.title')">Dashboard</h1>
+                        <p class="subtitle" x-text="$store.i18n.t('dashboard.subtitle')">Resumen de tu proyecto</p>
+                    </div>
+                </div>
+
+                <!-- Empty State - No Project -->
+                <div x-show="$store.project.projectInfo.id === null" class="empty-state">
+                    <i data-lucide="pen-line" width="64" height="64"></i>
+                    <h2 style="margin-top: 16px;">Bienvenido a PlumaAI</h2>
+                    <p>Crea un nuevo proyecto para comenzar a escribir tu novela</p>
+                    <button class="btn-primary" @click="$store.ui.openModal('newProject')" style="margin-top: 16px;">
+                        <i data-lucide="plus" width="16" height="16"></i>
+                        <span x-text="$store.i18n.t('header.newProject')">Crear Proyecto</span>
+                    </button>
+                </div>
+
+                <!-- Stats Grid -->
+                <div x-show="$store.project.projectInfo.id !== null" class="dashboard-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i data-lucide="file-text" width="24" height="24"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" x-text="$store.project.getStats().totalWords"></div>
+                            <div class="stat-label" x-text="$store.i18n.t('dashboard.stats.words')">Palabras</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i data-lucide="book-open" width="24" height="24"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" x-text="$store.project.getStats().totalChapters"></div>
+                            <div class="stat-label" x-text="$store.i18n.t('dashboard.stats.chapters')">Capítulos</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i data-lucide="users" width="24" height="24"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" x-text="$store.project.getStats().totalCharacters"></div>
+                            <div class="stat-label" x-text="$store.i18n.t('dashboard.stats.characters')">Personajes</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i data-lucide="film" width="24" height="24"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value" x-text="$store.project.getStats().totalScenes"></div>
+                            <div class="stat-label" x-text="$store.i18n.t('dashboard.stats.scenes')">Escenas</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div x-show="$store.project.projectInfo.id !== null" class="quick-actions">
+                    <h2 x-text="$store.i18n.t('dashboard.quickActions.title')">Acciones Rápidas</h2>
+                    <div class="action-buttons">
+                        <button class="action-btn" @click="$store.ui.openModal('newChapter')">
+                            <i data-lucide="plus" width="20" height="20"></i>
+                            <span x-text="$store.i18n.t('dashboard.quickActions.newChapter')">Nuevo Capítulo</span>
+                        </button>
+                        <button class="action-btn" @click="$store.ui.openModal('newCharacter')">
+                            <i data-lucide="user-plus" width="20" height="20"></i>
+                            <span x-text="$store.i18n.t('dashboard.quickActions.newCharacter')">Nuevo Personaje</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Characters View -->
+            <div x-show="$store.ui.currentView === 'characters'" class="view">
+                <div class="view-header">
+                    <div>
+                        <h1 x-text="$store.i18n.t('characters.title')">Personajes</h1>
+                        <p class="subtitle" x-text="$store.i18n.t('characters.subtitle')">Gestiona los personajes de tu novela</p>
+                    </div>
+                    <button class="btn-primary" @click="$store.ui.openModal('newCharacter')">
+                        <i data-lucide="plus" width="16" height="16"></i>
+                        <span x-text="$store.i18n.t('characters.new')">Nuevo Personaje</span>
+                    </button>
+                </div>
+
+                <!-- Empty State -->
+                <div x-show="$store.project.characters.length === 0" class="empty-state">
+                    <i data-lucide="users" width="64" height="64"></i>
+                    <p x-text="$store.i18n.t('characters.empty')">No hay personajes creados</p>
+                    <span class="hint" x-text="$store.i18n.t('characters.emptyHint')">Crea tu primer personaje para comenzar</span>
+                </div>
+
+                <!-- Characters Grid -->
+                <div x-show="$store.project.characters.length > 0" class="content-grid">
+                    <template x-for="character in $store.project.characters" :key="character.id">
+                        <div class="character-card">
+                            <div class="character-header">
+                                <div class="character-avatar" x-text="character.name.charAt(0).toUpperCase()"></div>
+                                <div class="character-info">
+                                    <div class="character-name" x-text="character.name"></div>
+                                    <div class="character-role" x-text="$store.i18n.t('characters.form.roles.' + character.role)"></div>
+                                </div>
+                            </div>
+                            <div class="character-description" x-text="character.description || $store.i18n.t('characters.form.descriptionPlaceholder')"></div>
+                            <div class="card-actions" style="margin-top: 12px; display: flex; gap: 8px; justify-content: flex-end;">
+                                <button class="btn-icon" @click="$store.ui.openModal('editCharacter', character)" :title="$store.i18n.t('common.edit')">
+                                    <i data-lucide="edit" width="16" height="16"></i>
+                                </button>
+                                <button class="btn-icon" @click="if(confirm($store.i18n.t('common.confirmDelete'))) { $store.project.deleteCharacter(character.id); $store.ui.success($store.i18n.t('notifications.success.characterDeleted'), ''); }" :title="$store.i18n.t('common.delete')">
+                                    <i data-lucide="trash-2" width="16" height="16"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Chapters View -->
+            <div x-show="$store.ui.currentView === 'chapters'" class="view">
+                <div class="view-header">
+                    <div>
+                        <h1 x-text="$store.i18n.t('chapters.title')">Capítulos</h1>
+                        <p class="subtitle" x-text="$store.i18n.t('chapters.subtitle')">Escribe y organiza tus capítulos</p>
+                    </div>
+                    <button class="btn-primary" @click="$store.ui.openModal('newChapter')">
+                        <i data-lucide="plus" width="16" height="16"></i>
+                        <span x-text="$store.i18n.t('chapters.new')">Nuevo Capítulo</span>
+                    </button>
+                </div>
+
+                <!-- Empty State -->
+                <div x-show="$store.project.chapters.length === 0" class="empty-state">
+                    <i data-lucide="book-open" width="64" height="64"></i>
+                    <p x-text="$store.i18n.t('chapters.empty')">No hay capítulos creados</p>
+                    <span class="hint" x-text="$store.i18n.t('chapters.emptyHint')">Crea tu primer capítulo para comenzar a escribir</span>
+                </div>
+
+                <!-- Chapters List -->
+                <div x-show="$store.project.chapters.length > 0">
+                    <template x-for="chapter in $store.project.chapters" :key="chapter.id">
+                        <div class="chapter-item">
+                            <div class="chapter-number" x-text="chapter.number"></div>
+                            <div class="chapter-content">
+                                <div class="chapter-title" x-text="chapter.title || 'Sin título'"></div>
+                                <div class="chapter-meta">
+                                    <span x-text="$store.i18n.t('chapters.stats.words', { count: chapter.wordCount })"></span>
+                                    <span class="chapter-status" :class="chapter.status" x-text="$store.i18n.t('chapters.form.statuses.' + chapter.status)"></span>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn-primary" @click="$store.ui.openEditor(chapter.id)" style="padding: 6px 12px; font-size: 13px;">
+                                    <i data-lucide="pen-line" width="14" height="14"></i>
+                                    <span x-text="$store.i18n.t('chapters.openEditor')"></span>
+                                </button>
+                                <button class="btn-icon" @click="if(confirm($store.i18n.t('common.confirmDelete'))) { $store.project.deleteChapter(chapter.id); $store.ui.success($store.i18n.t('notifications.success.chapterDeleted'), ''); }" :title="$store.i18n.t('common.delete')">
+                                    <i data-lucide="trash-2" width="16" height="16"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Scenes View -->
+            <div x-show="$store.ui.currentView === 'scenes'" class="view">
+                <div class="view-header">
+                    <div>
+                        <h1 x-text="$store.i18n.t('scenes.title')">Escenas</h1>
+                        <p class="subtitle" x-text="$store.i18n.t('scenes.subtitle')">Organiza las escenas de tu historia</p>
+                    </div>
+                    <button class="btn-primary" @click="$store.ui.openModal('newScene')">
+                        <i data-lucide="plus" width="16" height="16"></i>
+                        <span x-text="$store.i18n.t('scenes.new')">Nueva Escena</span>
+                    </button>
+                </div>
+
+                <!-- Empty State -->
+                <div x-show="$store.project.scenes.length === 0" class="empty-state">
+                    <i data-lucide="film" width="64" height="64"></i>
+                    <p x-text="$store.i18n.t('scenes.empty')">No hay escenas creadas</p>
+                    <span class="hint" x-text="$store.i18n.t('scenes.emptyHint')">Crea tu primera escena</span>
+                </div>
+
+                <!-- Scenes Grid -->
+                <div x-show="$store.project.scenes.length > 0" class="content-grid">
+                    <template x-for="scene in $store.project.scenes" :key="scene.id">
+                        <div class="scene-card card">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                                <h3 x-text="scene.title" style="margin: 0;"></h3>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="btn-icon" @click="$store.ui.openModal('editScene', scene)" :title="$store.i18n.t('common.edit')">
+                                        <i data-lucide="edit" width="16" height="16"></i>
+                                    </button>
+                                    <button class="btn-icon" @click="if(confirm($store.i18n.t('common.confirmDelete'))) { $store.project.deleteScene(scene.id); $store.ui.success($store.i18n.t('notifications.success.sceneDeleted'), ''); }" :title="$store.i18n.t('common.delete')">
+                                        <i data-lucide="trash-2" width="16" height="16"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <p x-text="scene.description || $store.i18n.t('scenes.form.descriptionPlaceholder')" style="color: var(--text-secondary); font-size: 14px;"></p>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Locations View -->
+            <div x-show="$store.ui.currentView === 'locations'" class="view">
+                <div class="view-header">
+                    <div>
+                        <h1 x-text="$store.i18n.t('locations.title')">Ubicaciones</h1>
+                        <p class="subtitle" x-text="$store.i18n.t('locations.subtitle')">Gestiona los lugares de tu novela</p>
+                    </div>
+                    <button class="btn-primary" @click="$store.ui.openModal('newLocation')">
+                        <i data-lucide="plus" width="16" height="16"></i>
+                        <span x-text="$store.i18n.t('locations.new')">Nueva Ubicación</span>
+                    </button>
+                </div>
+
+                <!-- Empty State -->
+                <div x-show="$store.project.locations.length === 0" class="empty-state">
+                    <i data-lucide="map-pin" width="64" height="64"></i>
+                    <p x-text="$store.i18n.t('locations.empty')">No hay ubicaciones creadas</p>
+                    <span class="hint" x-text="$store.i18n.t('locations.emptyHint')">Crea tu primera ubicación</span>
+                </div>
+
+                <!-- Locations Grid -->
+                <div x-show="$store.project.locations.length > 0" class="content-grid">
+                    <template x-for="location in $store.project.locations" :key="location.id">
+                        <div class="card">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                                <h3 x-text="location.name" style="margin: 0;"></h3>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="btn-icon" @click="$store.ui.openModal('editLocation', location)" :title="$store.i18n.t('common.edit')">
+                                        <i data-lucide="edit" width="16" height="16"></i>
+                                    </button>
+                                    <button class="btn-icon" @click="if(confirm($store.i18n.t('common.confirmDelete'))) { $store.project.deleteLocation(location.id); $store.ui.success($store.i18n.t('notifications.success.locationDeleted'), ''); }" :title="$store.i18n.t('common.delete')">
+                                        <i data-lucide="trash-2" width="16" height="16"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <p x-text="location.description || $store.i18n.t('locations.form.descriptionPlaceholder')" style="color: var(--text-secondary); font-size: 14px;"></p>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Timeline View -->
+            <div x-show="$store.ui.currentView === 'timeline'" class="view">
+                <div class="view-header">
+                    <div>
+                        <h1 x-text="$store.i18n.t('timeline.title')">Línea Temporal</h1>
+                        <p class="subtitle" x-text="$store.i18n.t('timeline.subtitle')">Organiza los eventos de tu historia</p>
+                    </div>
+                    <button class="btn-primary" @click="$store.ui.openModal('newTimelineEvent')">
+                        <i data-lucide="plus" width="16" height="16"></i>
+                        <span x-text="$store.i18n.t('timeline.new')">Nuevo Evento</span>
+                    </button>
+                </div>
+
+                <!-- Empty State -->
+                <div x-show="$store.project.timeline.length === 0" class="empty-state">
+                    <i data-lucide="clock" width="64" height="64"></i>
+                    <p x-text="$store.i18n.t('timeline.empty')">No hay eventos en la línea temporal</p>
+                    <span class="hint" x-text="$store.i18n.t('timeline.emptyHint')">Crea tu primer evento</span>
+                </div>
+
+                <!-- Timeline List -->
+                <div x-show="$store.project.timeline.length > 0" style="max-width: 800px;">
+                    <template x-for="event in $store.project.timeline" :key="event.id">
+                        <div class="timeline-event card" style="margin-bottom: 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div style="flex: 1;">
+                                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                        <span style="color: var(--accent); font-weight: 600;" x-text="event.date"></span>
+                                        <h3 x-text="event.event" style="margin: 0;"></h3>
+                                    </div>
+                                    <p x-text="event.description" style="color: var(--text-secondary); font-size: 14px; margin: 0;"></p>
+                                </div>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="btn-icon" @click="$store.ui.openModal('editTimelineEvent', event)" :title="$store.i18n.t('common.edit')">
+                                        <i data-lucide="edit" width="16" height="16"></i>
+                                    </button>
+                                    <button class="btn-icon" @click="if(confirm($store.i18n.t('common.confirmDelete'))) { $store.project.deleteTimelineEvent(event.id); $store.ui.success($store.i18n.t('notifications.success.eventDeleted'), ''); }" :title="$store.i18n.t('common.delete')">
+                                        <i data-lucide="trash-2" width="16" height="16"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Editor View -->
+            <div x-show="$store.ui.currentView === 'editor'"
+                 class="view"
+                 style="padding: 0; height: 100%;"
+                 x-data="editorEnhancedComponent()">
+
+                <template x-if="currentChapter">
+                    <div class="editor-container">
+                        <!-- Editor Main Area -->
+                        <div class="editor-main">
+                            <!-- Toolbar -->
+                            <div class="editor-toolbar">
+                                <div class="editor-toolbar-left">
+                                    <button class="btn-icon" @click="$store.ui.closeEditor()" :title="$store.i18n.t('common.back')">
+                                        <i data-lucide="arrow-left" width="20" height="20"></i>
+                                    </button>
+                                    <div>
+                                        <div class="editor-title" x-text="'Capítulo ' + currentChapter.number + ': ' + (currentChapter.title || 'Sin título')"></div>
+                                        <div class="editor-meta">
+                                            <span x-text="$store.i18n.t('editor.wordCount', { count: currentChapter.wordCount || 0 })"></span>
+                                            <span>·</span>
+                                            <span x-text="$store.i18n.t('chapters.form.statuses.' + currentChapter.status)"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="editor-toolbar-right">
+                                    <div class="editor-save-indicator" :class="$store.ui.editorSaveStatus">
+                                        <template x-if="$store.ui.editorSaveStatus === 'saving'">
+                                            <span x-text="$store.i18n.t('editor.saving')"></span>
+                                        </template>
+                                        <template x-if="$store.ui.editorSaveStatus === 'saved'">
+                                            <span x-text="$store.i18n.t('editor.saved')"></span>
+                                        </template>
+                                        <template x-if="$store.ui.editorSaveStatus === 'unsaved'">
+                                            <span>...</span>
+                                        </template>
+                                    </div>
+                                    <button class="btn-icon" @click="$store.ui.toggleEditorSidebar()" :title="$store.ui.editorSidebarOpen ? 'Ocultar panel' : 'Mostrar panel'">
+                                        <i data-lucide="sidebar-close" width="20" height="20"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Writing Area -->
+                            <div class="editor-writing-area" style="position: relative;">
+                                <textarea
+                                    class="editor-textarea"
+                                    :placeholder="$store.i18n.t('editor.placeholder')"
+                                    x-model="currentChapter.content"
+                                    @input="handleInput($event)"
+                                    @keydown="handleKeyDown($event)"
+                                    autofocus
+                                ></textarea>
+
+                                <!-- Slash Commands Menu -->
+                                <div x-show="showCommandMenu"
+                                     class="slash-commands-menu"
+                                     :style="`top: ${commandMenuPosition.top}px; left: ${commandMenuPosition.left}px;`"
+                                     @click.outside="hideCommandMenu()">
+                                    <template x-for="(command, index) in filteredCommands" :key="command.id">
+                                        <div class="slash-command-item"
+                                             :class="{ 'selected': index === selectedCommandIndex }"
+                                             @click="executeCommand(command)"
+                                             @mouseenter="selectedCommandIndex = index">
+                                            <div class="slash-command-icon">
+                                                <i :data-lucide="command.icon" width="18" height="18"></i>
+                                            </div>
+                                            <div class="slash-command-content">
+                                                <div class="slash-command-title" x-text="command.title"></div>
+                                                <div class="slash-command-desc" x-text="command.desc"></div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <template x-if="filteredCommands.length === 0">
+                                        <div style="padding: 20px; text-align: center; color: var(--text-tertiary);">
+                                            No se encontraron comandos
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <!-- Mentions Menu (@) -->
+                                <div x-show="showMentionsMenu"
+                                     class="mentions-menu"
+                                     :style="`top: ${mentionsMenuPosition.top}px; left: ${mentionsMenuPosition.left}px;`"
+                                     @click.outside="showMentionsMenu = false">
+                                    <template x-for="(character, index) in filteredMentions" :key="character.id">
+                                        <div class="mention-item"
+                                             :class="{ 'selected': index === selectedMentionIndex }"
+                                             @click="insertMention(character)"
+                                             @mouseenter="selectedMentionIndex = index"
+                                             @dblclick="openCharacterInfo(character)">
+                                            <div class="mention-avatar" x-text="character.name.charAt(0).toUpperCase()"></div>
+                                            <div class="mention-info">
+                                                <div class="mention-name" x-text="character.name"></div>
+                                                <div class="mention-role" x-text="$store.i18n.t('characters.form.roles.' + character.role)"></div>
+                                            </div>
+                                            <template x-if="character.badge === 'in-scene'">
+                                                <span class="mention-badge in-scene">En escena</span>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    <template x-if="filteredMentions.length === 0">
+                                        <div style="padding: 20px; text-align: center; color: var(--text-tertiary);">
+                                            <p style="margin-bottom: 8px;">No se encontraron personajes</p>
+                                            <button class="btn-primary" @click="$store.ui.openModal('newCharacter'); showMentionsMenu = false;" style="padding: 6px 12px; font-size: 12px;">
+                                                Crear personaje
+                                            </button>
+                                        </div>
+                                    </template>
+                                    <div style="padding: 8px; border-top: 1px solid var(--border); margin-top: 4px;">
+                                        <div style="font-size: 11px; color: var(--text-tertiary); text-align: center;">
+                                            Doble clic para ver info
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Comment Popup -->
+                                <div x-show="showCommentPopup"
+                                     class="comment-popup"
+                                     style="top: 100px; right: 20px;"
+                                     @click.outside="showCommentPopup = false">
+                                    <div class="comment-popup-header">
+                                        <span class="comment-popup-title">💬 Comentario</span>
+                                        <button class="btn-icon" @click="showCommentPopup = false" style="width: 24px; height: 24px;">
+                                            <i data-lucide="x" width="14" height="14"></i>
+                                        </button>
+                                    </div>
+                                    <textarea
+                                        class="comment-popup-textarea"
+                                        x-model="currentComment"
+                                        placeholder="Escribe tu comentario aquí..."
+                                        autofocus
+                                    ></textarea>
+                                    <div class="comment-popup-actions">
+                                        <button class="btn-secondary" @click="cancelComment()" style="flex: 1; padding: 6px; font-size: 13px;">
+                                            Cancelar
+                                        </button>
+                                        <button class="btn-primary" @click="saveComment()" style="flex: 1; padding: 6px; font-size: 13px;">
+                                            Guardar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Editor Sidebar -->
+                        <aside class="editor-sidebar" :class="{ 'collapsed': !$store.ui.editorSidebarOpen }">
+                            <!-- Chapter Info -->
+                            <div class="editor-sidebar-section">
+                                <h3 x-text="$store.i18n.t('chapters.form.title')"></h3>
+                                <input
+                                    type="text"
+                                    x-model="currentChapter.title"
+                                    @input="autoSave()"
+                                    :placeholder="$store.i18n.t('chapters.form.titlePlaceholder')"
+                                    style="width: 100%; padding: 8px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary);"
+                                >
+                                <div style="margin-top: 12px;">
+                                    <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 4px;" x-text="$store.i18n.t('chapters.form.status')"></label>
+                                    <select
+                                        x-model="currentChapter.status"
+                                        @change="autoSave()"
+                                        style="width: 100%; padding: 8px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); cursor: pointer;"
+                                    >
+                                        <option value="draft" x-text="$store.i18n.t('chapters.form.statuses.draft')"></option>
+                                        <option value="review" x-text="$store.i18n.t('chapters.form.statuses.review')"></option>
+                                        <option value="final" x-text="$store.i18n.t('chapters.form.statuses.final')"></option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Characters Context -->
+                            <div class="editor-sidebar-section">
+                                <h3 x-text="$store.i18n.t('sidebar.characters')"></h3>
+                                <template x-if="$store.project.characters.length === 0">
+                                    <p style="font-size: 13px; color: var(--text-tertiary);" x-text="$store.i18n.t('characters.empty')"></p>
+                                </template>
+                                <template x-if="$store.project.characters.length > 0">
+                                    <div>
+                                        <template x-for="character in $store.project.characters.slice(0, 5)" :key="character.id">
+                                            <div class="editor-context-item">
+                                                <div class="editor-context-item-title" x-text="character.name"></div>
+                                                <div class="editor-context-item-desc" x-text="$store.i18n.t('characters.form.roles.' + character.role)"></div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- AI Assistant -->
+                            <div class="editor-sidebar-section" style="background: var(--bg-tertiary); margin: 0; border-radius: 0;">
+                                <h3 style="display: flex; align-items: center; gap: 8px;">
+                                    <i data-lucide="sparkles" width="16" height="16" style="color: var(--accent);"></i>
+                                    <span x-text="$store.i18n.t('sidebar.aiAssistant')"></span>
+                                </h3>
+                                <div class="editor-ai-actions">
+                                    <button class="editor-ai-btn" @click="$store.ui.info('IA', 'Funcionalidad en desarrollo')">
+                                        <i data-lucide="wand-2" width="16" height="16"></i>
+                                        <span>Continuar escribiendo</span>
+                                    </button>
+                                    <button class="editor-ai-btn" @click="$store.ui.info('IA', 'Funcionalidad en desarrollo')">
+                                        <i data-lucide="lightbulb" width="16" height="16"></i>
+                                        <span>Sugerir mejoras</span>
+                                    </button>
+                                    <button class="editor-ai-btn" @click="$store.ui.info('IA', 'Funcionalidad en desarrollo')">
+                                        <i data-lucide="sparkles" width="16" height="16"></i>
+                                        <span>Generar contenido</span>
+                                    </button>
+                                    <button class="editor-ai-btn" @click="$store.ui.info('IA', 'Funcionalidad en desarrollo')">
+                                        <i data-lucide="book-open" width="16" height="16"></i>
+                                        <span>Resumir capítulo</span>
+                                    </button>
+                                </div>
+                                <template x-if="!$store.ai.isActive">
+                                    <p style="font-size: 12px; color: var(--text-tertiary); margin-top: 12px; text-align: center;">
+                                        <i data-lucide="alert-circle" width="14" height="14" style="display: inline;"></i>
+                                        <span x-text="$store.i18n.t('ai.settings.noApiKey')"></span>
+                                    </p>
+                                </template>
+                            </div>
+                        </aside>
+                    </div>
+                </template>
+
+                <!-- Empty state si no hay capítulo seleccionado -->
+                <template x-if="!currentChapter">
+                    <div class="empty-state">
+                        <i data-lucide="book-open" width="64" height="64"></i>
+                        <p>No hay capítulo seleccionado</p>
+                        <button class="btn-primary" @click="$store.ui.setView('chapters')" style="margin-top: 16px;">
+                            <span x-text="$store.i18n.t('sidebar.chapters')"></span>
+                        </button>
+                    </div>
+                </template>
+            </div>
+
+            <!-- AI Assistant View -->
+            <div x-show="$store.ui.currentView === 'aiAssistant'" class="view">
+                <div class="view-header">
+                    <h1 x-text="$store.i18n.t('ai.title')">Asistente IA</h1>
+                    <p class="subtitle" x-text="$store.i18n.t('ai.subtitle')">Trabaja con inteligencia artificial</p>
+                </div>
+                <div class="empty-state">
+                    <i data-lucide="sparkles" width="64" height="64"></i>
+                    <p>Esta vista está en desarrollo</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="status-left">
+            <div class="status-item">
+                <span x-text="$store.i18n.t('status.words', { count: $store.project.getStats().totalWords })"></span>
+            </div>
+        </div>
+        <div class="status-right">
+            <div class="status-item">
+                <span class="ai-indicator" :class="{ 'active': $store.ai.isActive }"></span>
+                <span x-text="$store.ai.isActive ? $store.i18n.t('status.ai.active') : $store.i18n.t('status.ai.inactive')"></span>
+            </div>
+            <div class="status-item">
+                <span x-text="$store.i18n.getCurrentLocaleName()"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Welcome Modal -->
+    <div class="modal" :class="{ 'active': $store.ui.modals.welcome }">
+        <div class="modal-content">
+            <div class="modal-header" style="flex-direction: column; text-align: center; padding: 32px;">
+                <div class="welcome-logo">
+                    <i data-lucide="pen-line" width="32" height="32"></i>
+                </div>
+                <h2 x-text="$store.i18n.t('modals.welcome.title')">¡Bienvenido a PlumaAI!</h2>
+                <p class="subtitle" x-text="$store.i18n.t('modals.welcome.subtitle')">Editor de novelas con inteligencia artificial</p>
+            </div>
+            <div class="modal-body">
+                <div class="welcome-actions">
+                    <button class="welcome-btn" @click="$store.ui.closeModal('welcome'); $store.ui.openModal('newProject')">
+                        <i data-lucide="plus-circle" width="24" height="24"></i>
+                        <span x-text="$store.i18n.t('modals.welcome.newProject')">Crear Nuevo Proyecto</span>
+                    </button>
+                    <button class="welcome-btn" @click="$store.ui.closeModal('welcome'); $store.ui.openModal('import')">
+                        <i data-lucide="upload" width="24" height="24"></i>
+                        <span x-text="$store.i18n.t('modals.welcome.loadProject')">Cargar Proyecto Existente</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Character Info Modal (for editor mentions) -->
+    <div class="modal" x-data="editorEnhancedComponent()" :class="{ 'active': showCharacterInfo }">
+        <div class="modal-content character-info-modal">
+            <template x-if="selectedCharacter">
+                <div>
+                    <div class="character-info-header">
+                        <div class="character-info-avatar" x-text="selectedCharacter.name.charAt(0).toUpperCase()"></div>
+                        <div class="character-info-details">
+                            <div class="character-info-name" x-text="selectedCharacter.name"></div>
+                            <div class="character-info-role" x-text="$store.i18n.t('characters.form.roles.' + selectedCharacter.role)"></div>
+                        </div>
+                        <button class="btn-icon" @click="closeCharacterInfo()">
+                            <i data-lucide="x" width="20" height="20"></i>
+                        </button>
+                    </div>
+                    <div class="character-info-content">
+                        <template x-if="selectedCharacter.description">
+                            <div class="character-info-section">
+                                <div class="character-info-label" x-text="$store.i18n.t('characters.form.description')"></div>
+                                <div class="character-info-text" x-text="selectedCharacter.description"></div>
+                            </div>
+                        </template>
+                        <template x-if="selectedCharacter.personality">
+                            <div class="character-info-section">
+                                <div class="character-info-label" x-text="$store.i18n.t('characters.form.personality')"></div>
+                                <div class="character-info-text" x-text="selectedCharacter.personality"></div>
+                            </div>
+                        </template>
+                        <template x-if="selectedCharacter.background">
+                            <div class="character-info-section">
+                                <div class="character-info-label" x-text="$store.i18n.t('characters.form.background')"></div>
+                                <div class="character-info-text" x-text="selectedCharacter.background"></div>
+                            </div>
+                        </template>
+                        <template x-if="selectedCharacter.notes">
+                            <div class="character-info-section">
+                                <div class="character-info-label" x-text="$store.i18n.t('characters.form.notes')"></div>
+                                <div class="character-info-text" x-text="selectedCharacter.notes"></div>
+                            </div>
+                        </template>
+                        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); display: flex; gap: 8px;">
+                            <button class="btn-secondary" @click="closeCharacterInfo()" style="flex: 1;">
+                                <span x-text="$store.i18n.t('common.close')"></span>
+                            </button>
+                            <button class="btn-primary" @click="$store.ui.openModal('editCharacter', selectedCharacter); closeCharacterInfo();" style="flex: 1;">
+                                <i data-lucide="edit" width="16" height="16"></i>
+                                <span x-text="$store.i18n.t('common.edit')"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- New Project Modal -->
+    <div class="modal" :class="{ 'active': $store.ui.modals.newProject }">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 x-text="$store.i18n.t('modals.newProject.title')">Nuevo Proyecto</h2>
+                <button class="btn-close" @click="$store.ui.closeModal('newProject')">
+                    <i data-lucide="x" width="20" height="20"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form @submit.prevent="
+                    const projectInfo = {
+                        title: $el.querySelector('[name=title]').value,
+                        author: $el.querySelector('[name=author]').value,
+                        genre: $el.querySelector('[name=genre]').value,
+                        isPublicPC: $el.querySelector('[name=isPublicPC]').checked
+                    };
+                    $store.project.createNewProject(projectInfo);
+                    $store.ui.closeModal('newProject');
+                    $store.ui.success($store.i18n.t('notifications.success.projectCreated'), '');
+                    $store.ui.markAsVisited();
+                    $el.reset();
+                ">
+                    <div class="form-group">
+                        <label x-text="$store.i18n.t('modals.newProject.form.title')">Título de la Novela</label>
+                        <input type="text" name="title" required :placeholder="$store.i18n.t('modals.newProject.form.titlePlaceholder')">
+                    </div>
+                    <div class="form-group">
+                        <label x-text="$store.i18n.t('modals.newProject.form.author')">Autor</label>
+                        <input type="text" name="author" :placeholder="$store.i18n.t('modals.newProject.form.authorPlaceholder')">
+                    </div>
+                    <div class="form-group">
+                        <label x-text="$store.i18n.t('modals.newProject.form.genre')">Género</label>
+                        <input type="text" name="genre" :placeholder="$store.i18n.t('modals.newProject.form.genrePlaceholder')">
+                    </div>
+                    <div class="form-divider"></div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="isPublicPC">
+                            <span x-text="$store.i18n.t('modals.newProject.form.isPublicPC')">Estoy usando un PC público</span>
+                        </label>
+                        <p class="hint" x-text="$store.i18n.t('modals.newProject.form.publicPCWarning')">No se guardarán datos automáticamente</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary" @click="$store.ui.closeModal('newProject')" x-text="$store.i18n.t('common.cancel')">Cancelar</button>
+                        <button type="submit" class="btn-primary" x-text="$store.i18n.t('common.create')">Crear</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- New/Edit Character Modal -->
+    <div class="modal" :class="{ 'active': $store.ui.modals.newCharacter || $store.ui.modals.editCharacter }">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 x-text="$store.ui.modals.editCharacter ? $store.i18n.t('characters.edit') : $store.i18n.t('characters.new')">Personaje</h2>
+                <button class="btn-close" @click="$store.ui.closeModal()">
+                    <i data-lucide="x" width="20" height="20"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form @submit.prevent="
+                    const formData = {
+                        name: $el.querySelector('[name=name]').value,
+                        role: $el.querySelector('[name=role]').value,
+                        description: $el.querySelector('[name=description]').value,
+                        personality: $el.querySelector('[name=personality]').value,
+                        background: $el.querySelector('[name=background]').value,
+                        notes: $el.querySelector('[name=notes]').value
+                    };
+                    if ($store.ui.modalData?.id) {
+                        $store.project.updateCharacter($store.ui.modalData.id, formData);
+                        $store.ui.success($store.i18n.t('notifications.success.characterUpdated'), '');
+                    } else {
+                        $store.project.addCharacter(formData);
+                        $store.ui.success($store.i18n.t('notifications.success.characterCreated'), '');
+                    }
+                    $store.ui.closeModal();
+                    $el.reset();
+                    lucide.createIcons();
+                ">
+                    <div class="form-group">
+                        <label x-text="$store.i18n.t('characters.form.name')">Nombre</label>
+                        <input type="text" name="name" required :placeholder="$store.i18n.t('characters.form.namePlaceholder')" :value="$store.ui.modalData?.name || ''">
+                    </div>
+                    <div class="form-group">
+                        <label x-text="$store.i18n.t('characters.form.role')">Rol</label>
+                        <select name="role">
+                            <option value="protagonist" :selected="$store.ui.modalData?.role === 'protagonist'" x-text="$store.i18n.t('characters.form.roles.protagonist')">Protagonista</option>
+                            <option value="antagonist" :selected="$store.ui.modalData?.role === 'antagonist'" x-text="$store.i18n.t('characters.form.roles.antagonist')">Antagonista</option>
+                            <option value="secondary" :selected="!$store.ui.modalData || $store.ui.modalData?.role === 'secondary'" x-text="$store.i18n.t('characters.form.roles.secondary')">Secundario</option>
+                            <option value="supporting" :selected="$store.ui.modalData?.role === 'supporting'" x-text="$store.i18n.t('characters.form.roles.supporting')">De apoyo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label x-text="$store.i18n.t('characters.form.description')">Descripción Física</label>
+                        <textarea name="description" :placeholder="$store.i18n.t('characters.form.descriptionPlaceholder')" x-text="$store.ui.modalData?.description || ''"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label x-text="$store.i18n.t('characters.form.personality')">Personalidad</label>
+                        <textarea name="personality" :placeholder="$store.i18n.t('characters.form.personalityPlaceholder')" x-text="$store.ui.modalData?.personality || ''"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label x-text="$store.i18n.t('characters.form.background')">Historia de Fondo</label>
+                        <textarea name="background" :placeholder="$store.i18n.t('characters.form.backgroundPlaceholder')" x-text="$store.ui.modalData?.background || ''"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label x-text="$store.i18n.t('characters.form.notes')">Notas Adicionales</label>
+                        <textarea name="notes" :placeholder="$store.i18n.t('characters.form.notesPlaceholder')" x-text="$store.ui.modalData?.notes || ''"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary" @click="$store.ui.closeModal()" x-text="$store.i18n.t('common.cancel')">Cancelar</button>
+                        <button type="submit" class="btn-primary" x-text="$store.ui.modalData?.id ? $store.i18n.t('common.save') : $store.i18n.t('common.create')">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- New/Edit Chapter Modal -->
+    <div class="modal" :class="{ 'active': $store.ui.modals.newChapter || $store.ui.modals.editChapter }">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 x-text="$store.ui.modals.editChapter ? $store.i18n.t('chapters.edit') : $store.i18n.t('chapters.new')">Capítulo</h2>
+                <button class="btn-close" @click="$store.ui.closeModal()">
+                    <i data-lucide="x" width="20" height="20"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form @submit.prevent="
+                    const formData = {
+                        title: $el.querySelector('[name=title]').value,
+                        content: $el.querySelector('[name=content]').value
+                    };
+                    if ($store.ui.modalData?.id) {
+                        $store.project.updateChapter($store.ui.modalData.id, formData);
+                        $store.ui.success($store.i18n.t('notifications.success.chapterUpdated'), '');
+                    } else {
+                        $store.project.addChapter(formData);
+                        $store.ui.success($store.i18n.t('notifications.success.chapterCreated'), '');
+                    }
+                    $store.ui.closeModal();
+                    $el.reset();
+                    lucide.createIcons();
+                ">
+                    <div class="form-group">
+                        <label x-text="$store.i18n.t('chapters.form.title')">Título</label>
+                        <input type="text" name="title" required :placeholder="$store.i18n.t('chapters.form.titlePlaceholder')" :value="$store.ui.modalData?.title || ''">
+                    </div>
+                    <div class="form-group">
+                        <label x-text="$store.i18n.t('chapters.form.content')">Contenido</label>
+                        <textarea name="content" style="min-height: 200px;" :placeholder="$store.i18n.t('editor.placeholder')" x-text="$store.ui.modalData?.content || ''"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary" @click="$store.ui.closeModal()" x-text="$store.i18n.t('common.cancel')">Cancelar</button>
+                        <button type="submit" class="btn-primary" x-text="$store.ui.modalData?.id ? $store.i18n.t('common.save') : $store.i18n.t('common.create')">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- New/Edit Scene Modal -->
+    <div class="modal" :class="{ 'active': $store.ui.modals.newScene || $store.ui.modals.editScene }">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 x-text="$store.ui.modals.editScene ? $store.i18n.t('scenes.edit') : $store.i18n.t('scenes.new')">Escena</h2>
+                <button class="btn-close" @click="$store.ui.closeModal()">
+                    <i data-lucide="x" width="20" height="20"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form @submit.prevent="
+                    const formData = {
+                        title: $el.querySelector('[name=title]').value,
+                        description: $el.querySelector('[name=description]').value
+                    };
+                    if ($store.ui.modalData?.id) {
+                        $store.project.updateScene($store.ui.modalData.id, formData);
+                        $store.ui.success($store.i18n.t('notifications.success.sceneUpdated'), '');
+                    } else {
+                        $store.project.addScene(formData);
+                        $store.ui.success($store.i18n.t('notifications.success.sceneCreated'), '');
+                    }
+                    $store.ui.closeModal();
+                    $el.reset();
+                    lucide.createIcons();
+                ">
+                    <div class="form-group">
+                        <label x-text="$store.i18n.t('scenes.form.title')">Título</label>
+                        <input type="text" name="title" required :placeholder="$store.i18n.t('scenes.form.titlePlaceholder')" :value="$store.ui.modalData?.title || ''">
+                    </div>
+                    <div class="form-group">
+                        <label x-text="$store.i18n.t('scenes.form.description')">Descripción</label>
+                        <textarea name="description" :placeholder="$store.i18n.t('scenes.form.descriptionPlaceholder')" x-text="$store.ui.modalData?.description || ''"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary" @click="$store.ui.closeModal()" x-text="$store.i18n.t('common.cancel')">Cancelar</button>
+                        <button type="submit" class="btn-primary" x-text="$store.ui.modalData?.id ? $store.i18n.t('common.save') : $store.i18n.t('common.create')">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- New/Edit Location Modal -->
+    <div class="modal" :class="{ 'active': $store.ui.modals.newLocation || $store.ui.modals.editLocation }">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 x-text="$store.ui.modals.editLocation ? $store.i18n.t('locations.edit') : $store.i18n.t('locations.new')">Ubicación</h2>
+                <button class="btn-close" @click="$store.ui.closeModal()">
+                    <i data-lucide="x" width="20" height="20"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form @submit.prevent="
+                    const formData = {
+                        name: $el.querySelector('[name=name]').value,
+                        description: $el.querySelector('[name=description]').value
+                    };
+                    if ($store.ui.modalData?.id) {
+                        $store.project.updateLocation($store.ui.modalData.id, formData);
+                        $store.ui.success($store.i18n.t('notifications.success.locationUpdated'), '');
+                    } else {
+                        $store.project.addLocation(formData);
+                        $store.ui.success($store.i18n.t('notifications.success.locationCreated'), '');
+                    }
+                    $store.ui.closeModal();
+                    $el.reset();
+                    lucide.createIcons();
+                ">
+                    <div class="form-group">
+                        <label x-text="$store.i18n.t('locations.form.name')">Nombre</label>
+                        <input type="text" name="name" required :placeholder="$store.i18n.t('locations.form.namePlaceholder')" :value="$store.ui.modalData?.name || ''">
+                    </div>
+                    <div class="form-group">
+                        <label x-text="$store.i18n.t('locations.form.description')">Descripción</label>
+                        <textarea name="description" :placeholder="$store.i18n.t('locations.form.descriptionPlaceholder')" x-text="$store.ui.modalData?.description || ''"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary" @click="$store.ui.closeModal()" x-text="$store.i18n.t('common.cancel')">Cancelar</button>
+                        <button type="submit" class="btn-primary" x-text="$store.ui.modalData?.id ? $store.i18n.t('common.save') : $store.i18n.t('common.create')">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- New/Edit Timeline Event Modal -->
+    <div class="modal" :class="{ 'active': $store.ui.modals.newTimelineEvent || $store.ui.modals.editTimelineEvent }">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 x-text="$store.ui.modals.editTimelineEvent ? $store.i18n.t('timeline.edit') : $store.i18n.t('timeline.new')">Evento</h2>
+                <button class="btn-close" @click="$store.ui.closeModal()">
+                    <i data-lucide="x" width="20" height="20"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form @submit.prevent="
+                    const formData = {
+                        date: $el.querySelector('[name=date]').value,
+                        event: $el.querySelector('[name=event]').value,
+                        description: $el.querySelector('[name=description]').value
+                    };
+                    if ($store.ui.modalData?.id) {
+                        $store.project.updateTimelineEvent($store.ui.modalData.id, formData);
+                        $store.ui.success($store.i18n.t('notifications.success.eventUpdated'), '');
+                    } else {
+                        $store.project.addTimelineEvent(formData);
+                        $store.ui.success($store.i18n.t('notifications.success.eventCreated'), '');
+                    }
+                    $store.ui.closeModal();
+                    $el.reset();
+                    lucide.createIcons();
+                ">
+                    <div class="form-group">
+                        <label x-text="$store.i18n.t('timeline.form.date')">Fecha</label>
+                        <input type="text" name="date" required :placeholder="$store.i18n.t('timeline.form.datePlaceholder')" :value="$store.ui.modalData?.date || ''">
+                    </div>
+                    <div class="form-group">
+                        <label x-text="$store.i18n.t('timeline.form.event')">Evento</label>
+                        <input type="text" name="event" required :placeholder="$store.i18n.t('timeline.form.eventPlaceholder')" :value="$store.ui.modalData?.event || ''">
+                    </div>
+                    <div class="form-group">
+                        <label x-text="$store.i18n.t('timeline.form.description')">Descripción</label>
+                        <textarea name="description" :placeholder="$store.i18n.t('timeline.form.descriptionPlaceholder')" x-text="$store.ui.modalData?.description || ''"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary" @click="$store.ui.closeModal()" x-text="$store.i18n.t('common.cancel')">Cancelar</button>
+                        <button type="submit" class="btn-primary" x-text="$store.ui.modalData?.id ? $store.i18n.t('common.save') : $store.i18n.t('common.create')">Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Projects List Modal -->
+    <div class="modal" :class="{ 'active': $store.ui.modals.projectsList }" x-data="{
+        projects: [],
+        get hasProjects() {
+            return this.projects && this.projects.length > 0;
+        },
+        loadProjects() {
+            if (window.storageService) {
+                this.projects = window.storageService.getProjectsList();
+                console.log('Proyectos cargados:', this.projects);
+            }
+        },
+        loadProject(projectId) {
+            if ($store.project.loadProjectFromStorage(projectId)) {
+                $store.ui.closeModal('projectsList');
+                $store.ui.success('Proyecto cargado', '');
+            } else {
+                $store.ui.error('Error', 'No se pudo cargar el proyecto');
+            }
+        },
+        deleteProject(project) {
+            if (confirm('¿Eliminar el proyecto ' + project.title + '?')) {
+                if (window.storageService.deleteProject(project.id)) {
+                    this.loadProjects();
+                    $store.ui.success('Proyecto eliminado', '');
+                }
+            }
+        },
+        formatDate(dateStr) {
+            return new Date(dateStr).toLocaleDateString();
+        }
+    }" x-init="$watch('$store.ui.modals.projectsList', value => { if (value) loadProjects(); })">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2>Mis Proyectos</h2>
+                <button class="btn-close" @click="$store.ui.closeModal('projectsList')">
+                    <i data-lucide="x" width="20" height="20"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <template x-if="projects.length === 0">
+                    <div class="empty-state">
+                        <i data-lucide="inbox" width="48" height="48"></i>
+                        <p>No hay proyectos guardados</p>
+                        <button class="btn-primary" @click="$store.ui.closeModal('projectsList'); $store.ui.openModal('newProject');" style="margin-top: 16px;">
+                            Crear Nuevo Proyecto
+                        </button>
+                    </div>
+                </template>
+
+                <template x-if="projects.length > 0">
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <template x-for="project in projects" :key="project.id">
+                            <div style="display: flex; align-items: center; gap: 12px; padding: 16px; background: var(--bg-tertiary); border-radius: 8px; border: 1px solid var(--border);">
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 600; margin-bottom: 4px;" x-text="project.title"></div>
+                                    <div style="font-size: 13px; color: var(--text-secondary);">
+                                        <span x-text="project.author || 'Sin autor'"></span>
+                                        <span x-show="project.genre"> • </span>
+                                        <span x-text="project.genre"></span>
+                                    </div>
+                                    <div style="font-size: 12px; color: var(--text-tertiary); margin-top: 4px;">
+                                        Modificado: <span x-text="formatDate(project.modified)"></span>
+                                    </div>
+                                </div>
+                                <button class="btn-primary" @click="loadProject(project.id)" style="padding: 8px 16px;">
+                                    Abrir
+                                </button>
+                                <button class="btn-icon" @click="deleteProject(project)" title="Eliminar">
+                                    <i data-lucide="trash-2" width="18" height="18"></i>
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); display: flex; gap: 8px;">
+                    <button class="btn-secondary" @click="$store.ui.closeModal('projectsList'); $store.ui.openModal('newProject');" style="flex: 1;">
+                        <i data-lucide="plus" width="16" height="16"></i>
+                        <span>Nuevo Proyecto</span>
+                    </button>
+                    <button class="btn-secondary" @click="$store.ui.closeModal('projectsList'); $store.ui.openModal('import');" style="flex: 1;">
+                        <i data-lucide="upload" width="16" height="16"></i>
+                        <span>Importar</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div class="modal" :class="{ 'active': $store.ui.modals.export }">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 x-text="$store.i18n.t('modals.export.title')">Exportar Proyecto</h2>
+                <button class="btn-close" @click="$store.ui.closeModal('export')">
+                    <i data-lucide="x" width="20" height="20"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p x-text="$store.i18n.t('modals.export.description')">Descarga tu proyecto como archivo JSON</p>
+                <div style="margin-top: 20px; padding: 16px; background: var(--bg-tertiary); border-radius: 8px;">
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">
+                        Proyecto: <strong x-text="$store.project.projectInfo.title"></strong>
+                    </p>
+                    <p style="font-size: 13px; color: var(--text-secondary);">
+                        Tamaño aproximado: <strong><span x-text="(JSON.stringify($store.project.exportProject()).length / 1024).toFixed(2)"></span> KB</strong>
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" @click="$store.ui.closeModal('export')" x-text="$store.i18n.t('common.cancel')">Cancelar</button>
+                <button class="btn-primary" @click="
+                    if (window.storageService.exportProject($store.project.exportProject())) {
+                        $store.ui.success('Proyecto exportado', '');
+                        $store.ui.closeModal('export');
+                    } else {
+                        $store.ui.error('Error', 'No se pudo exportar el proyecto');
+                    }
+                ">
+                    <i data-lucide="download" width="16" height="16"></i>
+                    <span x-text="$store.i18n.t('modals.export.download')">Descargar</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div class="modal" :class="{ 'active': $store.ui.modals.import }">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 x-text="$store.i18n.t('modals.import.title')">Importar Proyecto</h2>
+                <button class="btn-close" @click="$store.ui.closeModal('import')">
+                    <i data-lucide="x" width="20" height="20"></i>
+                </button>
+            </div>
+            <div class="modal-body" x-data="{ file: null }">
+                <p x-text="$store.i18n.t('modals.import.description')">Carga un proyecto desde archivo JSON</p>
+                <div style="margin-top: 20px;">
+                    <input type="file" accept=".json" @change="file = $event.target.files[0]" style="display: none;" id="import-file-input">
+                    <button class="btn-secondary" @click="$el.previousElementSibling.click()" style="width: 100%; padding: 40px; display: flex; flex-direction: column; align-items: center; gap: 12px;">
+                        <i data-lucide="upload" width="32" height="32"></i>
+                        <span x-text="file ? $store.i18n.t('modals.import.selected', {filename: file.name}) : $store.i18n.t('modals.import.selectFile')">Seleccionar archivo</span>
+                    </button>
+                    <template x-if="file">
+                        <div style="margin-top: 12px; padding: 12px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">
+                            <strong x-text="file.name"></strong>
+                            <span style="color: var(--text-secondary);"> • </span>
+                            <span x-text="(file.size / 1024).toFixed(2) + ' KB'" style="color: var(--text-secondary);"></span>
+                        </div>
+                    </template>
+                </div>
+                <p class="hint" style="margin-top: 12px;" x-text="$store.i18n.t('modals.import.warning')">Esto creará un nuevo proyecto con los datos importados</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" @click="$store.ui.closeModal('import')" x-text="$store.i18n.t('common.cancel')">Cancelar</button>
+                <button class="btn-primary" @click="
+                    const fileInput = document.getElementById('import-file-input');
+                    const file = fileInput.files[0];
+                    if (!file) {
+                        $store.ui.error('Error', 'Selecciona un archivo');
+                        return;
+                    }
+                    window.storageService.importProject(file).then(projectData => {
+                        Object.assign($store.project, projectData);
+                        $store.ui.success('Proyecto importado', '');
+                        $store.ui.closeModal('import');
+                        fileInput.value = '';
+                    }).catch(error => {
+                        $store.ui.error('Error', error.message);
+                    });
+                ">
+                    <i data-lucide="upload" width="16" height="16"></i>
+                    <span x-text="$store.i18n.t('common.import')">Importar</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container">
+        <template x-for="toast in $store.ui.toasts" :key="toast.id">
+            <div class="toast" :class="toast.type">
+                <div class="toast-icon">
+                    <i x-show="toast.type === 'success'" data-lucide="check-circle" width="20" height="20"></i>
+                    <i x-show="toast.type === 'error'" data-lucide="alert-circle" width="20" height="20"></i>
+                    <i x-show="toast.type === 'warning'" data-lucide="alert-triangle" width="20" height="20"></i>
+                    <i x-show="toast.type === 'info'" data-lucide="info" width="20" height="20"></i>
+                </div>
+                <div class="toast-content">
+                    <div class="toast-title" x-text="toast.title"></div>
+                    <div class="toast-message" x-text="toast.message"></div>
+                </div>
+                <button class="toast-close" @click="$store.ui.removeToast(toast.id)">
+                    <i data-lucide="x" width="16" height="16"></i>
+                </button>
+            </div>
+        </template>
+    </div>
+
+    <!-- Cargar traducciones primero (formato tradicional) -->
+    <script src="js/i18n/locales/es-global.js"></script>
+    <script src="js/i18n/locales/en-global.js"></script>
+
+    <!-- Cargar stores (formato tradicional) -->
+    <script src="js/stores/i18n-global.js"></script>
+    <script src="js/stores/project-global.js"></script>
+    <script src="js/stores/ui-global.js"></script>
+    <script src="js/stores/ai-global.js"></script>
+
+    <!-- Cargar servicios -->
+    <script src="js/services/storage.js"></script>
+
+    <!-- Cargar componentes -->
+    <script src="js/components/editor-enhanced.js"></script>
+
+    <!-- Inicializar Alpine con los stores -->
+    <script>
+        document.addEventListener('alpine:init', () => {
+            console.log('🚀 Inicializando PlumaAI...');
+
+            // Hacer los objetos profundamente reactivos primero
+            const reactiveI18n = Alpine.reactive(window.i18nStore);
+            const reactiveProject = Alpine.reactive(window.projectStore);
+            const reactiveUi = Alpine.reactive(window.uiStore);
+            const reactiveAi = Alpine.reactive(window.aiStore);
+
+            // Registrar stores reactivos
+            Alpine.store('i18n', reactiveI18n);
+            Alpine.store('project', reactiveProject);
+            Alpine.store('ui', reactiveUi);
+            Alpine.store('ai', reactiveAi);
+
+            console.log('📋 Stores registrados como Proxy');
+
+            // Inicializar stores
+            Alpine.store('i18n').init();
+            Alpine.store('ui').init();
+            Alpine.store('ai').init();
+
+            console.log('✅ Stores inicializados');
+            console.log('🎯 Estado inicial:', Alpine.store('ui').currentView);
+
+            // App component con referencia a stores
+            Alpine.data('app', () => ({
+                // Hacer que el componente tenga acceso directo a stores
+                get currentView() {
+                    return Alpine.store('ui').currentView;
+                },
+
+                init() {
+                    console.log('📱 App initialized');
+
+                    // Forzar reactividad observando cambios en el store
+                    this.$watch('$store.ui.currentView', (value) => {
+                        console.log('👁️ Watch detectó cambio de vista:', value);
+                    });
+                }
+            }));
+
+            console.log('✅ PlumaAI listo');
+        });
+    </script>
+
+    <!-- Alpine.js 3.x - Cargar al final -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        // Initialize Lucide icons after Alpine renders
+        document.addEventListener('alpine:initialized', () => {
+            lucide.createIcons();
+            console.log('✅ Lucide icons initialized');
+        });
+
+        // Re-initialize icons when Alpine updates the DOM
+        // More frequent updates for dynamic content like slash menu
+        setInterval(() => {
+            lucide.createIcons();
+        }, 300);
+    </script>
+</body>
+</html>

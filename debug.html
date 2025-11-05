@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - PlumaAI</title>
+    <style>
+        body {
+            font-family: system-ui;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+        .section {
+            background: #252525;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+        button {
+            background: #4a90e2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #357abd;
+        }
+        pre {
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 PlumaAI - Debug Tool</h1>
+
+    <div class="section">
+        <h2>LocalStorage</h2>
+        <button onclick="showLocalStorage()">Ver LocalStorage</button>
+        <button onclick="clearAll()">Limpiar Todo</button>
+        <button onclick="resetWelcome()">Resetear Bienvenida</button>
+        <pre id="storage-output"></pre>
+    </div>
+
+    <div class="section">
+        <h2>Acciones Rápidas</h2>
+        <button onclick="window.location.href='index.html'">Volver a la App</button>
+        <button onclick="window.location.reload()">Recargar</button>
+    </div>
+
+    <script>
+        function showLocalStorage() {
+            const output = document.getElementById('storage-output');
+            const data = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                data[key] = localStorage.getItem(key);
+            }
+            output.textContent = JSON.stringify(data, null, 2);
+        }
+
+        function clearAll() {
+            if (confirm('¿Estás seguro de que quieres limpiar todo el localStorage?')) {
+                localStorage.clear();
+                alert('LocalStorage limpiado');
+                showLocalStorage();
+            }
+        }
+
+        function resetWelcome() {
+            localStorage.removeItem('pluma_has_visited');
+            alert('Modal de bienvenida reseteado. Vuelve a la app.');
+        }
+
+        // Mostrar automáticamente al cargar
+        showLocalStorage();
+    </script>
+</body>
+</html>
