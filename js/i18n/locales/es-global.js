@@ -23,7 +23,8 @@ window.translations_es = {
         yes: 'Sí',
         no: 'No',
         optional: 'Opcional',
-        required: 'Requerido'
+        required: 'Requerido',
+        viewAll: 'Ver Todos'
     },
 
     // Header
@@ -44,7 +45,9 @@ window.translations_es = {
         chapters: 'Capítulos',
         scenes: 'Escenas',
         locations: 'Ubicaciones',
-        timeline: 'Línea Temporal',
+        lore: 'Lore',
+        relations: 'Relaciones',
+        timeline: 'Eventos',
         aiAssistant: 'Asistente IA',
         notes: 'Notas',
         settings: 'Configuración',
@@ -72,6 +75,8 @@ window.translations_es = {
             newChapter: 'Nuevo Capítulo',
             newCharacter: 'Nuevo Personaje',
             newScene: 'Nueva Escena',
+            newLocation: 'Nueva Ubicación',
+            newLore: 'Nuevo Elemento de Lore',
             openEditor: 'Abrir Editor'
         }
     },
@@ -102,7 +107,20 @@ window.translations_es = {
             background: 'Historia de Fondo',
             backgroundPlaceholder: 'Cuenta la historia del personaje',
             notes: 'Notas Adicionales',
-            notesPlaceholder: 'Otras notas sobre el personaje'
+            notesPlaceholder: 'Otras notas sobre el personaje',
+            relationships: 'Relaciones',
+            relationTypes: {
+                friend: 'Amigo',
+                family: 'Familia',
+                love: 'Romántico',
+                enemy: 'Enemigo',
+                mentor: 'Mentor',
+                acquaintance: 'Conocido',
+                colleague: 'Colaborador',
+                collaborator: 'Colaborador',
+                colaborador: 'Colaborador'
+            },
+            relationshipsHint: 'Haz clic en el signo más para añadir una relación con otro personaje'
         },
         delete: {
             title: 'Eliminar Personaje',
@@ -164,7 +182,11 @@ window.translations_es = {
             number: 'Número',
             title: 'Título',
             titlePlaceholder: 'Título del capítulo',
+            summary: 'Resumen',
+            summaryPlaceholder: 'Breve descripción de qué trata el capítulo',
+            summaryHint: 'Este resumen servirá como contexto para la IA',
             content: 'Contenido',
+            contentHint: 'Escribe el contenido del capítulo aquí. Usa / para comandos especiales (@personaje, /escena, /ubicación, /tiempo)',
             status: 'Estado',
             statuses: {
                 draft: 'Borrador',
@@ -203,6 +225,41 @@ window.translations_es = {
             scenes: 'Escenas relacionadas',
             chapters: 'Capítulos relacionados',
             notes: 'Notas'
+        }
+    },
+
+    // Lore
+    lore: {
+        title: 'Lore',
+        subtitle: 'Conocimiento del mundo de la historia',
+        new: 'Nuevo Elemento de Lore',
+        edit: 'Editar Elemento de Lore',
+        empty: 'No hay elementos de lore',
+        emptyHint: 'Crea elementos de lore para construir el mundo de tu historia',
+        form: {
+            title: 'Título',
+            titlePlaceholder: 'Ej: Historia del Reino del Norte',
+            summary: 'Resumen',
+            summaryPlaceholder: 'Breve descripción del elemento de lore',
+            content: 'Contenido',
+            contentPlaceholder: 'Detalles completos del elemento de lore...',
+            category: 'Categoría',
+            categoryPlaceholder: 'Selecciona una categoría',
+            categories: {
+                general: 'General',
+                world: 'Mundo',
+                history: 'Historia',
+                magic: 'Magia',
+                culture: 'Cultura',
+                religion: 'Religión',
+                organization: 'Organización',
+                race: 'Raza',
+                location: 'Ubicación',
+                item: 'Objeto',
+                creature: 'Criatura'
+            },
+            relatedEntities: 'Entidades Relacionadas',
+            relatedEntitiesPlaceholder: 'Selecciona personajes, ubicaciones u otros elementos relacionados'
         }
     },
 
@@ -376,6 +433,7 @@ window.translations_es = {
             projectCreated: 'Proyecto creado exitosamente',
             projectSaved: 'Proyecto guardado',
             projectLoaded: 'Proyecto cargado',
+            projectLoadedDesc: 'Proyecto "{projectName}" cargado correctamente',
             characterCreated: 'Personaje creado',
             characterUpdated: 'Personaje actualizado',
             characterDeleted: 'Personaje eliminado',
@@ -393,12 +451,16 @@ window.translations_es = {
             eventDeleted: 'Evento eliminado',
             noteCreated: 'Nota creada',
             noteUpdated: 'Nota actualizada',
-            noteDeleted: 'Nota eliminada'
+            noteDeleted: 'Nota eliminada',
+            loreCreated: 'Elemento de lore creado',
+            loreUpdated: 'Elemento de lore actualizado',
+            loreDeleted: 'Elemento de lore eliminado'
         },
         error: {
             generic: 'Ha ocurrido un error',
             loadProject: 'Error al cargar el proyecto',
             saveProject: 'Error al guardar el proyecto',
+            projectList: 'Error al obtener la lista de proyectos',
             invalidFile: 'Archivo inválido',
             apiError: 'Error de API',
             noApiKey: 'No hay clave API configurada'

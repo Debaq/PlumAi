@@ -26,11 +26,12 @@ export default {
     scenes: [],
     timeline: [],
     notes: [],
+    loreEntries: [], // Nuevo: elementos de lore
 
     // Métodos para personajes
     addCharacter(character) {
         this.characters.push({
-            id: crypto.randomUUID(),
+            id: window.uuid.generateUUID(),
             name: '',
             role: 'secondary',
             description: '',
@@ -48,6 +49,11 @@ export default {
     updateCharacter(id, updates) {
         const index = this.characters.findIndex(c => c.id === id);
         if (index !== -1) {
+            // Actualizar relaciones simétricas
+            if (updates.relationships) {
+                this.handleSymmetricRelationships(id, updates.relationships);
+            }
+
             this.characters[index] = {
                 ...this.characters[index],
                 ...updates,
@@ -55,6 +61,76 @@ export default {
             };
             this.updateModified();
         }
+    },
+
+    // Método para manejar relaciones simétricas
+    handleSymmetricRelationships(characterId, newRelationships) {
+        const character = this.getCharacter(characterId);
+        if (!character) return;
+
+        // Obtener las relaciones anteriores para comparar
+        const oldRelationships = character.relationships || [];
+
+        // Remover relaciones anteriores que ya no existen
+        oldRelationships.forEach(oldRel => {
+            if (!newRelationships.some(newRel => newRel.characterId === oldRel.characterId)) {
+                // Remover la relación inversa
+                const relatedCharacter = this.getCharacter(oldRel.characterId);
+                if (relatedCharacter) {
+                    relatedCharacter.relationships = relatedCharacter.relationships.filter(
+                        r => r.characterId !== characterId
+                    );
+                }
+            }
+        });
+
+        // Agregar nuevas relaciones
+        newRelationships.forEach(newRel => {
+            if (!oldRelationships.some(oldRel => oldRel.characterId === newRel.characterId)) {
+                // Agregar la relación inversa
+                const relatedCharacter = this.getCharacter(newRel.characterId);
+                if (relatedCharacter) {
+                    // Determinar la relación inversa (puede ser la misma o diferente según el tipo)
+                    const inverseType = this.getInverseRelationshipType(newRel.type);
+                    const inverseRelationship = {
+                        characterId: characterId,
+                        type: inverseType,
+                        description: newRel.description || `${character.name} es ${this.getRelationshipLabelForType(newRel.type)} de este personaje`
+                    };
+
+                    // Asegurar que el array de relaciones existe
+                    if (!relatedCharacter.relationships) {
+                        relatedCharacter.relationships = [];
+                    }
+
+                    // Verificar que la relación inversa no exista ya
+                    if (!relatedCharacter.relationships.some(r => r.characterId === characterId)) {
+                        relatedCharacter.relationships.push(inverseRelationship);
+                    }
+                }
+            }
+        });
+    },
+
+    // Método para determinar la relación inversa
+    getInverseRelationshipType(type) {
+        // Para la mayoría de los tipos, la relación es simétrica
+        // En el futuro se podrían tener relaciones asimétricas
+        return type;
+    },
+
+    // Método para obtener la etiqueta de la relación
+    getRelationshipLabelForType(type) {
+        const labels = {
+            'amigo': 'amigo',
+            'familia': 'familiar',
+            'amor': 'pareja',
+            'enemigo': 'enemigo',
+            'mentor': 'mentor',
+            'conocido': 'conocido',
+            'colaborador': 'colaborador'
+        };
+        return labels[type] || type;
     },
 
     deleteCharacter(id) {
@@ -70,9 +146,10 @@ export default {
     addChapter(chapter) {
         const number = this.chapters.length + 1;
         this.chapters.push({
-            id: crypto.randomUUID(),
+            id: window.uuid.generateUUID(),
             number,
             title: '',
+            summary: '',
             content: '',
             scenes: [],
             status: 'draft',
@@ -125,7 +202,7 @@ export default {
         const chapter = this.getChapter(chapterId);
         if (chapter) {
             const version = {
-                id: crypto.randomUUID(),
+                id: window.uuid.generateUUID(),
                 chapterId,
                 versionNumber: (chapter.versions?.length || 0) + 1,
                 content: chapter.content,
@@ -150,7 +227,7 @@ export default {
     // Métodos para escenas
     addScene(scene) {
         this.scenes.push({
-            id: crypto.randomUUID(),
+            id: window.uuid.generateUUID(),
             title: '',
             chapterId: null,
             description: '',
@@ -195,7 +272,7 @@ export default {
     // Métodos para línea temporal
     addTimelineEvent(event) {
         this.timeline.push({
-            id: crypto.randomUUID(),
+            id: window.uuid.generateUUID(),
             position: this.timeline.length,
             date: '',
             event: '',
@@ -233,7 +310,7 @@ export default {
     // Métodos para notas
     addNote(note) {
         this.notes.push({
-            id: crypto.randomUUID(),
+            id: window.uuid.generateUUID(),
             title: '',
             content: '',
             created: new Date().toISOString(),
@@ -263,7 +340,7 @@ export default {
     // Métodos para ubicaciones
     addLocation(location) {
         this.locations.push({
-            id: crypto.randomUUID(),
+            id: window.uuid.generateUUID(),
             name: '',
             description: '',
             ...location
@@ -285,6 +362,51 @@ export default {
     deleteLocation(id) {
         this.locations = this.locations.filter(l => l.id !== id);
         this.updateModified();
+    },
+
+    // Métodos para elementos de lore
+    addLore(lore) {
+        this.loreEntries.push({
+            id: window.uuid.generateUUID(),
+            title: '',
+            summary: '',
+            content: '',
+            category: 'general', // 'world', 'history', 'magic', 'culture', 'religion', 'organization', etc.
+            relatedEntities: [], // IDs de personajes, ubicaciones, etc. relacionados
+            created: new Date().toISOString(),
+            modified: new Date().toISOString(),
+            ...lore
+        });
+        this.updateModified();
+    },
+
+    updateLore(id, updates) {
+        const index = this.loreEntries.findIndex(l => l.id === id);
+        if (index !== -1) {
+            this.loreEntries[index] = {
+                ...this.loreEntries[index],
+                ...updates,
+                modified: new Date().toISOString()
+            };
+            this.updateModified();
+        }
+    },
+
+    deleteLore(id) {
+        this.loreEntries = this.loreEntries.filter(l => l.id !== id);
+        this.updateModified();
+    },
+
+    getLore(id) {
+        return this.loreEntries.find(l => l.id === id);
+    },
+
+    // Método para contar relaciones
+    getRelationsCount() {
+        if (!this.characters) return 0;
+        return this.characters.reduce((sum, char) => {
+            return sum + (char.relationships ? char.relationships.length : 0);
+        }, 0);
     },
 
     // Utilidades
@@ -327,7 +449,7 @@ export default {
         } else {
             // Nuevo proyecto
             this.projectInfo = {
-                id: crypto.randomUUID(),
+                id: window.uuid.generateUUID(),
                 title: '',
                 author: '',
                 genre: '',

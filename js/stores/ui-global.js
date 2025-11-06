@@ -1,7 +1,7 @@
 // Store para estado de la UI
 window.uiStore = {
     // Vista activa
-    currentView: 'dashboard',
+    currentView: 'lore',
 
     // Sidebar
     sidebarCollapsed: false,
@@ -24,6 +24,8 @@ window.uiStore = {
         editChapter: false,
         newNote: false,
         editNote: false,
+        newLore: false,
+        editLore: false,
         newTimelineEvent: false,
         editTimelineEvent: false,
         export: false,
@@ -39,6 +41,15 @@ window.uiStore = {
     currentEditingChapterId: null,
     editorSaveStatus: 'saved', // 'saved' | 'saving' | 'unsaved'
     editorAutoSaveTimeout: null,
+
+    // Estado para pestañas de lore
+    activeLoreTab: null,
+    
+    // Estado para vista de relaciones
+    activeRelationsView: null,
+    
+    // Carácter seleccionado en la vista de relaciones
+    selectedCharacter: null,
 
     // Notificaciones toast
     toasts: [],
@@ -103,7 +114,7 @@ window.uiStore = {
 
     // Métodos para toast notifications
     showToast(type, title, message, duration = 5000) {
-        const id = crypto.randomUUID();
+        const id = window.uuid.generateUUID();
         const toast = {
             id,
             type, // 'success', 'error', 'warning', 'info'

@@ -89,7 +89,7 @@ export default {
     // Métodos para historial
     addMessage(role, content, metadata = {}) {
         this.history.push({
-            id: crypto.randomUUID(),
+            id: window.uuid.generateUUID(),
             role, // 'user' | 'assistant'
             content,
             timestamp: new Date().toISOString(),

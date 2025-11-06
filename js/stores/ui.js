@@ -1,7 +1,7 @@
 // Store para estado de la UI
 export default {
     // Vista activa
-    currentView: 'dashboard',
+    currentView: 'lore',
 
     // Sidebar
     sidebarCollapsed: false,
@@ -23,6 +23,8 @@ export default {
         editChapter: false,
         newNote: false,
         editNote: false,
+        newLore: false,
+        editLore: false,
         newTimelineEvent: false,
         editTimelineEvent: false,
         export: false,
@@ -36,6 +38,15 @@ export default {
     editorSidebarOpen: true,
     editorMode: 'write', // 'write' | 'diff'
     currentEditingChapterId: null,
+
+    // Estado para pestañas de lore
+    activeLoreTab: null,
+    
+    // Estado para vista de relaciones
+    activeRelationsView: null,
+    
+    // Carácter seleccionado en la vista de relaciones
+    selectedCharacter: null,
 
     // Notificaciones toast
     toasts: [],
@@ -100,7 +111,7 @@ export default {
 
     // Métodos para toast notifications
     showToast(type, title, message, duration = 5000) {
-        const id = crypto.randomUUID();
+        const id = window.uuid.generateUUID();
         const toast = {
             id,
             type, // 'success', 'error', 'warning', 'info'
