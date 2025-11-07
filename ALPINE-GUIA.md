@@ -374,35 +374,59 @@ window.uiStore = {
 </main>
 ```
 
-### Patrón: Sistema de Modales
+### Patrón: Sistema de Modales con Plantillas Dinámicas
+
+Para implementar un sistema de modales con plantillas cargadas dinámicamente, se puede usar un enfoque centralizado que combina estados booleanos individuales con un estado activo global:
 
 ```javascript
 // Store
 window.uiStore = {
-    modals: {
-        newItem: false,
-        editItem: false,
-        confirm: false
-    },
-    modalData: null,
+    // Estados individuales para cada modal
+    showWelcomeModal: false,
+    showNewProjectModal: false,
+    showEditCharacterModal: false,
+    showEditChapterModal: false,
+    
+    // Estado global para modales con IDs específicos
+    activeModal: null,
+    modalData: null, // Datos temporales para modales
 
-    openModal(name, data = null) {
-        // Cerrar todos
-        Object.keys(this.modals).forEach(key => {
-            this.modals[key] = false;
+    // Función para abrir modales específicos
+    openModal(modalId, data = null) {
+        // Cerrar todos los modales primero
+        Object.keys(this).forEach(key => {
+            if (key.startsWith('show') && key.endsWith('Modal')) {
+                this[key] = false;
+            }
         });
+        
+        // Establecer los datos del modal
+        this.modalData = data;
 
-        // Abrir el solicitado
-        if (this.modals.hasOwnProperty(name)) {
-            this.modals[name] = true;
-            this.modalData = data;
+        // Abrir el modal específico
+        if (modalId === 'welcome') {
+            this.showWelcomeModal = true;
+        } else if (modalId === 'newProject') {
+            this.showNewProjectModal = true;
+        } else if (modalId === 'editCharacter') {
+            this.showEditCharacterModal = true;
+        } else if (modalId === 'editChapter') {
+            this.showEditChapterModal = true;
+        } else {
+            this.activeModal = modalId;
         }
     },
 
+    // Función para cerrar modales
     closeModal() {
-        Object.keys(this.modals).forEach(key => {
-            this.modals[key] = false;
-        });
+        // Cerrar modales individuales
+        this.showWelcomeModal = false;
+        this.showNewProjectModal = false;
+        this.showEditCharacterModal = false;
+        this.showEditChapterModal = false;
+        
+        // Cerrar modal activo
+        this.activeModal = null;
         this.modalData = null;
     }
 };
@@ -410,21 +434,128 @@ window.uiStore = {
 
 ```html
 <!-- HTML -->
-<button @click="$store.ui.openModal('newItem')">New Item</button>
-<button @click="$store.ui.openModal('editItem', {id: 123, name: 'Test'})">Edit Item</button>
+<button @click="$store.ui.openModal('welcome')">Welcome Modal</button>
+<button @click="$store.ui.openModal('editCharacter', { id: 1, name: 'John' })">Edit Character</button>
 
-<!-- Modal -->
-<div class="modal"
-     :class="{ 'active': $store.ui.modals.newItem }"
-     @click.self="$store.ui.closeModal()">
+<!-- Ejemplo de modal con x-show condicional -->
+<div x-show="$store.ui.showWelcomeModal"
+     @click.self="$store.ui.closeModal()"
+     class="modal-backdrop"
+     x-transition>
     <div class="modal-content">
-        <button @click="$store.ui.closeModal()">Close</button>
-        <form @submit.prevent="handleSubmit">
-            <input type="text" :value="$store.ui.modalData?.name || ''">
-        </form>
+        <div class="modal-header">
+            <h2>Welcome</h2>
+            <button @click="$store.ui.closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Welcome to the application!</p>
+        </div>
     </div>
 </div>
 ```
+
+### Patrón: Carga Dinámica de Plantillas con Alpine.js
+
+Para cargar plantillas HTML externas dinámicamente y que Alpine procese correctamente los nuevos elementos, es crucial llamar a `Alpine.initTree()` en los elementos recién insertados:
+
+```javascript
+// Componente para cargar plantillas dinámicamente
+window.dynamicTemplateComponent = function(templatePath) {
+    return {
+        async init() {
+            try {
+                const response = await fetch(templatePath);
+                const html = await response.text();
+                
+                // Insertar el contenido HTML en el elemento actual
+                this.$el.innerHTML = html;
+                
+                // MUY IMPORTANTE: Inicializar Alpine en los nuevos elementos
+                // Esto asegura que las directivas (x-data, x-show, @click, etc.) funcionen
+                if (window.Alpine) {
+                    window.Alpine.initTree(this.$el);
+                }
+            } catch (error) {
+                console.error('Error loading template:', error);
+            }
+        }
+    };
+};
+```
+
+```html
+<!-- Uso del componente dinámico -->
+<div x-data="dynamicTemplateComponent('templates/modal-content.html')"></div>
+```
+
+### Patrón: Carga de Múltiples Plantillas en Contenedores Específicos
+
+Cuando necesitas cargar múltiples plantillas en diferentes contenedores, es importante procesar cada uno individualmente:
+
+```javascript
+window.modalContainerComponent = function() {
+    return {
+        async init() {
+            // Crear la estructura de contenedores
+            this.$el.innerHTML = `
+                <div id="modal-1-container"></div>
+                <div id="modal-2-container"></div>
+                <div id="modal-3-container"></div>
+            `;
+            
+            // Cargar plantillas individuales
+            await this.loadTemplate('modal-1-container', 'templates/modal1.html');
+            await this.loadTemplate('modal-2-container', 'templates/modal2.html');
+            await this.loadTemplate('modal-3-container', 'templates/modal3.html');
+        },
+        
+        async loadTemplate(containerId, templatePath) {
+            try {
+                const response = await fetch(templatePath);
+                const html = await response.text();
+                
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.innerHTML = html;
+                    
+                    // Inicializar Alpine en este contenedor específico
+                    if (window.Alpine) {
+                        window.Alpine.initTree(container);
+                    }
+                }
+            } catch (error) {
+                console.error(`Error loading template ${templatePath}:`, error);
+            }
+        }
+    };
+};
+```
+
+### Problemas Comunes y Soluciones
+
+#### ❌ Problema: Directivas Alpine no funcionan en contenido dinámico
+
+**Síntoma:** `x-show`, `@click`, `x-data`, etc. no responden en elementos cargados dinámicamente.
+
+**Causa:** Alpine solo inicializa elementos que estaban presentes en el DOM cuando se inició.
+
+**Solución:** Usar `Alpine.initTree(elemento)` para inicializar Alpine en nuevos elementos.
+
+#### ❌ Problema: Múltiples inicializaciones
+
+**Síntoma:** Componentes que se inicializan varias veces causando problemas de rendimiento.
+
+**Causa:** Reemplazar elementos con `outerHTML` puede causar nuevas inicializaciones.
+
+**Solución:** Usar `innerHTML` y `initTree()` en lugar de `outerHTML`, evitando reemplazar el elemento que contiene el componente Alpine.
+
+#### ✅ Buenas Prácticas
+
+1. **Usar `initTree()`** después de insertar contenido dinámico
+2. **Evitar `outerHTML`** en elementos que contienen componentes Alpine
+3. **Esperar a que el DOM se actualice** antes de inicializar Alpine en nuevos elementos
+4. **Usar `$nextTick()` o `setTimeout()`** para asegurar que el DOM esté completamente actualizado
+5. **Manejar adecuadamente los recursos** (event listeners, timeouts) para evitar fugas de memoria
 
 ### Patrón: CRUD Operations
 

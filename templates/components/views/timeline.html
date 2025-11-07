@@ -1,0 +1,45 @@
+<!-- Timeline View -->
+<div x-show="$store.ui.currentView === 'timeline'" class="view">
+    <div class="view-header">
+        <div>
+            <h1 x-text="$store.i18n.t('timeline.title')">Línea Temporal</h1>
+            <p class="subtitle" x-text="$store.i18n.t('timeline.subtitle')">Organiza los eventos de tu historia</p>
+        </div>
+        <button class="btn-primary" @click="$store.ui.openModal('newTimelineEvent')">
+            <i data-lucide="plus" width="16" height="16"></i>
+            <span x-text="$store.i18n.t('timeline.new')">Nuevo Evento</span>
+        </button>
+    </div>
+
+    <!-- Empty State -->
+    <div x-show="$store.project.timeline.length === 0" class="empty-state">
+        <i data-lucide="clock" width="64" height="64"></i>
+        <p x-text="$store.i18n.t('timeline.empty')">No hay eventos en la línea temporal</p>
+        <span class="hint" x-text="$store.i18n.t('timeline.emptyHint')">Crea tu primer evento</span>
+    </div>
+
+    <!-- Timeline List -->
+    <div x-show="$store.project.timeline.length > 0" style="max-width: 800px;">
+        <template x-for="event in $store.project.timeline" :key="event.id">
+            <div class="timeline-event card" style="margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                            <span style="color: var(--accent); font-weight: 600;" x-text="event.date"></span>
+                            <h3 x-text="event.event" style="margin: 0;"></h3>
+                        </div>
+                        <p x-text="event.description" style="color: var(--text-secondary); font-size: 14px; margin: 0;"></p>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-icon" @click="$store.ui.openModal('editTimelineEvent', event)" :title="$store.i18n.t('common.edit')">
+                            <i data-lucide="edit" width="16" height="16"></i>
+                        </button>
+                        <button class="btn-icon" @click="if(confirm($store.i18n.t('common.confirmDelete'))) { $store.project.deleteTimelineEvent(event.id); $store.ui.success($store.i18n.t('notifications.success.eventDeleted'), ''); }" :title="$store.i18n.t('common.delete')">
+                            <i data-lucide="trash-2" width="16" height="16"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>

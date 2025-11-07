@@ -1,0 +1,36 @@
+<!-- Export Modal -->
+<div class="legacy-modal" :class="{ 'active': $store.ui.modals.export }">
+    <div class="legacy-modal-content">
+        <div class="legacy-modal-header">
+            <h2 x-text="$store.i18n.t('modals.export.title')">Exportar Proyecto</h2>
+            <button class="btn-close" @click="$store.ui.closeModal('export')">
+                <i data-lucide="x" width="20" height="20"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p x-text="$store.i18n.t('modals.export.description')">Descarga tu proyecto como archivo PLUMA (*.pluma)</p>
+            <div style="margin-top: 20px; padding: 16px; background: var(--bg-tertiary); border-radius: 8px;">
+                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">
+                    Proyecto: <strong x-text="$store.project.projectInfo.title"></strong>
+                </p>
+                <p style="font-size: 13px; color: var(--text-secondary);">
+                    Tamaño del archivo: <strong><span x-text="(JSON.stringify($store.project.exportProject()).length / 1024).toFixed(2)"></span> KB</strong>
+                </p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-secondary" @click="$store.ui.closeModal('export')" x-text="$store.i18n.t('common.cancel')">Cancelar</button>
+            <button class="btn-primary" @click="
+                if (window.storageManager.exportProject($store.project.exportProject())) {
+                    $store.ui.success('Proyecto exportado', '');
+                    $store.ui.closeModal('export');
+                } else {
+                    $store.ui.error('Error', 'No se pudo exportar el proyecto');
+                }
+            ">
+                <i data-lucide="download" width="16" height="16"></i>
+                <span x-text="$store.i18n.t('modals.export.download')">Descargar</span>
+            </button>
+        </div>
+    </div>
+</div>

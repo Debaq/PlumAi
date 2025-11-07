@@ -1,0 +1,40 @@
+<!-- Locations View -->
+<div x-show="$store.ui.currentView === 'locations'" class="view">
+    <div class="view-header">
+        <div>
+            <h1 x-text="$store.i18n.t('locations.title')">Ubicaciones</h1>
+            <p class="subtitle" x-text="$store.i18n.t('locations.subtitle')">Gestiona los lugares de tu novela</p>
+        </div>
+        <button class="btn-primary" @click="$store.ui.openModal('newLocation')">
+            <i data-lucide="plus" width="16" height="16"></i>
+            <span x-text="$store.i18n.t('locations.new')">Nueva Ubicación</span>
+        </button>
+    </div>
+
+    <!-- Empty State -->
+    <div x-show="$store.project.locations.length === 0" class="empty-state">
+        <i data-lucide="map-pin" width="64" height="64"></i>
+        <p x-text="$store.i18n.t('locations.empty')">No hay ubicaciones creadas</p>
+        <span class="hint" x-text="$store.i18n.t('locations.emptyHint')">Crea tu primera ubicación</span>
+    </div>
+
+    <!-- Locations Grid -->
+    <div x-show="$store.project.locations.length > 0" class="content-grid">
+        <template x-for="location in $store.project.locations" :key="location.id">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                    <h3 x-text="location.name" style="margin: 0;"></h3>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-icon" @click="$store.ui.openModal('editLocation', location)" :title="$store.i18n.t('common.edit')">
+                            <i data-lucide="edit" width="16" height="16"></i>
+                        </button>
+                        <button class="btn-icon" @click="if(confirm($store.i18n.t('common.confirmDelete'))) { $store.project.deleteLocation(location.id); $store.ui.success($store.i18n.t('notifications.success.locationDeleted'), ''); }" :title="$store.i18n.t('common.delete')">
+                            <i data-lucide="trash-2" width="16" height="16"></i>
+                        </button>
+                    </div>
+                </div>
+                <p x-text="location.description || $store.i18n.t('locations.form.descriptionPlaceholder')" style="color: var(--text-secondary); font-size: 14px;"></p>
+            </div>
+        </template>
+    </div>
+</div>

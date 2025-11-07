@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Texto RICO - Versión Estable</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        
+        .tiptap {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 12px;
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            white-space: pre-wrap;
+        }
+        
+        .tiptap:focus {
+            outline: 2px solid #4CAF50;
+            outline-offset: 2px;
+        }
+        
+        .tiptap p {
+            margin: 0 0 16px;
+        }
+        
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            padding: 8px;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+        }
+        
+        .toolbar button {
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            background-color: white;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .toolbar button:hover {
+            background-color: #e9e9e9;
+        }
+        
+        .status-bar {
+            background-color: #f0f0f0;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-bottom-left-radius: 4px;
+            border-bottom-right-radius: 4px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .search-section {
+            margin-top: 20px;
+            padding: 16px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        
+        .search-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .search-input input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .search-input button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .search-results {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-height: 50px;
+        }
+        
+        .output {
+            margin-top: 20px;
+            padding: 16px;
+            background-color: #f0f7ff;
+            border-radius: 4px;
+        }
+        
+        .output-content {
+            background-color: white;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-height: 100px;
+            font-family: monospace;
+            font-size: 12px;
+            overflow-x: auto;
+        }
+        
+        /* Estilos para el menú de sugerencias */
+        .suggestion-menu {
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            min-width: 300px;
+        }
+        
+        .suggestion-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            background-color: white;
+        }
+        
+        .suggestion-item:hover,
+        .suggestion-item.selected {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Editor de Texto RICO - Versión Estable</h1>
+    
+    <div class="toolbar" id="toolbar">
+        <button id="bold-btn" title="Negrita">B</button>
+        <button id="italic-btn" title="Cursiva">I</button>
+        <button id="underline-btn" title="Subrayado">U</button>
+        <button id="strike-btn" title="Tachado">S</button>
+        <button id="bullet-list-btn" title="Lista de viñetas">•</button>
+        <button id="ordered-list-btn" title="Lista numerada">1.</button>
+        <button id="blockquote-btn" title="Cita">"</button>
+        <button id="code-btn" title="Código">C</button>
+    </div>
+    
+    <div id="editor" class="tiptap" contenteditable="true">Escribe aquí...</div>
+    
+    <div class="status-bar">
+        <span id="status">Editor listo. Edita tu contenido aquí.</span>
+    </div>
+    
+    <div class="output">
+        <h3>Contenido generado:</h3>
+        <div id="output" class="output-content"></div>
+    </div>
+    
+    <div class="search-section">
+        <h3>Búsqueda con Lunr.js:</h3>
+        <div class="search-input">
+            <input type="text" id="search-input" placeholder="Buscar en documentos...">
+            <button id="search-btn">Buscar</button>
+        </div>
+        <div id="search-results" class="search-results">Ingresa un término para buscar...</div>
+    </div>
+
+    <!-- Importar Lunr.js -->
+    <script src="js/lib/lunr.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar índice de búsqueda con Lunr.js
+            let idx;
+            let documentsMap = {}; // Mapa para acceder a los documentos por ID
+            
+            try {
+                // Crear el mapa de documentos para acceso rápido posterior
+                const documents = [
+                    { id: 'ventas-2024', label: 'Informe de Ventas 2024', content: 'Datos de ventas del año 2024 con proyecciones y análisis' },
+                    { id: 'proyecto-alfa', label: 'Proyecto Alfa', content: 'Descripción del proyecto alfa con objetivos y hitos' },
+                    { id: 'reunion-equipo', label: 'Notas de Reunión del Equipo', content: 'Resumen de la reunión semanal del equipo de desarrollo' },
+                    { id: 'cliente-x', label: 'Cliente X - Requerimientos', content: 'Requerimientos detallados del cliente X para el proyecto' },
+                    { id: 'estrategia-2025', label: 'Estrategia 2025', content: 'Plan estratégico para el próximo año fiscal' }
+                ];
+                
+                // Llenar el mapa
+                documents.forEach(doc => {
+                    documentsMap[doc.id] = doc;
+                    console.log('Añadido documento a Lunr:', doc);
+                });
+                
+                idx = lunr(function () {
+                    this.ref('id');
+                    this.field('label', { boost: 10 }); // Prioridad alta para el label
+                    this.field('content', { boost: 1 }); // Prioridad normal para el content
+                    
+                    documents.forEach(doc => {
+                        this.add(doc);
+                    });
+                });
+                
+                console.log('Índice Lunr creado. Total documentos:', documents.length);
+                
+                // Hacer una búsqueda de prueba
+                const testResults = idx.search('ventas');
+                console.log('Resultados de búsqueda de prueba para "ventas":', testResults);
+            } catch (error) {
+                console.error('Error al crear el índice de Lunr:', error);
+                // Crear un índice vacío como fallback
+                idx = {
+                    search: function(query) { return []; }
+                };
+                documentsMap = {};
+            }
+            
+            // Función de búsqueda con manejo de diferentes tipos de queries
+            function searchWithFallback(query) {
+                if (!query || query.trim() === '') return [];
+                
+                console.log('Buscando en Lunr:', query);
+                
+                try {
+                    // Intentar búsqueda exacta primero
+                    let results = idx.search(query);
+                    console.log('Resultados búsqueda exacta para "' + query + '":', results);
+                    if (results.length > 0) {
+                        const mappedResults = results.map(result => {
+                            // Usar el mapa de documentos para obtener la información
+                            const doc = documentsMap[result.ref];
+                            
+                            console.log('Documento encontrado:', doc);
+                            return {
+                                id: doc ? doc.id : result.ref,
+                                label: doc ? doc.label : result.ref,
+                                content: doc ? doc.content : ''
+                            };
+                        });
+                        console.log('Resultados mapeados:', mappedResults);
+                        return mappedResults;
+                    }
+                    
+                    // Intentar búsqueda con comodín
+                    results = idx.search(query + '*');
+                    console.log('Resultados búsqueda comodín para "' + query + '*":', results);
+                    if (results.length > 0) {
+                        return results.map(result => {
+                            const doc = documentsMap[result.ref];
+                            return {
+                                id: doc ? doc.id : result.ref,
+                                label: doc ? doc.label : result.ref,
+                                content: doc ? doc.content : ''
+                            };
+                        });
+                    }
+                    
+                    // Intentar búsqueda por palabras separadas
+                    const words = query.split(/\s+/);
+                    if (words.length > 1) {
+                        const wordSearchQuery = words.map(word => word + '*').join(' OR ');
+                        results = idx.search(wordSearchQuery);
+                        console.log('Resultados búsqueda por palabras para "' + wordSearchQuery + '":', results);
+                        if (results.length > 0) {
+                            return results.map(result => {
+                                const doc = documentsMap[result.ref];
+                                return {
+                                    id: doc ? doc.id : result.ref,
+                                    label: doc ? doc.label : result.ref,
+                                    content: doc ? doc.content : ''
+                                };
+                            });
+                        }
+                    }
+                    
+                    // Búsqueda simple por palabra
+                    if (words[0]) {
+                        results = idx.search(words[0] + '*');
+                        console.log('Resultados búsqueda por palabra para "' + words[0] + '*":', results);
+                        if (results.length > 0) {
+                            return results.map(result => {
+                                const doc = documentsMap[result.ref];
+                                return {
+                                    id: doc ? doc.id : result.ref,
+                                    label: doc ? doc.label : result.ref,
+                                    content: doc ? doc.content : ''
+                                };
+                            });
+                        }
+                    }
+                    
+                    console.log('No se encontraron resultados para:', query);
+                    return [];
+                } catch (e) {
+                    console.error('Error en la búsqueda:', e);
+                    return [];
+                }
+            }
+            
+            // Editor de texto simple con contenteditable
+            const editor = document.getElementById('editor');
+            const output = document.getElementById('output');
+            const status = document.getElementById('status');
+            
+            // Variables para manejar el menú de sugerencias
+            let suggestionMenu = null;
+            let currentSuggestions = [];
+            let currentSuggestionIndex = 0;
+            let isMentionMode = false;
+            let isCommandMode = false;
+            let currentTrigger = null;
+            let triggerPosition = -1;
+            let currentQuery = '';
+            
+            // Función para actualizar el contenido
+            function updateContent() {
+                output.innerHTML = editor.innerHTML;
+                const text = editor.innerText;
+                const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+                const characters = text.length;
+                status.textContent = `Caracteres: ${characters}, Palabras: ${words}`;
+            }
+            
+            // Función para obtener la posición del cursor
+            function getCaretPosition() {
+                const sel = window.getSelection();
+                if (!sel.rangeCount) return 0;
+                
+                const range = sel.getRangeAt(0);
+                const preCaretRange = range.cloneRange();
+                preCaretRange.selectNodeContents(editor);
+                preCaretRange.setEnd(range.endContainer, range.endOffset);
+                return preCaretRange.toString().length;
+            }
+            
+            // Función para obtener el texto antes del cursor
+            function getTextBeforeCursor() {
+                const sel = window.getSelection();
+                if (!sel.rangeCount) return '';
+                
+                const range = sel.getRangeAt(0);
+                const preCaretRange = range.cloneRange();
+                preCaretRange.selectNodeContents(editor);
+                preCaretRange.setEnd(range.endContainer, range.endOffset);
+                return preCaretRange.toString();
+            }
+            
+            // Función para mostrar menú de sugerencias
+            function showSuggestions(trigger, query = '') {
+                // Ocultar menú anterior si existe
+                hideSuggestions();
+                
+                // Guardar el trigger actual y la query
+                currentTrigger = trigger;
+                currentQuery = query;
+                
+                // Obtener sugerencias según el trigger
+                let suggestions = [];
+                if (trigger === '@') {
+                    if (query && query.trim() !== '') {
+                        // Si hay una query, buscar en Lunr.js usando la función mejorada
+                        suggestions = searchWithFallback(query);
+                    } else {
+                        // Si no hay query, mostrar sugerencias generales
+                        suggestions = [
+                            { id: 'ventas-2024', label: 'Informe de Ventas 2024', content: 'Datos de ventas del año 2024' },
+                            { id: 'proyecto-alfa', label: 'Proyecto Alfa', content: 'Descripción del proyecto' },
+                            { id: 'reunion-equipo', label: 'Notas de Reunión', content: 'Resumen de la reunión del equipo' }
+                        ];
+                    }
+                } else if (trigger === '/') {
+                    // Sugerencias para comandos
+                    suggestions = [
+                        { id: 'buscar', label: 'Buscar en proyecto', content: 'Buscar documentos y contenido' },
+                        { id: 'nuevo-documento', label: 'Nuevo documento', content: 'Crear un nuevo documento' },
+                        { id: 'resumir', label: 'Resumir texto', content: 'Crear un resumen del contenido actual' },
+                        { id: 'ayuda', label: 'Ayuda', content: 'Mostrar ayuda del sistema' }
+                    ];
+                }
+                
+                // Limitar a 5 resultados
+                suggestions = suggestions.slice(0, 5);
+                currentSuggestions = suggestions;
+                
+                if (suggestions.length === 0) return;
+                
+                // Crear menú de sugerencias
+                suggestionMenu = document.createElement('div');
+                suggestionMenu.className = 'suggestion-menu';
+                
+                // Colocar el menú cerca del cursor
+                const rect = editor.getBoundingClientRect();
+                const selection = window.getSelection();
+                
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    const rect = range.getBoundingClientRect();
+                    suggestionMenu.style.top = (window.scrollY + rect.bottom + 5) + 'px';
+                    suggestionMenu.style.left = (window.scrollX + rect.left) + 'px';
+                } else {
+                    suggestionMenu.style.top = (window.scrollY + rect.bottom + 5) + 'px';
+                    suggestionMenu.style.left = (window.scrollX + rect.left) + 'px';
+                }
+                
+                // Agregar sugerencias al menú
+                suggestions.forEach((suggestion, index) => {
+                    const item = document.createElement('div');
+                    item.className = `suggestion-item ${index === currentSuggestionIndex ? 'selected' : ''}`;
+                    item.innerHTML = `
+                        <div><strong>${suggestion.label}</strong></div>
+                        <div style="font-size: 0.9em; color: #666;">${suggestion.content.substring(0, 80)}${suggestion.content.length > 80 ? '...' : ''}</div>
+                    `;
+                    
+                    // Manejar click en la sugerencia
+                    item.addEventListener('click', () => {
+                        selectSuggestion(suggestion);
+                    });
+                    
+                    suggestionMenu.appendChild(item);
+                });
+                
+                document.body.appendChild(suggestionMenu);
+            }
+            
+            // Función para actualizar la selección visual en el menú
+            function updateSelectionInMenu() {
+                if (!suggestionMenu) return;
+                
+                const items = suggestionMenu.querySelectorAll('.suggestion-item');
+                items.forEach((item, index) => {
+                    if (index === currentSuggestionIndex) {
+                        item.classList.add('selected');
+                        item.style.backgroundColor = '#f0f0f0';
+                    } else {
+                        item.classList.remove('selected');
+                        item.style.backgroundColor = 'white';
+                    }
+                });
+            }
+            
+            // Función para seleccionar una sugerencia
+            function selectSuggestion(suggestion) {
+                if (!suggestion) return;
+                
+                const currentText = editor.innerText;
+                const textBeforeCursor = getTextBeforeCursor();
+                
+                // Encontrar la posición del trigger
+                let triggerPos = -1;
+                if (currentTrigger === '@') {
+                    triggerPos = textBeforeCursor.lastIndexOf('@');
+                } else if (currentTrigger === '/') {
+                    triggerPos = textBeforeCursor.lastIndexOf('/');
+                }
+                
+                if (triggerPos !== -1) {
+                    // Reemplazar desde el trigger hasta la posición actual con la sugerencia
+                    const beforeTrigger = currentText.substring(0, triggerPos);
+                    
+                    if (currentTrigger === '@') {
+                        // Reemplazar el @ y la query con la sugerencia
+                        const newText = beforeTrigger + suggestion.label + ' ';
+                        
+                        // Actualizar el contenido del editor
+                        editor.innerHTML = '';
+                        const textNode = document.createTextNode(newText);
+                        editor.appendChild(textNode);
+                        
+                        // Colocar el cursor al final del texto insertado
+                        const range = document.createRange();
+                        range.setStart(editor.childNodes[0], newText.length);
+                        range.collapse(true);
+                        const sel = window.getSelection();
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                    } else if (currentTrigger === '/') {
+                        // Para comandos, solo ejecutar la acción sin reemplazar texto
+                        if (suggestion.id === 'buscar') {
+                            openGlobalSearch();
+                        } else if (suggestion.id === 'nuevo-documento') {
+                            alert('Comando: Crear nuevo documento');
+                        } else if (suggestion.id === 'resumir') {
+                            alert('Comando: Resumir texto');
+                        } else if (suggestion.id === 'ayuda') {
+                            alert('Comando: Mostrar ayuda');
+                        }
+                        
+                        // Eliminar el comando del texto
+                        const afterCursor = currentText.substring(getCaretPosition());
+                        const newText = beforeTrigger + afterCursor;
+                        
+                        editor.innerHTML = '';
+                        const textNode = document.createTextNode(newText);
+                        editor.appendChild(textNode);
+                        
+                        // Colocar el cursor al final del texto reemplazado
+                        const range = document.createRange();
+                        range.setStart(editor.childNodes[0], beforeTrigger.length);
+                        range.collapse(true);
+                        const sel = window.getSelection();
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                    }
+                }
+                
+                hideSuggestions();
+                updateContent();
+            }
+            
+            // Función para ocultar menú de sugerencias
+            function hideSuggestions() {
+                if (suggestionMenu) {
+                    suggestionMenu.remove();
+                    suggestionMenu = null;
+                }
+                currentSuggestions = [];
+                currentSuggestionIndex = 0;
+                isMentionMode = false;
+                isCommandMode = false;
+                currentTrigger = null;
+            }
+            
+            // Detectar teclas especiales
+            editor.addEventListener('keydown', function(e) {
+                if (suggestionMenu) {
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        currentSuggestionIndex = Math.min(currentSuggestionIndex + 1, currentSuggestions.length - 1);
+                        updateSelectionInMenu();
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        currentSuggestionIndex = Math.max(currentSuggestionIndex - 1, 0);
+                        updateSelectionInMenu();
+                    } else if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (currentSuggestions[currentSuggestionIndex]) {
+                            selectSuggestion(currentSuggestions[currentSuggestionIndex]);
+                        }
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        hideSuggestions();
+                    }
+                }
+            });
+            
+            // Detectar @ y /
+            editor.addEventListener('input', function(e) {
+                const textBeforeCursor = getTextBeforeCursor();
+                const lastChar = textBeforeCursor.charAt(textBeforeCursor.length - 1);
+                
+                // Detectar @
+                if (lastChar === '@') {
+                    isMentionMode = true;
+                    isCommandMode = false;
+                    showSuggestions('@', '');
+                }
+                // Detectar /
+                else if (lastChar === '/') {
+                    isCommandMode = true;
+                    isMentionMode = false;
+                    showSuggestions('/', '');
+                }
+                // Si hay un menú abierto y se sigue escribiendo, actualizar la búsqueda
+                else if (suggestionMenu) {
+                    if (isMentionMode) {
+                        // Encontrar la última palabra después del @
+                        const lastAtPos = textBeforeCursor.lastIndexOf('@');
+                        if (lastAtPos !== -1) {
+                            const query = textBeforeCursor.substring(lastAtPos + 1);
+                            showSuggestions('@', query);
+                        }
+                    }
+                }
+                
+                updateContent();
+            });
+            
+            // Ocultar menú cuando se pierde el foco
+            editor.addEventListener('blur', function() {
+                setTimeout(hideSuggestions, 150);
+            });
+            
+            // Funcionalidad de formato
+            document.getElementById('bold-btn').addEventListener('click', () => {
+                document.execCommand('bold', false, null);
+                editor.focus();
+                updateContent();
+            });
+            
+            document.getElementById('italic-btn').addEventListener('click', () => {
+                document.execCommand('italic', false, null);
+                editor.focus();
+                updateContent();
+            });
+            
+            document.getElementById('underline-btn').addEventListener('click', () => {
+                document.execCommand('underline', false, null);
+                editor.focus();
+                updateContent();
+            });
+            
+            document.getElementById('strike-btn').addEventListener('click', () => {
+                document.execCommand('strikeThrough', false, null);
+                editor.focus();
+                updateContent();
+            });
+            
+            document.getElementById('bullet-list-btn').addEventListener('click', () => {
+                document.execCommand('insertUnorderedList', false, null);
+                editor.focus();
+                updateContent();
+            });
+            
+            document.getElementById('ordered-list-btn').addEventListener('click', () => {
+                document.execCommand('insertOrderedList', false, null);
+                editor.focus();
+                updateContent();
+            });
+            
+            document.getElementById('blockquote-btn').addEventListener('click', () => {
+                document.execCommand('formatBlock', false, 'BLOCKQUOTE');
+                editor.focus();
+                updateContent();
+            });
+            
+            document.getElementById('code-btn').addEventListener('click', () => {
+                document.execCommand('formatBlock', false, 'PRE');
+                editor.focus();
+                updateContent();
+            });
+            
+            // Función de búsqueda con Lunr.js
+            const searchFunction = (query) => {
+                if (!query) return [];
+                try {
+                    // Usar la función mejorada de búsqueda
+                    const results = searchWithFallback(query);
+                    return results.slice(0, 5); // Limitar a 5 resultados
+                } catch (e) {
+                    console.error('Error en la búsqueda global:', e);
+                    return [];
+                }
+            };
+            
+            // Función para abrir búsqueda global
+            function openGlobalSearch() {
+                const searchTerm = prompt('¿Qué estás buscando?');
+                if (searchTerm) {
+                    const results = searchFunction(searchTerm);
+                    if (results.length > 0) {
+                        alert(`Resultados para "${searchTerm}":\n\n${results.map(r => r.label).join('\n')}`);
+                    } else {
+                        alert(`No se encontraron resultados para "${searchTerm}"`);
+                    }
+                }
+            }
+            
+            // Funcionalidad de búsqueda
+            document.getElementById('search-btn').addEventListener('click', () => {
+                const query = document.getElementById('search-input').value;
+                const results = searchFunction(query);
+                
+                const resultsDiv = document.getElementById('search-results');
+                if (results.length > 0) {
+                    resultsDiv.innerHTML = '<ul style="margin:0; padding-left: 20px;">' + 
+                        results.map(r => `<li><strong>${r.label}</strong><br><small>${r.content.substring(0, 100)}...</small></li>`).join('') + 
+                        '</ul>';
+                } else {
+                    resultsDiv.innerHTML = '<p>No se encontraron resultados</p>';
+                }
+            });
+            
+            document.getElementById('search-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    document.getElementById('search-btn').click();
+                }
+            });
+            
+            // Actualizar contenido inicial
+            updateContent();
+        });
+    </script>
+</body>
+</html>

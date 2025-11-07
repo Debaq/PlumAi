@@ -1,0 +1,38 @@
+    <!-- Single dynamic view container -->
+    <div id="dynamic-view-container" 
+         x-data="{
+             currentView: $store.ui.currentView,
+             init() {
+                 this.$watch('$store.ui.currentView', (newView) => {
+                     this.currentView = newView;
+                     this.loadView();
+                 });
+                 this.loadView();
+             },
+             async loadView() {
+                 const viewMap = {
+                     'dashboard': 'templates/components/views/dashboard.html',
+                     'characters': 'templates/components/views/characters.html',
+                     'chapters': 'templates/components/views/chapters.html',
+                     'scenes': 'templates/components/views/scenes.html',
+                     'locations': 'templates/components/views/locations.html',
+                     'lore': 'templates/components/views/lore.html',
+                     'timeline': 'templates/components/views/timeline.html',
+                     'editor': 'templates/components/views/editor.html',
+                     'aiAssistant': 'templates/components/views/ai-assistant.html'
+                 };
+                 
+                 if (viewMap[this.currentView]) {
+                     try {
+                         const response = await fetch(viewMap[this.currentView]);
+                         const html = await response.text();
+                         this.$el.innerHTML = html;
+                         if (window.Alpine) window.Alpine.initTree(this.$el);
+                     } catch (error) {
+                         console.error(`Error loading view: ${this.currentView}`, error);
+                     }
+                 }
+             }
+         }">
+        <!-- Current view content will be loaded here -->
+    </div>

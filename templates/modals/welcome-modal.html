@@ -1,0 +1,32 @@
+<!-- Welcome Modal -->
+<div class="legacy-modal" x-data="welcomeModalComponent()" :class="{ 'active': $store.ui.modals.welcome }">
+    <div class="legacy-modal-content">
+        <div class="legacy-modal-header" style="flex-direction: column; text-align: center; padding: 32px;">
+            <div class="welcome-logo">
+                <i data-lucide="pen-line" width="32" height="32"></i>
+            </div>
+            <h2 x-text="$store.i18n.t('modals.welcome.title')">¡Bienvenido a PlumaAI!</h2>
+            <p class="subtitle" x-text="$store.i18n.t('modals.welcome.subtitle')">Editor de novelas con inteligencia artificial</p>
+        </div>
+        <div class="modal-body">
+            <div class="welcome-actions">
+                <!-- Botón para continuar con proyecto existente si hay alguno -->
+                <template x-if="$store.ui.lastProject">
+                    <button class="welcome-btn primary" @click="loadLastProject()">
+                        <i data-lucide="folder-open" width="24" height="24"></i>
+                        <span x-text="$store.i18n.t('modals.welcome.continueProject', { projectName: $store.ui.lastProject.title || 'Proyecto sin título' })">Continuar con "<span x-bind:text="$store.ui.lastProject?.title || 'Proyecto sin título'"></span>"</span>
+                    </button>
+                </template>
+                
+                <button class="welcome-btn" @click="$store.ui.closeModal('welcome'); $store.ui.openModal('newProject')">
+                    <i data-lucide="plus-circle" width="24" height="24"></i>
+                    <span x-text="$store.i18n.t('modals.welcome.newProject')">Crear Nuevo Proyecto</span>
+                </button>
+                <button class="welcome-btn" @click="$store.ui.closeModal('welcome'); $store.ui.openModal('import')">
+                    <i data-lucide="upload" width="24" height="24"></i>
+                    <span x-text="$store.i18n.t('modals.welcome.loadProject')">Cargar Proyecto Existente</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

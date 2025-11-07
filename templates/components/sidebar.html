@@ -1,0 +1,33 @@
+<aside class="sidebar" :class="{ 'collapsed': $store.ui.sidebarCollapsed }">
+    <nav class="sidebar-nav">
+        <a href="#" class="nav-item" :class="{ 'active': $store.ui.currentView === 'lore' }" @click.prevent="$store.ui.setView('lore')">
+            <i data-lucide="book-open" width="20" height="20"></i>
+            <span x-text="$store.i18n.t('sidebar.lore')">Lore</span>
+            <span class="badge" x-text="$store.project.loreEntries.length"></span>
+        </a>
+
+        <a href="#" class="nav-item" :class="{ 'active': $store.ui.currentView === 'chapters' }" @click.prevent="$store.ui.setView('chapters')">
+            <i data-lucide="book-open" width="20" height="20"></i>
+            <span x-text="$store.i18n.t('sidebar.chapters')">Capítulos</span>
+            <span class="badge" x-text="$store.project.chapters.length"></span>
+        </a>
+
+        <a href="#" class="nav-item" :class="{ 'active': $store.ui.currentView === 'scenes' }" @click.prevent="$store.ui.setView('scenes')">
+            <i data-lucide="film" width="20" height="20"></i>
+            <span x-text="$store.i18n.t('sidebar.scenes')">Escenas</span>
+            <span class="badge" x-text="$store.project.scenes.length"></span>
+        </a>
+
+        <div class="nav-divider"></div>
+
+        <a href="#" class="nav-item" :class="{ 'active': $store.ui.currentView === 'aiAssistant' }" @click.prevent="$store.ui.setView('aiAssistant')">
+            <i data-lucide="sparkles" width="20" height="20"></i>
+            <span x-text="$store.i18n.t('sidebar.aiAssistant')">Asistente IA</span>
+            <span class="status-indicator" :class="{ 'active': $store.ai.isActive }"></span>
+        </a>
+    </nav>
+
+    <button class="sidebar-toggle" @click="$store.ui.toggleSidebar()">
+        <i data-lucide="chevron-left" width="16" height="16"></i>
+    </button>
+</aside>

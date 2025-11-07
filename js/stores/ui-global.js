@@ -13,6 +13,7 @@ window.uiStore = {
         loadProject: false,
         projectsList: false,
         projectSettings: false,
+        settings: false,
         apiKeys: false,
         newCharacter: false,
         editCharacter: false,
@@ -29,7 +30,12 @@ window.uiStore = {
         newTimelineEvent: false,
         editTimelineEvent: false,
         export: false,
-        import: false
+        import: false,
+        versionHistory: false,
+        forksView: false,
+        createCommit: false,
+        createFork: false,
+        createTree: false
     },
 
     // Datos temporales para modales
@@ -50,6 +56,9 @@ window.uiStore = {
     
     // Carácter seleccionado en la vista de relaciones
     selectedCharacter: null,
+    
+    // Último proyecto para el modal de bienvenida
+    lastProject: null,
 
     // Notificaciones toast
     toasts: [],
@@ -85,7 +94,23 @@ window.uiStore = {
         // Abrir el modal solicitado
         if (this.modals.hasOwnProperty(modalName)) {
             this.modals[modalName] = true;
-            this.modalData = data;
+            
+            // Initialize modal data with default values based on modal type
+            if (modalName === 'createCommit') {
+                this.modalData = {
+                    message: data?.message || '',
+                    author: data?.author || 'User',
+                    projectStats: data?.projectStats || { totalWords: 0, totalChapters: 0, totalCharacters: 0, totalScenes: 0 }
+                };
+            } else if (modalName === 'createFork') {
+                this.modalData = {
+                    name: data?.name || '',
+                    description: data?.description || '',
+                    projectStats: data?.projectStats || { totalWords: 0, totalChapters: 0, totalCharacters: 0, totalScenes: 0 }
+                };
+            } else {
+                this.modalData = data;
+            }
         }
     },
 

@@ -1,0 +1,40 @@
+<header class="header">
+    <div class="header-left">
+        <div class="logo">
+            <i data-lucide="pen-line" width="24" height="24"></i>
+            <span x-text="$store.i18n.t('header.title')">PlumaAI</span>
+        </div>
+        <div class="project-title" x-show="$store.project.projectInfo.id !== null" x-text="$store.project.projectInfo.title || 'Sin título'"></div>
+    </div>
+    <div class="header-right">
+        <!-- Selector de idioma -->
+        <button class="btn-icon" @click="$store.i18n.setLocale($store.i18n.currentLocale === 'es' ? 'en' : 'es')" title="Cambiar idioma">
+            <i data-lucide="globe" width="20" height="20"></i>
+        </button>
+        <button class="btn-icon" @click="$store.ui.openModal('export')" title="Exportar proyecto">
+            <i data-lucide="download" width="20" height="20"></i>
+        </button>
+        <button class="btn-icon" @click="$store.ui.openModal('projectsList')" title="Mis proyectos">
+            <i data-lucide="folder-open" width="20" height="20"></i>
+        </button>
+        <button class="btn-icon" @click="$store.ui.openModal('settings')" title="Configuración">
+            <i data-lucide="settings" width="20" height="20"></i>
+        </button>
+        <button class="btn-icon" @click="window.versionControlComponent.createCommit()" title="Crear commit">
+            <i data-lucide="git-commit" width="20" height="20"></i>
+        </button>
+        <button class="btn-icon" @click="window.versionControlComponent.createFork()" title="Crear fork">
+            <i data-lucide="git-fork" width="20" height="20"></i>
+        </button>
+        <button class="btn-icon" @click="$store.versionControl.refreshState(); $store.ui.openModal('versionHistory')" title="Historial de versiones">
+            <i data-lucide="history" width="20" height="20"></i>
+        </button>
+        <button class="btn-icon" @click="$store.ui.openModal('forksView')" title="Gestión de forks">
+            <i data-lucide="git-branch" width="20" height="20"></i>
+        </button>
+        <button class="btn-icon" @click="window.versionControlComponent.createTree()" title="Crear estructura de proyecto">
+            <i data-lucide="folder-tree" width="20" height="20"></i>
+        </button>
+        <button class="btn-primary" @click="if($store.project.saveProject()) { $store.ui.success($store.i18n.t('notifications.success.projectSaved'), ''); }" x-text="$store.i18n.t('header.saveProject')">Guardar</button>
+    </div>
+</header>

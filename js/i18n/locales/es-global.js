@@ -24,7 +24,10 @@ window.translations_es = {
         no: 'No',
         optional: 'Opcional',
         required: 'Requerido',
-        viewAll: 'Ver Todos'
+        viewAll: 'Ver Todos',
+        view: 'Ver',
+        title: 'Título:',
+        author: 'Autor:'
     },
 
     // Header
@@ -116,9 +119,26 @@ window.translations_es = {
                 enemy: 'Enemigo',
                 mentor: 'Mentor',
                 acquaintance: 'Conocido',
-                colleague: 'Colaborador',
+                colleague: 'Colega',
                 collaborator: 'Colaborador',
-                colaborador: 'Colaborador'
+                ally: 'Aliado',
+                rival: 'Rival',
+                boss: 'Jefe',
+                subordinate: 'Subordinado',
+                teacher: 'Profesor',
+                student: 'Estudiante',
+                neighbor: 'Vecino',
+                partner: 'Socio',
+                guardian: 'Guardián',
+                ward: 'Tutelado',
+                hero: 'Héroe',
+                villain: 'Villano',
+                sidekick: 'Compañero',
+                archenemy: 'Arquienemigo',
+                businessPartner: 'Socio de Negocios',
+                ex: 'Ex',
+                crush: 'Crush',
+                rivalLove: 'Rival Amoroso'
             },
             relationshipsHint: 'Haz clic en el signo más para añadir una relación con otro personaje'
         },
@@ -350,7 +370,34 @@ window.translations_es = {
             description: 'Comienza creando un nuevo proyecto o carga uno existente',
             newProject: 'Crear Nuevo Proyecto',
             loadProject: 'Cargar Proyecto Existente',
+            continueProject: 'Continuar con "{projectName}"',
             getStarted: 'Comenzar'
+        },
+        settings: {
+            title: 'Configuración',
+            dataManagement: {
+                title: 'Gestión de Datos',
+                description: 'Gestiona los datos almacenados localmente en este navegador',
+                warningTitle: '¡Advertencia Importante!',
+                warningDescription: 'Esta acción eliminará permanentemente todos los proyectos, personajes, capítulos y configuraciones almacenados localmente en este navegador. Esta acción no se puede deshacer.',
+                exportBeforeDeleteLabel: 'Recomendamos exportar tus datos antes de eliminarlos:',
+                exportAllButton: 'Exportar Todos los Datos',
+                noDataTitle: 'No hay datos',
+                noDataMessage: 'No hay proyectos para exportar',
+                exportSuccessTitle: 'Datos exportados',
+                exportSuccessMessage: 'Todos los datos han sido exportados correctamente',
+                exportErrorTitle: 'Error al exportar',
+                exportErrorMessage: 'Ocurrió un error al intentar exportar los datos',
+                confirmationLabel: 'Para confirmar la eliminación, escribe "ELIMINAR DATOS" en el campo siguiente:',
+                understandCheckbox: 'Entiendo que esta acción no se puede deshacer y que perderé todos los datos almacenados localmente',
+                deleteButton: 'Eliminar Todos los Datos Localmente',
+                deletionConfirmed: 'Datos eliminados correctamente. La aplicación se recargará en unos segundos.',
+                confirmDeletion: '¿Estás completamente seguro? Esta acción eliminará todos tus datos locales y no se puede deshacer.',
+                deletionSuccessTitle: 'Datos eliminados',
+                deletionSuccessMessage: 'Todos los datos locales han sido eliminados correctamente.',
+                deletionErrorTitle: 'Error al eliminar datos',
+                deletionErrorMessage: 'Ocurrió un error al intentar eliminar los datos.'
+            }
         },
         newProject: {
             title: 'Nuevo Proyecto',
@@ -397,14 +444,14 @@ window.translations_es = {
         },
         export: {
             title: 'Exportar Proyecto',
-            description: 'Descarga tu proyecto como archivo JSON',
+            description: 'Descarga tu proyecto como archivo PLUMA (*.pluma)',
             includeApiKeys: 'Incluir claves API',
             filename: 'Nombre del archivo',
             download: 'Descargar'
         },
         import: {
             title: 'Importar Proyecto',
-            description: 'Carga un proyecto desde archivo JSON',
+            description: 'Carga un proyecto desde archivo PLUMA (*.pluma)',
             selectFile: 'Seleccionar archivo',
             selected: 'Archivo seleccionado: {filename}',
             warning: 'Esto reemplazará el proyecto actual'
@@ -454,7 +501,17 @@ window.translations_es = {
             noteDeleted: 'Nota eliminada',
             loreCreated: 'Elemento de lore creado',
             loreUpdated: 'Elemento de lore actualizado',
-            loreDeleted: 'Elemento de lore eliminado'
+            loreDeleted: 'Elemento de lore eliminado',
+            commitCreated: 'Commit creado exitosamente',
+            commitCreatedDesc: 'Commit {commitId} creado',
+            checkoutSuccess: 'Checkout exitoso',
+            checkoutSuccessDesc: 'Estado cambiado al commit {commitId}',
+            forkCreated: 'Fork creado exitosamente',
+            forkCreatedDesc: 'Fork {forkName} creado',
+            treeCreated: 'Estructura creada exitosamente',
+            treeCreatedDesc: 'Estructura {treeName} creada',
+            treeFailed: 'Error creando estructura',
+            treeFailedDesc: 'No se pudo crear la estructura'
         },
         error: {
             generic: 'Ha ocurrido un error',
@@ -463,8 +520,22 @@ window.translations_es = {
             projectList: 'Error al obtener la lista de proyectos',
             invalidFile: 'Archivo inválido',
             apiError: 'Error de API',
-            noApiKey: 'No hay clave API configurada'
+            noApiKey: 'No hay clave API configurada',
+            commitFailed: 'Error creando commit',
+            commitFailedDesc: 'No se pudo crear el commit',
+            checkoutFailed: 'Error en checkout',
+            checkoutFailedDesc: 'No se pudo cambiar al estado del commit',
+            forkFailed: 'Error creando fork',
+            forkFailedDesc: 'No se pudo crear el fork'
         }
+    },
+
+    // Estadísticas
+    stats: {
+        totalWords: 'Palabras totales:',
+        totalChapters: 'Capítulos:',
+        totalCharacters: 'Personajes:',
+        totalScenes: 'Escenas:'
     },
 
     // Validación
@@ -473,5 +544,55 @@ window.translations_es = {
         minLength: 'Mínimo {min} caracteres',
         maxLength: 'Máximo {max} caracteres',
         invalid: 'Valor inválido'
+    },
+    
+    // Control de Versiones
+    versionControl: {
+        title: 'Control de Versiones',
+        commitMessage: 'Mensaje del commit:',
+        commitMessagePlaceholder: 'Descripción del cambio...',
+        author: 'Autor',
+        authorPlaceholder: 'Tu nombre...',
+        currentProjectStats: 'Estadísticas del Proyecto Actual',
+        forkName: 'Nombre del fork:',
+        forkNamePlaceholder: 'Nombre del nuevo proyecto...',
+        description: 'Descripción',
+        descriptionPlaceholder: 'Breve descripción del propósito del fork...',
+        originalProject: 'Proyecto Original',
+        forkInfo: 'Un fork crea una copia independiente del proyecto con su propia historia de versiones.',
+        checkoutConfirm: '¿Estás seguro de que quieres cambiar al estado de este commit?',
+        createCommit: 'Crear Commit',
+        createFork: 'Crear Fork',
+        history: 'Historial',
+        branches: 'Ramas',
+        commits: 'Commits',
+        currentBranch: 'Rama actual:',
+        totalCommits: 'Total de commits:',
+        date: 'Fecha',
+        message: 'Mensaje',
+        actions: 'Acciones',
+        emptyHistory: 'No hay commits en esta rama',
+        emptyStateHint: 'Puedes crear un commit usando el botón de commit en la cabecera',
+        forksViewTitle: 'Gestión de Forks',
+        forksList: 'Forks del Proyecto',
+        noForks: 'No hay forks de este proyecto',
+        diffsTitle: 'Comparar Versiones',
+        compareFrom: 'Desde commit:',
+        compareTo: 'Hasta commit:',
+        selectCommit: 'Seleccionar commit...',
+        compare: 'Comparar',
+        changes: 'Cambios',
+        createTree: 'Crear Estructura de Proyecto',
+        treeStructure: 'Estructura de Proyecto',
+        treeStructureDesc: 'Crea una estructura de árbol para organizar tus capítulos y escenas',
+        treeName: 'Nombre de la estructura',
+        treeNamePlaceholder: 'Nombre de la estructura...',
+        treeType: 'Tipo de estructura',
+        chapterTree: 'Árbol de Capítulos',
+        sceneTree: 'Árbol de Escenas',
+        outlineTree: 'Árbol de Esquema',
+        treeDescription: 'Descripción',
+        treeDescriptionPlaceholder: 'Breve descripción de la estructura...',
+        createFromCurrent: 'Crear a partir del proyecto actual'
     }
 };

@@ -1,0 +1,11 @@
+<!-- AI Assistant View -->
+<div x-show="$store.ui.currentView === 'aiAssistant'" class="view">
+    <div class="view-header">
+        <h1 x-text="$store.i18n.t('ai.title')">Asistente IA</h1>
+        <p class="subtitle" x-text="$store.i18n.t('ai.subtitle')">Trabaja con inteligencia artificial</p>
+    </div>
+    <div class="empty-state">
+        <i data-lucide="sparkles" width="64" height="64"></i>
+        <p>Esta vista está en desarrollo</p>
+    </div>
+</div>

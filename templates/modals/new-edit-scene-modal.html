@@ -1,0 +1,42 @@
+<!-- New/Edit Scene Modal -->
+<div class="legacy-modal" :class="{ 'active': $store.ui.modals.newScene || $store.ui.modals.editScene }">
+    <div class="legacy-modal-content">
+        <div class="legacy-modal-header">
+            <h2 x-text="$store.ui.modals.editScene ? $store.i18n.t('scenes.edit') : $store.i18n.t('scenes.new')">Escena</h2>
+            <button class="btn-close" @click="$store.ui.closeModal()">
+                <i data-lucide="x" width="20" height="20"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form @submit.prevent="
+                const formData = {
+                    title: $el.querySelector('[name=title]').value,
+                    description: $el.querySelector('[name=description]').value
+                };
+                if ($store.ui.modalData?.id) {
+                    $store.project.updateScene($store.ui.modalData.id, formData);
+                    $store.ui.success($store.i18n.t('notifications.success.sceneUpdated'), '');
+                } else {
+                    $store.project.addScene(formData);
+                    $store.ui.success($store.i18n.t('notifications.success.sceneCreated'), '');
+                }
+                $store.ui.closeModal();
+                $el.reset();
+                lucide.createIcons();
+            ">
+                <div class="form-group">
+                    <label x-text="$store.i18n.t('scenes.form.title')">Título</label>
+                    <input type="text" name="title" required :placeholder="$store.i18n.t('scenes.form.titlePlaceholder')" :value="$store.ui.modalData?.title || ''">
+                </div>
+                <div class="form-group">
+                    <label x-text="$store.i18n.t('scenes.form.description')">Descripción</label>
+                    <textarea name="description" :placeholder="$store.i18n.t('scenes.form.descriptionPlaceholder')" x-text="$store.ui.modalData?.description || ''"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" @click="$store.ui.closeModal()" x-text="$store.i18n.t('common.cancel')">Cancelar</button>
+                    <button type="submit" class="btn-primary" x-text="$store.ui.modalData?.id ? $store.i18n.t('common.save') : $store.i18n.t('common.create')">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

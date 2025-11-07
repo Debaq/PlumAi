@@ -11,6 +11,14 @@ window.projectStore = {
         isPublicPC: false
     },
 
+    // Información del fork (si es un fork)
+    forkInfo: {
+        originalProjectId: null,
+        forkedFrom: null,
+        forkedAt: null,
+        description: ''
+    },
+
     // API Keys (guardadas con el proyecto)
     apiKeys: {
         kimi: '',
@@ -121,16 +129,49 @@ window.projectStore = {
 
     // Método para obtener la etiqueta de la relación
     getRelationshipLabelForType(type) {
-        const labels = {
-            'amigo': 'amigo',
-            'familia': 'familiar',
-            'amor': 'pareja',
-            'enemigo': 'enemigo',
+        // Mapeo para mantener compatibilidad con datos antiguos
+        const spanishToEnglishMap = {
+            'amigo': 'friend',
+            'familia': 'family',
+            'amor': 'love',
+            'enemigo': 'enemy',
             'mentor': 'mentor',
-            'conocido': 'conocido',
-            'colaborador': 'colaborador'
+            'conocido': 'acquaintance',
+            'colaborador': 'collaborator'
         };
-        return labels[type] || type;
+        
+        // Convertir si es una clave en español
+        const actualType = spanishToEnglishMap[type] || type;
+        
+        const labels = {
+            'friend': 'amigo',
+            'family': 'familia',
+            'love': 'pareja',
+            'enemy': 'enemigo',
+            'mentor': 'mentor',
+            'acquaintance': 'conocido',
+            'colleague': 'colega',
+            'collaborator': 'colaborador',
+            'ally': 'aliado',
+            'rival': 'rival',
+            'boss': 'jefe',
+            'subordinate': 'subordinado',
+            'teacher': 'profesor',
+            'student': 'estudiante',
+            'neighbor': 'vecino',
+            'partner': 'socio',
+            'guardian': 'guardian',
+            'ward': 'tutelado',
+            'hero': 'heroe',
+            'villain': 'villano',
+            'sidekick': 'companero',
+            'archenemy': 'arquienemigo',
+            'businessPartner': 'socio_negocios',
+            'ex': 'ex',
+            'crush': 'crush',
+            'rivalLove': 'rival_amoroso'
+        };
+        return labels[actualType] || actualType;
     },
 
     deleteCharacter(id) {
@@ -553,6 +594,12 @@ window.projectStore = {
             modified: new Date().toISOString(),
             isPublicPC: projectInfo.isPublicPC || false
         };
+        this.forkInfo = {
+            originalProjectId: null,
+            forkedFrom: null,
+            forkedAt: null,
+            description: ''
+        };
         this.apiKeys = {
             kimi: '',
             claude: '',
@@ -561,6 +608,75 @@ window.projectStore = {
         };
         this.autoSave();
         return this.projectInfo.id;
+    },
+
+    // Crear un fork del proyecto actual
+    createFork(forkName, description = '') {
+        if (!this.isProjectInitialized()) {
+            console.error('❌ No hay proyecto para hacer fork');
+            return null;
+        }
+
+        // Usar el sistema de control de versiones para crear el fork
+        const forkProjectData = window.versionControl.createFork(
+            this.projectInfo.id,  // El fork se crea desde el proyecto actual
+            forkName,
+            description
+        );
+
+        // Registrar el fork en el sistema de control de versiones bajo el proyecto original
+        const forkInfo = {
+            forkProjectId: forkProjectData.projectInfo.id,
+            forkName: forkProjectData.projectInfo.title,
+            forkedAt: new Date().toISOString(),
+            description: description,
+            // Mantener referencia al proyecto desde el cual se hizo el fork
+            forkedFromProjectId: this.projectInfo.id
+        };
+        
+        // Registrar el fork bajo el proyecto actual (no el original)
+        window.versionControl.registerFork(this.projectInfo.id, forkInfo);
+
+        // Inicializar el nuevo proyecto (fork) en el store
+        this.loadProject(forkProjectData);
+
+        console.log(`⑂ Fork creado: ${forkProjectData.projectInfo.title} del proyecto ${this.projectInfo.id}`);
+        return this.projectInfo.id;
+    },
+
+    // Crear un commit del proyecto actual
+    createCommit(message = 'Auto-commit', author = 'user') {
+        if (!this.isProjectInitialized()) {
+            console.error('❌ No hay proyecto para hacer commit');
+            return null;
+        }
+
+        const projectData = this.exportProject();
+        const commitId = window.versionControl.commit(projectData, message, author);
+        
+        console.log(`✅ Commit creado: ${commitId}`);
+        return commitId;
+    },
+
+    // Obtener historial de commits
+    getCommitHistory() {
+        return window.versionControl.getBranchHistory();
+    },
+
+    // Cambiar a un estado específico del proyecto desde un commit
+    checkoutCommit(commitId) {
+        const projectData = window.versionControl.getProjectAtCommit(commitId);
+        if (projectData) {
+            this.loadProject(projectData);
+            console.log(`🔄 Proyecto actualizado al estado del commit: ${commitId}`);
+            return true;
+        }
+        return false;
+    },
+
+    // Obtener estadísticas del control de versiones
+    getVersionStats() {
+        return window.versionControl.getHistoryStats();
     },
 
 

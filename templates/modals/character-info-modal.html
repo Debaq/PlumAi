@@ -1,0 +1,54 @@
+<!-- Character Info Modal (for editor mentions) -->
+<div class="modal" x-data="editorEnhancedComponent()" :class="{ 'active': showCharacterInfo }">
+    <div class="modal-content character-info-modal">
+        <template x-if="selectedCharacter">
+            <div>
+                <div class="character-info-header">
+                    <div class="character-info-avatar" x-text="selectedCharacter.name.charAt(0).toUpperCase()"></div>
+                    <div class="character-info-details">
+                        <div class="character-info-name" x-text="selectedCharacter.name"></div>
+                        <div class="character-info-role" x-text="$store.i18n.t('characters.form.roles.' + selectedCharacter.role)"></div>
+                    </div>
+                    <button class="btn-icon" @click="closeCharacterInfo()">
+                        <i data-lucide="x" width="20" height="20"></i>
+                    </button>
+                </div>
+                <div class="character-info-content">
+                    <template x-if="selectedCharacter.description">
+                        <div class="character-info-section">
+                            <div class="character-info-label" x-text="$store.i18n.t('characters.form.description')"></div>
+                            <div class="character-info-text" x-text="selectedCharacter.description"></div>
+                        </div>
+                    </template>
+                    <template x-if="selectedCharacter.personality">
+                        <div class="character-info-section">
+                            <div class="character-info-label" x-text="$store.i18n.t('characters.form.personality')"></div>
+                            <div class="character-info-text" x-text="selectedCharacter.personality"></div>
+                        </div>
+                    </template>
+                    <template x-if="selectedCharacter.background">
+                        <div class="character-info-section">
+                            <div class="character-info-label" x-text="$store.i18n.t('characters.form.background')"></div>
+                            <div class="character-info-text" x-text="selectedCharacter.background"></div>
+                        </div>
+                    </template>
+                    <template x-if="selectedCharacter.notes">
+                        <div class="character-info-section">
+                            <div class="character-info-label" x-text="$store.i18n.t('characters.form.notes')"></div>
+                            <div class="character-info-text" x-text="selectedCharacter.notes"></div>
+                        </div>
+                    </template>
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); display: flex; gap: 8px;">
+                        <button class="btn-secondary" @click="closeCharacterInfo()" style="flex: 1;">
+                            <span x-text="$store.i18n.t('common.close')"></span>
+                        </button>
+                        <button class="btn-primary" @click="$store.ui.openModal('editCharacter', selectedCharacter); closeCharacterInfo();" style="flex: 1;">
+                            <i data-lucide="edit" width="16" height="16"></i>
+                            <span x-text="$store.i18n.t('common.edit')"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>

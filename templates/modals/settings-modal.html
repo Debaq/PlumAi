@@ -1,0 +1,97 @@
+<!-- Settings Modal -->
+<div class="legacy-modal" x-data="settingsModalComponent()" :class="{ 'active': $store.ui.modals.settings }">
+    <div class="legacy-modal-content" style="max-width: 600px;">
+        <div class="legacy-modal-header">
+            <h2 x-text="$store.i18n.t('modals.settings.title')">Configuración</h2>
+            <button class="btn-close" @click="$store.ui.closeModal('settings')">
+                <i data-lucide="x" width="20" height="20"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <!-- Data Management Section -->
+            <div class="settings-section" style="margin-bottom: 30px; padding: 20px; border: 1px solid var(--border); border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0; color: var(--text-primary);" x-text="$store.i18n.t('modals.settings.dataManagement.title')">Gestión de Datos</h3>
+                    <i data-lucide="database" width="20" height="20" style="color: var(--text-secondary);"></i>
+                </div>
+                
+                <div class="form-group">
+                    <p style="margin: 0 0 15px 0; color: var(--text-secondary); font-size: 14px;" x-text="$store.i18n.t('modals.settings.dataManagement.description')">
+                        Gestiona los datos almacenados localmente en este navegador (Proyectos PLUMA)
+                    </p>
+                    
+                    <div style="background: color-mix(in srgb, var(--error) 15%, transparent); border: 1px solid var(--error); border-radius: 6px; padding: 15px; margin: 15px 0;">
+                        <div style="display: flex; align-items: start; gap: 10px;">
+                            <i data-lucide="alert-triangle" width="20" height="20" style="color: var(--error); flex-shrink: 0; margin-top: 2px;"></i>
+                            <div>
+                                <p style="margin: 0 0 8px 0; color: var(--error); font-weight: 500; font-size: 14px;" x-text="$store.i18n.t('modals.settings.dataManagement.warningTitle')">
+                                    ¡Advertencia Importante!
+                                </p>
+                                <p style="margin: 0; color: var(--text-secondary); font-size: 13px; line-height: 1.4;" x-text="$store.i18n.t('modals.settings.dataManagement.warningDescription')">
+                                    Esta acción eliminará permanentemente todos los proyectos, personajes, capítulos y configuraciones almacenados localmente en este navegador. Esta acción no se puede deshacer.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin: 15px 0;">
+                        <label style="color: var(--error); font-weight: 600; margin-bottom: 8px; display: block;" x-text="$store.i18n.t('modals.settings.dataManagement.exportBeforeDeleteLabel')">
+                            Recomendamos exportar tus datos antes de eliminarlos:
+                        </label>
+                        <button 
+                            class="btn-secondary" 
+                            style="width: 100%; padding: 8px; margin-bottom: 15px;"
+                            @click="exportAllData"
+                            x-text="$store.i18n.t('modals.settings.dataManagement.exportAllButton')">
+                            Exportar Todos los Datos
+                        </button>
+                    </div>
+                    
+                    <div class="form-group" style="margin: 15px 0;">
+                        <label style="color: var(--error); font-weight: 600; margin-bottom: 8px; display: block;" x-text="$store.i18n.t('modals.settings.dataManagement.confirmationLabel')">
+                            Para confirmar la eliminación, escribe "ELIMINAR DATOS" en el campo siguiente:
+                        </label>
+                        <input 
+                            type="text" 
+                            id="confirm-delete-input"
+                            placeholder="ELIMINAR DATOS"
+                            style="width: 100%; padding: 10px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary);"
+                            :disabled="deletionConfirmed"
+                            @input="checkDeletionConfirmation">
+                    </div>
+                    
+                    <div style="margin: 15px 0; display: flex; align-items: center; gap: 8px;">
+                        <input 
+                            type="checkbox" 
+                            id="understand-checkbox" 
+                            style="width: 16px; height: 16px;"
+                            :disabled="!deletionAllowed || deletionConfirmed"
+                            @change="toggleDeletionUnderstanding">
+                        <label for="understand-checkbox" style="margin: 0; color: var(--error); cursor: pointer;" x-text="$store.i18n.t('modals.settings.dataManagement.understandCheckbox')">
+                            Entiendo que esta acción no se puede deshacer y que perderé todos los datos almacenados localmente
+                        </label>
+                    </div>
+                    
+                    <button 
+                        class="btn-danger" 
+                        style="width: 100%; padding: 12px; margin-top: 10px;"
+                        :disabled="!canDelete"
+                        @click="confirmDeleteAllData"
+                        x-text="$store.i18n.t('modals.settings.dataManagement.deleteButton')">
+                        Eliminar Todos los Datos Localmente
+                    </button>
+                    
+                    <div x-show="deletionConfirmed" style="margin-top: 15px; padding: 12px; background: color-mix(in srgb, var(--success) 15%, transparent); border: 1px solid var(--success); border-radius: 6px; text-align: center;">
+                        <i data-lucide="check-circle" width="20" height="20" style="color: var(--success); margin-right: 8px;"></i>
+                        <span style="color: var(--success); font-weight: 500;" x-text="$store.i18n.t('modals.settings.dataManagement.deletionConfirmed')">
+                            Datos eliminados correctamente. La aplicación se recargará en unos segundos.
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-secondary" @click="$store.ui.closeModal('settings')" x-text="$store.i18n.t('common.close')">Cerrar</button>
+        </div>
+    </div>
+</div>

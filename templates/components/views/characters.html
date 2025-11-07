@@ -1,0 +1,44 @@
+<!-- Characters View -->
+<div x-show="$store.ui.currentView === 'characters'" class="view">
+    <div class="view-header">
+        <div>
+            <h1 x-text="$store.i18n.t('characters.title')">Personajes</h1>
+            <p class="subtitle" x-text="$store.i18n.t('characters.subtitle')">Gestiona los personajes de tu novela</p>
+        </div>
+        <button class="btn-primary" @click="$store.ui.openModal('newCharacter')">
+            <i data-lucide="plus" width="16" height="16"></i>
+            <span x-text="$store.i18n.t('characters.new')">Nuevo Personaje</span>
+        </button>
+    </div>
+
+    <!-- Empty State -->
+    <div x-show="$store.project.characters.length === 0" class="empty-state">
+        <i data-lucide="users" width="64" height="64"></i>
+        <p x-text="$store.i18n.t('characters.empty')">No hay personajes creados</p>
+        <span class="hint" x-text="$store.i18n.t('characters.emptyHint')">Crea tu primer personaje para comenzar</span>
+    </div>
+
+    <!-- Characters Grid -->
+    <div x-show="$store.project.characters.length > 0" class="content-grid">
+        <template x-for="character in $store.project.characters" :key="character.id">
+            <div class="character-card">
+                <div class="character-header">
+                    <div class="character-avatar" x-text="character.name.charAt(0).toUpperCase()"></div>
+                    <div class="character-info">
+                        <div class="character-name" x-text="character.name"></div>
+                        <div class="character-role" x-text="$store.i18n.t('characters.form.roles.' + character.role)"></div>
+                    </div>
+                </div>
+                <div class="character-description" x-text="character.description || $store.i18n.t('characters.form.descriptionPlaceholder')"></div>
+                <div class="card-actions" style="margin-top: 12px; display: flex; gap: 8px; justify-content: flex-end;">
+                    <button class="btn-icon" @click="$store.ui.openModal('editCharacter', character)" :title="$store.i18n.t('common.edit')">
+                        <i data-lucide="edit" width="16" height="16"></i>
+                    </button>
+                    <button class="btn-icon" @click="if(confirm($store.i18n.t('common.confirmDelete'))) { $store.project.deleteCharacter(character.id); $store.ui.success($store.i18n.t('notifications.success.characterDeleted'), ''); }" :title="$store.i18n.t('common.delete')">
+                        <i data-lucide="trash-2" width="16" height="16"></i>
+                    </button>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>

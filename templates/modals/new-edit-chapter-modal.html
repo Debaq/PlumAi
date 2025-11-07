@@ -1,0 +1,49 @@
+<!-- New/Edit Chapter Modal -->
+<div class="legacy-modal" :class="{ 'active': $store.ui.modals.newChapter || $store.ui.modals.editChapter }">
+    <div class="legacy-modal-content">
+        <div class="legacy-modal-header">
+            <h2 x-text="$store.ui.modals.editChapter ? $store.i18n.t('chapters.edit') : $store.i18n.t('chapters.new')">Capítulo</h2>
+            <button class="btn-close" @click="$store.ui.closeModal()">
+                <i data-lucide="x" width="20" height="20"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form @submit.prevent="
+                const formData = {
+                    title: $el.querySelector('[name=title]').value,
+                    summary: $el.querySelector('[name=summary]').value,
+                    content: $el.querySelector('[name=content]').value
+                };
+                if ($store.ui.modalData?.id) {
+                    $store.project.updateChapter($store.ui.modalData.id, formData);
+                    $store.ui.success($store.i18n.t('notifications.success.chapterUpdated'), '');
+                } else {
+                    $store.project.addChapter(formData);
+                    $store.ui.success($store.i18n.t('notifications.success.chapterCreated'), '');
+                }
+                $store.ui.closeModal();
+                $el.reset();
+                lucide.createIcons();
+            ">
+                <div class="form-group">
+                    <label x-text="$store.i18n.t('chapters.form.title')">Título</label>
+                    <input type="text" name="title" required :placeholder="$store.i18n.t('chapters.form.titlePlaceholder')" :value="$store.ui.modalData?.title || ''">
+                </div>
+                <div class="form-group">
+                    <label x-text="$store.i18n.t('chapters.form.summary')">Resumen</label>
+                    <textarea name="summary" style="min-height: 100px;" :placeholder="$store.i18n.t('chapters.form.summaryPlaceholder')" x-text="$store.ui.modalData?.summary || ''"></textarea>
+                    <p class="hint" x-text="$store.i18n.t('chapters.form.summaryHint')"></p>
+                </div>
+                <div class="form-group">
+                    <label x-text="$store.i18n.t('chapters.form.content')">Contenido</label>
+                    <textarea name="content" style="min-height: 200px;" :placeholder="$store.i18n.t('editor.placeholder')" x-text="$store.ui.modalData?.content || ''"></textarea>
+                    <p class="hint" x-text="$store.i18n.t('chapters.form.contentHint')"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" @click="$store.ui.closeModal()" x-text="$store.i18n.t('common.cancel')">Cancelar</button>
+                    <button type="submit" class="btn-primary" x-text="$store.ui.modalData?.id ? $store.i18n.t('common.save') : $store.i18n.t('common.create')">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

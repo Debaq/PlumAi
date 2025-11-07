@@ -1,0 +1,47 @@
+<!-- New/Edit Timeline Event Modal -->
+<div class="legacy-modal" :class="{ 'active': $store.ui.modals.newTimelineEvent || $store.ui.modals.editTimelineEvent }">
+    <div class="legacy-modal-content">
+        <div class="legacy-modal-header">
+            <h2 x-text="$store.ui.modals.editTimelineEvent ? $store.i18n.t('timeline.edit') : $store.i18n.t('timeline.new')">Evento</h2>
+            <button class="btn-close" @click="$store.ui.closeModal()">
+                <i data-lucide="x" width="20" height="20"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form @submit.prevent="
+                const formData = {
+                    date: $el.querySelector('[name=date]').value,
+                    event: $el.querySelector('[name=event]').value,
+                    description: $el.querySelector('[name=description]').value
+                };
+                if ($store.ui.modalData?.id) {
+                    $store.project.updateTimelineEvent($store.ui.modalData.id, formData);
+                    $store.ui.success($store.i18n.t('notifications.success.eventUpdated'), '');
+                } else {
+                    $store.project.addTimelineEvent(formData);
+                    $store.ui.success($store.i18n.t('notifications.success.eventCreated'), '');
+                }
+                $store.ui.closeModal();
+                $el.reset();
+                lucide.createIcons();
+            ">
+                <div class="form-group">
+                    <label x-text="$store.i18n.t('timeline.form.date')">Fecha</label>
+                    <input type="text" name="date" required :placeholder="$store.i18n.t('timeline.form.datePlaceholder')" :value="$store.ui.modalData?.date || ''">
+                </div>
+                <div class="form-group">
+                    <label x-text="$store.i18n.t('timeline.form.event')">Evento</label>
+                    <input type="text" name="event" required :placeholder="$store.i18n.t('timeline.form.eventPlaceholder')" :value="$store.ui.modalData?.event || ''">
+                </div>
+                <div class="form-group">
+                    <label x-text="$store.i18n.t('timeline.form.description')">Descripción</label>
+                    <textarea name="description" :placeholder="$store.i18n.t('timeline.form.descriptionPlaceholder')" x-text="$store.ui.modalData?.description || ''"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" @click="$store.ui.closeModal()" x-text="$store.i18n.t('common.cancel')">Cancelar</button>
+                    <button type="submit" class="btn-primary" x-text="$store.ui.modalData?.id ? $store.i18n.t('common.save') : $store.i18n.t('common.create')">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

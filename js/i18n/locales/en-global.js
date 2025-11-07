@@ -24,7 +24,10 @@ window.translations_en = {
         no: 'No',
         optional: 'Optional',
         required: 'Required',
-        viewAll: 'View All'
+        viewAll: 'View All',
+        view: 'View',
+        title: 'Title:',
+        author: 'Author:'
     },
 
     // Header
@@ -118,7 +121,24 @@ window.translations_en = {
                 acquaintance: 'Acquaintance',
                 colleague: 'Colleague',
                 collaborator: 'Collaborator',
-                colaborador: 'Collaborator'  // En caso de que se use en español en un contexto internacional
+                ally: 'Ally',
+                rival: 'Rival',
+                boss: 'Boss',
+                subordinate: 'Subordinate',
+                teacher: 'Teacher',
+                student: 'Student',
+                neighbor: 'Neighbor',
+                partner: 'Partner',
+                guardian: 'Guardian',
+                ward: 'Ward',
+                hero: 'Hero',
+                villain: 'Villain',
+                sidekick: 'Sidekick',
+                archenemy: 'Archenemy',
+                businessPartner: 'Business Partner',
+                ex: 'Ex',
+                crush: 'Crush',
+                rivalLove: 'Rival Love'
             },
             relationshipsHint: 'Click the plus sign to add a relationship with another character'
         },
@@ -350,7 +370,34 @@ window.translations_en = {
             description: 'Get started by creating a new project or loading an existing one',
             newProject: 'Create New Project',
             loadProject: 'Load Existing Project',
+            continueProject: 'Continue with "{projectName}"',
             getStarted: 'Get Started'
+        },
+        settings: {
+            title: 'Settings',
+            dataManagement: {
+                title: 'Data Management',
+                description: 'Manage data stored locally in this browser',
+                warningTitle: 'Important Warning!',
+                warningDescription: 'This action will permanently delete all projects, characters, chapters, and settings stored locally in this browser. This action cannot be undone.',
+                exportBeforeDeleteLabel: 'We recommend exporting your data before deleting:',
+                exportAllButton: 'Export All Data',
+                noDataTitle: 'No data',
+                noDataMessage: 'No projects to export',
+                exportSuccessTitle: 'Data exported',
+                exportSuccessMessage: 'All data has been exported successfully',
+                exportErrorTitle: 'Error exporting',
+                exportErrorMessage: 'An error occurred while trying to export the data',
+                confirmationLabel: 'To confirm deletion, type "DELETE DATA" in the field below:',
+                understandCheckbox: 'I understand this action cannot be undone and that I will lose all data stored locally',
+                deleteButton: 'Delete All Data Locally',
+                deletionConfirmed: 'Data deleted successfully. The application will reload in a few seconds.',
+                confirmDeletion: 'Are you completely sure? This action will delete all your local data and cannot be undone.',
+                deletionSuccessTitle: 'Data deleted',
+                deletionSuccessMessage: 'All local data has been deleted successfully.',
+                deletionErrorTitle: 'Error deleting data',
+                deletionErrorMessage: 'An error occurred while trying to delete the data.'
+            }
         },
         newProject: {
             title: 'New Project',
@@ -397,14 +444,14 @@ window.translations_en = {
         },
         export: {
             title: 'Export Project',
-            description: 'Download your project as a JSON file',
+            description: 'Download your project as a PLUMA file (*.pluma)',
             includeApiKeys: 'Include API keys',
             filename: 'Filename',
             download: 'Download'
         },
         import: {
             title: 'Import Project',
-            description: 'Load a project from a JSON file',
+            description: 'Load a project from a PLUMA file (*.pluma)',
             selectFile: 'Select file',
             selected: 'File selected: {filename}',
             warning: 'This will replace the current project'
@@ -454,7 +501,17 @@ window.translations_en = {
             noteDeleted: 'Note deleted',
             loreCreated: 'Lore entry created',
             loreUpdated: 'Lore entry updated',
-            loreDeleted: 'Lore entry deleted'
+            loreDeleted: 'Lore entry deleted',
+            commitCreated: 'Commit created successfully',
+            commitCreatedDesc: 'Commit {commitId} created',
+            checkoutSuccess: 'Checkout successful',
+            checkoutSuccessDesc: 'State changed to commit {commitId}',
+            forkCreated: 'Fork created successfully',
+            forkCreatedDesc: 'Fork {forkName} created',
+            treeCreated: 'Structure created successfully',
+            treeCreatedDesc: 'Structure {treeName} created',
+            treeFailed: 'Error creating structure',
+            treeFailedDesc: 'Could not create structure'
         },
         error: {
             generic: 'An error occurred',
@@ -463,8 +520,22 @@ window.translations_en = {
             projectList: 'Error getting project list',
             invalidFile: 'Invalid file',
             apiError: 'API error',
-            noApiKey: 'No API key configured'
+            noApiKey: 'No API key configured',
+            commitFailed: 'Error creating commit',
+            commitFailedDesc: 'Could not create commit',
+            checkoutFailed: 'Checkout failed',
+            checkoutFailedDesc: 'Could not change to commit state',
+            forkFailed: 'Error creating fork',
+            forkFailedDesc: 'Could not create fork'
         }
+    },
+
+    // Stats
+    stats: {
+        totalWords: 'Total words:',
+        totalChapters: 'Chapters:',
+        totalCharacters: 'Characters:',
+        totalScenes: 'Scenes:'
     },
 
     // Validation
@@ -473,5 +544,55 @@ window.translations_en = {
         minLength: 'Minimum {min} characters',
         maxLength: 'Maximum {max} characters',
         invalid: 'Invalid value'
+    },
+    
+    // Version Control
+    versionControl: {
+        title: 'Version Control',
+        commitMessage: 'Commit message:',
+        commitMessagePlaceholder: 'Change description...',
+        author: 'Author',
+        authorPlaceholder: 'Your name...',
+        currentProjectStats: 'Current Project Statistics',
+        forkName: 'Fork name:',
+        forkNamePlaceholder: 'New project name...',
+        description: 'Description',
+        descriptionPlaceholder: 'Brief description of fork\'s purpose...',
+        originalProject: 'Original Project',
+        forkInfo: 'A fork creates an independent copy of the project with its own version history.',
+        checkoutConfirm: 'Are you sure you want to switch to this commit\'s state?',
+        createCommit: 'Create Commit',
+        createFork: 'Create Fork',
+        history: 'History',
+        branches: 'Branches',
+        commits: 'Commits',
+        currentBranch: 'Current branch:',
+        totalCommits: 'Total commits:',
+        date: 'Date',
+        message: 'Message',
+        actions: 'Actions',
+        emptyHistory: 'No commits in this branch',
+        emptyStateHint: 'You can create a commit using the commit button in the header',
+        forksViewTitle: 'Forks Management',
+        forksList: 'Project Forks',
+        noForks: 'No forks of this project',
+        diffsTitle: 'Compare Versions',
+        compareFrom: 'From commit:',
+        compareTo: 'To commit:',
+        selectCommit: 'Select commit...',
+        compare: 'Compare',
+        changes: 'Changes',
+        createTree: 'Create Project Structure',
+        treeStructure: 'Project Structure',
+        treeStructureDesc: 'Create a tree structure to organize your chapters and scenes',
+        treeName: 'Structure name',
+        treeNamePlaceholder: 'Structure name...',
+        treeType: 'Structure type',
+        chapterTree: 'Chapter Tree',
+        sceneTree: 'Scene Tree',
+        outlineTree: 'Outline Tree',
+        treeDescription: 'Description',
+        treeDescriptionPlaceholder: 'Brief description of the structure...',
+        createFromCurrent: 'Create from current project'
     }
 };

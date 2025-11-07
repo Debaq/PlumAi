@@ -51,7 +51,8 @@ window.storageManager = {
                 types: [{
                     description: 'PlumaAI Projects',
                     accept: {
-                        'application/json': ['.pluma', '.json']
+                        'application/vnd.plumai.project+json': ['.pluma'],
+                        'application/json': ['.pluma']
                     }
                 }],
                 excludeAcceptAllOption: true
@@ -86,6 +87,7 @@ window.storageManager = {
                 types: [{
                     description: 'PlumaAI Projects',
                     accept: {
+                        'application/vnd.plumai.project+json': ['.pluma'],
                         'application/json': ['.pluma']
                     }
                 }],
@@ -557,18 +559,54 @@ window.storageManager = {
             
             reader.onload = async (event) => {
                 try {
-                    const projectData = JSON.parse(event.target.result);
+                    const data = JSON.parse(event.target.result);
                     
-                    // Validar estructura básica del proyecto
-                    if (!projectData.projectInfo || !projectData.projectInfo.id) {
-                        throw new Error('Archivo de proyecto inválido: falta información del proyecto');
+                    // Verificar si es un archivo de backup con múltiples proyectos
+                    if (data.metadata && data.projects && Array.isArray(data.projects)) {
+                        // Es un archivo de backup, importar todos los proyectos
+                        const importedProjects = [];
+                        const failedImports = [];
+                        
+                        for (const projectData of data.projects) {
+                            try {
+                                // Validar estructura básica del proyecto
+                                if (projectData.projectInfo && projectData.projectInfo.id) {
+                                    // Guardar el proyecto
+                                    await this.save(projectData);
+                                    importedProjects.push(projectData);
+                                    console.log(`📦 Proyecto importado: ${projectData.projectInfo.title}`);
+                                } else {
+                                    console.error('Proyecto inválido en backup:', projectData);
+                                    failedImports.push({ error: 'Falta información del proyecto', project: projectData });
+                                }
+                            } catch (projectError) {
+                                console.error('Error al importar proyecto del backup:', projectError);
+                                failedImports.push({ error: projectError.message, project: projectData });
+                            }
+                        }
+                        
+                        if (importedProjects.length > 0) {
+                            console.log(`✅ Backup importado: ${importedProjects.length} proyectos importados, ${failedImports.length} fallidos`);
+                            // Resolver con el primer proyecto como referencia
+                            resolve(importedProjects[0]);
+                        } else {
+                            throw new Error(`No se pudieron importar proyectos: ${failedImports.length} intentos fallidos`);
+                        }
+                    } else {
+                        // Es un archivo de proyecto individual
+                        const projectData = data;
+                        
+                        // Validar estructura básica del proyecto
+                        if (!projectData.projectInfo || !projectData.projectInfo.id) {
+                            throw new Error('Archivo de proyecto inválido: falta información del proyecto');
+                        }
+                        
+                        // Guardar el proyecto importado
+                        await this.save(projectData);
+                        
+                        console.log(`📦 Proyecto importado: ${projectData.projectInfo.title}`);
+                        resolve(projectData);
                     }
-                    
-                    // Guardar el proyecto importado
-                    const results = await this.save(projectData);
-                    
-                    console.log(`📦 Proyecto importado: ${projectData.projectInfo.title}`);
-                    resolve(projectData);
                 } catch (error) {
                     console.error('Error importando proyecto:', error);
                     reject(new Error(`Error al importar proyecto: ${error.message}`));
@@ -633,18 +671,21 @@ window.storageManager = {
             if (key.startsWith('pluma_project_')) {
                 try {
                     const project = JSON.parse(localStorage.getItem(key));
-                    // Verificar si ya está en la lista de IndexedDB (para evitar duplicados)
-                    const exists = projects.some(p => p.projectInfo.id === project.projectInfo.id);
-                    if (!exists) {
-                        projects.push({
-                            id: project.projectInfo.id,
-                            title: project.projectInfo.title,
-                            author: project.projectInfo.author,
-                            genre: project.projectInfo.genre,
-                            created: project.projectInfo.created,
-                            modified: project.projectInfo.modified,
-                            isPublicPC: project.projectInfo.isPublicPC
-                        });
+                    // Verificar si el proyecto tiene la estructura válida antes de procesarlo
+                    if (project && project.projectInfo && project.projectInfo.id) {
+                        // Verificar si ya está en la lista de IndexedDB (para evitar duplicados)
+                        const exists = projects.some(p => p && p.projectInfo && p.projectInfo.id === project.projectInfo.id);
+                        if (!exists) {
+                            projects.push({
+                                id: project.projectInfo.id,
+                                title: project.projectInfo.title,
+                                author: project.projectInfo.author,
+                                genre: project.projectInfo.genre,
+                                created: project.projectInfo.created,
+                                modified: project.projectInfo.modified,
+                                isPublicPC: project.projectInfo.isPublicPC
+                            });
+                        }
                     }
                 } catch (e) {
                     console.error('Error parseando proyecto de localStorage:', key, e);
@@ -704,5 +745,87 @@ window.storageManager = {
                 }
             };
         });
+    },
+
+    // Método para eliminar todos los datos almacenados localmente
+    async clearAll() {
+        const results = {
+            localStorage: { deleted: 0, errors: 0 },
+            indexedDB: { deleted: 0, errors: 0 }
+        };
+
+        // Eliminar todos los proyectos de localStorage
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+            const key = localStorage.key(i);
+            if (key && (key.startsWith('pluma_project_') || key.startsWith('pluma_'))) {
+                try {
+                    localStorage.removeItem(key);
+                    results.localStorage.deleted++;
+                } catch (e) {
+                    console.error(`Error eliminando de localStorage clave ${key}:`, e);
+                    results.localStorage.errors++;
+                }
+            }
+        }
+
+        // Eliminar todos los proyectos de IndexedDB
+        if (window.indexedDB) {
+            try {
+                const projectIds = [];
+                const request = window.indexedDB.open('PlumaDB', 1);
+
+                // Primero obtener todos los IDs de proyectos
+                await new Promise((resolve, reject) => {
+                    request.onerror = () => reject(request.error);
+                    request.onsuccess = () => {
+                        const db = request.result;
+                        const transaction = db.transaction(['projects'], 'readonly');
+                        const store = transaction.objectStore('projects');
+
+                        const getAllKeysRequest = store.getAllKeys();
+
+                        getAllKeysRequest.onsuccess = () => {
+                            projectIds.push(...getAllKeysRequest.result);
+                            resolve();
+                        };
+                        getAllKeysRequest.onerror = () => reject(getAllKeysRequest.error);
+                    };
+
+                    request.onupgradeneeded = (event) => {
+                        const db = event.target.result;
+                        if (!db.objectStoreNames.contains('projects')) {
+                            const store = db.createObjectStore('projects', { keyPath: 'projectInfo.id' });
+                            store.createIndex('title', 'projectInfo.title', { unique: false });
+                            store.createIndex('author', 'projectInfo.author', { unique: false });
+                            store.createIndex('created', 'projectInfo.created', { unique: false });
+                            store.createIndex('modified', 'projectInfo.modified', { unique: false });
+                        }
+                    };
+                });
+
+                // Luego eliminar cada proyecto
+                for (const id of projectIds) {
+                    try {
+                        await this.deleteFromIndexedDB(id);
+                        results.indexedDB.deleted++;
+                    } catch (e) {
+                        console.error(`Error eliminando de IndexedDB proyecto ${id}:`, e);
+                        results.indexedDB.errors++;
+                    }
+                }
+            } catch (e) {
+                console.error('Error accediendo a IndexedDB para eliminación:', e);
+                results.indexedDB.errors++;
+            }
+        }
+
+        // Cerrar cualquier archivo abierto
+        this.closeFile();
+
+        // Limpiar token de cloud
+        this.clearCloudToken();
+
+        console.log(`🗑️ Datos eliminados: ${results.localStorage.deleted} de localStorage, ${results.indexedDB.deleted} de IndexedDB`);
+        return results;
     }
 };

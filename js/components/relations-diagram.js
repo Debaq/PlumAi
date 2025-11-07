@@ -19,18 +19,49 @@ window.relationsDiagramHelper = {
     
     // Obtener color de relación
     getRelationColor(relationType) {
-        const colorMap = {
-            'amigo': '#4CAF50',
-            'familia': '#FF9800',
-            'amor': '#E91E63',
-            'enemigo': '#F44336',
-            'mentor': '#2196F3',
-            'conocido': '#9E9E9E',
-            'colaborador': '#607D8B',
-            'colleague': '#607D8B',
-            'collaborator': '#607D8B'
+        // Mapeo para mantener compatibilidad con datos antiguos
+        const spanishToEnglishMap = {
+            'amigo': 'friend',
+            'familia': 'family',
+            'amor': 'love',
+            'enemigo': 'enemy',
+            'mentor': 'mentor',
+            'conocido': 'acquaintance',
+            'colaborador': 'collaborator'
         };
-        return colorMap[relationType] || '#BDBDBD';
+        
+        // Convertir si es una clave en español
+        const actualType = spanishToEnglishMap[relationType] || relationType;
+        
+        const colorMap = {
+            'friend': '#4CAF50',
+            'family': '#FF9800',
+            'love': '#E91E63',
+            'enemy': '#F44336',
+            'mentor': '#2196F3',
+            'acquaintance': '#9E9E9E',
+            'colleague': '#607D8B',
+            'collaborator': '#795548',
+            'ally': '#8BC34A',
+            'rival': '#FFC107',
+            'boss': '#3F51B5',
+            'subordinate': '#9C27B0',
+            'teacher': '#009688',
+            'student': '#FF5722',
+            'neighbor': '#795548',
+            'partner': '#00BCD4',
+            'guardian': '#E91E63',
+            'ward': '#CDDC39',
+            'hero': '#607D8B',
+            'villain': '#795548',
+            'sidekick': '#FF9800',
+            'archenemy': '#F44336',
+            'businessPartner': '#9C27B0',
+            'ex': '#9E9E9E',
+            'crush': '#E91E63',
+            'rivalLove': '#EC407A'
+        };
+        return colorMap[actualType] || '#BDBDBD';
     },
     
     // Obtener posición de nodo (simplificado para ejemplo)

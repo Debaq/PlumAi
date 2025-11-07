@@ -1,0 +1,451 @@
+<!-- Lore View -->
+<div x-show="$store.ui.currentView === 'lore'" class="view" x-data="{ activeLoreTab: 'summary' }">
+    <div class="view-header">
+        <div>
+            <h1 x-text="$store.i18n.t('lore.title')">Lore</h1>
+            <p class="subtitle" x-text="$store.i18n.t('lore.subtitle')">Gestiona el conocimiento del mundo de tu historia</p>
+        </div>
+        <button class="btn-primary" @click="$store.ui.openModal('newLore')">
+            <i data-lucide="plus" width="16" height="16"></i>
+            <span x-text="$store.i18n.t('lore.new')">Nuevo Elemento de Lore</span>
+        </button>
+    </div>
+
+    <!-- Tabs para navegación interna -->
+    <div class="tabs">
+        <button class="tab-btn" 
+                :class="{ 'active': !$store.ui.activeLoreTab || $store.ui.activeLoreTab === 'summary' }" 
+                @click="$store.ui.activeLoreTab = 'summary'">
+            <i data-lucide="book-open" width="16" height="16"></i>
+            <span x-text="$store.i18n.t('lore.title')">Lore</span>
+        </button>
+        <button class="tab-btn" 
+                :class="{ 'active': $store.ui.activeLoreTab === 'characters' }" 
+                @click="$store.ui.activeLoreTab = 'characters'">
+            <i data-lucide="users" width="16" height="16"></i>
+            <span x-text="$store.i18n.t('sidebar.characters')">Personajes</span>
+            <span class="badge" x-text="$store.project.characters.length" style="margin-left: 4px;"></span>
+        </button>
+        <button class="tab-btn" 
+                :class="{ 'active': $store.ui.activeLoreTab === 'relations' }" 
+                @click="$store.ui.activeLoreTab = 'relations'">
+            <i data-lucide="heart" width="16" height="16"></i>
+            <span x-text="$store.i18n.t('sidebar.relations')">Relaciones</span>
+            <span class="badge" x-text="$store.project.getRelationsCount ? $store.project.getRelationsCount() : $store.project.characters.reduce((sum, char) => sum + (char.relationships ? char.relationships.length : 0), 0)" style="margin-left: 4px;"></span>
+        </button>
+        <button class="tab-btn" 
+                :class="{ 'active': $store.ui.activeLoreTab === 'events' }" 
+                @click="$store.ui.activeLoreTab = 'events'">
+            <i data-lucide="calendar" width="16" height="16"></i>
+            <span x-text="$store.i18n.t('sidebar.timeline')">Eventos</span>
+            <span class="badge" x-text="$store.project.timeline.length" style="margin-left: 4px;"></span>
+        </button>
+        <button class="tab-btn" 
+                :class="{ 'active': $store.ui.activeLoreTab === 'locations' }" 
+                @click="$store.ui.activeLoreTab = 'locations'">
+            <i data-lucide="map-pin" width="16" height="16"></i>
+            <span x-text="$store.i18n.t('sidebar.locations')">Ubicaciones</span>
+            <span class="badge" x-text="$store.project.locations.length" style="margin-left: 4px;"></span>
+        </button>
+    </div>
+
+    <!-- Contenido según pestaña activa -->
+    <div x-show="!$store.ui.activeLoreTab || $store.ui.activeLoreTab === 'summary'" class="tab-content">
+        <!-- Quick Stats -->
+        <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 24px;">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i data-lucide="book-open" width="24" height="24"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" x-text="$store.project.loreEntries.length"></div>
+                    <div class="stat-label" x-text="$store.i18n.t('lore.title')">Lore</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i data-lucide="users" width="24" height="24"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" x-text="$store.project.characters.length"></div>
+                    <div class="stat-label" x-text="$store.i18n.t('sidebar.characters')">Personajes</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i data-lucide="heart" width="24" height="24"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" x-text="$store.project.getRelationsCount ? $store.project.getRelationsCount() : $store.project.characters.reduce((sum, char) => sum + (char.relationships ? char.relationships.length : 0), 0)"></div>
+                    <div class="stat-label" x-text="$store.i18n.t('sidebar.relations')">Relaciones</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i data-lucide="calendar" width="24" height="24"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" x-text="$store.project.timeline.length"></div>
+                    <div class="stat-label" x-text="$store.i18n.t('sidebar.timeline')">Eventos</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i data-lucide="map-pin" width="24" height="24"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" x-text="$store.project.locations.length"></div>
+                    <div class="stat-label" x-text="$store.i18n.t('sidebar.locations')">Ubicaciones</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions" style="margin-bottom: 24px;">
+            <h2 x-text="$store.i18n.t('dashboard.quickActions.title')">Acciones Rápidas</h2>
+            <div class="action-buttons">
+                <button class="action-btn" @click="$store.ui.openModal('newCharacter')">
+                    <i data-lucide="user-plus" width="20" height="20"></i>
+                    <span x-text="$store.i18n.t('dashboard.quickActions.newCharacter')">Nuevo Personaje</span>
+                </button>
+                <button class="action-btn" @click="$store.ui.openModal('newLocation')">
+                    <i data-lucide="map-pin-plus" width="20" height="20"></i>
+                    <span x-text="$store.i18n.t('dashboard.quickActions.newLocation')">Nueva Ubicación</span>
+                </button>
+                <button class="action-btn" @click="$store.ui.openModal('newLore')">
+                    <i data-lucide="book-plus" width="20" height="20"></i>
+                    <span x-text="$store.i18n.t('dashboard.quickActions.newLore')">Nuevo Elemento de Lore</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Recent Lore -->
+        <div style="margin-bottom: 24px;">
+            <div class="view-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h2 x-text="$store.i18n.t('lore.title')">Elementos de Lore Recientes</h2>
+                <button class="btn-secondary" @click="$store.ui.activeLoreTab = 'lore'">
+                    <span x-text="$store.i18n.t('common.viewAll')">Ver Todos</span>
+                </button>
+            </div>
+
+            <!-- Empty State -->
+            <div x-show="$store.project.loreEntries.length === 0" class="empty-state">
+                <i data-lucide="book-open" width="64" height="64"></i>
+                <p x-text="$store.i18n.t('lore.empty')">No hay elementos de lore creados</p>
+                <span class="hint" x-text="$store.i18n.t('lore.emptyHint')">Crea tu primer elemento de lore para construir el mundo de tu historia</span>
+                <button class="btn-primary" @click="$store.ui.openModal('newLore')" style="margin-top: 16px;">
+                    <i data-lucide="plus" width="16" height="16"></i>
+                    <span x-text="$store.i18n.t('lore.new')">Crear Lore</span>
+                </button>
+            </div>
+
+            <!-- Lore Grid -->
+            <div x-show="$store.project.loreEntries.length > 0" class="content-grid">
+                <template x-for="lore in $store.project.loreEntries.slice(0, 4)" :key="lore.id">
+                    <div class="lore-card card">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                            <h3 x-text="lore.title" style="margin: 0;"></h3>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn-icon" @click="$store.ui.openModal('editLore', lore)" :title="$store.i18n.t('common.edit')">
+                                    <i data-lucide="edit" width="16" height="16"></i>
+                                </button>
+                                <button class="btn-icon" @click="if(confirm($store.i18n.t('common.confirmDelete'))) { $store.project.deleteLore(lore.id); $store.ui.success($store.i18n.t('notifications.success.loreDeleted'), ''); }" :title="$store.i18n.t('common.delete')">
+                                    <i data-lucide="trash-2" width="16" height="16"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <p x-text="lore.summary || $store.i18n.t('lore.form.summaryPlaceholder')" style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;"></p>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <span class="lore-tag" x-text="$store.i18n.t('lore.form.categories.' + lore.category)" style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 12px; font-size: 12px; color: var(--text-secondary);"></span>
+                            <template x-if="lore.relatedEntities && lore.relatedEntities.length > 0">
+                                <span style="font-size: 12px; color: var(--text-tertiary);" x-text="'Relacionado con ' + lore.relatedEntities.length + ' entidades'"></span>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Recent Timeline Events -->
+        <div style="margin-bottom: 24px;">
+            <div class="view-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h2 x-text="$store.i18n.t('sidebar.timeline')">Eventos Recientes</h2>
+                <button class="btn-secondary" @click="$store.ui.activeLoreTab = 'events'">
+                    <span x-text="$store.i18n.t('common.viewAll')">Ver Todos</span>
+                </button>
+            </div>
+
+            <div x-show="$store.project.timeline.length > 0" style="max-width: 800px;">
+                <template x-for="event in $store.project.timeline.slice(0, 3)" :key="event.id">
+                    <div class="timeline-event card" style="margin-bottom: 16px;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                            <span style="color: var(--accent); font-weight: 600;" x-text="event.date"></span>
+                            <h3 x-text="event.event" style="margin: 0;"></h3>
+                        </div>
+                        <p x-text="event.description" style="color: var(--text-secondary); font-size: 14px; margin: 0;"></p>
+                    </div>
+                </template>
+            </div>
+
+            <div x-show="$store.project.timeline.length === 0" class="empty-state" style="padding: 20px;">
+                <i data-lucide="clock" width="32" height="32"></i>
+                <p>No hay eventos temporales</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vista de Personajes -->
+    <div x-show="$store.ui.activeLoreTab === 'characters'" class="tab-content">
+        <div class="view-header" style="margin-bottom: 24px;">
+            <div>
+                <h2 x-text="$store.i18n.t('sidebar.characters')">Personajes</h2>
+                <p class="subtitle" x-text="$store.i18n.t('characters.subtitle')">Gestiona los personajes de tu novela</p>
+            </div>
+            <button class="btn-primary" @click="$store.ui.openModal('newCharacter')">
+                <i data-lucide="plus" width="16" height="16"></i>
+                <span x-text="$store.i18n.t('characters.new')">Nuevo Personaje</span>
+            </button>
+        </div>
+
+        <!-- Empty State -->
+        <div x-show="$store.project.characters.length === 0" class="empty-state">
+            <i data-lucide="users" width="64" height="64"></i>
+            <p x-text="$store.i18n.t('characters.empty')">No hay personajes creados</p>
+            <span class="hint" x-text="$store.i18n.t('characters.emptyHint')">Crea tu primer personaje para comenzar</span>
+        </div>
+
+        <!-- Characters Grid -->
+        <div x-show="$store.project.characters.length > 0" class="content-grid">
+            <template x-for="character in $store.project.characters" :key="character.id">
+                <div class="character-card">
+                    <div class="character-header">
+                        <div class="character-avatar" x-text="character.name.charAt(0).toUpperCase()"></div>
+                        <div class="character-info">
+                            <div class="character-name" x-text="character.name"></div>
+                            <div class="character-role" x-text="$store.i18n.t('characters.form.roles.' + character.role)"></div>
+                        </div>
+                    </div>
+                    <div class="character-description" x-text="character.description || $store.i18n.t('characters.form.descriptionPlaceholder')"></div>
+                    <div class="card-actions" style="margin-top: 12px; display: flex; gap: 8px; justify-content: flex-end;">
+                        <button class="btn-icon" @click="$store.ui.openModal('editCharacter', character)" :title="$store.i18n.t('common.edit')">
+                            <i data-lucide="edit" width="16" height="16"></i>
+                        </button>
+                        <button class="btn-icon" @click="if(confirm($store.i18n.t('common.confirmDelete'))) { $store.project.deleteCharacter(character.id); $store.ui.success($store.i18n.t('notifications.success.characterDeleted'), ''); }" :title="$store.i18n.t('common.delete')">
+                            <i data-lucide="trash-2" width="16" height="16"></i>
+                        </button>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- Vista de Relaciones -->
+    <div x-show="$store.ui.activeLoreTab === 'relations'" class="tab-content">
+        <div class="view-header" style="margin-bottom: 24px;">
+            <div>
+                <h2 x-text="$store.i18n.t('sidebar.relations')">Relaciones</h2>
+                <p class="subtitle">Gestiona y visualiza las relaciones entre personajes</p>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div x-show="$store.project.characters.length === 0 || $store.project.characters.every(c => !c.relationships || c.relationships.length === 0)" class="empty-state">
+            <i data-lucide="heart" width="64" height="64"></i>
+            <p>No hay relaciones creadas</p>
+            <span class="hint">Crea relaciones entre personajes en la sección de edición de personajes</span>
+        </div>
+
+        <!-- Tabs para vista de relaciones -->
+        <div x-show="$store.project.characters.length > 0 && !$store.project.characters.every(c => !c.relationships || c.relationships.length === 0)" style="margin-bottom: 24px;">
+            <div class="tabs">
+                <button class="tab-btn" 
+                        :class="{ 'active': !$store.ui.activeRelationsView || $store.ui.activeRelationsView === 'list' }" 
+                        @click="$store.ui.activeRelationsView = 'list'">
+                    <i data-lucide="list" width="16" height="16"></i>
+                    <span>Lista</span>
+                </button>
+                <button class="tab-btn" 
+                        :class="{ 'active': $store.ui.activeRelationsView === 'diagram' }" 
+                        @click="$store.ui.activeRelationsView = 'diagram'">
+                    <i data-lucide="layout-dashboard" width="16" height="16"></i>
+                    <span>Diagrama</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Vista de Lista de Relaciones -->
+        <div x-show="(!$store.ui.activeRelationsView || $store.ui.activeRelationsView === 'list') && $store.project.characters.length > 0 && !$store.project.characters.every(c => !c.relationships || c.relationships.length === 0)" style="margin-top: 16px;">
+            <div class="content-grid">
+                <template x-for="character in $store.project.characters.filter(c => c.relationships && c.relationships.length > 0)" :key="character.id">
+                    <div class="card">
+                        <h3 x-text="character.name"></h3>
+                        <div style="margin-top: 12px;">
+                            <template x-for="relation in character.relationships" :key="relation.characterId">
+                                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+                                    <span>
+                                        <span x-text="$store.i18n.t('characters.form.relationTypes.' + relation.type)"></span>:
+                                        <span x-text="$store.project.getCharacter(relation.characterId)?.name || 'Personaje desconocido'"></span>
+                                    </span>
+                                    <span style="color: var(--text-secondary); font-size: 12px;" x-text="relation.description"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Vista de Diagrama de Relaciones -->
+        <div x-show="$store.ui.activeRelationsView === 'diagram'" 
+             style="margin-top: 16px; height: 600px; background: var(--bg-tertiary); border-radius: 8px; position: relative; overflow: hidden;">
+            <div id="relations-diagram" style="width: 100%; height: 100%; position: relative;">
+                <div style="position: absolute; top: 16px; left: 16px; z-index: 100; background: var(--bg-secondary); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border);">
+                    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Leyenda:</div>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 4px;">
+                            <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent);"></div>
+                            <span style="font-size: 11px;">Personaje Principal</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 4px;">
+                            <div style="width: 6px; height: 6px; border-radius: 50%; background: var(--text-secondary);"></div>
+                            <span style="font-size: 11px;">Otro Personaje</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Nodos de personajes -->
+                <template x-for="character in $store.project.characters.filter(c => c.relationships && c.relationships.length > 0)" :key="character.id">
+                    <div class="character-node" 
+                         :data-id="character.id"
+                         :style="window.relationsDiagramHelper.getNodeStyle(character)"
+                         @click="$store.ui.selectedCharacter = character"
+                         style="position: absolute; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.3); overflow: hidden; text-align: center; padding: 8px; z-index: 10; transition: transform 0.2s;">
+                        <div style="overflow: hidden; text-overflow: ellipsis; line-height: 1.2;" x-text="character.name.split(' ')[0]"></div>
+                    </div>
+                </template>
+                
+                <!-- Líneas de relación -->
+                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;">
+                    <template x-for="(character, charIndex) in $store.project.characters.filter(c => c.relationships && c.relationships.length > 0)" :key="character.id">
+                        <template x-for="relation in character.relationships" :key="relation.characterId">
+                            <!-- Línea de relación entre personajes -->
+                            <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+                                <line 
+                                    :x1="50 + Math.cos(charIndex * 0.5) * 25 + '%'"
+                                    :y1="50 + Math.sin(charIndex * 0.5) * 25 + '%'"
+                                    :x2="50 + Math.cos(($store.project.characters.findIndex(c => c.id === relation.characterId) || 0) * 0.5) * 25 + '%'"
+                                    :y2="50 + Math.sin(($store.project.characters.findIndex(c => c.id === relation.characterId) || 0) * 0.5) * 25 + '%'"
+                                    :stroke="window.relationsDiagramHelper.getRelationColor(relation.type)"
+                                    stroke-width="2"
+                                    stroke-dasharray="4,4" />
+                            </svg>
+                        </template>
+                    </template>
+                </div>
+                
+                <!-- Información del nodo seleccionado -->
+                <template x-if="$store.ui.selectedCharacter">
+                    <div style="position: absolute; bottom: 16px; left: 16px; right: 16px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 12px; z-index: 100;">
+                        <div style="font-weight: 600; margin-bottom: 8px;" x-text="$store.ui.selectedCharacter.name"></div>
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;" x-text="$store.ui.selectedCharacter.role"></div>
+                        <div style="max-height: 100px; overflow-y: auto;">
+                            <template x-for="rel in window.relationsDiagramHelper.getCharacterRelations($store.ui.selectedCharacter.id, $store.project)" :key="rel.characterId">
+                                <div style="padding: 4px 0; border-bottom: 1px solid var(--border);">
+                                    <span x-text="$store.i18n.t('characters.form.relationTypes.' + rel.type)"></span>: 
+                                    <span x-text="rel.relatedCharacter?.name || 'Personaje desconocido'"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vista de Eventos -->
+    <div x-show="$store.ui.activeLoreTab === 'events'" class="tab-content">
+        <div class="view-header" style="margin-bottom: 24px;">
+            <div>
+                <h2 x-text="$store.i18n.t('sidebar.timeline')">Eventos</h2>
+                <p class="subtitle" x-text="$store.i18n.t('timeline.subtitle')">Organiza los eventos importantes de tu historia</p>
+            </div>
+            <button class="btn-primary" @click="$store.ui.openModal('newTimelineEvent')">
+                <i data-lucide="plus" width="16" height="16"></i>
+                <span x-text="$store.i18n.t('timeline.new')">Nuevo Evento</span>
+            </button>
+        </div>
+
+        <!-- Empty State -->
+        <div x-show="$store.project.timeline.length === 0" class="empty-state">
+            <i data-lucide="calendar" width="64" height="64"></i>
+            <p x-text="$store.i18n.t('timeline.empty')">No hay eventos en la línea temporal</p>
+            <span class="hint" x-text="$store.i18n.t('timeline.emptyHint')">Crea tu primer evento</span>
+        </div>
+
+        <!-- Timeline List -->
+        <div x-show="$store.project.timeline.length > 0" style="max-width: 800px;">
+            <template x-for="event in $store.project.timeline" :key="event.id">
+                <div class="timeline-event card" style="margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                <span style="color: var(--accent); font-weight: 600;" x-text="event.date"></span>
+                                <h3 x-text="event.event" style="margin: 0;"></h3>
+                            </div>
+                            <p x-text="event.description" style="color: var(--text-secondary); font-size: 14px; margin: 0;"></p>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn-icon" @click="$store.ui.openModal('editTimelineEvent', event)" :title="$store.i18n.t('common.edit')">
+                                <i data-lucide="edit" width="16" height="16"></i>
+                            </button>
+                            <button class="btn-icon" @click="if(confirm($store.i18n.t('common.confirmDelete'))) { $store.project.deleteTimelineEvent(event.id); $store.ui.success($store.i18n.t('notifications.success.eventDeleted'), ''); }" :title="$store.i18n.t('common.delete')">
+                                <i data-lucide="trash-2" width="16" height="16"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- Vista de Ubicaciones -->
+    <div x-show="$store.ui.activeLoreTab === 'locations'" class="tab-content">
+        <div class="view-header" style="margin-bottom: 24px;">
+            <div>
+                <h2 x-text="$store.i18n.t('locations.title')">Ubicaciones</h2>
+                <p class="subtitle" x-text="$store.i18n.t('locations.subtitle')">Gestiona los lugares de tu novela</p>
+            </div>
+            <button class="btn-primary" @click="$store.ui.openModal('newLocation')">
+                <i data-lucide="plus" width="16" height="16"></i>
+                <span x-text="$store.i18n.t('locations.new')">Nueva Ubicación</span>
+            </button>
+        </div>
+
+        <!-- Empty State -->
+        <div x-show="$store.project.locations.length === 0" class="empty-state">
+            <i data-lucide="map-pin" width="64" height="64"></i>
+            <p x-text="$store.i18n.t('locations.empty')">No hay ubicaciones creadas</p>
+            <span class="hint" x-text="$store.i18n.t('locations.emptyHint')">Crea tu primera ubicación</span>
+        </div>
+
+        <!-- Locations Grid -->
+        <div x-show="$store.project.locations.length > 0" class="content-grid">
+            <template x-for="location in $store.project.locations" :key="location.id">
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                        <h3 x-text="location.name" style="margin: 0;"></h3>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn-icon" @click="$store.ui.openModal('editLocation', location)" :title="$store.i18n.t('common.edit')">
+                                <i data-lucide="edit" width="16" height="16"></i>
+                            </button>
+                            <button class="btn-icon" @click="if(confirm($store.i18n.t('common.confirmDelete'))) { $store.project.deleteLocation(location.id); $store.ui.success($store.i18n.t('notifications.success.locationDeleted'), ''); }" :title="$store.i18n.t('common.delete')">
+                                <i data-lucide="trash-2" width="16" height="16"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <p x-text="location.description || $store.i18n.t('locations.form.descriptionPlaceholder')" style="color: var(--text-secondary); font-size: 14px;"></p>
+                </div>
+            </template>
+        </div>
+    </div>
+</div>

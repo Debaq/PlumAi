@@ -1,0 +1,235 @@
+<!-- Editor View -->
+<div x-show="$store.ui.currentView === 'editor'"
+     class="view"
+     style="padding: 0; height: 100%;"
+     x-data="editorEnhancedComponent()">
+
+    <template x-if="currentChapter">
+        <div class="editor-container">
+            <!-- Editor Main Area -->
+            <div class="editor-main">
+                <!-- Toolbar -->
+                <div class="editor-toolbar">
+                    <div class="editor-toolbar-left">
+                        <button class="btn-icon" @click="$store.ui.closeEditor()" :title="$store.i18n.t('common.back')">
+                            <i data-lucide="arrow-left" width="20" height="20"></i>
+                        </button>
+                        <div>
+                            <div class="editor-title" x-text="'Capítulo ' + currentChapter.number + ': ' + (currentChapter.title || 'Sin título')"></div>
+                            <div class="editor-meta">
+                                <span x-text="$store.i18n.t('editor.wordCount', { count: currentChapter.wordCount || 0 })"></span>
+                                <span>·</span>
+                                <span x-text="$store.i18n.t('chapters.form.statuses.' + currentChapter.status)"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="editor-toolbar-right">
+                        <div class="editor-save-indicator" :class="$store.ui.editorSaveStatus">
+                            <template x-if="$store.ui.editorSaveStatus === 'saving'">
+                                <span x-text="$store.i18n.t('editor.saving')"></span>
+                            </template>
+                            <template x-if="$store.ui.editorSaveStatus === 'saved'">
+                                <span x-text="$store.i18n.t('editor.saved')"></span>
+                            </template>
+                            <template x-if="$store.ui.editorSaveStatus === 'unsaved'">
+                                <span>...</span>
+                            </template>
+                        </div>
+                        <button class="btn-icon" @click="$store.ui.toggleEditorSidebar()" :title="$store.ui.editorSidebarOpen ? 'Ocultar panel' : 'Mostrar panel'">
+                            <i data-lucide="sidebar-close" width="20" height="20"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Writing Area -->
+                <div class="editor-writing-area" style="position: relative;">
+                    <textarea
+                        class="editor-textarea"
+                        :placeholder="$store.i18n.t('editor.placeholder')"
+                        x-model="currentChapter.content"
+                        @input="handleInput($event)"
+                        @keydown="handleKeyDown($event)"
+                        autofocus
+                    ></textarea>
+
+                    <!-- Slash Commands Menu -->
+                    <div x-show="showCommandMenu"
+                         class="slash-commands-menu"
+                         :style="`top: ${commandMenuPosition.top}px; left: ${commandMenuPosition.left}px;`"
+                         @click.outside="hideCommandMenu()">
+                        <template x-for="(command, index) in filteredCommands" :key="command.id">
+                            <div class="slash-command-item"
+                                 :class="{ 'selected': index === selectedCommandIndex }"
+                                 @click="executeCommand(command)"
+                                 @mouseenter="selectedCommandIndex = index">
+                                <div class="slash-command-icon">
+                                    <i :data-lucide="command.icon" width="18" height="18"></i>
+                                </div>
+                                <div class="slash-command-content">
+                                    <div class="slash-command-title" x-text="command.title"></div>
+                                    <div class="slash-command-desc" x-text="command.desc"></div>
+                                </div>
+                            </div>
+                        </template>
+                        <template x-if="filteredCommands.length === 0">
+                            <div style="padding: 20px; text-align: center; color: var(--text-tertiary);">
+                                No se encontraron comandos
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Mentions Menu (@) -->
+                    <div x-show="showMentionsMenu"
+                         class="mentions-menu"
+                         :style="`top: ${mentionsMenuPosition.top}px; left: ${mentionsMenuPosition.left}px;`"
+                         @click.outside="showMentionsMenu = false">
+                        <template x-for="(character, index) in filteredMentions" :key="character.id">
+                            <div class="mention-item"
+                                 :class="{ 'selected': index === selectedMentionIndex }"
+                                 @click="insertMention(character)"
+                                 @mouseenter="selectedMentionIndex = index"
+                                 @dblclick="openCharacterInfo(character)">
+                                <div class="mention-avatar" x-text="character.name.charAt(0).toUpperCase()"></div>
+                                <div class="mention-info">
+                                    <div class="mention-name" x-text="character.name"></div>
+                                    <div class="mention-role" x-text="$store.i18n.t('characters.form.roles.' + character.role)"></div>
+                                </div>
+                                <template x-if="character.badge === 'in-scene'">
+                                    <span class="mention-badge in-scene">En escena</span>
+                                </template>
+                            </div>
+                        </template>
+                        <template x-if="filteredMentions.length === 0">
+                            <div style="padding: 20px; text-align: center; color: var(--text-tertiary);">
+                                <p style="margin-bottom: 8px;">No se encontraron personajes</p>
+                                <button class="btn-primary" @click="$store.ui.openModal('newCharacter'); showMentionsMenu = false;" style="padding: 6px 12px; font-size: 12px;">
+                                    Crear personaje
+                                </button>
+                            </div>
+                        </template>
+                        <div style="padding: 8px; border-top: 1px solid var(--border); margin-top: 4px;">
+                            <div style="font-size: 11px; color: var(--text-tertiary); text-align: center;">
+                                Doble clic para ver info
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comment Popup -->
+                    <div x-show="showCommentPopup"
+                         class="comment-popup"
+                         style="top: 100px; right: 20px;"
+                         @click.outside="showCommentPopup = false">
+                        <div class="comment-popup-header">
+                            <span class="comment-popup-title">💬 Comentario</span>
+                            <button class="btn-icon" @click="showCommentPopup = false" style="width: 24px; height: 24px;">
+                                <i data-lucide="x" width="14" height="14"></i>
+                            </button>
+                        </div>
+                        <textarea
+                            class="comment-popup-textarea"
+                            x-model="currentComment"
+                            placeholder="Escribe tu comentario aquí..."
+                            autofocus
+                        ></textarea>
+                        <div class="comment-popup-actions">
+                            <button class="btn-secondary" @click="cancelComment()" style="flex: 1; padding: 6px; font-size: 13px;">
+                                Cancelar
+                            </button>
+                            <button class="btn-primary" @click="saveComment()" style="flex: 1; padding: 6px; font-size: 13px;">
+                                Guardar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Editor Sidebar -->
+            <aside class="editor-sidebar" :class="{ 'collapsed': !$store.ui.editorSidebarOpen }">
+                <!-- Chapter Info -->
+                <div class="editor-sidebar-section">
+                    <h3 x-text="$store.i18n.t('chapters.form.title')"></h3>
+                    <input
+                        type="text"
+                        x-model="currentChapter.title"
+                        @input="autoSave()"
+                        :placeholder="$store.i18n.t('chapters.form.titlePlaceholder')"
+                        style="width: 100%; padding: 8px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary);"
+                    >
+                    <div style="margin-top: 12px;">
+                        <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 4px;" x-text="$store.i18n.t('chapters.form.status')"></label>
+                        <select
+                            x-model="currentChapter.status"
+                            @change="autoSave()"
+                            style="width: 100%; padding: 8px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); cursor: pointer;"
+                        >
+                            <option value="draft" x-text="$store.i18n.t('chapters.form.statuses.draft')"></option>
+                            <option value="review" x-text="$store.i18n.t('chapters.form.statuses.review')"></option>
+                            <option value="final" x-text="$store.i18n.t('chapters.form.statuses.final')"></option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Characters Context -->
+                <div class="editor-sidebar-section">
+                    <h3 x-text="$store.i18n.t('sidebar.characters')"></h3>
+                    <template x-if="$store.project.characters.length === 0">
+                        <p style="font-size: 13px; color: var(--text-tertiary);" x-text="$store.i18n.t('characters.empty')"></p>
+                    </template>
+                    <template x-if="$store.project.characters.length > 0">
+                        <div>
+                            <template x-for="character in $store.project.characters.slice(0, 5)" :key="character.id">
+                                <div class="editor-context-item">
+                                    <div class="editor-context-item-title" x-text="character.name"></div>
+                                    <div class="editor-context-item-desc" x-text="$store.i18n.t('characters.form.roles.' + character.role)"></div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- AI Assistant -->
+                <div class="editor-sidebar-section" style="background: var(--bg-tertiary); margin: 0; border-radius: 0;">
+                    <h3 style="display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="sparkles" width="16" height="16" style="color: var(--accent);"></i>
+                        <span x-text="$store.i18n.t('sidebar.aiAssistant')"></span>
+                    </h3>
+                    <div class="editor-ai-actions">
+                        <button class="editor-ai-btn" @click="$store.ui.info('IA', 'Funcionalidad en desarrollo')">
+                            <i data-lucide="wand-2" width="16" height="16"></i>
+                            <span>Continuar escribiendo</span>
+                        </button>
+                        <button class="editor-ai-btn" @click="$store.ui.info('IA', 'Funcionalidad en desarrollo')">
+                            <i data-lucide="lightbulb" width="16" height="16"></i>
+                            <span>Sugerir mejoras</span>
+                        </button>
+                        <button class="editor-ai-btn" @click="$store.ui.info('IA', 'Funcionalidad en desarrollo')">
+                            <i data-lucide="sparkles" width="16" height="16"></i>
+                            <span>Generar contenido</span>
+                        </button>
+                        <button class="editor-ai-btn" @click="$store.ui.info('IA', 'Funcionalidad en desarrollo')">
+                            <i data-lucide="book-open" width="16" height="16"></i>
+                            <span>Resumir capítulo</span>
+                        </button>
+                    </div>
+                    <template x-if="!$store.ai.isActive">
+                        <p style="font-size: 12px; color: var(--text-tertiary); margin-top: 12px; text-align: center;">
+                            <i data-lucide="alert-circle" width="14" height="14" style="display: inline;"></i>
+                            <span x-text="$store.i18n.t('ai.settings.noApiKey')"></span>
+                        </p>
+                    </template>
+                </div>
+            </aside>
+        </div>
+    </template>
+
+    <!-- Empty state si no hay capítulo seleccionado -->
+    <template x-if="!currentChapter">
+        <div class="empty-state">
+            <i data-lucide="book-open" width="64" height="64"></i>
+            <p>No hay capítulo seleccionado</p>
+            <button class="btn-primary" @click="$store.ui.setView('chapters')" style="margin-top: 16px;">
+                <span x-text="$store.i18n.t('sidebar.chapters')"></span>
+            </button>
+        </div>
+    </template>
+</div>

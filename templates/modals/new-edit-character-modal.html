@@ -1,0 +1,159 @@
+<!-- New/Edit Character Modal -->
+<div class="legacy-modal" :class="{ 'active': $store.ui.modals.newCharacter || $store.ui.modals.editCharacter }">
+    <div class="legacy-modal-content">
+        <div class="legacy-modal-header">
+            <h2 x-text="$store.ui.modals.editCharacter ? $store.i18n.t('characters.edit') : $store.i18n.t('characters.new')">Personaje</h2>
+            <button class="btn-close" @click="$store.ui.closeModal()">
+                <i data-lucide="x" width="20" height="20"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form @submit.prevent="
+                const formData = {
+                    name: $el.querySelector('[name=name]').value,
+                    role: $el.querySelector('[name=role]').value,
+                    description: $el.querySelector('[name=description]').value,
+                    personality: $el.querySelector('[name=personality]').value,
+                    background: $el.querySelector('[name=background]').value,
+                    notes: $el.querySelector('[name=notes]').value,
+                    relationships: $store.ui.modalData?.relationships || []
+                };
+                if ($store.ui.modalData?.id) {
+                    $store.project.updateCharacter($store.ui.modalData.id, formData);
+                    $store.ui.success($store.i18n.t('notifications.success.characterUpdated'), '');
+                } else {
+                    $store.project.addCharacter(formData);
+                    $store.ui.success($store.i18n.t('notifications.success.characterCreated'), '');
+                }
+                $store.ui.closeModal();
+                $el.reset();
+                lucide.createIcons();
+            ">
+                <div class="form-group">
+                    <label x-text="$store.i18n.t('characters.form.name')">Nombre</label>
+                    <input type="text" name="name" required :placeholder="$store.i18n.t('characters.form.namePlaceholder')" :value="$store.ui.modalData?.name || ''">
+                </div>
+                <div class="form-group">
+                    <label x-text="$store.i18n.t('characters.form.role')">Rol</label>
+                    <select name="role">
+                        <option value="protagonist" :selected="$store.ui.modalData?.role === 'protagonist'" x-text="$store.i18n.t('characters.form.roles.protagonist')">Protagonista</option>
+                        <option value="antagonist" :selected="$store.ui.modalData?.role === 'antagonist'" x-text="$store.i18n.t('characters.form.roles.antagonist')">Antagonista</option>
+                        <option value="secondary" :selected="!$store.ui.modalData || $store.ui.modalData?.role === 'secondary'" x-text="$store.i18n.t('characters.form.roles.secondary')">Secundario</option>
+                        <option value="supporting" :selected="$store.ui.modalData?.role === 'supporting'" x-text="$store.i18n.t('characters.form.roles.supporting')">De apoyo</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label x-text="$store.i18n.t('characters.form.description')">Descripción Física</label>
+                    <textarea name="description" :placeholder="$store.i18n.t('characters.form.descriptionPlaceholder')" x-text="$store.ui.modalData?.description || ''"></textarea>
+                </div>
+                <div class="form-group">
+                    <label x-text="$store.i18n.t('characters.form.personality')">Personalidad</label>
+                    <textarea name="personality" :placeholder="$store.i18n.t('characters.form.personalityPlaceholder')" x-text="$store.ui.modalData?.personality || ''"></textarea>
+                </div>
+                <div class="form-group">
+                    <label x-text="$store.i18n.t('characters.form.background')">Historia de Fondo</label>
+                    <textarea name="background" :placeholder="$store.i18n.t('characters.form.backgroundPlaceholder')" x-text="$store.ui.modalData?.background || ''"></textarea>
+                </div>
+                <div class="form-group">
+                    <label x-text="$store.i18n.t('characters.form.notes')">Notas Adicionales</label>
+                    <textarea name="notes" :placeholder="$store.i18n.t('characters.form.notesPlaceholder')" x-text="$store.ui.modalData?.notes || ''"></textarea>
+                </div>
+                
+                <!-- Relaciones con otros personajes -->
+                <div class="form-group">
+                    <label x-text="$store.i18n.t('characters.form.relationships')">Relaciones con otros personajes</label>
+                    <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 12px;">
+                        <div x-data="{
+                            newRelationship: { characterId: null, type: 'friend', description: '' },
+                            get availableCharacters() {
+                                return $store.project.characters.filter(c => 
+                                    c.id !== $store.ui.modalData?.id && 
+                                    !($store.ui.modalData?.relationships || []).some(r => r.characterId === c.id)
+                                );
+                            }
+                        }" 
+                        x-init="newRelationship.characterId = availableCharacters[0]?.id || null">
+                            <template x-for="relation in $store.ui.modalData?.relationships || []" :key="relation.characterId">
+                                <div class="relationship-item" style="display: flex; align-items: center; gap: 8px; padding: 8px; background: var(--bg-secondary); border-radius: 6px; margin-bottom: 8px;">
+                                    <span style="flex: 1;" x-text="(() => {
+                                        const relatedChar = $store.project.getCharacter(relation.characterId);
+                                        return relatedChar ? relatedChar.name : 'Personaje desconocido';
+                                    })()"></span>
+                                    <span style="color: var(--text-secondary); font-size: 12px;" x-text="$store.i18n.t('characters.form.relationTypes.' + relation.type)"></span>
+                                    <button type="button" class="btn-icon" @click="() => {
+                                        $store.ui.modalData.relationships = $store.ui.modalData.relationships.filter(r => r.characterId !== relation.characterId);
+                                    }" style="padding: 4px;">
+                                        <i data-lucide="x" width="16" height="16"></i>
+                                    </button>
+                                </div>
+                            </template>
+                            
+                            <div style="display: flex; gap: 8px; margin-top: 12px;">
+                                <select x-model="newRelationship.characterId" style="flex: 1; padding: 8px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px;" x-bind:disabled="!availableCharacters || availableCharacters.length === 0">
+                                    <template x-if="!availableCharacters || availableCharacters.length === 0">
+                                        <option value="">No hay personajes disponibles</option>
+                                    </template>
+                                    <template x-for="char in availableCharacters" :key="char.id">
+                                        <option :value="char.id" x-text="char.name"></option>
+                                    </template>
+                                </select>
+                                <select x-model="newRelationship.type" style="padding: 8px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px;">
+                                    <optgroup label="Relaciones Personales">
+                                        <option value="friend" x-text="$store.i18n.t('characters.form.relationTypes.friend')">Amigo</option>
+                                        <option value="love" x-text="$store.i18n.t('characters.form.relationTypes.love')">Romántico</option>
+                                        <option value="acquaintance" x-text="$store.i18n.t('characters.form.relationTypes.acquaintance')">Conocido</option>
+                                        <option value="neighbor" x-text="$store.i18n.t('characters.form.relationTypes.neighbor')">Vecino</option>
+                                        <option value="ally" x-text="$store.i18n.t('characters.form.relationTypes.ally')">Aliado</option>
+                                        <option value="rival" x-text="$store.i18n.t('characters.form.relationTypes.rival')">Rival</option>
+                                        <option value="ex" x-text="$store.i18n.t('characters.form.relationTypes.ex')">Ex</option>
+                                        <option value="crush" x-text="$store.i18n.t('characters.form.relationTypes.crush')">Crush</option>
+                                    </optgroup>
+                                    <optgroup label="Relaciones Familiares">
+                                        <option value="family" x-text="$store.i18n.t('characters.form.relationTypes.family')">Familia</option>
+                                        <option value="guardian" x-text="$store.i18n.t('characters.form.relationTypes.guardian')">Guardián</option>
+                                        <option value="ward" x-text="$store.i18n.t('characters.form.relationTypes.ward')">Tutelado</option>
+                                    </optgroup>
+                                    <optgroup label="Relaciones Profesionales">
+                                        <option value="colleague" x-text="$store.i18n.t('characters.form.relationTypes.colleague')">Colega</option>
+                                        <option value="collaborator" x-text="$store.i18n.t('characters.form.relationTypes.collaborator')">Colaborador</option>
+                                        <option value="mentor" x-text="$store.i18n.t('characters.form.relationTypes.mentor')">Mentor</option>
+                                        <option value="teacher" x-text="$store.i18n.t('characters.form.relationTypes.teacher')">Profesor</option>
+                                        <option value="student" x-text="$store.i18n.t('characters.form.relationTypes.student')">Estudiante</option>
+                                        <option value="boss" x-text="$store.i18n.t('characters.form.relationTypes.boss')">Jefe</option>
+                                        <option value="subordinate" x-text="$store.i18n.t('characters.form.relationTypes.subordinate')">Subordinado</option>
+                                        <option value="businessPartner" x-text="$store.i18n.t('characters.form.relationTypes.businessPartner')">Socio de Negocios</option>
+                                        <option value="partner" x-text="$store.i18n.t('characters.form.relationTypes.partner')">Socio</option>
+                                    </optgroup>
+                                    <optgroup label="Relaciones de Ficción">
+                                        <option value="hero" x-text="$store.i18n.t('characters.form.relationTypes.hero')">Héroe</option>
+                                        <option value="villain" x-text="$store.i18n.t('characters.form.relationTypes.villain')">Villano</option>
+                                        <option value="sidekick" x-text="$store.i18n.t('characters.form.relationTypes.sidekick')">Compañero</option>
+                                        <option value="archenemy" x-text="$store.i18n.t('characters.form.relationTypes.archenemy')">Arquienemigo</option>
+                                        <option value="rivalLove" x-text="$store.i18n.t('characters.form.relationTypes.rivalLove')">Rival Amoroso</option>
+                                    </optgroup>
+                                    <optgroup label="Relaciones de Conflicto">
+                                        <option value="enemy" x-text="$store.i18n.t('characters.form.relationTypes.enemy')">Enemigo</option>
+                                    </optgroup>
+                                </select>
+                                <button type="button" class="btn-primary" @click="() => {
+                                    if (newRelationship.characterId && !($store.ui.modalData.relationships || []).some(r => r.characterId === newRelationship.characterId)) {
+                                        $store.ui.modalData.relationships = [...($store.ui.modalData.relationships || []), { ...newRelationship }];
+                                        newRelationship = { characterId: availableCharacters[0]?.id || null, type: 'friend', description: '' };
+                                    }
+                                }" style="padding: 8px 12px;" x-bind:disabled="!newRelationship.characterId">
+                                    <i data-lucide="plus" width="16" height="16"></i>
+                                </button>
+                            </div>
+                            <small style="display: block; margin-top: 8px; color: var(--text-tertiary);" x-text="$store.i18n.t('characters.form.relationshipsHint')"></small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" @click="$store.ui.closeModal()" x-text="$store.i18n.t('common.cancel')">Cancelar</button>
+                    <button type="submit" class="btn-primary" x-text="$store.ui.modalData?.id ? $store.i18n.t('common.save') : $store.i18n.t('common.create')">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

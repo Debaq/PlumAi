@@ -1,0 +1,90 @@
+<!-- Modal para crear un fork -->
+<div class="modal-overlay" x-show="$store.ui.isModalOpen('createFork')" 
+     x-transition:enter="transition-opacity ease-out duration-300"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition-opacity ease-in duration-200"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0"
+     @click="$store.ui.closeModal('createFork')"
+     x-data="createForkModalComponent()">
+    <div class="modal" @click.stop style="width: 600px; max-width: 90vw;">
+        <div class="modal-header">
+            <h2 x-text="$store.i18n.t('versionControl.createFork') || 'Crear Fork'"></h2>
+            <button class="modal-close" @click="$store.ui.closeModal('createFork')">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <div class="form-group">
+                <label x-text="$store.i18n.t('versionControl.forkName') || 'Nombre del fork'"></label>
+                <input type="text" 
+                       class="form-control" 
+                       x-model="name"
+                       :placeholder="$store.i18n.t('versionControl.forkNamePlaceholder') || 'Nombre del nuevo proyecto...'">
+            </div>
+            
+            <div class="form-group">
+                <label x-text="$store.i18n.t('versionControl.description') || 'Descripción'"></label>
+                <textarea 
+                    class="form-control" 
+                    rows="3" 
+                    x-model="description"
+                    :placeholder="$store.i18n.t('versionControl.descriptionPlaceholder') || 'Breve descripción del propósito del fork...'"></textarea>
+            </div>
+            
+            <!-- Información del proyecto original -->
+            <div class="section">
+                <h3 x-text="$store.i18n.t('versionControl.originalProject') || 'Proyecto Original'"></h3>
+                <div class="project-info">
+                    <div class="form-group">
+                        <label x-text="$store.i18n.t('common.title') || 'Título:'"></label>
+                        <span class="form-control-static" x-text="$store.project.projectInfo.title"></span>
+                    </div>
+                    <div class="form-group">
+                        <label x-text="$store.i18n.t('common.author') || 'Autor:'"></label>
+                        <span class="form-control-static" x-text="$store.project.projectInfo.author"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Estadísticas del proyecto -->
+            <div class="section">
+                <h3 x-text="$store.i18n.t('versionControl.currentProjectStats') || 'Estadísticas del Proyecto Original'"></h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-label" x-text="$store.i18n.t('stats.totalWords') || 'Palabras totales:'"></span>
+                        <span class="stat-value" x-text="totalWords"></span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label" x-text="$store.i18n.t('stats.totalChapters') || 'Capítulos:'"></span>
+                        <span class="stat-value" x-text="totalChapters"></span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label" x-text="$store.i18n.t('stats.totalCharacters') || 'Personajes:'"></span>
+                        <span class="stat-value" x-text="totalCharacters"></span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label" x-text="$store.i18n.t('stats.totalScenes') || 'Escenas:'"></span>
+                        <span class="stat-value" x-text="totalScenes"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info">
+                <i data-lucide="info" width="16" height="16"></i>
+                <span x-text="$store.i18n.t('versionControl.forkInfo') || 'Un fork crea una copia independiente del proyecto con su propia historia de versiones.'"></span>
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <button class="btn btn-secondary" @click="$store.ui.closeModal('createFork')" 
+                    x-text="$store.i18n.t('common.cancel') || 'Cancelar'"></button>
+            <button class="btn btn-primary" 
+                    @click="createForkWithModalData()"
+                    :disabled="!name.trim()"
+                    x-text="$store.i18n.t('versionControl.createFork') || 'Crear Fork'"></button>
+        </div>
+    </div>
+</div>
