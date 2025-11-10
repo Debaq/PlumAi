@@ -10,9 +10,9 @@
     <!-- Empty State - No Project -->
     <div x-show="$store.project.projectInfo.id === null" class="empty-state">
         <i data-lucide="pen-line" width="64" height="64"></i>
-        <h2 style="margin-top: 16px;">Bienvenido a PlumaAI</h2>
+        <h2 class="mt-xl">Bienvenido a PlumaAI</h2>
         <p>Crea un nuevo proyecto para comenzar a escribir tu novela</p>
-        <button class="btn-primary" @click="$store.ui.openModal('newProject')" style="margin-top: 16px;">
+        <button class="btn-primary mt-xl" @click="$store.ui.openModal('newProject')">
             <i data-lucide="plus" width="16" height="16"></i>
             <span x-text="$store.i18n.t('header.newProject')">Crear Proyecto</span>
         </button>

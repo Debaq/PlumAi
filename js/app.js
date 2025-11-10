@@ -4,8 +4,6 @@
 // Asumimos que los stores y storageManager están disponibles globalmente (cargados en index.html)
 
 document.addEventListener('alpine:init', () => {
-    console.log('🚀 Inicializando PlumaAI...');
-
     // Hacer los objetos profundamente reactivos primero
     const reactiveI18n = Alpine.reactive(window.i18nStore);
     const reactiveProject = Alpine.reactive(window.projectStore);
@@ -20,21 +18,18 @@ document.addEventListener('alpine:init', () => {
     Alpine.store('ai', reactiveAi);
     Alpine.store('versionControl', reactiveVersionControl);
 
-    console.log('📋 Stores registrados como Proxy');
+    // Inicializar sistemas de servicios primero (antes de los stores)
+    // Inicializar Version Control primero
+    window.versionControl.init();
 
-    // Inicializar stores que lo requieran
+    // Inicializar Storage Manager
+    window.storageManager.init();
+
+    // Inicializar stores que lo requieran (después de los servicios)
     Alpine.store('i18n').init();
     Alpine.store('ui').init();
     Alpine.store('ai').init();
     Alpine.store('versionControl').init();
-
-    // Inicializar Storage Manager
-    window.storageManager.init();
-    console.log('✅ Storage Manager inicializado');
-    
-    // Inicializar Version Control
-    window.versionControl.init();
-    console.log('✅ Version Control inicializado');
 
     // Cargar último proyecto al inicio
     window.storageManager.getProjectsList().then(projects => {
@@ -88,14 +83,501 @@ document.addEventListener('alpine:init', () => {
         Alpine.store('ui').openModal('newProject');
     });
 
-    console.log('✅ Stores inicializados');
-    console.log('🎯 Estado inicial:', Alpine.store('ui').currentView);
-
     // Registrar componentes
     Alpine.data('headerComponent', window.headerComponent);
     Alpine.data('sidebarComponent', window.sidebarComponent);
     Alpine.data('mainContentComponent', window.mainContentComponent);
     Alpine.data('versionControlComponent', window.versionControlComponent);
+    Alpine.data('publishingComponent', window.publishingComponent);
+    Alpine.data('characterInfoModalComponent', window.characterInfoModalComponent);
+    Alpine.data('editorAlpineComponent', window.editorAlpineComponent);
+    Alpine.data('richEditorComponent', window.richEditorComponent);
+
+    // Registrar componente de vista de control de versiones
+    Alpine.data('versionControlView', () => ({
+        // Estado
+        commits: [],
+        stats: {
+            totalCommits: 0,
+            currentBranch: 'main',
+            totalBranches: 0
+        },
+        loading: false,
+        commitMessage: '',
+        authorName: '',
+        selectedCommit: null,
+        diffHtml: '',
+
+        // Nuevos estados
+        showCommitModal: false,
+        showBranchModal: false,
+        newBranchName: '',
+        changedFiles: [],
+        selectedFile: null,
+        selectedFileDiff: '',
+        lastProjectState: null,
+        hasUncommittedChanges: false,
+
+        // Inicialización
+        async init() {
+            // Cargar datos primero
+            await this.loadCommits();
+            await this.loadStats();
+
+            // Crear datos de prueba si no hay commits
+            if (this.commits.length === 0) {
+                await this.createDemoData();
+                // Recargar commits después de crear datos de prueba
+                await this.loadCommits();
+            }
+
+            // CLAVE: Obtener el estado del ÚLTIMO COMMIT como referencia
+            // NO del estado actual del proyecto
+            await this.loadLastCommitState();
+
+            // Detectar cambios inmediatamente
+            await this.detectChanges();
+
+            // Verificar cambios cada 2 segundos (más confiable que $watch)
+            if (!this.changeDetectionInterval) {
+                this.changeDetectionInterval = setInterval(async () => {
+                    await this.detectChanges();
+                }, 2000);
+            }
+        },
+
+        // Cargar el estado del último commit como referencia
+        async loadLastCommitState() {
+            try {
+                if (this.commits.length > 0) {
+                    // Obtener el último commit
+                    const lastCommit = this.commits[0];
+                    console.log('📌 Usando último commit como referencia:', lastCommit.oid.substring(0, 7));
+
+                    // Obtener el proyecto en ese estado
+                    const projectAtCommit = await window.gitService.getFileAtCommit(lastCommit.oid, 'project.json');
+
+                    if (projectAtCommit) {
+                        this.lastProjectState = projectAtCommit;
+                        console.log('📸 Estado del último commit cargado');
+                    } else {
+                        // Si falla, usar el estado actual
+                        this.lastProjectState = JSON.stringify(Alpine.store('project').exportProject());
+                        console.log('⚠️ No se pudo cargar commit, usando estado actual');
+                    }
+                } else {
+                    // No hay commits, usar el estado actual
+                    this.lastProjectState = JSON.stringify(Alpine.store('project').exportProject());
+                    console.log('📸 Sin commits previos, usando estado actual');
+                }
+            } catch (error) {
+                console.error('Error cargando estado del último commit:', error);
+                this.lastProjectState = JSON.stringify(Alpine.store('project').exportProject());
+            }
+        },
+
+        // Normalizar estado para comparación (quitar campos que cambian automáticamente)
+        normalizeState(state) {
+            const normalized = JSON.parse(JSON.stringify(state));
+
+            // Eliminar campos que no importan para la detección de cambios
+            if (normalized.projectInfo) {
+                delete normalized.projectInfo.modified; // Este campo cambia automáticamente
+            }
+
+            return normalized;
+        },
+
+        // Detectar cambios pendientes
+        async detectChanges() {
+            if (!this.lastProjectState) {
+                console.warn('⚠️ No hay estado de referencia para comparar');
+                return;
+            }
+
+            // Normalizar ambos estados antes de comparar
+            const oldState = this.normalizeState(JSON.parse(this.lastProjectState));
+            const newState = this.normalizeState(Alpine.store('project').exportProject());
+
+            const currentState = JSON.stringify(newState);
+            const lastState = JSON.stringify(oldState);
+            const hasChanges = currentState !== lastState;
+
+            // Solo actualizar si realmente cambió
+            if (hasChanges !== this.hasUncommittedChanges) {
+                this.hasUncommittedChanges = hasChanges;
+                console.log('🔄 Cambios detectados:', hasChanges);
+
+                if (hasChanges) {
+                    // Log para debug
+                    console.log('📊 Comparando estados:');
+                    console.log('  Capítulos:', oldState.chapters?.length, '→', newState.chapters?.length);
+                    console.log('  Personajes:', oldState.characters?.length, '→', newState.characters?.length);
+                    console.log('  Escenas:', oldState.scenes?.length, '→', newState.scenes?.length);
+                }
+            }
+
+            if (this.hasUncommittedChanges) {
+                // Analizar qué cambió específicamente usando estados normalizados
+                const files = [];
+
+                // Comparar diferentes secciones (ya normalizadas arriba)
+                if (JSON.stringify(oldState.projectInfo) !== JSON.stringify(newState.projectInfo)) {
+                    files.push({ path: 'project-info', status: 'modified' });
+                    // Log detallado para debugging
+                    console.log('🔍 project-info cambió:');
+                    console.log('  Anterior:', oldState.projectInfo);
+                    console.log('  Actual:', newState.projectInfo);
+                }
+                if (JSON.stringify(oldState.chapters) !== JSON.stringify(newState.chapters)) {
+                    files.push({ path: 'chapters', status: 'modified' });
+                }
+                if (JSON.stringify(oldState.characters) !== JSON.stringify(newState.characters)) {
+                    files.push({ path: 'characters', status: 'modified' });
+                }
+                if (JSON.stringify(oldState.scenes) !== JSON.stringify(newState.scenes)) {
+                    files.push({ path: 'scenes', status: 'modified' });
+                }
+                if (JSON.stringify(oldState.locations) !== JSON.stringify(newState.locations)) {
+                    files.push({ path: 'locations', status: 'modified' });
+                }
+                if (JSON.stringify(oldState.lore) !== JSON.stringify(newState.lore)) {
+                    files.push({ path: 'lore', status: 'modified' });
+                }
+                if (JSON.stringify(oldState.timeline) !== JSON.stringify(newState.timeline)) {
+                    files.push({ path: 'timeline', status: 'modified' });
+                }
+
+                this.changedFiles = files.length > 0 ? files : [{ path: 'project.json', status: 'modified' }];
+                console.log('📝 Archivos modificados:', files.map(f => f.path).join(', '));
+            } else {
+                this.changedFiles = [];
+                console.log('✅ Sin cambios pendientes');
+            }
+        },
+
+        // Seleccionar archivo para ver preview de cambios
+        async selectFileForDiff(file) {
+            this.selectedFile = file;
+
+            // Generar preview detallado de cambios usando estados normalizados
+            const oldStateRaw = this.lastProjectState ? JSON.parse(this.lastProjectState) : {};
+            const newStateRaw = Alpine.store('project').exportProject();
+
+            const oldState = this.normalizeState(oldStateRaw);
+            const newState = this.normalizeState(newStateRaw);
+
+            const changes = [];
+
+            // Función helper para comparar arrays
+            const compareArrays = (oldArr = [], newArr = [], type) => {
+                const oldLen = oldArr.length;
+                const newLen = newArr.length;
+
+                if (oldLen !== newLen) {
+                    const diff = newLen - oldLen;
+                    const sign = diff > 0 ? '+' : '';
+                    changes.push(`${type}: ${oldLen} → ${newLen} (${sign}${diff})`);
+                }
+
+                // Detectar modificaciones
+                const oldIds = new Set(oldArr.map(item => item.id));
+                const newIds = new Set(newArr.map(item => item.id));
+
+                const added = newArr.filter(item => !oldIds.has(item.id));
+                const removed = oldArr.filter(item => !newIds.has(item.id));
+                const modified = newArr.filter(item => {
+                    if (!oldIds.has(item.id)) return false;
+                    const oldItem = oldArr.find(o => o.id === item.id);
+                    return JSON.stringify(oldItem) !== JSON.stringify(item);
+                });
+
+                if (added.length > 0) {
+                    added.forEach(item => {
+                        changes.push(`  + Agregado: ${item.title || item.name || item.id}`);
+                    });
+                }
+                if (removed.length > 0) {
+                    removed.forEach(item => {
+                        changes.push(`  - Eliminado: ${item.title || item.name || item.id}`);
+                    });
+                }
+                if (modified.length > 0) {
+                    modified.forEach(item => {
+                        changes.push(`  ✏️ Modificado: ${item.title || item.name || item.id}`);
+                    });
+                }
+            };
+
+            // Comparar según el archivo seleccionado
+            switch(file.path) {
+                case 'chapters':
+                    compareArrays(oldState.chapters, newState.chapters, 'Capítulos');
+                    break;
+                case 'characters':
+                    compareArrays(oldState.characters, newState.characters, 'Personajes');
+                    break;
+                case 'scenes':
+                    compareArrays(oldState.scenes, newState.scenes, 'Escenas');
+                    break;
+                case 'locations':
+                    compareArrays(oldState.locations, newState.locations, 'Ubicaciones');
+                    break;
+                case 'lore':
+                    compareArrays(oldState.lore, newState.lore, 'Lore');
+                    break;
+                case 'timeline':
+                    compareArrays(oldState.timeline, newState.timeline, 'Timeline');
+                    break;
+                case 'project-info':
+                    if (oldState.projectInfo?.title !== newState.projectInfo?.title) {
+                        changes.push(`Título: "${oldState.projectInfo?.title}" → "${newState.projectInfo?.title}"`);
+                    }
+                    if (oldState.projectInfo?.description !== newState.projectInfo?.description) {
+                        changes.push(`Descripción modificada`);
+                    }
+                    break;
+                default:
+                    // Para project.json general, mostrar todo
+                    compareArrays(oldState.chapters, newState.chapters, 'Capítulos');
+                    compareArrays(oldState.characters, newState.characters, 'Personajes');
+                    compareArrays(oldState.scenes, newState.scenes, 'Escenas');
+                    compareArrays(oldState.locations, newState.locations, 'Ubicaciones');
+                    compareArrays(oldState.lore, newState.lore, 'Lore');
+                    compareArrays(oldState.timeline, newState.timeline, 'Timeline');
+            }
+
+            this.selectedFileDiff = changes.length > 0 ?
+                changes.join('\n') :
+                'Sin cambios detectados en esta sección';
+        },
+
+        // Crear datos de prueba
+        async createDemoData() {
+            console.log('📝 Creando datos de prueba...');
+
+            try {
+                // Primer commit: Inicio del proyecto
+                await window.gitService.saveProjectState(Alpine.store('project'));
+                await window.gitService.commit('Inicio del proyecto', { name: 'Demo User', email: 'demo@pluma.local' });
+
+                // Segundo commit: Agregar personajes
+                Alpine.store('project').characters.push({
+                    id: 'demo-char-1',
+                    name: 'Juan Pérez',
+                    role: 'protagonist',
+                    description: 'Protagonista de la historia'
+                });
+                await window.gitService.saveProjectState(Alpine.store('project'));
+                await window.gitService.commit('Agregar personaje principal', { name: 'Demo User', email: 'demo@pluma.local' });
+
+                // Tercer commit: Agregar capítulo
+                Alpine.store('project').chapters.push({
+                    id: 'demo-chapter-1',
+                    title: 'Capítulo 1',
+                    number: 1,
+                    content: 'Contenido del primer capítulo...'
+                });
+                await window.gitService.saveProjectState(Alpine.store('project'));
+                await window.gitService.commit('Agregar primer capítulo', { name: 'Demo User', email: 'demo@pluma.local' });
+
+                // Recargar commits
+                await this.loadCommits();
+                await this.loadStats();
+                this.lastProjectState = JSON.stringify(Alpine.store('project').exportProject());
+
+                console.log('✅ Datos de prueba creados');
+            } catch (error) {
+                console.error('Error creando datos de prueba:', error);
+            }
+        },
+
+        // Cargar commits
+        async loadCommits() {
+            this.loading = true;
+            try {
+                this.commits = await window.gitService.getCommitHistory();
+                console.log('📜 Commits cargados:', this.commits.length);
+            } catch (error) {
+                console.error('Error cargando commits:', error);
+                Alpine.store('ui').error('Error', 'No se pudieron cargar los commits');
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        // Cargar estadísticas
+        async loadStats() {
+            try {
+                this.stats = await window.gitService.getStats();
+            } catch (error) {
+                console.error('Error cargando stats:', error);
+            }
+        },
+
+        // Crear commit
+        async createCommit() {
+            if (!this.commitMessage.trim()) {
+                Alpine.store('ui').error('Error', 'El mensaje del commit no puede estar vacío');
+                return;
+            }
+
+            try {
+                // Guardar estado actual del proyecto
+                await window.gitService.saveProjectState(Alpine.store('project'));
+
+                // Crear commit
+                const author = this.authorName.trim() ? {
+                    name: this.authorName.trim(),
+                    email: 'user@pluma.local'
+                } : null;
+
+                const sha = await window.gitService.commit(this.commitMessage, author);
+
+                Alpine.store('ui').success(
+                    Alpine.store('i18n').t('notifications.success.commitCreated'),
+                    `Commit ${sha.substring(0, 7)} creado`
+                );
+
+                // Limpiar form
+                this.commitMessage = '';
+
+                // Recargar commits y stats
+                await this.loadCommits();
+                await this.loadStats();
+
+                // IMPORTANTE: Actualizar la referencia al nuevo último commit
+                await this.loadLastCommitState();
+
+                // Detectar cambios (ahora debería mostrar que no hay cambios)
+                await this.detectChanges();
+
+                console.log('✅ Commit creado y estado actualizado');
+            } catch (error) {
+                console.error('Error creando commit:', error);
+                Alpine.store('ui').error(
+                    Alpine.store('i18n').t('notifications.error.commitFailed'),
+                    error.message
+                );
+            }
+        },
+
+        // Crear rama
+        async createBranch() {
+            if (!this.newBranchName.trim()) {
+                Alpine.store('ui').error('Error', 'El nombre de la rama no puede estar vacío');
+                return;
+            }
+
+            try {
+                const success = await window.gitService.createBranch(this.newBranchName.trim());
+
+                if (success) {
+                    Alpine.store('ui').success(
+                        'Rama creada',
+                        `Rama "${this.newBranchName}" creada exitosamente`
+                    );
+
+                    // Limpiar form
+                    this.newBranchName = '';
+
+                    // Recargar stats
+                    await this.loadStats();
+                } else {
+                    Alpine.store('ui').error('Error', 'No se pudo crear la rama');
+                }
+            } catch (error) {
+                console.error('Error creando rama:', error);
+                Alpine.store('ui').error('Error', error.message);
+            }
+        },
+
+        // Seleccionar commit para ver diff
+        async selectCommit(commit) {
+            this.selectedCommit = commit;
+
+            try {
+                // Si tiene padre, mostrar diff
+                if (commit.parent && commit.parent.length > 0) {
+                    const diffText = await window.gitService.getDiff(commit.parent[0], commit.oid);
+
+                    if (diffText && typeof Diff2Html !== 'undefined') {
+                        // Usar diff2html para renderizar
+                        const diffHtml = Diff2Html.html(diffText, {
+                            drawFileList: false,
+                            matching: 'lines',
+                            outputFormat: 'side-by-side'
+                        });
+                        this.diffHtml = diffHtml;
+                    }
+                } else {
+                    this.diffHtml = '<p style="color: var(--text-secondary); padding: var(--spacing-md);">Este es el primer commit (no hay cambios previos para comparar)</p>';
+                }
+            } catch (error) {
+                console.error('Error generando diff:', error);
+                this.diffHtml = '<p style="color: var(--error); padding: var(--spacing-md);">Error generando diff</p>';
+            }
+        },
+
+        // Restaurar a un commit
+        async restoreCommit(commit) {
+            const confirm = window.confirm(
+                Alpine.store('i18n').t('versionControl.checkoutConfirm') ||
+                `¿Estás seguro de que quieres restaurar el proyecto al commit ${commit.oid.substring(0, 7)}?`
+            );
+
+            if (!confirm) return;
+
+            try {
+                const projectData = await window.gitService.checkout(commit.oid);
+
+                // Actualizar el store del proyecto con los datos restaurados
+                Alpine.store('project').loadProject(projectData);
+
+                Alpine.store('ui').success(
+                    Alpine.store('i18n').t('notifications.success.checkoutSuccess'),
+                    `Proyecto restaurado al commit ${commit.oid.substring(0, 7)}`
+                );
+
+                // Recargar commits para actualizar la lista
+                await this.loadCommits();
+
+                // IMPORTANTE: Actualizar la referencia al commit restaurado
+                await this.loadLastCommitState();
+
+                // Detectar cambios
+                await this.detectChanges();
+            } catch (error) {
+                console.error('Error restaurando commit:', error);
+                Alpine.store('ui').error(
+                    Alpine.store('i18n').t('notifications.error.checkoutFailed'),
+                    error.message
+                );
+            }
+        },
+
+        // Formatear fecha
+        formatDate(date) {
+            const now = new Date();
+            const diff = now - date;
+            const seconds = Math.floor(diff / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+
+            if (days > 7) {
+                return date.toLocaleDateString();
+            } else if (days > 0) {
+                return `hace ${days} día${days > 1 ? 's' : ''}`;
+            } else if (hours > 0) {
+                return `hace ${hours} hora${hours > 1 ? 's' : ''}`;
+            } else if (minutes > 0) {
+                return `hace ${minutes} minuto${minutes > 1 ? 's' : ''}`;
+            } else {
+                return 'hace un momento';
+            }
+        }
+    }));
     
     // Registrar el componente de historial de versiones
     Alpine.data('versionHistoryComponent', () => ({
@@ -479,17 +961,26 @@ document.addEventListener('alpine:init', () => {
     // App component principal
     Alpine.data('app', () => ({
         init() {
-            console.log('📱 App component initialized');
-            console.log('Idioma actual:', this.$store.i18n.currentLocale);
-
             // Forzar reactividad observando cambios en el store
             this.$watch('$store.ui.currentView', (value) => {
-                console.log('👁️ Watch detectó cambio de vista:', value);
+                // Vista cambiada
             });
         }
     }));
+});
 
-    console.log('✅ PlumaAI listo');
+// Inicializar SearchService después de que Alpine esté listo
+document.addEventListener('alpine:initialized', () => {
+    // Inicializar SearchService con los datos actuales
+    if (window.searchService && Alpine.store('project')) {
+        window.searchService.initialize({
+            characters: Alpine.store('project').characters,
+            scenes: Alpine.store('project').scenes,
+            locations: Alpine.store('project').locations,
+            timeline: Alpine.store('project').timeline,
+            chapters: Alpine.store('project').chapters
+        });
+    }
 });
 
 // Agregar estilos para x-cloak

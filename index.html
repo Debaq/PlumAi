@@ -5,12 +5,148 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PlumaAI - Editor de Novelas con IA</title>
     <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/themes.css">
     <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/rich-editor.css">
 
     <!-- Lucide Icons (CDN) -->
     <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Diff2html CSS para visualización de diffs -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/diff2html/bundles/css/diff2html.min.css">
+
+    <!-- jsPDF para exportar a PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- docx para exportar a DOCX -->
+    <script src="https://unpkg.com/docx@7.8.2/build/index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+    <style>
+        /* Loading Screen Styles */
+        #app-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        #app-loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader-content {
+            text-align: center;
+            max-width: 500px;
+            padding: 0 24px;
+        }
+
+        .loader-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 32px;
+            position: relative;
+        }
+
+        .loader-icon::before {
+            content: "✍️";
+            font-size: 64px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .loader-circle {
+            width: 80px;
+            height: 80px;
+            border: 3px solid rgba(74, 144, 226, 0.1);
+            border-top-color: #4a90e2;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(-50%, -50%) translateY(0px); }
+            50% { transform: translate(-50%, -50%) translateY(-10px); }
+        }
+
+        .loader-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #e0e0e0;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #4a90e2 0%, #7cb3ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .loader-message {
+            font-size: 16px;
+            color: #a0a0a0;
+            min-height: 24px;
+            opacity: 0;
+            animation: fadeInOut 3s ease-in-out infinite;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; transform: translateY(10px); }
+            10%, 90% { opacity: 1; transform: translateY(0); }
+        }
+
+        .loader-progress {
+            width: 100%;
+            max-width: 300px;
+            height: 3px;
+            background: rgba(74, 144, 226, 0.1);
+            border-radius: 3px;
+            margin: 24px auto 0;
+            overflow: hidden;
+        }
+
+        .loader-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4a90e2 0%, #7cb3ff 100%);
+            border-radius: 3px;
+            animation: loading 2s ease-in-out infinite;
+        }
+
+        @keyframes loading {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+    </style>
 </head>
 <body x-data="app" x-cloak>
+    <!-- Loading Screen -->
+    <div id="app-loader">
+        <div class="loader-content">
+            <div class="loader-icon">
+                <div class="loader-circle"></div>
+            </div>
+            <h1 class="loader-title">PlumaAI</h1>
+            <p class="loader-message" id="loader-message">Cargando tu espacio creativo...</p>
+            <div class="loader-progress">
+                <div class="loader-progress-bar"></div>
+            </div>
+        </div>
+    </div>
     <!-- Header will be loaded from template -->
     <div id="header-container" x-data="headerComponent"></div>
 
@@ -56,13 +192,31 @@
 
     <!-- Cargar librerías externas -->
     <script src="https://cdn.jsdelivr.net/npm/dexie@latest/dist/dexie.min.js"></script>
+    <script src="https://unpkg.com/lunr/lunr.js"></script>
+
+    <!-- Isomorphic-git y dependencias para control de versiones -->
+    <script src="https://unpkg.com/@isomorphic-git/lightning-fs"></script>
+    <script src="https://unpkg.com/isomorphic-git"></script>
+
+    <!-- Diff libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/diff_match_patch/20121119/diff_match_patch.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/diff2html/bundles/js/diff2html-ui.min.js"></script>
+
+    <!-- SortableJS for drag & drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     <!-- Cargar servicios -->
     <script src="js/services/storage-manager.js"></script>
     <script src="js/services/version-control.js"></script>
+    <script src="js/services/git-service.js"></script>
+    <script src="js/services/search-service.js"></script>
+    <script src="js/services/avatar-service.js"></script>
+    <script src="js/services/font-loader.js"></script>
+
+    <!-- RichEditor Library -->
+    <script src="js/lib/RichEditor.js"></script>
 
     <!-- Cargar componentes -->
-    <script src="js/components/editor-enhanced.js"></script>
     <script src="js/components/header.js"></script>
     <script src="js/components/sidebar.js"></script>
     <script src="js/components/main-content.js"></script>
@@ -71,57 +225,68 @@
     <script src="js/components/welcome-modal.js"></script>
     <script src="js/components/settings-modal.js"></script>
     <script src="js/components/version-control.js"></script>
+    <script src="js/components/publishing.js"></script>
+    <script src="js/components/character-info-modal.js"></script>
+    <script src="js/components/editor-alpine.js"></script>
+    <script src="js/components/rich-editor-component.js"></script>
 
     <script src="js/utils/uuid.js"></script>
     <script src="js/app.js"></script>
 
-    <!-- Inicializar Alpine con los stores -->
+    <!-- Loading Messages Script -->
     <script>
-        document.addEventListener('alpine:init', () => {
-            console.log('🚀 Inicializando PlumaAI...');
+        // Frases motivadoras para el loading
+        const loadingMessagesES = [
+            'Cargando tu espacio creativo...',
+            'Preparando tus historias...',
+            'Afinando la pluma...',
+            'Invocando las musas...',
+            'Organizando tus personajes...',
+            'Configurando la IA...',
+            'Despertando la inspiración...',
+            'Preparando el escenario...',
+            'Cargando mundos imaginarios...',
+            'Listo para escribir grandes historias...',
+        ];
 
-            // Hacer los objetos profundamente reactivos primero
-            const reactiveI18n = Alpine.reactive(window.i18nStore);
-            const reactiveProject = Alpine.reactive(window.projectStore);
-            const reactiveUi = Alpine.reactive(window.uiStore);
-            const reactiveAi = Alpine.reactive(window.aiStore);
+        const loadingMessagesEN = [
+            'Loading your creative space...',
+            'Preparing your stories...',
+            'Sharpening the quill...',
+            'Invoking the muses...',
+            'Organizing your characters...',
+            'Setting up AI...',
+            'Awakening inspiration...',
+            'Preparing the stage...',
+            'Loading imaginary worlds...',
+            'Ready to write great stories...',
+        ];
 
-            // Registrar stores reactivos
-            Alpine.store('i18n', reactiveI18n);
-            Alpine.store('project', reactiveProject);
-            Alpine.store('ui', reactiveUi);
-            Alpine.store('ai', reactiveAi);
+        // Detectar idioma del navegador
+        const browserLang = navigator.language.split('-')[0];
+        const loadingMessages = browserLang === 'es' ? loadingMessagesES : loadingMessagesEN;
 
-            console.log('📋 Stores registrados como Proxy');
+        let messageIndex = 0;
+        const messageElement = document.getElementById('loader-message');
+        messageElement.textContent = loadingMessages[0];
 
-            // Inicializar stores
-            Alpine.store('i18n').init();
-            Alpine.store('ui').init();
-            Alpine.store('ai').init();
+        // Cambiar mensaje cada 2 segundos
+        const messageInterval = setInterval(() => {
+            messageIndex = (messageIndex + 1) % loadingMessages.length;
+            messageElement.textContent = loadingMessages[messageIndex];
+        }, 2000);
 
-            console.log('✅ Stores inicializados');
-            console.log('🎯 Estado inicial:', Alpine.store('ui').currentView);
-
-            // App component con referencia a stores
-            Alpine.data('app', () => ({
-                // Hacer que el componente tenga acceso directo a stores
-                get currentView() {
-                    return Alpine.store('ui').currentView;
-                },
-
-                init() {
-                    console.log('📱 App initialized');
-
-                    // Forzar reactividad observando cambios en el store
-                    this.$watch('$store.ui.currentView', (value) => {
-                        console.log('👁️ Watch detectó cambio de vista:', value);
-                    });
-                }
-            }));
-
-            console.log('✅ PlumaAI listo');
-        });
+        // Función para ocultar el loader
+        window.hideAppLoader = function() {
+            clearInterval(messageInterval);
+            const loader = document.getElementById('app-loader');
+            loader.classList.add('hidden');
+            setTimeout(() => {
+                loader.remove();
+            }, 500);
+        };
     </script>
+
 
     <!-- Alpine.js 3.x - Cargar al final -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -132,6 +297,12 @@
         document.addEventListener('alpine:initialized', () => {
             lucide.createIcons();
             console.log('✅ Lucide icons initialized');
+
+            // Ocultar el loader después de que todo esté cargado
+            setTimeout(() => {
+                window.hideAppLoader();
+                console.log('✅ App loader hidden');
+            }, 800); // Pequeño delay para asegurar que todo está renderizado
         });
 
         // Re-initialize icons when Alpine updates the DOM

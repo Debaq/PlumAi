@@ -44,20 +44,11 @@ window.modalContainerComponent = function() {
                     <!-- Settings Modal -->
                     <div id="settings-modal-container"></div>
 
-                    <!-- Version History Modal -->
-                    <div id="version-history-modal-container"></div>
+                    <!-- Avatar Selector Modal -->
+                    <div id="avatar-selector-modal-container"></div>
 
-                    <!-- Forks View Modal -->
-                    <div id="forks-view-modal-container"></div>
-                    
-                    <!-- Create Commit Modal -->
-                    <div id="create-commit-modal-container"></div>
-                    
-                    <!-- Create Fork Modal -->
-                    <div id="create-fork-modal-container"></div>
-                    
-                    <!-- Create Tree Modal -->
-                    <div id="create-tree-modal-container"></div>
+                    <!-- Lore Preview Modal -->
+                    <div id="lore-preview-modal-container"></div>
 
                     <!-- Toast Container -->
                     <div class="toast-container">
@@ -119,11 +110,8 @@ window.modalContainerComponent = function() {
                 { containerId: 'export-modal-container', templatePath: 'templates/modals/export-modal.html' },
                 { containerId: 'import-modal-container', templatePath: 'templates/modals/import-modal.html' },
                 { containerId: 'settings-modal-container', templatePath: 'templates/modals/settings-modal.html' },
-                { containerId: 'version-history-modal-container', templatePath: 'templates/modals/version-history-modal.html' },
-                { containerId: 'forks-view-modal-container', templatePath: 'templates/modals/forks-view-modal.html' },
-                { containerId: 'create-commit-modal-container', templatePath: 'templates/modals/create-commit-modal.html' },
-                { containerId: 'create-fork-modal-container', templatePath: 'templates/modals/create-fork-modal.html' },
-                { containerId: 'create-tree-modal-container', templatePath: 'templates/modals/create-tree-modal.html' }
+                { containerId: 'avatar-selector-modal-container', templatePath: 'templates/modals/avatar-selector-modal.html' },
+                { containerId: 'lore-preview-modal-container', templatePath: 'templates/modals/lore-preview-modal.html' }
             ];
 
             // Load each modal template into its respective container

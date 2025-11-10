@@ -1,0 +1,56 @@
+<!-- Lore Preview Modal (for editor ! lookup) -->
+<div class="legacy-modal" :class="{ 'active': $store.ui.modals.lorePreview }">
+    <div class="legacy-modal-content">
+        <div class="legacy-modal-header">
+            <h2>
+                <i data-lucide="book-open" width="20" height="20"></i>
+                <span x-text="$store.ui.modalData?.title || 'Lore'"></span>
+            </h2>
+            <button class="btn-close" @click="$store.ui.closeModal()">
+                <i data-lucide="x" width="20" height="20"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <!-- Category Badge -->
+            <template x-if="$store.ui.modalData?.category">
+                <div class="mb-lg">
+                    <span class="badge" :style="`background-color: var(--lore-${$store.ui.modalData.category || 'general'}-color, var(--accent))`">
+                        <i data-lucide="tag" width="14" height="14"></i>
+                        <span x-text="$store.i18n.t('lore.categories.' + $store.ui.modalData.category)"></span>
+                    </span>
+                </div>
+            </template>
+
+            <!-- Summary -->
+            <template x-if="$store.ui.modalData?.summary">
+                <div class="lore-preview-section">
+                    <h3 class="lore-preview-label" x-text="$store.i18n.t('lore.form.summary')"></h3>
+                    <div class="lore-preview-text" x-html="$store.ui.modalData.summary"></div>
+                </div>
+            </template>
+
+            <!-- Content -->
+            <template x-if="$store.ui.modalData?.content">
+                <div class="lore-preview-section">
+                    <h3 class="lore-preview-label" x-text="$store.i18n.t('lore.form.content')"></h3>
+                    <div class="lore-preview-text" x-html="$store.ui.modalData.content"></div>
+                </div>
+            </template>
+
+            <!-- Actions -->
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" @click="$store.ui.closeModal()" x-text="$store.i18n.t('common.close')"></button>
+                <button type="button" class="btn-primary" @click="
+                    const loreData = $store.project.getLore($store.ui.modalData.id);
+                    if (loreData) {
+                        $store.ui.closeModal();
+                        $store.ui.openModal('editLore', loreData);
+                    }
+                ">
+                    <i data-lucide="edit" width="16" height="16"></i>
+                    <span x-text="$store.i18n.t('common.edit')"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

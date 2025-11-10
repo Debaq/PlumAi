@@ -1,14 +1,139 @@
-<!-- Timeline View -->
-<div x-show="$store.ui.currentView === 'timeline'" class="view">
-    <div class="view-header">
-        <div>
-            <h1 x-text="$store.i18n.t('timeline.title')">Línea Temporal</h1>
-            <p class="subtitle" x-text="$store.i18n.t('timeline.subtitle')">Organiza los eventos de tu historia</p>
+<!-- Timeline View Improved - With Drag & Drop and Multiple Modes -->
+<div x-show="$store.ui.currentView === 'timeline'"
+     class="view"
+     x-data="{
+        viewMode: 'list', // 'list' | 'visual' | 'era'
+        filterMode: 'all', // 'all' | 'absolute' | 'relative' | 'era'
+        sortableInstance: null,
+
+        init() {
+            this.$watch('$store.project.timeline', () => {
+                // Reinicializar sortable cuando cambien los eventos
+                this.$nextTick(() => {
+                    this.initSortable();
+                });
+            });
+        },
+
+        initSortable() {
+            const container = this.$refs.timelineList;
+            if (!container || !window.Sortable) return;
+
+            // Destruir instancia anterior si existe
+            if (this.sortableInstance) {
+                this.sortableInstance.destroy();
+            }
+
+            // Crear nueva instancia
+            this.sortableInstance = new Sortable(container, {
+                animation: 150,
+                handle: '.drag-handle',
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                dragClass: 'sortable-drag',
+                onEnd: (evt) => {
+                    // Actualizar posiciones en el store
+                    const newOrder = [...$store.project.timeline];
+                    const [movedItem] = newOrder.splice(evt.oldIndex, 1);
+                    newOrder.splice(evt.newIndex, 0, movedItem);
+
+                    // Actualizar posiciones
+                    newOrder.forEach((event, index) => {
+                        $store.project.updateTimelineEvent(event.id, { position: index });
+                    });
+                }
+            });
+        },
+
+        get filteredEvents() {
+            let events = $store.project.timeline;
+
+            if (this.filterMode !== 'all') {
+                events = events.filter(e => e.dateMode === this.filterMode);
+            }
+
+            return events.sort((a, b) => a.position - b.position);
+        },
+
+        get eventsByEra() {
+            const grouped = {};
+            this.filteredEvents.forEach(event => {
+                const era = event.era || 'Sin Era';
+                if (!grouped[era]) {
+                    grouped[era] = [];
+                }
+                grouped[era].push(event);
+            });
+            return grouped;
+        },
+
+        getImportanceIcon(importance) {
+            const icons = {
+                low: '○',
+                medium: '◐',
+                high: '●'
+            };
+            return icons[importance] || '○';
+        },
+
+        getImportanceColor(importance) {
+            const colors = {
+                low: 'var(--text-tertiary)',
+                medium: 'var(--accent)',
+                high: 'var(--error)'
+            };
+            return colors[importance] || 'var(--text-tertiary)';
+        },
+
+        getDateModeLabel(mode) {
+            const labels = {
+                absolute: '📅',
+                relative: '🔄',
+                era: '⏳'
+            };
+            return labels[mode] || '📅';
+        }
+    }">
+
+    <!-- Header Controls -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 16px;">
+        <!-- View Mode Selector -->
+        <div class="flex gap-sm">
+            <button
+                class="btn-secondary"
+                :class="{ 'btn-primary': viewMode === 'list' }"
+                @click="viewMode = 'list'"
+                style="padding: 8px 16px;">
+                <i data-lucide="list" width="16" height="16"></i>
+                <span x-text="$store.i18n.t('timeline.viewList') || 'Lista'"></span>
+            </button>
+            <button
+                class="btn-secondary"
+                :class="{ 'btn-primary': viewMode === 'visual' }"
+                @click="viewMode = 'visual'"
+                style="padding: 8px 16px;">
+                <i data-lucide="timeline" width="16" height="16"></i>
+                <span x-text="$store.i18n.t('timeline.viewVisual') || 'Visual'"></span>
+            </button>
+            <button
+                class="btn-secondary"
+                :class="{ 'btn-primary': viewMode === 'era' }"
+                @click="viewMode = 'era'"
+                style="padding: 8px 16px;">
+                <i data-lucide="layers" width="16" height="16"></i>
+                <span x-text="$store.i18n.t('timeline.viewEra') || 'Eras'"></span>
+            </button>
         </div>
-        <button class="btn-primary" @click="$store.ui.openModal('newTimelineEvent')">
-            <i data-lucide="plus" width="16" height="16"></i>
-            <span x-text="$store.i18n.t('timeline.new')">Nuevo Evento</span>
-        </button>
+
+        <!-- Filter Mode -->
+        <div class="flex gap-sm">
+            <select x-model="filterMode" class="btn-secondary" style="padding: 8px 16px;">
+                <option value="all" x-text="$store.i18n.t('timeline.filterAll') || 'Todos los eventos'"></option>
+                <option value="absolute" x-text="$store.i18n.t('timeline.filterAbsolute') || 'Solo con fechas'"></option>
+                <option value="relative" x-text="$store.i18n.t('timeline.filterRelative') || 'Solo relativos'"></option>
+                <option value="era" x-text="$store.i18n.t('timeline.filterEra') || 'Solo eras'"></option>
+            </select>
+        </div>
     </div>
 
     <!-- Empty State -->
@@ -18,28 +143,227 @@
         <span class="hint" x-text="$store.i18n.t('timeline.emptyHint')">Crea tu primer evento</span>
     </div>
 
-    <!-- Timeline List -->
-    <div x-show="$store.project.timeline.length > 0" style="max-width: 800px;">
-        <template x-for="event in $store.project.timeline" :key="event.id">
-            <div class="timeline-event card" style="margin-bottom: 16px;">
-                <div style="display: flex; justify-content: space-between; align-items: start;">
-                    <div style="flex: 1;">
-                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                            <span style="color: var(--accent); font-weight: 600;" x-text="event.date"></span>
-                            <h3 x-text="event.event" style="margin: 0;"></h3>
+    <!-- LIST VIEW -->
+    <div x-show="viewMode === 'list' && $store.project.timeline.length > 0" style="max-width: 900px;">
+        <div class="mb-md" style="background: var(--bg-tertiary); padding: 12px 16px; border-radius: 8px; display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="info" width="16" height="16" style="color: var(--accent);"></i>
+            <span style="font-size: 13px; color: var(--text-secondary);" x-text="$store.i18n.t('timeline.dragHint') || 'Arrastra los eventos para reordenarlos'"></span>
+        </div>
+
+        <div x-ref="timelineList" x-init="initSortable()">
+            <template x-for="(event, index) in filteredEvents" :key="event.id">
+                <div class="timeline-event-improved card"
+                     style="margin-bottom: 16px; position: relative;"
+                     :class="{
+                         'event-high': event.importance === 'high',
+                         'event-medium': event.importance === 'medium',
+                         'event-low': event.importance === 'low'
+                     }">
+
+                    <!-- Drag Handle -->
+                    <div class="drag-handle"
+                         style="position: absolute; left: -12px; top: 50%; transform: translateY(-50%); cursor: grab; padding: 8px; color: var(--text-tertiary);">
+                        <i data-lucide="grip-vertical" width="20" height="20"></i>
+                    </div>
+
+                    <!-- Event Content -->
+                    <div @click="$store.ui.openModal('editTimelineEvent', event)" style="cursor: pointer;">
+                        <!-- Header -->
+                        <div style="display: flex; align-items: start; gap: 12px; margin-bottom: 12px;">
+                            <!-- Importance Indicator -->
+                            <div style="font-size: 20px; line-height: 1;"
+                                 :style="{ color: getImportanceColor(event.importance) }"
+                                 x-text="getImportanceIcon(event.importance)"></div>
+
+                            <!-- Main Info -->
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                    <!-- Position Badge -->
+                                    <span style="background: var(--bg-tertiary); padding: 2px 8px; border-radius: 4px; font-size: 11px; color: var(--text-tertiary);" x-text="'#' + (index + 1)"></span>
+
+                                    <!-- Date Mode Icon -->
+                                    <span x-text="getDateModeLabel(event.dateMode)"></span>
+
+                                    <!-- Date/Era -->
+                                    <template x-if="event.dateMode === 'absolute' && event.date">
+                                        <span style="color: var(--accent); font-weight: 600; font-size: 14px;" x-text="event.date"></span>
+                                    </template>
+                                    <template x-if="event.dateMode === 'era' && event.era">
+                                        <span style="color: var(--accent); font-weight: 600; font-size: 14px;" x-text="event.era"></span>
+                                    </template>
+
+                                    <!-- Title -->
+                                    <h3 style="margin: 0; flex: 1; font-size: 16px;" x-text="event.event"></h3>
+                                </div>
+
+                                <!-- Description -->
+                                <p style="color: var(--text-secondary); font-size: 14px; margin: 8px 0 0 0;" x-text="event.description"></p>
+
+                                <!-- Metadata -->
+                                <div style="display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap;">
+                                    <!-- Participants -->
+                                    <template x-if="event.participants && event.participants.length > 0">
+                                        <div style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-tertiary);">
+                                            <i data-lucide="users" width="14" height="14"></i>
+                                            <span x-text="event.participants.length + ' ' + (event.participants.length === 1 ? 'personaje' : 'personajes')"></span>
+                                        </div>
+                                    </template>
+
+                                    <!-- Location -->
+                                    <template x-if="event.location">
+                                        <div style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-tertiary);">
+                                            <i data-lucide="map-pin" width="14" height="14"></i>
+                                            <span x-text="(() => {
+                                                const loc = $store.project.getLocation(event.location);
+                                                return loc ? loc.name : 'Ubicación';
+                                            })()"></span>
+                                        </div>
+                                    </template>
+
+                                    <!-- Tags -->
+                                    <template x-if="event.tags && event.tags.length > 0">
+                                        <div style="display: flex; gap: 4px;">
+                                            <template x-for="tag in event.tags.slice(0, 3)" :key="tag">
+                                                <span style="background: var(--bg-tertiary); padding: 2px 8px; border-radius: 12px; font-size: 11px; color: var(--text-secondary);" x-text="tag"></span>
+                                            </template>
+                                        </div>
+                                    </template>
+
+                                    <!-- Impacts -->
+                                    <template x-if="event.impacts && event.impacts.length > 0">
+                                        <div style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--warning);">
+                                            <i data-lucide="zap" width="14" height="14"></i>
+                                            <span x-text="event.impacts.length + ' impacto(s)'"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn-icon"
+                                        @click.stop="if(confirm($store.i18n.t('common.confirmDelete'))) { $store.project.deleteTimelineEvent(event.id); $store.ui.success($store.i18n.t('notifications.success.eventDeleted'), ''); }"
+                                        :title="$store.i18n.t('common.delete')">
+                                    <i data-lucide="trash-2" width="16" height="16"></i>
+                                </button>
+                            </div>
                         </div>
-                        <p x-text="event.description" style="color: var(--text-secondary); font-size: 14px; margin: 0;"></p>
                     </div>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="btn-icon" @click="$store.ui.openModal('editTimelineEvent', event)" :title="$store.i18n.t('common.edit')">
-                            <i data-lucide="edit" width="16" height="16"></i>
-                        </button>
-                        <button class="btn-icon" @click="if(confirm($store.i18n.t('common.confirmDelete'))) { $store.project.deleteTimelineEvent(event.id); $store.ui.success($store.i18n.t('notifications.success.eventDeleted'), ''); }" :title="$store.i18n.t('common.delete')">
-                            <i data-lucide="trash-2" width="16" height="16"></i>
-                        </button>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- VISUAL VIEW (Timeline Gráfico) -->
+    <div x-show="viewMode === 'visual' && $store.project.timeline.length > 0" style="max-width: 1200px;">
+        <div class="timeline-visual" style="position: relative; padding: 40px 0;">
+            <!-- Line -->
+            <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: var(--border); transform: translateX(-50%);"></div>
+
+            <!-- Events -->
+            <template x-for="(event, index) in filteredEvents" :key="event.id">
+                <div style="display: flex; align-items: center; margin-bottom: 60px; position: relative;"
+                     :style="index % 2 === 0 ? 'flex-direction: row;' : 'flex-direction: row-reverse;'">
+
+                    <!-- Content -->
+                    <div style="flex: 1; padding: 0 32px;">
+                        <div class="card"
+                             @click="$store.ui.openModal('editTimelineEvent', event)"
+                             style="cursor: pointer; max-width: 400px;"
+                             :style="index % 2 === 0 ? 'margin-left: auto;' : 'margin-right: auto;'">
+
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <span style="font-size: 18px;" x-text="getImportanceIcon(event.importance)" :style="{ color: getImportanceColor(event.importance) }"></span>
+                                <template x-if="event.date">
+                                    <span style="color: var(--accent); font-weight: 600; font-size: 13px;" x-text="event.date"></span>
+                                </template>
+                                <h4 style="margin: 0; font-size: 15px;" x-text="event.event"></h4>
+                            </div>
+
+                            <p style="color: var(--text-secondary); font-size: 13px; margin: 0;" x-text="event.description"></p>
+                        </div>
                     </div>
+
+                    <!-- Dot -->
+                    <div style="width: 16px; height: 16px; border-radius: 50%; background: var(--accent); border: 3px solid var(--bg-primary); flex-shrink: 0; z-index: 1;"></div>
+
+                    <!-- Empty space on other side -->
+                    <div style="flex: 1;"></div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- ERA VIEW (Agrupado por Eras) -->
+    <div x-show="viewMode === 'era' && $store.project.timeline.length > 0" style="max-width: 1000px;">
+        <template x-for="(events, era) in eventsByEra" :key="era">
+            <div style="margin-bottom: 32px;">
+                <!-- Era Header -->
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--border);">
+                    <i data-lucide="layers" width="24" height="24" style="color: var(--accent);"></i>
+                    <h2 style="margin: 0; font-size: 20px; color: var(--accent);" x-text="era"></h2>
+                    <span style="font-size: 13px; color: var(--text-tertiary);" x-text="events.length + ' evento(s)'"></span>
+                </div>
+
+                <!-- Events in Era -->
+                <div style="display: grid; gap: 12px; margin-left: 24px;">
+                    <template x-for="event in events" :key="event.id">
+                        <div class="card clickable" @click="$store.ui.openModal('editTimelineEvent', event)">
+                            <div style="display: flex; align-items: start; gap: 12px;">
+                                <span style="font-size: 18px;" x-text="getImportanceIcon(event.importance)" :style="{ color: getImportanceColor(event.importance) }"></span>
+                                <div style="flex: 1;">
+                                    <h4 style="margin: 0 0 4px 0; font-size: 15px;" x-text="event.event"></h4>
+                                    <p style="color: var(--text-secondary); font-size: 13px; margin: 0;" x-text="event.description"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </div>
         </template>
     </div>
 </div>
+
+<style>
+.timeline-event-improved {
+    transition: all 0.2s;
+    border-left: 4px solid transparent;
+}
+
+.timeline-event-improved.event-high {
+    border-left-color: var(--error);
+}
+
+.timeline-event-improved.event-medium {
+    border-left-color: var(--accent);
+}
+
+.timeline-event-improved.event-low {
+    border-left-color: var(--text-tertiary);
+}
+
+.drag-handle {
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.timeline-event-improved:hover .drag-handle {
+    opacity: 1;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+.sortable-ghost {
+    opacity: 0.4;
+}
+
+.sortable-chosen {
+    background: var(--bg-tertiary);
+}
+
+.sortable-drag {
+    opacity: 0.8;
+}
+</style>

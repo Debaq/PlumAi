@@ -1,10 +1,37 @@
-<!-- Character Info Modal (for editor mentions) -->
-<div class="modal" x-data="editorEnhancedComponent()" :class="{ 'active': showCharacterInfo }">
-    <div class="modal-content character-info-modal">
+<!-- Character Info Modal (for editor mentions) - Floating Overlay -->
+<div x-data="characterInfoModalComponent()"
+     x-show="showCharacterInfo"
+     x-cloak
+     class="modal-overlay"
+     @click.self="closeCharacterInfo()"
+     style="display: none;"
+     x-transition:enter="transition ease-out duration-150"
+     x-transition:enter-start="opacity-0"
+     x-transition:enter-end="opacity-100"
+     x-transition:leave="transition ease-in duration-100"
+     x-transition:leave-start="opacity-100"
+     x-transition:leave-end="opacity-0">
+
+    <div class="modal character-info-modal"
+         @click.stop
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 transform scale-95"
+         x-transition:enter-end="opacity-100 transform scale-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 transform scale-100"
+         x-transition:leave-end="opacity-0 transform scale-95">
+
         <template x-if="selectedCharacter">
             <div>
                 <div class="character-info-header">
-                    <div class="character-info-avatar" x-text="selectedCharacter.name.charAt(0).toUpperCase()"></div>
+                    <div class="character-info-avatar" :style="selectedCharacter.avatar?.url ? 'padding: 0; overflow: hidden;' : ''">
+                        <template x-if="selectedCharacter.avatar && selectedCharacter.avatar.url">
+                            <img :src="selectedCharacter.avatar.url" style="width: 100%; height: 100%; object-fit: cover;">
+                        </template>
+                        <template x-if="!selectedCharacter.avatar || !selectedCharacter.avatar.url">
+                            <span x-text="selectedCharacter.name.charAt(0).toUpperCase()"></span>
+                        </template>
+                    </div>
                     <div class="character-info-details">
                         <div class="character-info-name" x-text="selectedCharacter.name"></div>
                         <div class="character-info-role" x-text="$store.i18n.t('characters.form.roles.' + selectedCharacter.role)"></div>
@@ -13,6 +40,7 @@
                         <i data-lucide="x" width="20" height="20"></i>
                     </button>
                 </div>
+
                 <div class="character-info-content">
                     <template x-if="selectedCharacter.description">
                         <div class="character-info-section">
@@ -20,29 +48,33 @@
                             <div class="character-info-text" x-text="selectedCharacter.description"></div>
                         </div>
                     </template>
+
                     <template x-if="selectedCharacter.personality">
                         <div class="character-info-section">
                             <div class="character-info-label" x-text="$store.i18n.t('characters.form.personality')"></div>
                             <div class="character-info-text" x-text="selectedCharacter.personality"></div>
                         </div>
                     </template>
+
                     <template x-if="selectedCharacter.background">
                         <div class="character-info-section">
                             <div class="character-info-label" x-text="$store.i18n.t('characters.form.background')"></div>
                             <div class="character-info-text" x-text="selectedCharacter.background"></div>
                         </div>
                     </template>
+
                     <template x-if="selectedCharacter.notes">
                         <div class="character-info-section">
                             <div class="character-info-label" x-text="$store.i18n.t('characters.form.notes')"></div>
                             <div class="character-info-text" x-text="selectedCharacter.notes"></div>
                         </div>
                     </template>
-                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); display: flex; gap: 8px;">
-                        <button class="btn-secondary" @click="closeCharacterInfo()" style="flex: 1;">
+
+                    <div class="flex gap-md mt-xl pt-xl border-t">
+                        <button class="btn-secondary flex-1" @click="closeCharacterInfo()">
                             <span x-text="$store.i18n.t('common.close')"></span>
                         </button>
-                        <button class="btn-primary" @click="$store.ui.openModal('editCharacter', selectedCharacter); closeCharacterInfo();" style="flex: 1;">
+                        <button class="btn-primary flex-1" @click="$store.ui.openModal('editCharacter', selectedCharacter); closeCharacterInfo();">
                             <i data-lucide="edit" width="16" height="16"></i>
                             <span x-text="$store.i18n.t('common.edit')"></span>
                         </button>

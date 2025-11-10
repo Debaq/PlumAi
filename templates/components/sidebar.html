@@ -20,6 +20,17 @@
 
         <div class="nav-divider"></div>
 
+        <a href="#" class="nav-item" :class="{ 'active': $store.ui.currentView === 'versionControl' }" @click.prevent="$store.ui.setView('versionControl')">
+            <i data-lucide="git-branch" width="20" height="20"></i>
+            <span x-text="$store.i18n.t('sidebar.versionControl')">Control de Versiones</span>
+            <span class="badge" x-show="$store.versionControl?.commits?.length > 0" x-text="$store.versionControl?.commits?.length || 0"></span>
+        </a>
+
+        <a href="#" class="nav-item" :class="{ 'active': $store.ui.currentView === 'publishing' }" @click.prevent="$store.ui.setView('publishing')">
+            <i data-lucide="book-marked" width="20" height="20"></i>
+            <span x-text="$store.i18n.t('sidebar.publishing')">Publicación</span>
+        </a>
+
         <a href="#" class="nav-item" :class="{ 'active': $store.ui.currentView === 'aiAssistant' }" @click.prevent="$store.ui.setView('aiAssistant')">
             <i data-lucide="sparkles" width="20" height="20"></i>
             <span x-text="$store.i18n.t('sidebar.aiAssistant')">Asistente IA</span>

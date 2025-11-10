@@ -1,0 +1,469 @@
+<!-- Version Control View -->
+<div x-show="$store.ui.currentView === 'versionControl'" class="view" x-data="versionControlView()">
+
+    <!-- Header con acciones principales -->
+    <div class="version-control-header" style="background: var(--bg-secondary); border-radius: 8px; padding: var(--spacing-lg); margin-bottom: var(--spacing-lg); display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h2 style="margin: 0 0 var(--spacing-xs) 0; font-size: var(--font-size-lg); display: flex; align-items: center; gap: var(--spacing-sm);">
+                <i data-lucide="git-branch" width="20" height="20"></i>
+                <span x-text="stats.currentBranch">main</span>
+            </h2>
+            <p style="margin: 0; color: var(--text-secondary); font-size: var(--font-size-sm);">
+                <span x-text="stats.totalCommits">0</span> commits •
+                <span x-text="stats.totalBranches">0</span> ramas •
+                <span x-show="hasUncommittedChanges" style="color: var(--warning);">
+                    <i data-lucide="alert-circle" width="14" height="14" style="vertical-align: middle;"></i>
+                    Cambios sin guardar
+                </span>
+                <span x-show="!hasUncommittedChanges" style="color: var(--success);">
+                    <i data-lucide="check-circle" width="14" height="14" style="vertical-align: middle;"></i>
+                    Todo guardado
+                </span>
+            </p>
+        </div>
+        <div style="display: flex; gap: var(--spacing-sm);">
+            <button class="btn-icon" @click="async () => { await loadLastCommitState(); await detectChanges(); }" title="Refrescar cambios">
+                <i data-lucide="refresh-cw" width="16" height="16"></i>
+            </button>
+            <button class="btn-secondary" @click="showBranchModal = true">
+                <i data-lucide="git-branch" width="14" height="14"></i>
+                <span>Nueva Rama</span>
+            </button>
+            <button class="btn-primary" @click="console.log('Abriendo modal commit'); showCommitModal = true; console.log('showCommitModal =', showCommitModal)" :disabled="!hasUncommittedChanges">
+                <i data-lucide="git-commit" width="14" height="14"></i>
+                <span>Crear Commit</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Layout de 2 columnas -->
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: var(--spacing-lg); height: calc(100vh - 280px);">
+
+        <!-- Columna izquierda: Cambios pendientes -->
+        <div class="card" style="display: flex; flex-direction: column; overflow: hidden;">
+            <h3 style="margin: 0 0 var(--spacing-md) 0; font-size: var(--font-size-md); display: flex; align-items: center; gap: var(--spacing-xs);">
+                <i data-lucide="file-diff" width="16" height="16"></i>
+                <span>Cambios Pendientes</span>
+                <span x-show="changedFiles.length > 0" class="badge" style="background: var(--warning); color: white; padding: 2px 8px; border-radius: 12px; font-size: var(--font-size-xs);" x-text="changedFiles.length"></span>
+            </h3>
+
+            <!-- Lista de archivos modificados -->
+            <div style="flex: 1; overflow-y: auto; margin-bottom: var(--spacing-md);">
+                <div x-show="changedFiles.length === 0" class="empty-state" style="padding: var(--spacing-lg); text-align: center;">
+                    <i data-lucide="check-circle" width="32" height="32" style="color: var(--success); margin-bottom: var(--spacing-sm);"></i>
+                    <p style="margin: 0; color: var(--text-secondary);">No hay cambios sin guardar</p>
+                </div>
+
+                <template x-for="file in changedFiles" :key="file.path">
+                    <div class="file-change-item" style="padding: var(--spacing-sm); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer; transition: var(--transition-fast);"
+                         :style="selectedFile === file ? 'background: var(--bg-tertiary);' : ''"
+                         @click="selectFileForDiff(file)"
+                         @mouseover="$el.style.background = 'var(--bg-tertiary)'"
+                         @mouseout="if(selectedFile !== file) $el.style.background = 'transparent'">
+                        <i :data-lucide="file.status === 'modified' ? 'file-edit' : 'file-plus'" width="14" height="14" :style="'color: ' + (file.status === 'modified' ? 'var(--warning)' : 'var(--success)')"></i>
+                        <span style="flex: 1; font-size: var(--font-size-sm);" x-text="file.path"></span>
+                        <span class="badge" :style="'background: ' + (file.status === 'modified' ? 'var(--warning)' : 'var(--success)') + '; color: white; padding: 2px 6px; border-radius: 3px; font-size: var(--font-size-xs);'" x-text="file.status === 'modified' ? 'M' : 'A'"></span>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Preview de cambios del archivo seleccionado -->
+            <div x-show="selectedFile" style="border-top: 1px solid var(--border); padding-top: var(--spacing-md); max-height: 300px; overflow-y: auto;">
+                <div style="font-size: var(--font-size-xs); color: var(--text-secondary); margin-bottom: var(--spacing-xs); font-weight: 500;">
+                    <i data-lucide="info" width="12" height="12" style="vertical-align: middle;"></i>
+                    <span>Vista previa de cambios:</span>
+                </div>
+                <div style="font-family: monospace; font-size: var(--font-size-xs); background: var(--bg-primary); padding: var(--spacing-sm); border-radius: 4px; line-height: 1.5;">
+                    <template x-for="(line, index) in (selectedFileDiff || '').split('\n')" :key="index">
+                        <div :style="line.startsWith('+') ? 'color: var(--success);' : (line.startsWith('-') ? 'color: var(--error);' : (line.startsWith('✏️') ? 'color: var(--warning);' : 'color: var(--text-primary);'))" x-text="line"></div>
+                    </template>
+                    <div x-show="!selectedFileDiff || selectedFileDiff === ''" style="color: var(--text-secondary); font-style: italic;">
+                        Selecciona un archivo para ver los cambios
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna derecha: Historial de commits -->
+
+        <div class="card" style="display: flex; flex-direction: column; overflow: hidden;">
+            <h3 style="margin: 0 0 var(--spacing-md) 0; font-size: var(--font-size-md); display: flex; align-items: center; gap: var(--spacing-xs);">
+                <i data-lucide="history" width="16" height="16"></i>
+                <span x-text="$store.i18n.t('versionControl.history')">Historial</span>
+                <span x-show="commits.length > 0" class="badge" style="background: var(--accent); color: white; padding: 2px 8px; border-radius: 12px; font-size: var(--font-size-xs);" x-text="commits.length"></span>
+            </h3>
+
+            <!-- Loading State -->
+            <div x-show="loading" style="text-align: center; padding: var(--spacing-xl); color: var(--text-secondary);">
+                <i data-lucide="loader" width="24" height="24" style="animation: spin 1s linear infinite;"></i>
+                <p x-text="$store.i18n.t('common.loading')">Cargando...</p>
+            </div>
+
+            <!-- Empty State -->
+            <div x-show="!loading && commits.length === 0" class="empty-state" style="padding: var(--spacing-xl); text-align: center;">
+                <i data-lucide="git-branch" width="48" height="48" style="margin-bottom: var(--spacing-sm);"></i>
+                <p x-text="$store.i18n.t('versionControl.emptyHistory')">No hay commits en esta rama</p>
+                <span class="hint" x-text="$store.i18n.t('versionControl.emptyStateHint')">Crea tu primer commit usando el botón arriba</span>
+            </div>
+
+            <!-- Commit List -->
+            <div x-show="!loading && commits.length > 0" style="flex: 1; overflow-y: auto;">
+                <template x-for="(commit, index) in commits" :key="commit.oid">
+                    <div class="commit-item"
+                         style="position: relative; padding: var(--spacing-md); padding-left: 40px; border-left: 2px solid var(--border); margin-left: 20px; cursor: pointer; transition: var(--transition-fast);"
+                         :style="selectedCommit?.oid === commit.oid ? 'background: var(--bg-tertiary); border-left-color: var(--accent);' : ''"
+                         @click="selectCommit(commit)"
+                         @mouseover="$el.style.background = 'var(--bg-tertiary)'; $el.style.borderLeftColor = 'var(--accent)'"
+                         @mouseout="if(selectedCommit?.oid !== commit.oid) { $el.style.background = 'transparent'; $el.style.borderLeftColor = 'var(--border)'; }">
+
+                        <!-- Dot indicator -->
+                        <div style="position: absolute; left: -6px; top: 20px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg-primary);"></div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--spacing-xs);">
+                            <div style="flex: 1;">
+                                <div style="font-size: var(--font-size-sm); font-weight: 500; margin-bottom: 4px; color: var(--text-primary);" x-text="commit.message"></div>
+                                <div style="font-size: var(--font-size-xs); color: var(--text-secondary); display: flex; align-items: center; gap: var(--spacing-xs);">
+                                    <i data-lucide="user" width="12" height="12"></i>
+                                    <span x-text="commit.author"></span>
+                                    <span>•</span>
+                                    <i data-lucide="clock" width="12" height="12"></i>
+                                    <span x-text="formatDate(commit.date)"></span>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: var(--spacing-sm); align-items: center;">
+                                <code style="font-size: var(--font-size-xs); background: var(--bg-primary); padding: 2px 6px; border-radius: 3px; color: var(--accent);" x-text="commit.oid.substring(0, 7)"></code>
+                                <button class="btn-icon btn-sm"
+                                        @click.stop="restoreCommit(commit)"
+                                        title="Restaurar a este commit"
+                                        style="padding: 4px 6px;">
+                                    <i data-lucide="corner-down-left" width="12" height="12"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal para crear commit -->
+    <div x-show="showCommitModal"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="modal"
+         style="display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 9999; align-items: center; justify-content: center;"
+         @click.self="showCommitModal = false">
+        <div class="modal-content"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 transform scale-95"
+             x-transition:enter-end="opacity-100 transform scale-100"
+             style="max-width: 600px; background: var(--bg-secondary); border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+            <div class="modal-header" style="padding: var(--spacing-lg); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: var(--font-size-lg); display: flex; align-items: center; gap: var(--spacing-sm);">
+                    <i data-lucide="git-commit" width="20" height="20"></i>
+                    <span>Crear Commit</span>
+                </h3>
+                <button class="btn-icon" @click="showCommitModal = false">
+                    <i data-lucide="x" width="20" height="20"></i>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: var(--spacing-lg);">
+                <div class="form-group" style="margin-bottom: var(--spacing-md);">
+                    <label style="display: block; margin-bottom: var(--spacing-xs); font-weight: 500; font-size: var(--font-size-sm);">Mensaje del commit</label>
+                    <textarea x-model="commitMessage"
+                              :placeholder="$store.i18n.t('versionControl.commitMessagePlaceholder')"
+                              rows="3"
+                              style="width: 100%; padding: 8px 12px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 4px; color: var(--text-primary); font-size: var(--font-size-sm); resize: vertical; font-family: inherit;"></textarea>
+                </div>
+                <div class="form-group" style="margin-bottom: var(--spacing-md);">
+                    <label style="display: block; margin-bottom: var(--spacing-xs); font-weight: 500; font-size: var(--font-size-sm);">Autor</label>
+                    <input type="text"
+                           x-model="authorName"
+                           :placeholder="$store.i18n.t('versionControl.authorPlaceholder')"
+                           style="width: 100%; padding: 8px 12px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 4px; color: var(--text-primary); font-size: var(--font-size-sm);">
+                </div>
+                <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: 4px; border: 1px solid var(--border);">
+                    <div style="font-size: var(--font-size-xs); color: var(--text-secondary); margin-bottom: var(--spacing-xs); font-weight: 500;">Archivos modificados:</div>
+                    <div style="font-size: var(--font-size-sm); color: var(--text-primary);">
+                        <span x-text="changedFiles.length"></span> archivo(s)
+                        <div style="margin-top: var(--spacing-xs); font-size: var(--font-size-xs); color: var(--text-secondary);">
+                            <template x-for="file in changedFiles" :key="file.path">
+                                <div style="padding: 2px 0;">• <span x-text="file.path"></span></div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: var(--spacing-lg); border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: var(--spacing-sm);">
+                <button class="btn-secondary" @click="showCommitModal = false">Cancelar</button>
+                <button class="btn-primary" @click="createCommit(); showCommitModal = false" :disabled="!commitMessage.trim()">
+                    <i data-lucide="check" width="14" height="14"></i>
+                    <span>Crear Commit</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para crear rama -->
+    <div x-show="showBranchModal"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="modal"
+         style="display: flex; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 9999; align-items: center; justify-content: center;"
+         @click.self="showBranchModal = false">
+        <div class="modal-content"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 transform scale-95"
+             x-transition:enter-end="opacity-100 transform scale-100"
+             style="max-width: 500px; background: var(--bg-secondary); border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+            <div class="modal-header" style="padding: var(--spacing-lg); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: var(--font-size-lg); display: flex; align-items: center; gap: var(--spacing-sm);">
+                    <i data-lucide="git-branch" width="20" height="20"></i>
+                    <span>Crear Nueva Rama</span>
+                </h3>
+                <button class="btn-icon" @click="showBranchModal = false">
+                    <i data-lucide="x" width="20" height="20"></i>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: var(--spacing-lg);">
+                <div class="form-group" style="margin-bottom: var(--spacing-md);">
+                    <label style="display: block; margin-bottom: var(--spacing-xs); font-weight: 500; font-size: var(--font-size-sm);">Nombre de la rama</label>
+                    <input type="text"
+                           x-model="newBranchName"
+                           placeholder="feature/nueva-funcionalidad"
+                           style="width: 100%; padding: 8px 12px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 4px; color: var(--text-primary); font-size: var(--font-size-sm);">
+                </div>
+                <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: 4px; border: 1px solid var(--border); font-size: var(--font-size-sm); color: var(--text-secondary);">
+                    <i data-lucide="info" width="14" height="14" style="vertical-align: middle;"></i>
+                    La nueva rama se creará desde el commit actual de <code x-text="stats.currentBranch" style="background: var(--bg-tertiary); padding: 2px 4px; border-radius: 3px; color: var(--accent);"></code>
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: var(--spacing-lg); border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: var(--spacing-sm);">
+                <button class="btn-secondary" @click="showBranchModal = false">Cancelar</button>
+                <button class="btn-primary" @click="createBranch(); showBranchModal = false" :disabled="!newBranchName.trim()">
+                    <i data-lucide="git-branch" width="14" height="14"></i>
+                    <span>Crear Rama</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+function versionControlView() {
+    return {
+        // Estado
+        commits: [],
+        stats: {
+            totalCommits: 0,
+            currentBranch: 'main',
+            totalBranches: 1
+        },
+        loading: false,
+        commitMessage: '',
+        authorName: '',
+        selectedCommit: null,
+        diffHtml: '',
+
+        // Inicialización
+        async init() {
+            console.log('🔧 Version Control View initialized');
+            await this.loadCommits();
+            await this.loadStats();
+        },
+
+        // Cargar commits
+        async loadCommits() {
+            this.loading = true;
+            try {
+                this.commits = await window.gitService.getCommitHistory();
+                console.log('📜 Commits cargados:', this.commits.length);
+            } catch (error) {
+                console.error('Error cargando commits:', error);
+                this.$store.ui.error('Error', 'No se pudieron cargar los commits');
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        // Cargar estadísticas
+        async loadStats() {
+            try {
+                this.stats = await window.gitService.getStats();
+            } catch (error) {
+                console.error('Error cargando stats:', error);
+            }
+        },
+
+        // Crear commit
+        async createCommit() {
+            if (!this.commitMessage.trim()) {
+                this.$store.ui.error('Error', 'El mensaje del commit no puede estar vacío');
+                return;
+            }
+
+            try {
+                // Guardar estado actual del proyecto
+                await window.gitService.saveProjectState(this.$store.project);
+
+                // Crear commit
+                const author = this.authorName.trim() ? {
+                    name: this.authorName.trim(),
+                    email: 'user@pluma.local'
+                } : null;
+
+                const sha = await window.gitService.commit(this.commitMessage, author);
+
+                this.$store.ui.success(
+                    this.$store.i18n.t('notifications.success.commitCreated'),
+                    `Commit ${sha.substring(0, 7)} creado`
+                );
+
+                // Limpiar form
+                this.commitMessage = '';
+
+                // Recargar
+                await this.loadCommits();
+                await this.loadStats();
+            } catch (error) {
+                console.error('Error creando commit:', error);
+                this.$store.ui.error(
+                    this.$store.i18n.t('notifications.error.commitFailed'),
+                    error.message
+                );
+            }
+        },
+
+        // Seleccionar commit para ver diff
+        async selectCommit(commit) {
+            this.selectedCommit = commit;
+
+            try {
+                // Si tiene padre, mostrar diff
+                if (commit.parent && commit.parent.length > 0) {
+                    const diffText = await window.gitService.getDiff(commit.parent[0], commit.oid);
+
+                    if (diffText) {
+                        // Usar diff2html para renderizar
+                        const diffHtml = Diff2Html.html(diffText, {
+                            drawFileList: false,
+                            matching: 'lines',
+                            outputFormat: 'side-by-side'
+                        });
+                        this.diffHtml = diffHtml;
+                    }
+                } else {
+                    this.diffHtml = '<p style="color: var(--text-secondary); padding: var(--spacing-md);">Este es el primer commit (no hay cambios previos para comparar)</p>';
+                }
+            } catch (error) {
+                console.error('Error generando diff:', error);
+                this.diffHtml = '<p style="color: var(--error); padding: var(--spacing-md);">Error generando diff</p>';
+            }
+        },
+
+        // Restaurar a un commit
+        async restoreCommit(commit) {
+            const confirm = window.confirm(
+                this.$store.i18n.t('versionControl.checkoutConfirm') ||
+                `¿Estás seguro de que quieres restaurar el proyecto al commit ${commit.oid.substring(0, 7)}?`
+            );
+
+            if (!confirm) return;
+
+            try {
+                const projectData = await window.gitService.checkout(commit.oid);
+
+                // Actualizar el store del proyecto con los datos restaurados
+                Object.assign(this.$store.project, projectData);
+
+                this.$store.ui.success(
+                    this.$store.i18n.t('notifications.success.checkoutSuccess'),
+                    `Proyecto restaurado al commit ${commit.oid.substring(0, 7)}`
+                );
+            } catch (error) {
+                console.error('Error restaurando commit:', error);
+                this.$store.ui.error(
+                    this.$store.i18n.t('notifications.error.checkoutFailed'),
+                    error.message
+                );
+            }
+        },
+
+        // Formatear fecha
+        formatDate(date) {
+            const now = new Date();
+            const diff = now - date;
+            const seconds = Math.floor(diff / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+
+            if (days > 7) {
+                return date.toLocaleDateString();
+            } else if (days > 0) {
+                return `hace ${days} día${days > 1 ? 's' : ''}`;
+            } else if (hours > 0) {
+                return `hace ${hours} hora${hours > 1 ? 's' : ''}`;
+            } else if (minutes > 0) {
+                return `hace ${minutes} minuto${minutes > 1 ? 's' : ''}`;
+            } else {
+                return 'hace un momento';
+            }
+        }
+    };
+}
+</script>
+
+<style>
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Estilos para diff2html */
+#diff-output .d2h-wrapper {
+    background: var(--bg-primary);
+}
+
+#diff-output .d2h-file-header {
+    background: var(--bg-secondary);
+    border-color: var(--border);
+}
+
+#diff-output .d2h-code-line {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+#diff-output .d2h-code-line-ctn {
+    color: var(--text-primary);
+}
+
+#diff-output .d2h-ins {
+    background: rgba(78, 201, 176, 0.15);
+}
+
+#diff-output .d2h-del {
+    background: rgba(244, 119, 113, 0.15);
+}
+
+#diff-output .d2h-code-line-prefix {
+    color: var(--text-secondary);
+}
+
+#diff-output .d2h-info {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border-color: var(--border);
+}
+</style>

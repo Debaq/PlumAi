@@ -3,6 +3,9 @@ window.uiStore = {
     // Vista activa
     currentView: 'lore',
 
+    // Tema
+    currentTheme: 'dark', // 'dark' | 'dracula' | 'light'
+
     // Sidebar
     sidebarCollapsed: false,
 
@@ -27,6 +30,8 @@ window.uiStore = {
         editNote: false,
         newLore: false,
         editLore: false,
+        lorePreview: false,
+        avatarSelector: false,
         newTimelineEvent: false,
         editTimelineEvent: false,
         export: false,
@@ -43,6 +48,7 @@ window.uiStore = {
 
     // Vista de editor
     editorSidebarOpen: true,
+    editorZenMode: false, // Modo sin distracciones
     editorMode: 'write', // 'write' | 'diff'
     currentEditingChapterId: null,
     editorSaveStatus: 'saved', // 'saved' | 'saving' | 'unsaved'
@@ -77,6 +83,25 @@ window.uiStore = {
 
     isCurrentView(viewName) {
         return this.currentView === viewName;
+    },
+
+    // Métodos para temas
+    setTheme(themeName) {
+        const validThemes = ['dark', 'dracula', 'light'];
+        if (validThemes.includes(themeName)) {
+            this.currentTheme = themeName;
+            document.documentElement.setAttribute('data-theme', themeName);
+            localStorage.setItem('pluma_theme', themeName);
+        }
+    },
+
+    getTheme() {
+        return this.currentTheme;
+    },
+
+    loadTheme() {
+        const savedTheme = localStorage.getItem('pluma_theme') || 'dark';
+        this.setTheme(savedTheme);
     },
 
     // Métodos para sidebar
@@ -209,6 +234,19 @@ window.uiStore = {
         this.editorSidebarOpen = !this.editorSidebarOpen;
     },
 
+    toggleEditorZenMode() {
+        this.editorZenMode = !this.editorZenMode;
+        // En modo zen, esconder ambas barras laterales
+        if (this.editorZenMode) {
+            this.sidebarCollapsed = true;
+            this.editorSidebarOpen = false;
+        } else {
+            // Al salir del modo zen, restaurar estado normal
+            this.sidebarCollapsed = false;
+            this.editorSidebarOpen = true;
+        }
+    },
+
     setEditorMode(mode) {
         this.editorMode = mode;
     },
@@ -263,6 +301,9 @@ window.uiStore = {
         if (hasVisited) {
             this.modals.welcome = false;
         }
+
+        // Cargar tema guardado
+        this.loadTheme();
     },
 
     markAsVisited() {

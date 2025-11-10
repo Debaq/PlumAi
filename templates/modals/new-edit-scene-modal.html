@@ -7,30 +7,52 @@
                 <i data-lucide="x" width="20" height="20"></i>
             </button>
         </div>
-        <div class="modal-body">
-            <form @submit.prevent="
-                const formData = {
-                    title: $el.querySelector('[name=title]').value,
-                    description: $el.querySelector('[name=description]').value
-                };
-                if ($store.ui.modalData?.id) {
-                    $store.project.updateScene($store.ui.modalData.id, formData);
-                    $store.ui.success($store.i18n.t('notifications.success.sceneUpdated'), '');
-                } else {
-                    $store.project.addScene(formData);
-                    $store.ui.success($store.i18n.t('notifications.success.sceneCreated'), '');
-                }
-                $store.ui.closeModal();
-                $el.reset();
-                lucide.createIcons();
-            ">
+        <div class="modal-body" x-data="{ submitForm(form) {
+            // Obtener contenido de los RichEditors
+            let descriptionEditor = form.querySelector('[data-field=description]')?.__x?.$data;
+            let notesEditor = form.querySelector('[data-field=notes]')?.__x?.$data;
+
+            let formData = {
+                title: form.querySelector('[name=title]').value,
+                description: descriptionEditor?.getContent() || '',
+                notes: notesEditor?.getContent() || ''
+            };
+            if ($store.ui.modalData?.id) {
+                $store.project.updateScene($store.ui.modalData.id, formData);
+                $store.ui.success($store.i18n.t('notifications.success.sceneUpdated'), '');
+            } else {
+                $store.project.addScene(formData);
+                $store.ui.success($store.i18n.t('notifications.success.sceneCreated'), '');
+            }
+            $store.ui.closeModal();
+            form.reset();
+            lucide.createIcons();
+        }}">
+            <form @submit.prevent="submitForm($el)">
                 <div class="form-group">
                     <label x-text="$store.i18n.t('scenes.form.title')">Título</label>
                     <input type="text" name="title" required :placeholder="$store.i18n.t('scenes.form.titlePlaceholder')" :value="$store.ui.modalData?.title || ''">
                 </div>
-                <div class="form-group">
+                <!-- Description Rich Editor -->
+                <div class="form-group" x-data="richEditorComponent({
+                    placeholder: $store.i18n.t('scenes.form.descriptionPlaceholder'),
+                    initialContent: $store.ui.modalData?.description || '',
+                    enableMentions: true,
+                    enableCommands: false
+                })" x-init="() => { $el.dataset.field = 'description'; }">
                     <label x-text="$store.i18n.t('scenes.form.description')">Descripción</label>
-                    <textarea name="description" :placeholder="$store.i18n.t('scenes.form.descriptionPlaceholder')" x-text="$store.ui.modalData?.description || ''"></textarea>
+                    <div x-ref="editorContainer" class="rich-editor-wrapper"></div>
+                </div>
+
+                <!-- Notes Rich Editor -->
+                <div class="form-group" x-data="richEditorComponent({
+                    placeholder: $store.i18n.t('scenes.form.notes'),
+                    initialContent: $store.ui.modalData?.notes || '',
+                    enableMentions: true,
+                    enableCommands: false
+                })" x-init="() => { $el.dataset.field = 'notes'; }">
+                    <label x-text="$store.i18n.t('scenes.form.notes')">Notas</label>
+                    <div x-ref="editorContainer" class="rich-editor-wrapper"></div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-secondary" @click="$store.ui.closeModal()" x-text="$store.i18n.t('common.cancel')">Cancelar</button>

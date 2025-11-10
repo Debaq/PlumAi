@@ -1,53 +1,5 @@
-<!-- Lore View -->
+<!-- Lore View - Tabs and header moved to header.html -->
 <div x-show="$store.ui.currentView === 'lore'" class="view" x-data="{ activeLoreTab: 'summary' }">
-    <div class="view-header">
-        <div>
-            <h1 x-text="$store.i18n.t('lore.title')">Lore</h1>
-            <p class="subtitle" x-text="$store.i18n.t('lore.subtitle')">Gestiona el conocimiento del mundo de tu historia</p>
-        </div>
-        <button class="btn-primary" @click="$store.ui.openModal('newLore')">
-            <i data-lucide="plus" width="16" height="16"></i>
-            <span x-text="$store.i18n.t('lore.new')">Nuevo Elemento de Lore</span>
-        </button>
-    </div>
-
-    <!-- Tabs para navegación interna -->
-    <div class="tabs">
-        <button class="tab-btn" 
-                :class="{ 'active': !$store.ui.activeLoreTab || $store.ui.activeLoreTab === 'summary' }" 
-                @click="$store.ui.activeLoreTab = 'summary'">
-            <i data-lucide="book-open" width="16" height="16"></i>
-            <span x-text="$store.i18n.t('lore.title')">Lore</span>
-        </button>
-        <button class="tab-btn" 
-                :class="{ 'active': $store.ui.activeLoreTab === 'characters' }" 
-                @click="$store.ui.activeLoreTab = 'characters'">
-            <i data-lucide="users" width="16" height="16"></i>
-            <span x-text="$store.i18n.t('sidebar.characters')">Personajes</span>
-            <span class="badge" x-text="$store.project.characters.length" style="margin-left: 4px;"></span>
-        </button>
-        <button class="tab-btn" 
-                :class="{ 'active': $store.ui.activeLoreTab === 'relations' }" 
-                @click="$store.ui.activeLoreTab = 'relations'">
-            <i data-lucide="heart" width="16" height="16"></i>
-            <span x-text="$store.i18n.t('sidebar.relations')">Relaciones</span>
-            <span class="badge" x-text="$store.project.getRelationsCount ? $store.project.getRelationsCount() : $store.project.characters.reduce((sum, char) => sum + (char.relationships ? char.relationships.length : 0), 0)" style="margin-left: 4px;"></span>
-        </button>
-        <button class="tab-btn" 
-                :class="{ 'active': $store.ui.activeLoreTab === 'events' }" 
-                @click="$store.ui.activeLoreTab = 'events'">
-            <i data-lucide="calendar" width="16" height="16"></i>
-            <span x-text="$store.i18n.t('sidebar.timeline')">Eventos</span>
-            <span class="badge" x-text="$store.project.timeline.length" style="margin-left: 4px;"></span>
-        </button>
-        <button class="tab-btn" 
-                :class="{ 'active': $store.ui.activeLoreTab === 'locations' }" 
-                @click="$store.ui.activeLoreTab = 'locations'">
-            <i data-lucide="map-pin" width="16" height="16"></i>
-            <span x-text="$store.i18n.t('sidebar.locations')">Ubicaciones</span>
-            <span class="badge" x-text="$store.project.locations.length" style="margin-left: 4px;"></span>
-        </button>
-    </div>
 
     <!-- Contenido según pestaña activa -->
     <div x-show="!$store.ui.activeLoreTab || $store.ui.activeLoreTab === 'summary'" class="tab-content">
@@ -142,14 +94,11 @@
             <!-- Lore Grid -->
             <div x-show="$store.project.loreEntries.length > 0" class="content-grid">
                 <template x-for="lore in $store.project.loreEntries.slice(0, 4)" :key="lore.id">
-                    <div class="lore-card card">
+                    <div class="lore-card card clickable" @click="$store.ui.openModal('editLore', lore)">
                         <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
                             <h3 x-text="lore.title" style="margin: 0;"></h3>
                             <div style="display: flex; gap: 8px;">
-                                <button class="btn-icon" @click="$store.ui.openModal('editLore', lore)" :title="$store.i18n.t('common.edit')">
-                                    <i data-lucide="edit" width="16" height="16"></i>
-                                </button>
-                                <button class="btn-icon" @click="if(confirm($store.i18n.t('common.confirmDelete'))) { $store.project.deleteLore(lore.id); $store.ui.success($store.i18n.t('notifications.success.loreDeleted'), ''); }" :title="$store.i18n.t('common.delete')">
+                                <button class="btn-icon" @click.stop="if(confirm($store.i18n.t('common.confirmDelete'))) { $store.project.deleteLore(lore.id); $store.ui.success($store.i18n.t('notifications.success.loreDeleted'), ''); }" :title="$store.i18n.t('common.delete')">
                                     <i data-lucide="trash-2" width="16" height="16"></i>
                                 </button>
                             </div>
@@ -177,7 +126,7 @@
 
             <div x-show="$store.project.timeline.length > 0" style="max-width: 800px;">
                 <template x-for="event in $store.project.timeline.slice(0, 3)" :key="event.id">
-                    <div class="timeline-event card" style="margin-bottom: 16px;">
+                    <div class="timeline-event card clickable" style="margin-bottom: 16px;" @click="$store.ui.openModal('editTimelineEvent', event)">
                         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
                             <span style="color: var(--accent); font-weight: 600;" x-text="event.date"></span>
                             <h3 x-text="event.event" style="margin: 0;"></h3>
@@ -194,18 +143,8 @@
         </div>
     </div>
 
-    <!-- Vista de Personajes -->
+    <!-- Vista de Personajes - Header moved to header.html -->
     <div x-show="$store.ui.activeLoreTab === 'characters'" class="tab-content">
-        <div class="view-header" style="margin-bottom: 24px;">
-            <div>
-                <h2 x-text="$store.i18n.t('sidebar.characters')">Personajes</h2>
-                <p class="subtitle" x-text="$store.i18n.t('characters.subtitle')">Gestiona los personajes de tu novela</p>
-            </div>
-            <button class="btn-primary" @click="$store.ui.openModal('newCharacter')">
-                <i data-lucide="plus" width="16" height="16"></i>
-                <span x-text="$store.i18n.t('characters.new')">Nuevo Personaje</span>
-            </button>
-        </div>
 
         <!-- Empty State -->
         <div x-show="$store.project.characters.length === 0" class="empty-state">
@@ -217,7 +156,7 @@
         <!-- Characters Grid -->
         <div x-show="$store.project.characters.length > 0" class="content-grid">
             <template x-for="character in $store.project.characters" :key="character.id">
-                <div class="character-card">
+                <div class="character-card clickable" @click="$store.ui.openModal('editCharacter', character)">
                     <div class="character-header">
                         <div class="character-avatar" x-text="character.name.charAt(0).toUpperCase()"></div>
                         <div class="character-info">
@@ -227,10 +166,7 @@
                     </div>
                     <div class="character-description" x-text="character.description || $store.i18n.t('characters.form.descriptionPlaceholder')"></div>
                     <div class="card-actions" style="margin-top: 12px; display: flex; gap: 8px; justify-content: flex-end;">
-                        <button class="btn-icon" @click="$store.ui.openModal('editCharacter', character)" :title="$store.i18n.t('common.edit')">
-                            <i data-lucide="edit" width="16" height="16"></i>
-                        </button>
-                        <button class="btn-icon" @click="if(confirm($store.i18n.t('common.confirmDelete'))) { $store.project.deleteCharacter(character.id); $store.ui.success($store.i18n.t('notifications.success.characterDeleted'), ''); }" :title="$store.i18n.t('common.delete')">
+                        <button class="btn-icon" @click.stop="if(confirm($store.i18n.t('common.confirmDelete'))) { $store.project.deleteCharacter(character.id); $store.ui.success($store.i18n.t('notifications.success.characterDeleted'), ''); }" :title="$store.i18n.t('common.delete')">
                             <i data-lucide="trash-2" width="16" height="16"></i>
                         </button>
                     </div>
@@ -239,14 +175,8 @@
         </div>
     </div>
 
-    <!-- Vista de Relaciones -->
+    <!-- Vista de Relaciones - Header removed -->
     <div x-show="$store.ui.activeLoreTab === 'relations'" class="tab-content">
-        <div class="view-header" style="margin-bottom: 24px;">
-            <div>
-                <h2 x-text="$store.i18n.t('sidebar.relations')">Relaciones</h2>
-                <p class="subtitle">Gestiona y visualiza las relaciones entre personajes</p>
-            </div>
-        </div>
 
         <!-- Empty State -->
         <div x-show="$store.project.characters.length === 0 || $store.project.characters.every(c => !c.relationships || c.relationships.length === 0)" class="empty-state">
@@ -362,18 +292,8 @@
         </div>
     </div>
 
-    <!-- Vista de Eventos -->
+    <!-- Vista de Eventos - Header moved to header.html -->
     <div x-show="$store.ui.activeLoreTab === 'events'" class="tab-content">
-        <div class="view-header" style="margin-bottom: 24px;">
-            <div>
-                <h2 x-text="$store.i18n.t('sidebar.timeline')">Eventos</h2>
-                <p class="subtitle" x-text="$store.i18n.t('timeline.subtitle')">Organiza los eventos importantes de tu historia</p>
-            </div>
-            <button class="btn-primary" @click="$store.ui.openModal('newTimelineEvent')">
-                <i data-lucide="plus" width="16" height="16"></i>
-                <span x-text="$store.i18n.t('timeline.new')">Nuevo Evento</span>
-            </button>
-        </div>
 
         <!-- Empty State -->
         <div x-show="$store.project.timeline.length === 0" class="empty-state">
@@ -385,7 +305,7 @@
         <!-- Timeline List -->
         <div x-show="$store.project.timeline.length > 0" style="max-width: 800px;">
             <template x-for="event in $store.project.timeline" :key="event.id">
-                <div class="timeline-event card" style="margin-bottom: 16px;">
+                <div class="timeline-event card clickable" style="margin-bottom: 16px;" @click="$store.ui.openModal('editTimelineEvent', event)">
                     <div style="display: flex; justify-content: space-between; align-items: start;">
                         <div style="flex: 1;">
                             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
@@ -395,10 +315,7 @@
                             <p x-text="event.description" style="color: var(--text-secondary); font-size: 14px; margin: 0;"></p>
                         </div>
                         <div style="display: flex; gap: 8px;">
-                            <button class="btn-icon" @click="$store.ui.openModal('editTimelineEvent', event)" :title="$store.i18n.t('common.edit')">
-                                <i data-lucide="edit" width="16" height="16"></i>
-                            </button>
-                            <button class="btn-icon" @click="if(confirm($store.i18n.t('common.confirmDelete'))) { $store.project.deleteTimelineEvent(event.id); $store.ui.success($store.i18n.t('notifications.success.eventDeleted'), ''); }" :title="$store.i18n.t('common.delete')">
+                            <button class="btn-icon" @click.stop="if(confirm($store.i18n.t('common.confirmDelete'))) { $store.project.deleteTimelineEvent(event.id); $store.ui.success($store.i18n.t('notifications.success.eventDeleted'), ''); }" :title="$store.i18n.t('common.delete')">
                                 <i data-lucide="trash-2" width="16" height="16"></i>
                             </button>
                         </div>
@@ -408,18 +325,8 @@
         </div>
     </div>
 
-    <!-- Vista de Ubicaciones -->
+    <!-- Vista de Ubicaciones - Header moved to header.html -->
     <div x-show="$store.ui.activeLoreTab === 'locations'" class="tab-content">
-        <div class="view-header" style="margin-bottom: 24px;">
-            <div>
-                <h2 x-text="$store.i18n.t('locations.title')">Ubicaciones</h2>
-                <p class="subtitle" x-text="$store.i18n.t('locations.subtitle')">Gestiona los lugares de tu novela</p>
-            </div>
-            <button class="btn-primary" @click="$store.ui.openModal('newLocation')">
-                <i data-lucide="plus" width="16" height="16"></i>
-                <span x-text="$store.i18n.t('locations.new')">Nueva Ubicación</span>
-            </button>
-        </div>
 
         <!-- Empty State -->
         <div x-show="$store.project.locations.length === 0" class="empty-state">
@@ -431,14 +338,11 @@
         <!-- Locations Grid -->
         <div x-show="$store.project.locations.length > 0" class="content-grid">
             <template x-for="location in $store.project.locations" :key="location.id">
-                <div class="card">
+                <div class="card clickable" @click="$store.ui.openModal('editLocation', location)">
                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
                         <h3 x-text="location.name" style="margin: 0;"></h3>
                         <div style="display: flex; gap: 8px;">
-                            <button class="btn-icon" @click="$store.ui.openModal('editLocation', location)" :title="$store.i18n.t('common.edit')">
-                                <i data-lucide="edit" width="16" height="16"></i>
-                            </button>
-                            <button class="btn-icon" @click="if(confirm($store.i18n.t('common.confirmDelete'))) { $store.project.deleteLocation(location.id); $store.ui.success($store.i18n.t('notifications.success.locationDeleted'), ''); }" :title="$store.i18n.t('common.delete')">
+                            <button class="btn-icon" @click.stop="if(confirm($store.i18n.t('common.confirmDelete'))) { $store.project.deleteLocation(location.id); $store.ui.success($store.i18n.t('notifications.success.locationDeleted'), ''); }" :title="$store.i18n.t('common.delete')">
                                 <i data-lucide="trash-2" width="16" height="16"></i>
                             </button>
                         </div>

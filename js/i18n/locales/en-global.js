@@ -26,8 +26,21 @@ window.translations_en = {
         required: 'Required',
         viewAll: 'View All',
         view: 'View',
+        select: 'Select',
+        remove: 'Remove',
         title: 'Title:',
         author: 'Author:'
+    },
+
+    // Avatars
+    avatars: {
+        selectAvatar: 'Select Avatar',
+        change: 'Change Avatar',
+        select: 'Select',
+        upload: 'Upload',
+        preview: 'Preview',
+        seedPlaceholder: 'Name to generate',
+        hint: 'Avatars are generated using your name as a seed. Change the preview name to see different variations.'
     },
 
     // Header
@@ -38,7 +51,8 @@ window.translations_en = {
         loadProject: 'Load Project',
         saveProject: 'Save Project',
         settings: 'Settings',
-        help: 'Help'
+        help: 'Help',
+        changeLanguage: 'Change language'
     },
 
     // Sidebar
@@ -51,6 +65,8 @@ window.translations_en = {
         lore: 'Lore',
         relations: 'Relations',
         timeline: 'Events',
+        versionControl: 'Version Control',
+        publishing: 'Publishing',
         aiAssistant: 'AI Assistant',
         notes: 'Notes',
         settings: 'Settings',
@@ -93,6 +109,7 @@ window.translations_en = {
         empty: 'No characters created',
         emptyHint: 'Create your first character to get started',
         form: {
+            avatar: 'Avatar',
             name: 'Name',
             namePlaceholder: 'E.g: John Doe',
             role: 'Role',
@@ -181,11 +198,27 @@ window.translations_en = {
         edit: 'Edit Location',
         empty: 'No locations created',
         emptyHint: 'Create your first location',
+        copyAIPrompt: 'Copy AI Prompt',
+        aiPromptCopied: 'Prompt copied to clipboard',
+        aiPromptCopiedDesc: 'Now you can paste it into your favorite AI image generator (DALL-E, Midjourney, Stable Diffusion, etc.)',
         form: {
             name: 'Name',
             namePlaceholder: 'E.g: Central Café',
+            type: 'Type',
+            typePlaceholder: 'City, forest, mountain, building...',
+            typeHint: 'Type of location (city, forest, mountain, etc.)',
+            image: 'Image',
+            noImage: 'No image',
+            uploadImage: 'Upload',
+            imageUrl: 'URL',
+            imageUrlPlaceholder: 'https://...',
             description: 'Description',
-            descriptionPlaceholder: 'Describe this place'
+            descriptionPlaceholder: 'Describe this place',
+            significance: 'Significance',
+            significancePlaceholder: 'Importance in the story...',
+            significanceHint: 'Importance and relevance of this location in the story',
+            notes: 'Notes',
+            notesPlaceholder: 'Additional notes...'
         }
     },
 
@@ -235,15 +268,64 @@ window.translations_en = {
         edit: 'Edit Event',
         empty: 'No events in timeline',
         emptyHint: 'Add events to organize the chronology',
+        viewList: 'List',
+        viewVisual: 'Visual',
+        viewEra: 'Eras',
+        filterAll: 'All events',
+        filterAbsolute: 'Only with dates',
+        filterRelative: 'Only relative',
+        filterEra: 'Only eras',
+        dragHint: 'Drag events to reorder them',
+        dateMode: {
+            absolute: 'Absolute',
+            relative: 'Relative',
+            era: 'Era'
+        },
+        importance: {
+            low: 'Low',
+            medium: 'Medium',
+            high: 'High'
+        },
         form: {
+            dateMode: 'Date Mode',
+            dateModes: {
+                absolute: 'Absolute Date',
+                relative: 'Relative Order',
+                era: 'Era/Epoch'
+            },
             date: 'Date',
             datePlaceholder: 'E.g: May 15, 1990',
+            dateHint: 'Exact date of the event',
+            era: 'Era/Epoch',
+            eraPlaceholder: 'E.g: Age of Chaos, Middle Ages...',
+            eraHint: 'Epoch or era when the event occurs',
+            relativeInfo: 'Relative order is defined by dragging events in the timeline view',
             event: 'Event',
             eventPlaceholder: 'What happens on this date',
             description: 'Description',
             descriptionPlaceholder: 'Event details',
+            participants: 'Participants',
+            participantsPlaceholder: 'Characters involved',
+            noCharacters: 'No characters created',
+            location: 'Location',
+            locationPlaceholder: 'Where it happens',
+            noLocation: 'No location',
+            importance: 'Importance',
+            importanceLevels: {
+                low: 'Low',
+                medium: 'Medium',
+                high: 'High'
+            },
+            tags: 'Tags',
+            tagsPlaceholder: 'Add tag...',
+            relatedScenes: 'Related Scenes',
+            noScenes: 'No scenes created',
             scenes: 'Related scenes',
+            relatedChapters: 'Related Chapters',
+            noChapters: 'No chapters created',
             chapters: 'Related chapters',
+            impacts: 'Impacts',
+            impactsHint: 'How this event affects characters and relationships',
             notes: 'Notes'
         }
     },
@@ -359,7 +441,120 @@ window.translations_en = {
         wordCount: '{count} words',
         saving: 'Saving...',
         saved: 'Saved',
+        zenMode: 'Zen mode',
+        exitZenMode: 'Exit zen mode',
         placeholder: 'Start writing your story...'
+    },
+
+    // Publishing
+    publishing: {
+        title: 'Publishing',
+        subtitle: 'Prepare your book for publication',
+
+        cover: {
+            title: 'Cover',
+            upload: 'Upload Cover',
+            change: 'Change Cover',
+            remove: 'Remove Cover',
+            recommendation: 'Recommended: 1600x2400px (2:3 ratio)',
+            preview: 'Preview',
+            noCover: 'No cover'
+        },
+
+        metadata: {
+            title: 'Book Information',
+            bookTitle: 'Book Title',
+            bookTitlePlaceholder: 'Your novel title',
+            subtitle: 'Subtitle',
+            subtitlePlaceholder: 'Optional subtitle',
+            author: 'Author',
+            authorPlaceholder: 'Your name',
+            isbn: 'ISBN',
+            isbnPlaceholder: 'ISBN-13 (optional)',
+            publisher: 'Publisher',
+            publisherPlaceholder: 'Publisher name',
+            year: 'Publication Year',
+            yearPlaceholder: '2025',
+            description: 'Description',
+            descriptionPlaceholder: 'Book synopsis...',
+            genre: 'Genre',
+            genrePlaceholder: 'Fantasy, Science Fiction, Romance...',
+            language: 'Language',
+            copyright: 'Copyright',
+            copyrightPlaceholder: '© 2025 Your Name. All rights reserved.'
+        },
+
+        chapters: {
+            title: 'Chapter Selection',
+            selectAll: 'Select All',
+            deselectAll: 'Deselect All',
+            selected: '{count} chapters selected',
+            totalWords: '{count} total words',
+            orderBy: 'Order by',
+            orderByNumber: 'Number',
+            orderByTitle: 'Title',
+            orderByDate: 'Date',
+            includeInExport: 'Include in export',
+            noChapters: 'No chapters to export',
+            createChapter: 'Create first chapter'
+        },
+
+        format: {
+            title: 'Format',
+            pageSize: 'Page Size',
+            pageSizeA4: 'A4 (210 x 297 mm)',
+            pageSizeA5: 'A5 (148 x 210 mm)',
+            pageSizeLetter: 'Letter (216 x 279 mm)',
+            pageSize6x9: '6" x 9" (152 x 229 mm)',
+            margins: 'Margins',
+            marginsNormal: 'Normal (2.5 cm)',
+            marginsNarrow: 'Narrow (1.5 cm)',
+            marginsWide: 'Wide (3.5 cm)',
+            fontFamily: 'Font',
+            fontSize: 'Font Size',
+            lineHeight: 'Line Spacing',
+            lineHeightSingle: 'Single',
+            lineHeight15: '1.5 lines',
+            lineHeightDouble: 'Double',
+            includePageNumbers: 'Include page numbers',
+            includeTableOfContents: 'Include table of contents',
+            includeHeader: 'Include headers',
+            includeFooter: 'Include footers'
+        },
+
+        export: {
+            title: 'Export',
+            exportPDF: 'Export to PDF',
+            exportDOCX: 'Export to DOCX',
+            exportEPUB: 'Export to EPUB',
+            exportDraft: 'Export Draft',
+            exportFinal: 'Export Final Version',
+            exporting: 'Exporting...',
+            success: 'Book exported successfully',
+            error: 'Error exporting book',
+            preview: 'Preview',
+            download: 'Download'
+        },
+
+        presets: {
+            title: 'Templates',
+            custom: 'Custom',
+            amazonKDP: 'Amazon KDP (6x9)',
+            createspace: 'CreateSpace (6x9)',
+            ingramspark: 'IngramSpark (5.5x8.5)',
+            lulu: 'Lulu (6x9)',
+            savePreset: 'Save as template',
+            loadPreset: 'Load template'
+        },
+
+        validation: {
+            noCover: 'No cover added',
+            noTitle: 'Book title missing',
+            noAuthor: 'Author name missing',
+            noChapters: 'No chapters selected',
+            warnings: 'Warnings',
+            ready: 'Ready to export'
+        }
     },
 
     // Modals
@@ -375,6 +570,13 @@ window.translations_en = {
         },
         settings: {
             title: 'Settings',
+            theme: {
+                title: 'Appearance',
+                label: 'Theme',
+                dark: 'Dark',
+                dracula: 'Dracula',
+                light: 'Light Pastel'
+            },
             dataManagement: {
                 title: 'Data Management',
                 description: 'Manage data stored locally in this browser',
@@ -594,5 +796,25 @@ window.translations_en = {
         treeDescription: 'Description',
         treeDescriptionPlaceholder: 'Brief description of the structure...',
         createFromCurrent: 'Create from current project'
+    },
+
+    // Avatars
+    avatars: {
+        selectAvatar: 'Select Avatar',
+        preview: 'Preview',
+        upload: 'Upload Image',
+        select: 'Select Avatar',
+        change: 'Change Avatar',
+        seedPlaceholder: 'Name to generate',
+        hint: 'Avatars are generated using your name as seed. Change the preview name to see different variations.',
+        categories: {
+            human: 'Humans',
+            fantasy: 'Fantasy',
+            pixel: 'Pixel Art',
+            simple: 'Simple'
+        },
+        uploadHint: 'Supported formats: JPG, PNG, GIF, SVG, WebP (max. 5MB)',
+        errorInvalidType: 'Invalid file type',
+        errorTooLarge: 'File is too large'
     }
 };

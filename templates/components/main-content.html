@@ -1,5 +1,5 @@
     <!-- Single dynamic view container -->
-    <div id="dynamic-view-container" 
+    <div id="dynamic-view-container"
          x-data="{
              currentView: $store.ui.currentView,
              init() {
@@ -18,10 +18,12 @@
                      'locations': 'templates/components/views/locations.html',
                      'lore': 'templates/components/views/lore.html',
                      'timeline': 'templates/components/views/timeline.html',
+                     'versionControl': 'templates/components/views/version-control.html',
+                     'publishing': 'templates/components/views/publishing.html',
                      'editor': 'templates/components/views/editor.html',
                      'aiAssistant': 'templates/components/views/ai-assistant.html'
                  };
-                 
+
                  if (viewMap[this.currentView]) {
                      try {
                          const response = await fetch(viewMap[this.currentView]);

@@ -1,0 +1,180 @@
+<!-- Avatar Selector Modal -->
+<div class="legacy-modal" :class="{ 'active': $store.ui.modals.avatarSelector }">
+    <div class="legacy-modal-content" style="max-width: 900px;">
+        <div class="legacy-modal-header">
+            <h2 x-text="$store.i18n.t('avatars.selectAvatar') || 'Seleccionar Avatar'"></h2>
+            <button class="btn-close" @click="$store.ui.closeModal()">
+                <i data-lucide="x" width="20" height="20"></i>
+            </button>
+        </div>
+
+        <div class="modal-body" x-data="{
+            selectedCategory: 'human',
+            selectedStyle: 'avataaars',
+            uploadedImage: null,
+            characterName: $store.ui.modalData?.name || 'Preview',
+            previewSeed: $store.ui.modalData?.name || 'Preview',
+
+            get stylesByCategory() {
+                if (!window.avatarService) return [];
+                return window.avatarService.getStylesByCategory(this.selectedCategory);
+            },
+
+            get categories() {
+                if (!window.avatarService) return {};
+                return window.avatarService.categories;
+            },
+
+            selectStyle(style) {
+                this.selectedStyle = style;
+                this.uploadedImage = null;
+            },
+
+            async handleFileUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                try {
+                    window.avatarService.validateImageFile(file);
+                    this.uploadedImage = await window.avatarService.createCustomAvatar(file);
+                    this.selectedStyle = null;
+                } catch (error) {
+                    $store.ui.error('Error', error.message);
+                }
+            },
+
+            confirmSelection() {
+                let avatar = null;
+
+                if (this.uploadedImage) {
+                    avatar = this.uploadedImage;
+                } else if (this.selectedStyle) {
+                    // IMPORTANTE: Usar characterName (nombre real del personaje) NO previewSeed
+                    avatar = window.avatarService.generateCharacterAvatar(
+                        { name: this.characterName },
+                        this.selectedStyle
+                    );
+                }
+
+                if (avatar && $store.ui.modalData?.onSelect) {
+                    $store.ui.modalData.onSelect(avatar);
+
+                    // Forzar actualización de iconos después de cerrar
+                    this.$nextTick(() => {
+                        setTimeout(() => {
+                            lucide.createIcons();
+                        }, 100);
+                    });
+                }
+
+                $store.ui.closeModal();
+            }
+        }">
+            <!-- Tabs de Categorías -->
+            <div class="flex gap-md mb-lg" style="border-bottom: 2px solid var(--border); padding-bottom: 12px;">
+                <template x-for="(category, key) in categories" :key="key">
+                    <button
+                        class="btn-secondary flex items-center gap-sm"
+                        :class="{ 'btn-primary': selectedCategory === key }"
+                        @click="selectedCategory = key; selectedStyle = stylesByCategory[0]?.key || null"
+                        style="padding: 8px 16px;">
+                        <span x-text="category.icon" style="font-size: 20px;"></span>
+                        <span x-text="category.name"></span>
+                    </button>
+                </template>
+
+                <!-- Opción de subir imagen -->
+                <button
+                    class="btn-secondary flex items-center gap-sm"
+                    :class="{ 'btn-primary': uploadedImage !== null }"
+                    @click="$refs.fileInput.click()"
+                    style="padding: 8px 16px;">
+                    <i data-lucide="upload" width="20" height="20"></i>
+                    <span x-text="$store.i18n.t('avatars.upload') || 'Subir'"></span>
+                </button>
+                <input type="file" x-ref="fileInput" @change="handleFileUpload" accept="image/*" style="display: none;">
+            </div>
+
+            <!-- Vista Previa Grande -->
+            <div class="flex gap-xl mb-xl">
+                <!-- Preview del avatar seleccionado -->
+                <div class="flex-shrink-0" style="width: 200px;">
+                    <div style="background: var(--bg-tertiary); border-radius: 12px; padding: 20px; text-align: center;">
+                        <div style="margin-bottom: 12px;">
+                            <strong x-text="$store.i18n.t('avatars.preview') || 'Vista Previa'"></strong>
+                        </div>
+
+                        <template x-if="uploadedImage">
+                            <img :src="uploadedImage.url"
+                                 style="width: 160px; height: 160px; border-radius: 12px; object-fit: cover; border: 3px solid var(--accent);">
+                        </template>
+
+                        <template x-if="!uploadedImage && selectedStyle">
+                            <img :src="window.avatarService.generateAvatarURL(selectedStyle, previewSeed)"
+                                 style="width: 160px; height: 160px; border-radius: 12px; border: 3px solid var(--accent);">
+                        </template>
+
+                        <!-- Input para cambiar seed de preview -->
+                        <template x-if="!uploadedImage && selectedStyle">
+                            <div style="margin-top: 12px;">
+                                <input
+                                    type="text"
+                                    x-model="previewSeed"
+                                    :placeholder="$store.i18n.t('avatars.seedPlaceholder') || 'Nombre para generar'"
+                                    style="width: 100%; padding: 8px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); text-align: center;">
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Grid de estilos disponibles -->
+                <div class="flex-1" style="max-height: 400px; overflow-y: auto;">
+                    <template x-if="uploadedImage">
+                        <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                            <i data-lucide="image" width="64" height="64" style="margin-bottom: 16px; opacity: 0.5;"></i>
+                            <p>Imagen personalizada cargada</p>
+                            <p style="font-size: 12px; color: var(--text-tertiary);" x-text="uploadedImage.filename"></p>
+                            <button class="btn-secondary mt-md" @click="uploadedImage = null; selectedStyle = 'avataaars'">
+                                <i data-lucide="trash-2" width="16" height="16"></i>
+                                <span x-text="$store.i18n.t('common.remove') || 'Quitar'"></span>
+                            </button>
+                        </div>
+                    </template>
+
+                    <template x-if="!uploadedImage">
+                        <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 12px;">
+                            <template x-for="style in stylesByCategory" :key="style.key">
+                                <div
+                                    class="clickable"
+                                    :class="{ 'selected': selectedStyle === style.key }"
+                                    @click="selectStyle(style.key)"
+                                    style="background: var(--bg-tertiary); border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; border: 2px solid transparent; transition: all 0.2s;"
+                                    :style="selectedStyle === style.key ? 'border-color: var(--accent); background: var(--bg-secondary);' : ''">
+
+                                    <img :src="window.avatarService.generateAvatarURL(style.key, previewSeed)"
+                                         style="width: 80px; height: 80px; border-radius: 6px; margin-bottom: 8px;">
+
+                                    <div style="font-size: 11px; color: var(--text-secondary);" x-text="style.name"></div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Info adicional -->
+            <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+                <div style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 13px;">
+                    <i data-lucide="info" width="16" height="16"></i>
+                    <span x-text="$store.i18n.t('avatars.hint') || 'Los avatares se generan usando tu nombre como semilla. Cambia el nombre de vista previa para ver diferentes variaciones.'"></span>
+                </div>
+            </div>
+
+            <!-- Footer con acciones -->
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" @click="$store.ui.closeModal()" x-text="$store.i18n.t('common.cancel')"></button>
+                <button type="button" class="btn-primary" @click="confirmSelection()" x-text="$store.i18n.t('common.select') || 'Seleccionar'"></button>
+            </div>
+        </div>
+    </div>
+</div>

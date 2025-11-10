@@ -9,7 +9,7 @@ window.i18nStore = {
     // Idiomas disponibles
     availableLocales: [
         { code: 'es', name: 'Español', flag: '🇪🇸' },
-        { code: 'en', name: 'English', flag: '🇺🇸' }
+        { code: 'en', name: 'English', flag: '🇬🇧' }
     ],
 
     // Inicializar

@@ -1,40 +1,204 @@
 <header class="header">
+    <!-- Logo + Project Title (siempre visible) -->
     <div class="header-left">
         <div class="logo">
-            <i data-lucide="pen-line" width="24" height="24"></i>
+            <i data-lucide="pen-line" width="20" height="20"></i>
             <span x-text="$store.i18n.t('header.title')">PlumaAI</span>
         </div>
         <div class="project-title" x-show="$store.project.projectInfo.id !== null" x-text="$store.project.projectInfo.title || 'Sin título'"></div>
     </div>
+
+    <!-- Contextual Area - Changes based on current view -->
+    <div class="header-center">
+        <!-- Lore Tabs (only visible in lore view) -->
+        <div x-show="$store.ui.currentView === 'lore'" class="header-tabs">
+            <button class="header-tab-btn"
+                    :class="{ 'active': !$store.ui.activeLoreTab || $store.ui.activeLoreTab === 'summary' }"
+                    @click="$store.ui.activeLoreTab = 'summary'">
+                <i data-lucide="book-open" width="14" height="14"></i>
+                <span x-text="$store.i18n.t('lore.title')">Lore</span>
+            </button>
+            <button class="header-tab-btn"
+                    :class="{ 'active': $store.ui.activeLoreTab === 'characters' }"
+                    @click="$store.ui.activeLoreTab = 'characters'">
+                <i data-lucide="users" width="14" height="14"></i>
+                <span x-text="$store.i18n.t('sidebar.characters')">Personajes</span>
+                <span class="header-tab-badge" x-show="$store.project.characters.length > 0" x-text="$store.project.characters.length"></span>
+            </button>
+            <button class="header-tab-btn"
+                    :class="{ 'active': $store.ui.activeLoreTab === 'relations' }"
+                    @click="$store.ui.activeLoreTab = 'relations'">
+                <i data-lucide="heart" width="14" height="14"></i>
+                <span x-text="$store.i18n.t('sidebar.relations')">Relaciones</span>
+            </button>
+            <button class="header-tab-btn"
+                    :class="{ 'active': $store.ui.activeLoreTab === 'events' }"
+                    @click="$store.ui.activeLoreTab = 'events'">
+                <i data-lucide="calendar" width="14" height="14"></i>
+                <span x-text="$store.i18n.t('sidebar.timeline')">Timeline</span>
+                <span class="header-tab-badge" x-show="$store.project.timeline.length > 0" x-text="$store.project.timeline.length"></span>
+            </button>
+            <button class="header-tab-btn"
+                    :class="{ 'active': $store.ui.activeLoreTab === 'locations' }"
+                    @click="$store.ui.activeLoreTab = 'locations'">
+                <i data-lucide="map-pin" width="14" height="14"></i>
+                <span x-text="$store.i18n.t('sidebar.locations')">Locations</span>
+                <span class="header-tab-badge" x-show="$store.project.locations.length > 0" x-text="$store.project.locations.length"></span>
+            </button>
+        </div>
+
+        <!-- View Titles for other views -->
+        <div x-show="$store.ui.currentView !== 'lore'" class="header-view-title">
+            <span x-show="$store.ui.currentView === 'dashboard'" x-text="$store.i18n.t('dashboard.title')">Dashboard</span>
+            <span x-show="$store.ui.currentView === 'characters'" x-text="$store.i18n.t('characters.title')">Personajes</span>
+            <span x-show="$store.ui.currentView === 'chapters'" x-text="$store.i18n.t('chapters.title')">Capítulos</span>
+            <span x-show="$store.ui.currentView === 'scenes'" x-text="$store.i18n.t('scenes.title')">Escenas</span>
+            <span x-show="$store.ui.currentView === 'locations'" x-text="$store.i18n.t('locations.title')">Ubicaciones</span>
+            <span x-show="$store.ui.currentView === 'timeline'" x-text="$store.i18n.t('timeline.title')">Timeline</span>
+            <span x-show="$store.ui.currentView === 'editor'" x-text="$store.i18n.t('editor.title')">Editor</span>
+        </div>
+    </div>
+
+    <!-- Actions Area - Right side -->
     <div class="header-right">
-        <!-- Selector de idioma -->
-        <button class="btn-icon" @click="$store.i18n.setLocale($store.i18n.currentLocale === 'es' ? 'en' : 'es')" title="Cambiar idioma">
-            <i data-lucide="globe" width="20" height="20"></i>
+        <!-- Contextual Actions (change based on view) -->
+        <div class="header-actions">
+            <!-- Lore Actions -->
+            <button x-show="$store.ui.currentView === 'lore' && (!$store.ui.activeLoreTab || $store.ui.activeLoreTab === 'summary')"
+                    class="btn-primary btn-sm"
+                    @click="$store.ui.openModal('newLore')">
+                <i data-lucide="plus" width="14" height="14"></i>
+                <span x-text="$store.i18n.t('lore.new')">Nuevo Lore</span>
+            </button>
+            <button x-show="$store.ui.currentView === 'lore' && $store.ui.activeLoreTab === 'characters'"
+                    class="btn-primary btn-sm"
+                    @click="$store.ui.openModal('newCharacter')">
+                <i data-lucide="plus" width="14" height="14"></i>
+                <span x-text="$store.i18n.t('characters.new')">Nuevo Personaje</span>
+            </button>
+            <button x-show="$store.ui.currentView === 'lore' && $store.ui.activeLoreTab === 'events'"
+                    class="btn-primary btn-sm"
+                    @click="$store.ui.openModal('newTimelineEvent')">
+                <i data-lucide="plus" width="14" height="14"></i>
+                <span x-text="$store.i18n.t('timeline.new')">Nuevo Evento</span>
+            </button>
+            <button x-show="$store.ui.currentView === 'lore' && $store.ui.activeLoreTab === 'locations'"
+                    class="btn-primary btn-sm"
+                    @click="$store.ui.openModal('newLocation')">
+                <i data-lucide="plus" width="14" height="14"></i>
+                <span x-text="$store.i18n.t('locations.new')">Nueva Ubicación</span>
+            </button>
+
+            <!-- Characters Actions -->
+            <button x-show="$store.ui.currentView === 'characters'"
+                    class="btn-primary btn-sm"
+                    @click="$store.ui.openModal('newCharacter')">
+                <i data-lucide="plus" width="14" height="14"></i>
+                <span x-text="$store.i18n.t('characters.new')">Nuevo</span>
+            </button>
+
+            <!-- Chapters Actions -->
+            <button x-show="$store.ui.currentView === 'chapters'"
+                    class="btn-primary btn-sm"
+                    @click="$store.ui.openModal('newChapter')">
+                <i data-lucide="plus" width="14" height="14"></i>
+                <span x-text="$store.i18n.t('chapters.new')">Nuevo</span>
+            </button>
+
+            <!-- Scenes Actions -->
+            <button x-show="$store.ui.currentView === 'scenes'"
+                    class="btn-primary btn-sm"
+                    @click="$store.ui.openModal('newScene')">
+                <i data-lucide="plus" width="14" height="14"></i>
+                <span x-text="$store.i18n.t('scenes.new')">Nuevo</span>
+            </button>
+
+            <!-- Locations Actions -->
+            <button x-show="$store.ui.currentView === 'locations'"
+                    class="btn-primary btn-sm"
+                    @click="$store.ui.openModal('newLocation')">
+                <i data-lucide="plus" width="14" height="14"></i>
+                <span x-text="$store.i18n.t('locations.new')">Nuevo</span>
+            </button>
+
+            <!-- Timeline Actions -->
+            <button x-show="$store.ui.currentView === 'timeline'"
+                    class="btn-primary btn-sm"
+                    @click="$store.ui.openModal('newTimelineEvent')">
+                <i data-lucide="plus" width="14" height="14"></i>
+                <span x-text="$store.i18n.t('timeline.new')">Nuevo</span>
+            </button>
+        </div>
+
+        <!-- Global Actions (always visible) -->
+        <div class="header-separator"></div>
+
+        <!-- Theme Selector Dropdown -->
+        <div class="header-dropdown-container" x-data="{ open: false }" @click.away="open = false">
+            <button class="btn-icon" @click="open = !open" :title="$store.i18n.t('modals.settings.theme.label')">
+                <i data-lucide="palette" width="16" height="16"></i>
+            </button>
+            <div x-show="open" x-transition class="header-dropdown theme-dropdown">
+                <!-- Dark Theme -->
+                <button @click="$store.ui.setTheme('dark'); open = false"
+                        class="dropdown-item"
+                        :class="{ 'active': $store.ui.currentTheme === 'dark' }">
+                    <div class="theme-preview-colors">
+                        <div class="theme-color-dot" style="background: #1e1e1e;"></div>
+                        <div class="theme-color-dot" style="background: #007acc;"></div>
+                    </div>
+                    <span x-text="$store.i18n.t('modals.settings.theme.dark')">Dark</span>
+                    <i x-show="$store.ui.currentTheme === 'dark'" data-lucide="check" width="14" height="14" class="dropdown-check"></i>
+                </button>
+                <!-- Dracula Theme -->
+                <button @click="$store.ui.setTheme('dracula'); open = false"
+                        class="dropdown-item"
+                        :class="{ 'active': $store.ui.currentTheme === 'dracula' }">
+                    <div class="theme-preview-colors">
+                        <div class="theme-color-dot" style="background: #282a36;"></div>
+                        <div class="theme-color-dot" style="background: #bd93f9;"></div>
+                    </div>
+                    <span x-text="$store.i18n.t('modals.settings.theme.dracula')">Dracula</span>
+                    <i x-show="$store.ui.currentTheme === 'dracula'" data-lucide="check" width="14" height="14" class="dropdown-check"></i>
+                </button>
+                <!-- Light Theme -->
+                <button @click="$store.ui.setTheme('light'); open = false"
+                        class="dropdown-item"
+                        :class="{ 'active': $store.ui.currentTheme === 'light' }">
+                    <div class="theme-preview-colors">
+                        <div class="theme-color-dot" style="background: #faf8f3; border-color: #d8d3cc;"></div>
+                        <div class="theme-color-dot" style="background: #a89bd5;"></div>
+                    </div>
+                    <span x-text="$store.i18n.t('modals.settings.theme.light')">Light Pastel</span>
+                    <i x-show="$store.ui.currentTheme === 'light'" data-lucide="check" width="14" height="14" class="dropdown-check"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Language Selector Dropdown -->
+        <div class="header-dropdown-container" x-data="{ open: false }" @click.away="open = false">
+            <button class="btn-icon" @click="open = !open" :title="$store.i18n.t('header.changeLanguage')">
+                <i data-lucide="globe" width="16" height="16"></i>
+            </button>
+            <div x-show="open" x-transition class="header-dropdown language-dropdown">
+                <template x-for="locale in $store.i18n.availableLocales" :key="locale.code">
+                    <button @click="$store.i18n.setLocale(locale.code); open = false"
+                            class="dropdown-item"
+                            :class="{ 'active': $store.i18n.currentLocale === locale.code }">
+                        <span class="language-flag" x-text="locale.flag"></span>
+                        <span x-text="locale.name"></span>
+                        <i x-show="$store.i18n.currentLocale === locale.code" data-lucide="check" width="14" height="14" class="dropdown-check"></i>
+                    </button>
+                </template>
+            </div>
+        </div>
+
+        <button class="btn-icon" @click="$store.ui.openModal('settings')" :title="$store.i18n.t('header.settings')">
+            <i data-lucide="settings" width="16" height="16"></i>
         </button>
-        <button class="btn-icon" @click="$store.ui.openModal('export')" title="Exportar proyecto">
-            <i data-lucide="download" width="20" height="20"></i>
+        <button class="btn-primary btn-sm" @click="if($store.project.saveProject()) { $store.ui.success($store.i18n.t('notifications.success.projectSaved'), ''); }">
+            <i data-lucide="save" width="14" height="14"></i>
+            <span x-text="$store.i18n.t('header.saveProject')">Guardar</span>
         </button>
-        <button class="btn-icon" @click="$store.ui.openModal('projectsList')" title="Mis proyectos">
-            <i data-lucide="folder-open" width="20" height="20"></i>
-        </button>
-        <button class="btn-icon" @click="$store.ui.openModal('settings')" title="Configuración">
-            <i data-lucide="settings" width="20" height="20"></i>
-        </button>
-        <button class="btn-icon" @click="window.versionControlComponent.createCommit()" title="Crear commit">
-            <i data-lucide="git-commit" width="20" height="20"></i>
-        </button>
-        <button class="btn-icon" @click="window.versionControlComponent.createFork()" title="Crear fork">
-            <i data-lucide="git-fork" width="20" height="20"></i>
-        </button>
-        <button class="btn-icon" @click="$store.versionControl.refreshState(); $store.ui.openModal('versionHistory')" title="Historial de versiones">
-            <i data-lucide="history" width="20" height="20"></i>
-        </button>
-        <button class="btn-icon" @click="$store.ui.openModal('forksView')" title="Gestión de forks">
-            <i data-lucide="git-branch" width="20" height="20"></i>
-        </button>
-        <button class="btn-icon" @click="window.versionControlComponent.createTree()" title="Crear estructura de proyecto">
-            <i data-lucide="folder-tree" width="20" height="20"></i>
-        </button>
-        <button class="btn-primary" @click="if($store.project.saveProject()) { $store.ui.success($store.i18n.t('notifications.success.projectSaved'), ''); }" x-text="$store.i18n.t('header.saveProject')">Guardar</button>
     </div>
 </header>

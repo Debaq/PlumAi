@@ -9,14 +9,25 @@ window.versionControlStore = {
         console.log('🔄 Store de control de versiones inicializado');
         // Cargar estado inicial desde el sistema de control de versiones
         try {
-            this.refreshState();
+            // Asegurarse de que window.versionControl existe antes de usarlo
+            if (window.versionControl) {
+                this.refreshState();
+            } else {
+                console.warn('⚠️ window.versionControl no está disponible aún');
+            }
         } catch (error) {
             console.error('Error inicializando store de versiones:', error);
         }
     },
-    
+
     // Actualizar el estado desde el sistema de control de versiones
     refreshState() {
+        // Verificar que window.versionControl existe
+        if (!window.versionControl) {
+            console.warn('⚠️ window.versionControl no está disponible');
+            return;
+        }
+
         this.currentBranch = window.versionControl.currentBranch;
         this.branches = window.versionControl.getAllBranches();
         this.commits = window.versionControl.getBranchHistory(); // Usar el sistema directamente en lugar del proyecto

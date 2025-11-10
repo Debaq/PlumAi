@@ -26,8 +26,21 @@ window.translations_es = {
         required: 'Requerido',
         viewAll: 'Ver Todos',
         view: 'Ver',
+        select: 'Seleccionar',
+        remove: 'Quitar',
         title: 'Título:',
         author: 'Autor:'
+    },
+
+    // Avatares
+    avatars: {
+        selectAvatar: 'Seleccionar Avatar',
+        change: 'Cambiar Avatar',
+        select: 'Seleccionar',
+        upload: 'Subir',
+        preview: 'Vista Previa',
+        seedPlaceholder: 'Nombre para generar',
+        hint: 'Los avatares se generan usando tu nombre como semilla. Cambia el nombre de vista previa para ver diferentes variaciones.'
     },
 
     // Header
@@ -38,7 +51,8 @@ window.translations_es = {
         loadProject: 'Cargar Proyecto',
         saveProject: 'Guardar Proyecto',
         settings: 'Configuración',
-        help: 'Ayuda'
+        help: 'Ayuda',
+        changeLanguage: 'Cambiar idioma'
     },
 
     // Sidebar
@@ -51,6 +65,8 @@ window.translations_es = {
         lore: 'Lore',
         relations: 'Relaciones',
         timeline: 'Eventos',
+        versionControl: 'Control de Versiones',
+        publishing: 'Publicación',
         aiAssistant: 'Asistente IA',
         notes: 'Notas',
         settings: 'Configuración',
@@ -93,6 +109,7 @@ window.translations_es = {
         empty: 'No hay personajes creados',
         emptyHint: 'Crea tu primer personaje para comenzar',
         form: {
+            avatar: 'Avatar',
             name: 'Nombre',
             namePlaceholder: 'Ej: Juan Pérez',
             role: 'Rol',
@@ -181,11 +198,27 @@ window.translations_es = {
         edit: 'Editar Ubicación',
         empty: 'No hay ubicaciones creadas',
         emptyHint: 'Crea tu primera ubicación',
+        copyAIPrompt: 'Copiar Prompt IA',
+        aiPromptCopied: 'Prompt copiado al portapapeles',
+        aiPromptCopiedDesc: 'Ahora puedes pegarlo en tu generador de imágenes IA favorito (DALL-E, Midjourney, Stable Diffusion, etc.)',
         form: {
             name: 'Nombre',
             namePlaceholder: 'Ej: Café Central',
+            type: 'Tipo',
+            typePlaceholder: 'Ciudad, bosque, montaña, edificio...',
+            typeHint: 'Tipo de ubicación (ciudad, bosque, montaña, etc.)',
+            image: 'Imagen',
+            noImage: 'Sin imagen',
+            uploadImage: 'Subir',
+            imageUrl: 'URL',
+            imageUrlPlaceholder: 'https://...',
             description: 'Descripción',
-            descriptionPlaceholder: 'Describe este lugar'
+            descriptionPlaceholder: 'Describe este lugar',
+            significance: 'Significancia',
+            significancePlaceholder: 'Importancia en la historia...',
+            significanceHint: 'Importancia y relevancia de esta ubicación en la historia',
+            notes: 'Notas',
+            notesPlaceholder: 'Notas adicionales...'
         }
     },
 
@@ -235,15 +268,64 @@ window.translations_es = {
         edit: 'Editar Evento',
         empty: 'No hay eventos en la línea temporal',
         emptyHint: 'Agrega eventos para organizar la cronología',
+        viewList: 'Lista',
+        viewVisual: 'Visual',
+        viewEra: 'Eras',
+        filterAll: 'Todos los eventos',
+        filterAbsolute: 'Solo con fechas',
+        filterRelative: 'Solo relativos',
+        filterEra: 'Solo eras',
+        dragHint: 'Arrastra los eventos para reordenarlos',
+        dateMode: {
+            absolute: 'Absoluto',
+            relative: 'Relativo',
+            era: 'Era'
+        },
+        importance: {
+            low: 'Baja',
+            medium: 'Media',
+            high: 'Alta'
+        },
         form: {
+            dateMode: 'Modo de Fecha',
+            dateModes: {
+                absolute: 'Fecha Absoluta',
+                relative: 'Orden Relativo',
+                era: 'Era/Época'
+            },
             date: 'Fecha',
             datePlaceholder: 'Ej: 15 de mayo, 1990',
+            dateHint: 'Fecha exacta del evento',
+            era: 'Era/Época',
+            eraPlaceholder: 'Ej: Era del Caos, Edad Media...',
+            eraHint: 'Época o era en la que ocurre el evento',
+            relativeInfo: 'El orden relativo se define arrastrando eventos en la vista de timeline',
             event: 'Evento',
             eventPlaceholder: 'Qué ocurre en esta fecha',
             description: 'Descripción',
             descriptionPlaceholder: 'Detalles del evento',
+            participants: 'Participantes',
+            participantsPlaceholder: 'Personajes involucrados',
+            noCharacters: 'No hay personajes creados',
+            location: 'Ubicación',
+            locationPlaceholder: 'Dónde ocurre',
+            noLocation: 'Sin ubicación',
+            importance: 'Importancia',
+            importanceLevels: {
+                low: 'Baja',
+                medium: 'Media',
+                high: 'Alta'
+            },
+            tags: 'Etiquetas',
+            tagsPlaceholder: 'Agregar etiqueta...',
+            relatedScenes: 'Escenas Relacionadas',
+            noScenes: 'No hay escenas creadas',
             scenes: 'Escenas relacionadas',
+            relatedChapters: 'Capítulos Relacionados',
+            noChapters: 'No hay capítulos creados',
             chapters: 'Capítulos relacionados',
+            impacts: 'Impactos',
+            impactsHint: 'Cómo afecta este evento a personajes y relaciones',
             notes: 'Notas'
         }
     },
@@ -359,7 +441,167 @@ window.translations_es = {
         wordCount: '{count} palabras',
         saving: 'Guardando...',
         saved: 'Guardado',
+        zenMode: 'Modo sin distracciones',
+        exitZenMode: 'Salir del modo zen',
         placeholder: 'Comienza a escribir tu historia...'
+    },
+
+    // Publicación
+    publishing: {
+        title: 'Publicación',
+        subtitle: 'Prepara tu libro para publicar',
+
+        cover: {
+            title: 'Portada',
+            upload: 'Subir Portada',
+            change: 'Cambiar Portada',
+            remove: 'Quitar Portada',
+            recommendation: 'Recomendado: 1600x2400px (proporción 2:3)',
+            preview: 'Vista Previa',
+            noCover: 'Sin portada'
+        },
+
+        metadata: {
+            title: 'Información del Libro',
+            bookTitle: 'Título del Libro',
+            bookTitlePlaceholder: 'El título de tu novela',
+            subtitle: 'Subtítulo',
+            subtitlePlaceholder: 'Subtítulo opcional',
+            author: 'Autor',
+            authorPlaceholder: 'Tu nombre',
+            isbn: 'ISBN',
+            isbnPlaceholder: 'ISBN-13 (opcional)',
+            publisher: 'Editorial',
+            publisherPlaceholder: 'Nombre de la editorial',
+            year: 'Año de Publicación',
+            yearPlaceholder: '2025',
+            description: 'Descripción',
+            descriptionPlaceholder: 'Sinopsis del libro...',
+            genre: 'Género',
+            genrePlaceholder: 'Fantasía, Ciencia Ficción, Romance...',
+            language: 'Idioma',
+            copyright: 'Copyright',
+            copyrightPlaceholder: '© 2025 Tu Nombre. Todos los derechos reservados.'
+        },
+
+        chapters: {
+            title: 'Selección de Capítulos',
+            selectAll: 'Seleccionar Todos',
+            deselectAll: 'Deseleccionar Todos',
+            selected: '{count} capítulos seleccionados',
+            totalWords: '{count} palabras totales',
+            orderBy: 'Ordenar por',
+            orderByNumber: 'Número',
+            orderByTitle: 'Título',
+            orderByDate: 'Fecha',
+            includeInExport: 'Incluir en la exportación',
+            noChapters: 'No hay capítulos para exportar',
+            createChapter: 'Crear primer capítulo',
+            filterByStatus: 'Filtrar por estado',
+            statusAll: 'Todos los estados',
+            statusFinal: 'Solo finales',
+            statusReview: 'En revisión',
+            statusDraft: 'Borradores',
+            showDrafts: 'Mostrar borradores',
+            showReview: 'Mostrar en revisión',
+            onlyFinal: 'Solo capítulos finales'
+        },
+
+        platform: {
+            title: 'Plataforma de Publicación',
+            kdp: 'Amazon KDP',
+            kdpDesc: 'Formato estándar de Amazon Kindle Direct Publishing',
+            ingramspark: 'IngramSpark',
+            ingramDesc: 'Distribución profesional a librerías',
+            lulu: 'Lulu',
+            luluDesc: 'Autopublicación flexible',
+            custom: 'Personalizado',
+            customDesc: 'Configuración manual completa'
+        },
+
+        bookSize: {
+            title: 'Tamaño del Libro',
+            kdp6x9: '6" x 9" (15.24 x 22.86 cm)',
+            kdp6x9Desc: 'Tamaño estándar para novelas - KDP',
+            kdp5x8: '5" x 8" (12.7 x 20.32 cm)',
+            kdp5x8Desc: 'Compacto - KDP',
+            kdp55x85: '5.5" x 8.5" (13.97 x 21.59 cm)',
+            kdp55x85Desc: 'Estándar US - KDP',
+            a4: 'A4 (21 x 29.7 cm)',
+            a5: 'A5 (14.8 x 21 cm)',
+            letter: 'Carta (21.6 x 27.9 cm)'
+        },
+
+        images: {
+            title: 'Imágenes del Libro',
+            addImage: 'Agregar Imagen',
+            fullPage: 'Página completa',
+            position: 'Posición en el libro',
+            afterChapter: 'Después del capítulo',
+            beforeChapter: 'Antes del capítulo',
+            atBeginning: 'Al inicio del libro',
+            atEnd: 'Al final del libro',
+            reorder: 'Reordenar',
+            remove: 'Quitar',
+            noImages: 'Sin imágenes agregadas'
+        },
+
+        format: {
+            title: 'Formato',
+            pageSize: 'Tamaño de Página',
+            pageSizeA4: 'A4 (210 x 297 mm)',
+            pageSizeA5: 'A5 (148 x 210 mm)',
+            pageSizeLetter: 'Carta (216 x 279 mm)',
+            pageSize6x9: '6" x 9" (152 x 229 mm)',
+            margins: 'Márgenes',
+            marginsNormal: 'Normal (2.5 cm)',
+            marginsNarrow: 'Estrecho (1.5 cm)',
+            marginsWide: 'Ancho (3.5 cm)',
+            fontFamily: 'Fuente',
+            fontSize: 'Tamaño de Fuente',
+            lineHeight: 'Interlineado',
+            lineHeightSingle: 'Sencillo',
+            lineHeight15: '1.5 líneas',
+            lineHeightDouble: 'Doble',
+            includePageNumbers: 'Incluir números de página',
+            includeTableOfContents: 'Incluir tabla de contenidos',
+            includeHeader: 'Incluir encabezados',
+            includeFooter: 'Incluir pie de página'
+        },
+
+        export: {
+            title: 'Exportar',
+            exportPDF: 'Exportar a PDF',
+            exportDOCX: 'Exportar a DOCX',
+            exportEPUB: 'Exportar a EPUB',
+            exportDraft: 'Exportar Borrador',
+            exportFinal: 'Exportar Versión Final',
+            exporting: 'Exportando...',
+            success: 'Libro exportado correctamente',
+            error: 'Error al exportar el libro',
+            preview: 'Vista Previa',
+            download: 'Descargar'
+        },
+
+        presets: {
+            title: 'Plantillas',
+            custom: 'Personalizado',
+            amazonKDP: 'Amazon KDP (6x9)',
+            createspace: 'CreateSpace (6x9)',
+            ingramspark: 'IngramSpark (5.5x8.5)',
+            lulu: 'Lulu (6x9)',
+            savePreset: 'Guardar como plantilla',
+            loadPreset: 'Cargar plantilla'
+        },
+
+        validation: {
+            noCover: 'No se ha agregado una portada',
+            noTitle: 'Falta el título del libro',
+            noAuthor: 'Falta el nombre del autor',
+            noChapters: 'No hay capítulos seleccionados',
+            warnings: 'Advertencias',
+            ready: 'Listo para exportar'
+        }
     },
 
     // Modales
@@ -375,6 +617,13 @@ window.translations_es = {
         },
         settings: {
             title: 'Configuración',
+            theme: {
+                title: 'Apariencia',
+                label: 'Tema',
+                dark: 'Oscuro',
+                dracula: 'Drácula',
+                light: 'Claro Pastel'
+            },
             dataManagement: {
                 title: 'Gestión de Datos',
                 description: 'Gestiona los datos almacenados localmente en este navegador',
@@ -594,5 +843,25 @@ window.translations_es = {
         treeDescription: 'Descripción',
         treeDescriptionPlaceholder: 'Breve descripción de la estructura...',
         createFromCurrent: 'Crear a partir del proyecto actual'
+    },
+
+    // Avatares
+    avatars: {
+        selectAvatar: 'Seleccionar Avatar',
+        preview: 'Vista Previa',
+        upload: 'Subir Imagen',
+        select: 'Seleccionar Avatar',
+        change: 'Cambiar Avatar',
+        seedPlaceholder: 'Nombre para generar',
+        hint: 'Los avatares se generan usando tu nombre como semilla. Cambia el nombre de vista previa para ver diferentes variaciones.',
+        categories: {
+            human: 'Humanos',
+            fantasy: 'Fantasía',
+            pixel: 'Pixel Art',
+            simple: 'Simples'
+        },
+        uploadHint: 'Formatos soportados: JPG, PNG, GIF, SVG, WebP (máx. 5MB)',
+        errorInvalidType: 'Tipo de archivo no válido',
+        errorTooLarge: 'El archivo es muy grande'
     }
 };

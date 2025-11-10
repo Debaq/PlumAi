@@ -38,7 +38,7 @@ window.projectStore = {
 
     // Métodos para personajes
     addCharacter(character) {
-        this.characters.push({
+        const newCharacter = {
             id: window.uuid.generateUUID(),
             name: '',
             role: 'secondary',
@@ -47,11 +47,20 @@ window.projectStore = {
             background: '',
             relationships: [],
             notes: '',
+            avatar: null,  // { style, seed, url, source }
             created: new Date().toISOString(),
             modified: new Date().toISOString(),
             ...character
-        });
+        };
+
+        // Generar avatar por defecto si tiene nombre y no tiene avatar
+        if (newCharacter.name && !newCharacter.avatar && window.avatarService) {
+            newCharacter.avatar = window.avatarService.generateCharacterAvatar(newCharacter, 'adventurer');
+        }
+
+        this.characters.push(newCharacter);
         this.updateModified();
+        this.updateSearchIndex(); // Actualizar índice de búsqueda
     },
 
     updateCharacter(id, updates) {
@@ -68,6 +77,7 @@ window.projectStore = {
                 modified: new Date().toISOString()
             };
             this.updateModified();
+            this.updateSearchIndex(); // Actualizar índice de búsqueda
         }
     },
 
@@ -177,6 +187,7 @@ window.projectStore = {
     deleteCharacter(id) {
         this.characters = this.characters.filter(c => c.id !== id);
         this.updateModified();
+        this.updateSearchIndex(); // Actualizar índice de búsqueda
     },
 
     getCharacter(id) {
@@ -201,6 +212,7 @@ window.projectStore = {
             ...chapter
         });
         this.updateModified();
+        this.updateSearchIndex(); // Actualizar índice de búsqueda
     },
 
     updateChapter(id, updates) {
@@ -219,6 +231,7 @@ window.projectStore = {
                 modified: new Date().toISOString()
             };
             this.updateModified();
+            this.updateSearchIndex(); // Actualizar índice de búsqueda
         }
     },
 
@@ -226,6 +239,7 @@ window.projectStore = {
         this.chapters = this.chapters.filter(c => c.id !== id);
         this.reorderChapters();
         this.updateModified();
+        this.updateSearchIndex(); // Actualizar índice de búsqueda
     },
 
     reorderChapters() {
@@ -281,6 +295,7 @@ window.projectStore = {
             ...scene
         });
         this.updateModified();
+        this.updateSearchIndex(); // Actualizar índice de búsqueda
     },
 
     updateScene(id, updates) {
@@ -292,6 +307,7 @@ window.projectStore = {
                 modified: new Date().toISOString()
             };
             this.updateModified();
+            this.updateSearchIndex(); // Actualizar índice de búsqueda
         }
     },
 
@@ -304,6 +320,7 @@ window.projectStore = {
             }
         });
         this.updateModified();
+        this.updateSearchIndex(); // Actualizar índice de búsqueda
     },
 
     getScene(id) {
@@ -315,16 +332,44 @@ window.projectStore = {
         this.timeline.push({
             id: window.uuid.generateUUID(),
             position: this.timeline.length,
-            date: '',
+
+            // Información básica
             event: '',
             description: '',
+
+            // Modo de fecha
+            dateMode: 'absolute', // 'absolute' | 'relative' | 'era'
+            date: '', // Para modo absolute
+
+            // Relaciones temporales (para modo relative)
+            before: [], // IDs de eventos que pasan después de este
+            after: [],  // IDs de eventos que pasaron antes de este
+
+            // Agrupación
+            era: '',     // Para modo era: "Era del Caos", "Edad Media"
+            chapter: '', // Vinculado a capítulo específico
+
+            // Conexiones
+            participants: [], // IDs de personajes
+            location: '',     // ID de ubicación
             sceneIds: [],
             chapterIds: [],
+
+            // Impactos
+            impacts: [], // { type: 'relationship', id: 'rel-uuid', change: 'friend->enemy' }
+
+            // Metadata
+            importance: 'medium', // 'low' | 'medium' | 'high'
+            tags: [],
             notes: '',
+
+            created: new Date().toISOString(),
+            modified: new Date().toISOString(),
             ...event
         });
         this.sortTimeline();
         this.updateModified();
+        this.updateSearchIndex(); // Actualizar índice de búsqueda
     },
 
     updateTimelineEvent(id, updates) {
@@ -336,12 +381,14 @@ window.projectStore = {
             };
             this.sortTimeline();
             this.updateModified();
+            this.updateSearchIndex(); // Actualizar índice de búsqueda
         }
     },
 
     deleteTimelineEvent(id) {
         this.timeline = this.timeline.filter(t => t.id !== id);
         this.updateModified();
+        this.updateSearchIndex(); // Actualizar índice de búsqueda
     },
 
     sortTimeline() {
@@ -384,9 +431,17 @@ window.projectStore = {
             id: window.uuid.generateUUID(),
             name: '',
             description: '',
+            type: '', // ciudad, bosque, montaña, edificio, etc.
+            image: '', // URL de imagen o data URL
+            imageType: 'upload', // 'upload' | 'url'
+            significance: '', // importancia de la ubicación
+            notes: '',
+            created: new Date().toISOString(),
+            modified: new Date().toISOString(),
             ...location
         });
         this.updateModified();
+        this.updateSearchIndex(); // Actualizar índice de búsqueda
     },
 
     updateLocation(id, updates) {
@@ -397,12 +452,18 @@ window.projectStore = {
                 ...updates
             };
             this.updateModified();
+            this.updateSearchIndex(); // Actualizar índice de búsqueda
         }
     },
 
     deleteLocation(id) {
         this.locations = this.locations.filter(l => l.id !== id);
         this.updateModified();
+        this.updateSearchIndex(); // Actualizar índice de búsqueda
+    },
+
+    getLocation(id) {
+        return this.locations.find(l => l.id === id);
     },
 
     // Métodos para elementos de lore
@@ -419,6 +480,7 @@ window.projectStore = {
             ...lore
         });
         this.updateModified();
+        this.updateSearchIndex(); // Actualizar índice de búsqueda
     },
 
     updateLore(id, updates) {
@@ -430,12 +492,14 @@ window.projectStore = {
                 modified: new Date().toISOString()
             };
             this.updateModified();
+            this.updateSearchIndex(); // Actualizar índice de búsqueda
         }
     },
 
     deleteLore(id) {
         this.loreEntries = this.loreEntries.filter(l => l.id !== id);
         this.updateModified();
+        this.updateSearchIndex(); // Actualizar índice de búsqueda
     },
 
     getLore(id) {
@@ -677,6 +741,20 @@ window.projectStore = {
     // Obtener estadísticas del control de versiones
     getVersionStats() {
         return window.versionControl.getHistoryStats();
+    },
+
+    // Actualizar índice de búsqueda de Lunr.js
+    updateSearchIndex() {
+        if (window.searchService && window.searchService.isInitialized) {
+            window.searchService.update({
+                characters: this.characters,
+                scenes: this.scenes,
+                locations: this.locations,
+                timeline: this.timeline,
+                chapters: this.chapters,
+                loreEntries: this.loreEntries
+            });
+        }
     },
 
 
