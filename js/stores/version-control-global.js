@@ -4,16 +4,13 @@ window.versionControlStore = {
     currentBranch: 'main',
     branches: [],
     commits: [],
-    
+
     init() {
-        console.log('🔄 Store de control de versiones inicializado');
         // Cargar estado inicial desde el sistema de control de versiones
         try {
             // Asegurarse de que window.versionControl existe antes de usarlo
             if (window.versionControl) {
                 this.refreshState();
-            } else {
-                console.warn('⚠️ window.versionControl no está disponible aún');
             }
         } catch (error) {
             console.error('Error inicializando store de versiones:', error);
@@ -24,7 +21,6 @@ window.versionControlStore = {
     refreshState() {
         // Verificar que window.versionControl existe
         if (!window.versionControl) {
-            console.warn('⚠️ window.versionControl no está disponible');
             return;
         }
 
@@ -63,7 +59,6 @@ window.versionControlStore = {
         try {
             const projectId = Alpine.store('project').projectInfo.id;
             if (!projectId) {
-                console.warn('No hay proyecto inicializado para obtener forks');
                 return [];
             }
             

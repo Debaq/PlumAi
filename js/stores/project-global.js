@@ -157,7 +157,6 @@ window.projectStore = {
 
     // Obtener información del estado vital
     getVitalStatusInfo(status) {
-        console.log(`🔍 getVitalStatusInfo llamado con status: "${status}"`);
         const statusInfo = {
             // Vivo/Activo
             'alive': { label: '🟢 Vivo', category: 'alive', color: '#22c55e' },
@@ -1087,7 +1086,6 @@ window.projectStore = {
             this.migrateProjectData(projectData);
 
             Object.assign(this, projectData);
-            console.log(`✅ Project loaded into store: ${this.projectInfo.title}`);
             return true;
         }
         return false;
@@ -1097,7 +1095,6 @@ window.projectStore = {
     migrateProjectData(projectData) {
         // Migración: lore -> loreEntries
         if (projectData.lore && !projectData.loreEntries) {
-            console.log('🔄 Migrando lore a loreEntries');
             projectData.loreEntries = projectData.lore;
             delete projectData.lore;
         }
@@ -1117,19 +1114,15 @@ window.projectStore = {
 
         // Migración: Relaciones al nuevo formato con historial
         if (projectData.characters && projectData.characters.length > 0) {
-            console.log(`🔄 Iniciando migración para ${projectData.characters.length} personajes`);
             let migrationNeeded = false;
 
             projectData.characters.forEach((character, index) => {
-                console.log(`  👤 Personaje ${index + 1}/${projectData.characters.length}: ${character.name}`);
-
                 // Migrar relaciones
                 if (character.relationships && character.relationships.length > 0) {
                     character.relationships = character.relationships.map(rel => {
                         const migratedRel = this.migrateRelationshipToHistory(rel);
                         if (!rel.history || !rel.currentType) {
                             migrationNeeded = true;
-                            console.log(`    ↔️ Relación migrada`);
                         }
                         return migratedRel;
                     });
@@ -1137,7 +1130,6 @@ window.projectStore = {
 
                 // Migración: Agregar estado vital si no existe
                 if (!character.vitalStatusHistory) {
-                    console.log(`    ➕ Agregando estado vital 'alive' a ${character.name}`);
                     character.vitalStatusHistory = [
                         {
                             status: 'alive',
@@ -1148,16 +1140,8 @@ window.projectStore = {
                     ];
                     character.currentVitalStatus = 'alive';
                     migrationNeeded = true;
-                } else {
-                    console.log(`    ✓ ${character.name} ya tiene estado vital: ${character.currentVitalStatus}`);
                 }
             });
-
-            if (migrationNeeded) {
-                console.log('✅ Migración de datos completada - relaciones y estados vitales actualizados');
-            } else {
-                console.log('✓ No se necesitó migración - datos ya actualizados');
-            }
         }
 
         return projectData;
@@ -1210,7 +1194,6 @@ window.projectStore = {
     // Crear un fork del proyecto actual
     createFork(forkName, description = '') {
         if (!this.isProjectInitialized()) {
-            console.error('❌ No hay proyecto para hacer fork');
             return null;
         }
 
@@ -1237,21 +1220,18 @@ window.projectStore = {
         // Inicializar el nuevo proyecto (fork) en el store
         this.loadProject(forkProjectData);
 
-        console.log(`⑂ Fork creado: ${forkProjectData.projectInfo.title} del proyecto ${this.projectInfo.id}`);
         return this.projectInfo.id;
     },
 
     // Crear un commit del proyecto actual
     createCommit(message = 'Auto-commit', author = 'user') {
         if (!this.isProjectInitialized()) {
-            console.error('❌ No hay proyecto para hacer commit');
             return null;
         }
 
         const projectData = this.exportProject();
         const commitId = window.versionControl.commit(projectData, message, author);
-        
-        console.log(`✅ Commit creado: ${commitId}`);
+
         return commitId;
     },
 
@@ -1265,7 +1245,6 @@ window.projectStore = {
         const projectData = window.versionControl.getProjectAtCommit(commitId);
         if (projectData) {
             this.loadProject(projectData);
-            console.log(`🔄 Proyecto actualizado al estado del commit: ${commitId}`);
             return true;
         }
         return false;

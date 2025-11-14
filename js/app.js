@@ -152,18 +152,15 @@ document.addEventListener('alpine:init', () => {
                 if (this.commits.length > 0) {
                     // Obtener el último commit
                     const lastCommit = this.commits[0];
-                    console.log('📌 Usando último commit como referencia:', lastCommit.id.substring(0, 7));
 
                     // Obtener el proyecto en ese estado usando el nuevo sistema v2.0
                     const projectAtCommit = window.versionControl.getProjectAtCommit(lastCommit.id);
 
                     if (projectAtCommit) {
                         this.lastProjectState = JSON.stringify(projectAtCommit);
-                        console.log('📸 Estado del último commit cargado');
                     } else {
                         // Si falla, usar el estado actual
                         this.lastProjectState = JSON.stringify(Alpine.store('project').exportProject());
-                        console.log('⚠️ No se pudo cargar commit, usando estado actual');
                     }
                 } else {
                     // No hay commits, usar un proyecto vacío como baseline
@@ -181,7 +178,6 @@ document.addEventListener('alpine:init', () => {
                         loreEntries: []
                     };
                     this.lastProjectState = JSON.stringify(emptyProject);
-                    console.log('📸 Sin commits previos, usando proyecto vacío como baseline');
                 }
             } catch (error) {
                 console.error('Error cargando estado del último commit:', error);
@@ -204,7 +200,6 @@ document.addEventListener('alpine:init', () => {
         // Detectar cambios pendientes
         async detectChanges() {
             if (!this.lastProjectState) {
-                console.warn('⚠️ No hay estado de referencia para comparar');
                 return;
             }
 
@@ -219,15 +214,6 @@ document.addEventListener('alpine:init', () => {
             // Solo actualizar si realmente cambió
             if (hasChanges !== this.hasUncommittedChanges) {
                 this.hasUncommittedChanges = hasChanges;
-                console.log('🔄 Cambios detectados:', hasChanges);
-
-                if (hasChanges) {
-                    // Log para debug
-                    console.log('📊 Comparando estados:');
-                    console.log('  Capítulos:', oldState.chapters?.length, '→', newState.chapters?.length);
-                    console.log('  Personajes:', oldState.characters?.length, '→', newState.characters?.length);
-                    console.log('  Escenas:', oldState.scenes?.length, '→', newState.scenes?.length);
-                }
             }
 
             if (this.hasUncommittedChanges) {
@@ -237,10 +223,6 @@ document.addEventListener('alpine:init', () => {
                 // Comparar diferentes secciones (ya normalizadas arriba)
                 if (JSON.stringify(oldState.projectInfo) !== JSON.stringify(newState.projectInfo)) {
                     files.push({ path: 'project-info', status: 'modified' });
-                    // Log detallado para debugging
-                    console.log('🔍 project-info cambió:');
-                    console.log('  Anterior:', oldState.projectInfo);
-                    console.log('  Actual:', newState.projectInfo);
                 }
                 if (JSON.stringify(oldState.chapters) !== JSON.stringify(newState.chapters)) {
                     files.push({ path: 'chapters', status: 'modified' });
@@ -262,10 +244,8 @@ document.addEventListener('alpine:init', () => {
                 }
 
                 this.changedFiles = files.length > 0 ? files : [{ path: 'project.json', status: 'modified' }];
-                console.log('📝 Archivos modificados:', files.map(f => f.path).join(', '));
             } else {
                 this.changedFiles = [];
-                console.log('✅ Sin cambios pendientes');
             }
         },
 
@@ -367,8 +347,6 @@ document.addEventListener('alpine:init', () => {
 
         // Crear datos de prueba
         async createDemoData() {
-            console.log('📝 Creando datos de prueba...');
-
             try {
                 const project = Alpine.store('project');
 
@@ -776,8 +754,6 @@ document.addEventListener('alpine:init', () => {
                 // Recargar commits
                 await this.loadCommits();
                 await this.loadStats();
-
-                console.log('✅ Datos de prueba completos creados con commit inicial');
             } catch (error) {
                 console.error('Error creando datos de prueba:', error);
             }
@@ -790,7 +766,6 @@ document.addEventListener('alpine:init', () => {
                 // Usar el nuevo sistema de control de versiones v2.0
                 const history = window.versionControl.getBranchHistory();
                 this.commits = history || [];
-                console.log('📜 Commits cargados:', this.commits.length);
             } catch (error) {
                 console.error('Error cargando commits:', error);
                 this.commits = [];
@@ -850,8 +825,6 @@ document.addEventListener('alpine:init', () => {
 
                 // Detectar cambios (ahora debería mostrar que no hay cambios)
                 await this.detectChanges();
-
-                console.log('✅ Commit creado y estado actualizado');
             } catch (error) {
                 console.error('Error creando commit:', error);
                 Alpine.store('ui').error(
@@ -982,8 +955,7 @@ document.addEventListener('alpine:init', () => {
         init() {
             // Obtener datos del modal
             this.historyData = Alpine.store('ui').modalData?.history || Alpine.store('project').getCommitHistory() || [];
-            console.log('Historial de commits cargado:', this.historyData);
-            
+
             // Inicializar íconos
             if (typeof lucide !== 'undefined') {
                 setTimeout(() => {
@@ -991,10 +963,9 @@ document.addEventListener('alpine:init', () => {
                 }, 100);
             }
         },
-        
+
         loadHistoryData() {
             this.historyData = Alpine.store('ui').modalData?.history || Alpine.store('project').getCommitHistory() || [];
-            console.log('Historial de commits actualizado:', this.historyData);
         },
         
         checkoutCommit(commitId) {
@@ -1038,13 +1009,7 @@ document.addEventListener('alpine:init', () => {
         init() {
             // Cargar forks y commits
             this.loadForksAndCommits();
-            
-            // Verificar si este proyecto es un fork
-            const forkInfo = Alpine.store('project').forkInfo;
-            if (forkInfo && forkInfo.originalProjectId) {
-                console.log('Este proyecto es un fork del proyecto:', forkInfo.originalProjectId);
-            }
-            
+
             // Inicializar íconos
             if (typeof lucide !== 'undefined') {
                 setTimeout(() => {
@@ -1052,12 +1017,10 @@ document.addEventListener('alpine:init', () => {
                 }, 100);
             }
         },
-        
+
         loadForksAndCommits() {
             this.forksList = Alpine.store('versionControl').getProjectForks();
             this.commitHistory = Alpine.store('project').getCommitHistory() || [];
-            console.log('Forks cargados:', this.forksList);
-            console.log('Historial de commits:', this.commitHistory);
         },
         
         openFork(forkProjectId) {
@@ -1238,10 +1201,9 @@ document.addEventListener('alpine:init', () => {
                         i18n.t('notifications.success.forkCreatedDesc', { forkName: this.name })
                     );
                     Alpine.store('ui').closeModal('createFork');
-                    
+
                     // Guardar inmediatamente el fork
-                    const saveResult = await window.storageManager.save(Alpine.store('project').exportProject());
-                    console.log('Fork guardado:', saveResult);
+                    await window.storageManager.save(Alpine.store('project').exportProject());
                 } else {
                     Alpine.store('ui').error(
                         i18n.t('notifications.error.forkFailed') || 'Error creando fork',
@@ -1334,9 +1296,7 @@ document.addEventListener('alpine:init', () => {
                             treeStructure.items = [];
                     }
                 }
-                
-                console.log('Estructura de árbol creada:', treeStructure);
-                
+
                 Alpine.store('ui').success(
                     i18n.t('notifications.success.treeCreated') || 'Estructura creada exitosamente',
                     i18n.t('notifications.success.treeCreatedDesc', { treeName: this.name })
@@ -1368,7 +1328,6 @@ document.addEventListener('alpine:init', () => {
 // Inicializar SearchService después de que Alpine esté listo
 document.addEventListener('alpine:initialized', () => {
     if (!window.searchService || !Alpine.store('project')) {
-        console.warn('⚠️ SearchService o project store no disponible');
         return;
     }
 
@@ -1388,8 +1347,6 @@ document.addEventListener('alpine:initialized', () => {
 
         const doUpdate = () => {
             try {
-                const startTime = performance.now();
-
                 window.searchService.initialize({
                     characters: projectStore.characters,
                     scenes: projectStore.scenes,
@@ -1399,25 +1356,9 @@ document.addEventListener('alpine:initialized', () => {
                     loreEntries: projectStore.loreEntries
                 });
 
-                const endTime = performance.now();
-                const updateTime = (endTime - startTime).toFixed(2);
-
-                if (isFirstInit) {
-                    console.log('📚 SearchService inicializado correctamente', {
-                        personajes: projectStore.characters.length,
-                        escenas: projectStore.scenes.length,
-                        ubicaciones: projectStore.locations.length,
-                        timeline: projectStore.timeline.length,
-                        capítulos: projectStore.chapters.length,
-                        lore: projectStore.loreEntries.length,
-                        tiempo: `${updateTime}ms`
-                    });
-                    isFirstInit = false;
-                } else {
-                    console.log(`🔄 Índice de búsqueda actualizado (${updateTime}ms)`);
-                }
+                isFirstInit = false;
             } catch (error) {
-                console.error('❌ Error actualizando índice de búsqueda:', error);
+                console.error('Error actualizando índice de búsqueda:', error);
             }
         };
 
@@ -1449,8 +1390,6 @@ document.addEventListener('alpine:initialized', () => {
             updateSearchIndex(false);
         }
     });
-
-    console.log('✅ Actualización automática del índice activada');
 });
 
 // Agregar estilos para x-cloak

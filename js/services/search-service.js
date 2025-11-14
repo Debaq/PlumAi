@@ -144,7 +144,6 @@ class SearchService {
             this.isInitialized = true;
 
         } catch (error) {
-            console.error('❌ Error creando índice de Lunr:', error);
             this.isInitialized = false;
         }
     }
@@ -240,7 +239,6 @@ class SearchService {
      */
     search(query, options = {}) {
         if (!this.isInitialized || !this.idx) {
-            console.warn('⚠️ SearchService no inicializado');
             return [];
         }
 

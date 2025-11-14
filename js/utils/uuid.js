@@ -10,7 +10,6 @@ window.uuid = {
             try {
                 return window.crypto.randomUUID();
             } catch (e) {
-                console.warn('crypto.randomUUID failed:', e);
                 // Si falla, usar el fallback
             }
         }

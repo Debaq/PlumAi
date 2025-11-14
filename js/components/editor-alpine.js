@@ -22,8 +22,6 @@ window.editorAlpineComponent = function() {
          * Inicializar el editor
          */
         init() {
-            console.log('📝 Inicializando editor Alpine...');
-
             // Esperar a que el elemento esté en el DOM
             this.$nextTick(() => {
                 this.initializeEditor();
@@ -41,12 +39,10 @@ window.editorAlpineComponent = function() {
             const editorElement = this.$el.querySelector('.rich-editor-wrapper');
 
             if (!editorElement) {
-                console.error('❌ Elemento .rich-editor-wrapper no encontrado');
                 return;
             }
 
             if (!window.RichEditor) {
-                console.error('❌ RichEditor no encontrado');
                 return;
             }
 
@@ -287,7 +283,6 @@ window.editorAlpineComponent = function() {
             // Simular guardado (en el futuro será localStorage/IndexedDB)
             setTimeout(() => {
                 this.saveStatus = 'saved';
-                console.log('💾 Capítulo guardado');
             }, 300);
         },
 
@@ -308,8 +303,6 @@ window.editorAlpineComponent = function() {
             // Buscar personajes con SearchService
             const results = window.searchService?.searchCharacters('') || this.$store.project.characters;
 
-            // Aquí podrías abrir un modal o menú especial
-            console.log('Personajes:', results);
             this.$store.ui.info(
                 this.$store.i18n.t('characters.title'),
                 `${results.length} personajes disponibles`
@@ -321,7 +314,6 @@ window.editorAlpineComponent = function() {
          */
         openSceneSelector() {
             const results = window.searchService?.searchScenes('') || this.$store.project.scenes;
-            console.log('Escenas:', results);
             this.$store.ui.info(
                 this.$store.i18n.t('scenes.title'),
                 `${results.length} escenas disponibles`
@@ -333,7 +325,6 @@ window.editorAlpineComponent = function() {
          */
         openLocationSelector() {
             const results = window.searchService?.searchLocations('') || this.$store.project.locations;
-            console.log('Ubicaciones:', results);
             this.$store.ui.info(
                 this.$store.i18n.t('locations.title'),
                 `${results.length} ubicaciones disponibles`

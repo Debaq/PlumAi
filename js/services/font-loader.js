@@ -20,7 +20,6 @@ class FontLoader {
             this.fonts[fontName] = {};
         }
         this.fonts[fontName][fontStyle] = base64Data;
-        console.log(`✅ Font registered: ${fontName} (${fontStyle})`);
     }
 
     /**
@@ -37,7 +36,6 @@ class FontLoader {
             this.registerFont(fontName, fontStyle, base64);
             return true;
         } catch (error) {
-            console.warn(`⚠️ Could not load font ${fontName} from ${fontPath}:`, error);
             return false;
         }
     }
@@ -69,9 +67,8 @@ class FontLoader {
                     // Agregar fuente a jsPDF
                     pdf.addFileToVFS(`${fontName}-${style}.ttf`, base64Data);
                     pdf.addFont(`${fontName}-${style}.ttf`, fontName, style);
-                    console.log(`✅ Font applied to PDF: ${fontName} (${style})`);
                 } catch (error) {
-                    console.warn(`⚠️ Could not apply font ${fontName} (${style}):`, error);
+                    // Font could not be applied, silently continue
                 }
             }
         }
@@ -96,8 +93,6 @@ class FontLoader {
      * Cargar fuentes predeterminadas del proyecto
      */
     async loadDefaultFonts() {
-        console.log('📚 Loading custom fonts...');
-
         const fontsToLoad = [
             { name: 'AmazonEndure', style: 'normal', path: 'fonts/Amazon Endure font EN/AmazonEndure-Book.otf' },
             { name: 'AmazonEndure', style: 'bold', path: 'fonts/Amazon Endure font EN/AmazonEndure-SemiBold.otf' },
@@ -112,7 +107,6 @@ class FontLoader {
         );
 
         const successCount = results.filter(r => r.status === 'fulfilled' && r.value).length;
-        console.log(`✅ Loaded ${successCount}/${fontsToLoad.length} custom fonts`);
 
         this.loaded = true;
         return successCount;

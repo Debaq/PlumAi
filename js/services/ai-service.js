@@ -184,8 +184,6 @@ window.aiService = {
             this.currentProvider = 'manual';
             this.currentModel = 'copy-paste';
         }
-
-        console.log('🤖 AI Service initialized with provider:', this.currentProvider);
     },
 
     // ============================================
@@ -202,8 +200,6 @@ window.aiService = {
 
         localStorage.setItem('pluma_ai_provider', providerId);
         localStorage.setItem('pluma_ai_model', this.currentModel);
-
-        console.log(`✓ Proveedor cambiado a: ${this.providers[providerId].name}`);
     },
 
     getAvailableProviders() {
