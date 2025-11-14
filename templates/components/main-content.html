@@ -27,21 +27,21 @@
                  if (viewMap[this.currentView]) {
                      try {
                          // Agregar timestamp para evitar caché
-                         const url = `${viewMap[this.currentView]}?v=${Date.now()}`;
-                         console.log(`📄 Cargando vista: ${this.currentView} desde ${url}`);
+                         const url = viewMap[this.currentView] + '?v=' + Date.now();
+                         console.log('📄 Cargando vista: ' + this.currentView + ' desde ' + url);
                          const response = await fetch(url, { cache: 'no-store' });
                          const html = await response.text();
-                         console.log(`✅ Vista ${this.currentView} cargada, tamaño: ${html.length} caracteres`);
-                         console.log(`🔍 Contiene "heart-pulse": ${html.includes('heart-pulse')}`);
-                         console.log(`🔍 Contiene "vitalStatus": ${html.includes('vitalStatus')}`);
+                         console.log('✅ Vista ' + this.currentView + ' cargada, tamaño: ' + html.length + ' caracteres');
+                         console.log('🔍 Contiene heart-pulse: ' + html.includes('heart-pulse'));
+                         console.log('🔍 Contiene vitalStatus: ' + html.includes('vitalStatus'));
                          this.$el.innerHTML = html;
                          if (window.Alpine) window.Alpine.initTree(this.$el);
                          // Reinitializar iconos de Lucide
                          if (typeof lucide !== 'undefined') {
-                             setTimeout(() => lucide.createIcons(), 100);
+                             setTimeout(function() { lucide.createIcons(); }, 100);
                          }
                      } catch (error) {
-                         console.error(`Error loading view: ${this.currentView}`, error);
+                         console.error('Error loading view: ' + this.currentView, error);
                      }
                  }
              }
