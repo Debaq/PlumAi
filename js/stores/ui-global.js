@@ -34,6 +34,7 @@ window.uiStore = {
         avatarSelector: false,
         newTimelineEvent: false,
         editTimelineEvent: false,
+        newRelationship: false,
         editRelationship: false,
         export: false,
         import: false,

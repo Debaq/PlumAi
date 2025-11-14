@@ -73,6 +73,221 @@ window.projectStore = {
         this.updateSearchIndex(); // Actualizar índice de búsqueda
     },
 
+    // Método para agregar una nueva relación con historial
+    addRelationship(characterId, relationshipData) {
+        const character = this.getCharacter(characterId);
+        if (!character) {
+            console.error('Personaje no encontrado');
+            return null;
+        }
+
+        // Crear la nueva relación con historial
+        const newRelationship = {
+            id: window.uuid.generateUUID(),
+            characterId: relationshipData.characterId,
+
+            // Historial temporal de la relación
+            history: [
+                {
+                    eventId: relationshipData.startEvent || null,
+                    type: relationshipData.type,
+                    status: relationshipData.currentStatus || 'active',
+                    description: relationshipData.description || '',
+                    notes: relationshipData.notes || '',
+                    timestamp: new Date().toISOString()
+                }
+            ],
+
+            // Estado actual (el más reciente)
+            currentType: relationshipData.type,
+            currentStatus: relationshipData.currentStatus || 'active',
+            currentDescription: relationshipData.description || '',
+
+            created: new Date().toISOString(),
+            modified: new Date().toISOString()
+        };
+
+        // Agregar al array de relaciones
+        if (!character.relationships) {
+            character.relationships = [];
+        }
+        character.relationships.push(newRelationship);
+
+        // Crear relación simétrica en el otro personaje
+        this.createSymmetricRelationship(characterId, newRelationship);
+
+        this.updateModified();
+        return newRelationship;
+    },
+
+    // Crear relación simétrica
+    createSymmetricRelationship(originCharacterId, relationship) {
+        const targetCharacter = this.getCharacter(relationship.characterId);
+        if (!targetCharacter) return;
+
+        const originCharacter = this.getCharacter(originCharacterId);
+        if (!originCharacter) return;
+
+        // Verificar si ya existe una relación inversa
+        const existingRelation = targetCharacter.relationships?.find(
+            r => r.characterId === originCharacterId
+        );
+
+        if (existingRelation) {
+            // Actualizar la relación existente
+            this.updateRelationshipHistory(relationship.characterId, existingRelation.id, {
+                type: this.getInverseRelationshipType(relationship.currentType),
+                status: relationship.currentStatus,
+                description: relationship.currentDescription || `${originCharacter.name} es ${this.getRelationshipLabelForType(relationship.currentType)}`,
+                eventId: relationship.history[relationship.history.length - 1].eventId
+            });
+        } else {
+            // Crear nueva relación inversa
+            const inverseRelationship = {
+                id: window.uuid.generateUUID(),
+                characterId: originCharacterId,
+
+                history: [
+                    {
+                        eventId: relationship.history[0].eventId,
+                        type: this.getInverseRelationshipType(relationship.currentType),
+                        status: relationship.currentStatus,
+                        description: relationship.currentDescription || `${originCharacter.name} es ${this.getRelationshipLabelForType(relationship.currentType)}`,
+                        notes: '',
+                        timestamp: new Date().toISOString()
+                    }
+                ],
+
+                currentType: this.getInverseRelationshipType(relationship.currentType),
+                currentStatus: relationship.currentStatus,
+                currentDescription: relationship.currentDescription || `${originCharacter.name} es ${this.getRelationshipLabelForType(relationship.currentType)}`,
+
+                created: new Date().toISOString(),
+                modified: new Date().toISOString()
+            };
+
+            if (!targetCharacter.relationships) {
+                targetCharacter.relationships = [];
+            }
+            targetCharacter.relationships.push(inverseRelationship);
+        }
+    },
+
+    // Actualizar historial de una relación (agregar un nuevo cambio)
+    updateRelationshipHistory(characterId, relationshipId, changeData) {
+        const character = this.getCharacter(characterId);
+        if (!character) return;
+
+        const relationship = character.relationships?.find(r => r.id === relationshipId);
+        if (!relationship) return;
+
+        // Agregar nuevo entry al historial
+        const newHistoryEntry = {
+            eventId: changeData.eventId || null,
+            type: changeData.type,
+            status: changeData.status || 'active',
+            description: changeData.description || '',
+            notes: changeData.notes || '',
+            timestamp: new Date().toISOString()
+        };
+
+        relationship.history.push(newHistoryEntry);
+
+        // Actualizar estado actual
+        relationship.currentType = changeData.type;
+        relationship.currentStatus = changeData.status || 'active';
+        relationship.currentDescription = changeData.description || '';
+        relationship.modified = new Date().toISOString();
+
+        // Actualizar relación simétrica
+        this.updateSymmetricRelationship(characterId, relationship, changeData);
+
+        this.updateModified();
+    },
+
+    // Actualizar relación simétrica cuando hay un cambio
+    updateSymmetricRelationship(originCharacterId, relationship, changeData) {
+        const targetCharacter = this.getCharacter(relationship.characterId);
+        if (!targetCharacter) return;
+
+        const inverseRelation = targetCharacter.relationships?.find(
+            r => r.characterId === originCharacterId
+        );
+
+        if (inverseRelation) {
+            const inverseType = this.getInverseRelationshipType(changeData.type);
+
+            const newHistoryEntry = {
+                eventId: changeData.eventId || null,
+                type: inverseType,
+                status: changeData.status || 'active',
+                description: changeData.description || '',
+                notes: '',
+                timestamp: new Date().toISOString()
+            };
+
+            inverseRelation.history.push(newHistoryEntry);
+            inverseRelation.currentType = inverseType;
+            inverseRelation.currentStatus = changeData.status || 'active';
+            inverseRelation.currentDescription = changeData.description || '';
+            inverseRelation.modified = new Date().toISOString();
+        }
+    },
+
+    // Eliminar una relación
+    deleteRelationship(characterId, relationshipId) {
+        const character = this.getCharacter(characterId);
+        if (!character) return;
+
+        const relationship = character.relationships?.find(r => r.id === relationshipId);
+        if (!relationship) return;
+
+        // Eliminar la relación inversa primero
+        const targetCharacter = this.getCharacter(relationship.characterId);
+        if (targetCharacter) {
+            targetCharacter.relationships = targetCharacter.relationships?.filter(
+                r => r.characterId !== characterId
+            );
+        }
+
+        // Eliminar la relación
+        character.relationships = character.relationships.filter(r => r.id !== relationshipId);
+
+        this.updateModified();
+    },
+
+    // Migrar relaciones antiguas al nuevo formato con historial
+    migrateRelationshipToHistory(relationship) {
+        // Si ya tiene el nuevo formato, no hacer nada
+        if (relationship.history) {
+            return relationship;
+        }
+
+        // Migrar al nuevo formato
+        return {
+            id: relationship.id || window.uuid.generateUUID(),
+            characterId: relationship.characterId,
+
+            history: [
+                {
+                    eventId: relationship.startEvent || null,
+                    type: relationship.type,
+                    status: relationship.currentStatus || 'active',
+                    description: relationship.description || '',
+                    notes: relationship.notes || '',
+                    timestamp: relationship.created || new Date().toISOString()
+                }
+            ],
+
+            currentType: relationship.type,
+            currentStatus: relationship.currentStatus || 'active',
+            currentDescription: relationship.description || '',
+
+            created: relationship.created || new Date().toISOString(),
+            modified: relationship.modified || new Date().toISOString()
+        };
+    },
+
     updateCharacter(id, updates) {
         const index = this.characters.findIndex(c => c.id === id);
         if (index !== -1) {
@@ -669,6 +884,18 @@ window.projectStore = {
         if (!projectData.scenes) projectData.scenes = [];
         if (!projectData.timeline) projectData.timeline = [];
         if (!projectData.notes) projectData.notes = [];
+
+        // Migración: Relaciones al nuevo formato con historial
+        if (projectData.characters && projectData.characters.length > 0) {
+            console.log('🔄 Migrando relaciones al formato con historial temporal');
+            projectData.characters.forEach(character => {
+                if (character.relationships && character.relationships.length > 0) {
+                    character.relationships = character.relationships.map(rel => {
+                        return this.migrateRelationshipToHistory(rel);
+                    });
+                }
+            });
+        }
 
         return projectData;
     },

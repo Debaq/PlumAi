@@ -208,9 +208,16 @@
             <div class="content-grid">
                 <template x-for="character in $store.project.characters.filter(c => c.relationships && c.relationships.length > 0)" :key="character.id">
                     <div class="card">
-                        <h3 x-text="character.name"></h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <h3 x-text="character.name" style="margin: 0;"></h3>
+                            <button class="btn-icon"
+                                    @click.stop="$store.ui.openModal('newRelationship', { characterId: character.id })"
+                                    title="Agregar nueva relación">
+                                <i data-lucide="plus" width="16" height="16"></i>
+                            </button>
+                        </div>
                         <div style="margin-top: 12px;">
-                            <template x-for="(relation, relationIndex) in character.relationships" :key="relation.characterId + '-' + relationIndex">
+                            <template x-for="(relation, relationIndex) in character.relationships" :key="relation.id || (relation.characterId + '-' + relationIndex)">
                                 <div class="clickable"
                                      @click="$store.ui.openModal('editRelationship', {
                                         characterId: character.id,
@@ -223,11 +230,18 @@
                                     <div style="flex: 1;">
                                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                                             <i data-lucide="heart" width="14" height="14" style="color: var(--accent);"></i>
-                                            <span style="font-weight: 500;" x-text="$store.i18n.t('characters.form.relationTypes.' + relation.type)"></span>
+                                            <span style="font-weight: 500;" x-text="$store.i18n.t('characters.form.relationTypes.' + (relation.currentType || relation.type))"></span>
                                             <span>→</span>
                                             <span style="font-weight: 500;" x-text="$store.project.getCharacter(relation.characterId)?.name || 'Personaje desconocido'"></span>
+                                            <!-- Badge de historial si existe -->
+                                            <template x-if="relation.history && relation.history.length > 1">
+                                                <span class="badge" style="font-size: 10px; background: rgba(124, 179, 255, 0.2); color: var(--accent);">
+                                                    <i data-lucide="clock" width="10" height="10"></i>
+                                                    <span x-text="relation.history.length + ' cambios'"></span>
+                                                </span>
+                                            </template>
                                         </div>
-                                        <div style="color: var(--text-secondary); font-size: 12px; margin-left: 22px;" x-text="relation.description || 'Sin descripción'"></div>
+                                        <div style="color: var(--text-secondary); font-size: 12px; margin-left: 22px;" x-text="relation.currentDescription || relation.description || 'Sin descripción'"></div>
                                         <template x-if="relation.currentStatus && relation.currentStatus !== 'active'">
                                             <div style="margin-left: 22px; margin-top: 4px;">
                                                 <span class="badge" style="font-size: 10px; padding: 2px 6px;">
@@ -240,7 +254,12 @@
                                             </div>
                                         </template>
                                     </div>
-                                    <div>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <template x-if="relation.history && relation.history.length > 0">
+                                            <div style="font-size: 11px; color: var(--text-tertiary); font-style: italic;">
+                                                Ver historial
+                                            </div>
+                                        </template>
                                         <i data-lucide="edit-2" width="16" height="16" style="color: var(--text-tertiary);"></i>
                                     </div>
                                 </div>
