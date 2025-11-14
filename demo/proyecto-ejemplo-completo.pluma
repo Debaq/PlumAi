@@ -1,0 +1,672 @@
+{
+  "projectInfo": {
+    "id": "demo-proyecto-completo-2024",
+    "title": "Las Crónicas de Aethermoor",
+    "author": "Demo PlumaAI",
+    "genre": "Fantasía Épica",
+    "created": "2024-01-15T10:00:00.000Z",
+    "modified": "2024-01-20T15:30:00.000Z",
+    "isPublicPC": false
+  },
+  "forkInfo": {
+    "originalProjectId": null,
+    "forkedFrom": null,
+    "forkedAt": null,
+    "description": ""
+  },
+  "apiKeys": {
+    "claude": "",
+    "openai": "",
+    "google": "",
+    "groq": "",
+    "together": "",
+    "replicate": "",
+    "huggingface": "",
+    "kimi": "",
+    "qwen": ""
+  },
+  "characters": [
+    {
+      "id": "char-001-elara",
+      "name": "Elara Brightwind",
+      "role": "protagonist",
+      "description": "Una joven maga de 24 años con cabello plateado que brilla con energía arcana. Sus ojos violetas reflejan la profundidad de su conexión con el Aether. Lleva túnicas azules decoradas con runas antiguas.",
+      "personality": "Determinada y curiosa, Elara posee una sed insaciable de conocimiento. A pesar de su talento natural, lucha con la inseguridad sobre su destino. Es compasiva pero puede ser impulsiva cuando se trata de proteger a otros.",
+      "background": "Huérfana criada en la Torre Arcana, Elara descubrió su habilidad para manipular el Aether puro a los 12 años. Sus maestros creen que podría ser la Elegida de las antiguas profecías, pero ella duda de su verdadero propósito.",
+      "notes": "Tiene una conexión especial con los cristales de Aether. Su mayor miedo es no estar a la altura de las expectativas.",
+      "relationships": [
+        {
+          "characterId": "char-002-kael",
+          "type": "love",
+          "description": "Amor no correspondido que se desarrolla durante su entrenamiento juntos"
+        },
+        {
+          "characterId": "char-003-morgath",
+          "type": "enemy",
+          "description": "Su némesis que busca los mismos cristales de poder"
+        },
+        {
+          "characterId": "char-004-aldric",
+          "type": "mentor",
+          "description": "Su maestro en la Torre Arcana"
+        }
+      ],
+      "avatar": {
+        "style": "adventurer",
+        "seed": "Elara Brightwind",
+        "url": "https://api.dicebear.com/7.x/adventurer/svg?seed=Elara%20Brightwind",
+        "source": "dicebear"
+      },
+      "created": "2024-01-15T10:15:00.000Z",
+      "modified": "2024-01-20T14:22:00.000Z"
+    },
+    {
+      "id": "char-002-kael",
+      "name": "Kael Shadowbane",
+      "role": "secondary",
+      "description": "Un guerrero de 26 años, alto y musculoso, con cicatrices de batalla en sus brazos. Cabello negro corto y ojos grises como el acero. Viste armadura ligera negra con el emblema de los Guardianes.",
+      "personality": "Estoico y leal hasta la muerte. Kael oculta un corazón gentil bajo su exterior rudo. Es protector de Elara, aunque nunca ha confesado sus sentimientos. Tiene un código de honor inquebrantable.",
+      "background": "Ex-capitán de los Guardianes del Reino, renunció después de un evento traumático que le costó la vida a su escuadrón. Ahora protege a Elara como penitencia y búsqueda de redención.",
+      "notes": "Maestro espadachín. Tiene pesadillas sobre el día que perdió a su escuadrón.",
+      "relationships": [
+        {
+          "characterId": "char-001-elara",
+          "type": "love",
+          "description": "Sentimientos profundos que mantiene en secreto para no distraerla"
+        },
+        {
+          "characterId": "char-005-lyra",
+          "type": "friend",
+          "description": "Compañera de armas en quien confía plenamente"
+        }
+      ],
+      "avatar": {
+        "style": "adventurer",
+        "seed": "Kael Shadowbane",
+        "url": "https://api.dicebear.com/7.x/adventurer/svg?seed=Kael%20Shadowbane",
+        "source": "dicebear"
+      },
+      "created": "2024-01-15T10:30:00.000Z",
+      "modified": "2024-01-19T16:45:00.000Z"
+    },
+    {
+      "id": "char-003-morgath",
+      "name": "Morgath el Oscuro",
+      "role": "antagonist",
+      "description": "Un hechicero corrupto de edad indeterminada, con piel pálida y venosa. Sus ojos brillan con luz roja cuando usa magia oscura. Viste túnicas negras con bordados en hilo de sangre.",
+      "personality": "Manipulador, ambicioso y completamente despiadado. Cree que el fin justifica los medios. Obsesionado con alcanzar la inmortalidad y el poder absoluto.",
+      "background": "Antiguo archimago de la Torre Arcana que fue exiliado hace 50 años por experimentar con magia prohibida. Ahora busca los Cristales de Eternidad para reescribir las leyes de la realidad.",
+      "notes": "Ha extendido su vida mediante rituales oscuros. Conoce secretos antiguos que otros han olvidado.",
+      "relationships": [
+        {
+          "characterId": "char-001-elara",
+          "type": "enemy",
+          "description": "Ve en ella tanto una amenaza como una herramienta potencial"
+        },
+        {
+          "characterId": "char-004-aldric",
+          "type": "rival",
+          "description": "Antiguos colegas que ahora son enemigos mortales"
+        }
+      ],
+      "avatar": {
+        "style": "adventurer",
+        "seed": "Morgath Dark",
+        "url": "https://api.dicebear.com/7.x/adventurer/svg?seed=Morgath%20Dark",
+        "source": "dicebear"
+      },
+      "created": "2024-01-15T11:00:00.000Z",
+      "modified": "2024-01-20T12:10:00.000Z"
+    },
+    {
+      "id": "char-004-aldric",
+      "name": "Maestro Aldric Stormweaver",
+      "role": "supporting",
+      "description": "Un anciano mago de 75 años con barba blanca larga y ojos azules sabios. Lleva bastón de madera de roble grabado con runas. Su presencia irradia autoridad y conocimiento.",
+      "personality": "Sabio, paciente y misterioso. Aldric habla con acertijos y metáforas. Es un mentor exigente pero justo. Guarda secretos sobre el pasado de Elara.",
+      "background": "Archimago actual de la Torre Arcana y uno de los magos más poderosos vivos. Fue quien encontró a Elara bebé en las ruinas del Templo Antiguo hace 24 años.",
+      "notes": "Sabe más de lo que revela. Tiene conexiones con la realeza y el consejo de magos.",
+      "relationships": [
+        {
+          "characterId": "char-001-elara",
+          "type": "mentor",
+          "description": "La ha entrenado desde niña y la considera casi una hija"
+        },
+        {
+          "characterId": "char-003-morgath",
+          "type": "rival",
+          "description": "Antiguo amigo convertido en enemigo tras su caída"
+        }
+      ],
+      "avatar": {
+        "style": "adventurer",
+        "seed": "Aldric Stormweaver",
+        "url": "https://api.dicebear.com/7.x/adventurer/svg?seed=Aldric%20Stormweaver",
+        "source": "dicebear"
+      },
+      "created": "2024-01-15T11:15:00.000Z",
+      "modified": "2024-01-18T09:30:00.000Z"
+    },
+    {
+      "id": "char-005-lyra",
+      "name": "Lyra Swiftarrow",
+      "role": "secondary",
+      "description": "Una arquera élfica de 120 años (aparenta 25). Cabello rubio trenzado, ojos verdes esmeralda, piel bronceada. Lleva armadura de cuero verde y un arco largo de madera élfica.",
+      "personality": "Alegre, optimista y un poco traviesa. Lyra alivia la tensión con humor. Es increíblemente leal y valiente. Tiene un fuerte sentido de justicia.",
+      "background": "Última sobreviviente del Bosque de Lunargent, destruido por las fuerzas de Morgath. Juró venganza y se unió a la causa de Elara cuando sus caminos se cruzaron.",
+      "notes": "Su puntería es legendaria. Puede comunicarse con animales del bosque.",
+      "relationships": [
+        {
+          "characterId": "char-002-kael",
+          "type": "friend",
+          "description": "Compañeros de batalla con profundo respeto mutuo"
+        },
+        {
+          "characterId": "char-001-elara",
+          "type": "friend",
+          "description": "Mejores amigas, se conocieron durante una emboscada"
+        }
+      ],
+      "avatar": {
+        "style": "adventurer",
+        "seed": "Lyra Swiftarrow",
+        "url": "https://api.dicebear.com/7.x/adventurer/svg?seed=Lyra%20Swiftarrow",
+        "source": "dicebear"
+      },
+      "created": "2024-01-15T11:30:00.000Z",
+      "modified": "2024-01-19T14:00:00.000Z"
+    },
+    {
+      "id": "char-006-thorne",
+      "name": "Capitán Thorne Ironheart",
+      "role": "supporting",
+      "description": "Un enano de 150 años, robusto y con una larga barba roja trenzada con cuentas de hierro. Cicatrices cruzan su rostro. Viste armadura pesada de placas con el símbolo de la Forja Eterna.",
+      "personality": "Gruñón pero de buen corazón. Habla poco pero cuando lo hace, vale la pena escuchar. Extremadamente leal a sus compañeros. Ama la cerveza y las buenas historias.",
+      "background": "Ex-maestro herrero de las Montañas del Norte. Se unió al grupo después de que Morgath destruyera su forja ancestral. Ahora busca venganza mientras protege a los inocentes.",
+      "notes": "Forjó armas legendarias. Conoce secretos de metalurgia antigua perdidos.",
+      "relationships": [
+        {
+          "characterId": "char-002-kael",
+          "type": "friend",
+          "description": "Respeto mutuo entre guerreros, a menudo beben juntos"
+        }
+      ],
+      "avatar": {
+        "style": "adventurer",
+        "seed": "Thorne Ironheart",
+        "url": "https://api.dicebear.com/7.x/adventurer/svg?seed=Thorne%20Ironheart",
+        "source": "dicebear"
+      },
+      "created": "2024-01-15T12:00:00.000Z",
+      "modified": "2024-01-19T10:20:00.000Z"
+    }
+  ],
+  "loreEntries": [
+    {
+      "id": "lore-001",
+      "title": "El Aether y la Magia",
+      "summary": "El Aether es la esencia mágica que fluye a través de todo el mundo de Aethermoor, permitiendo a los magos manipular la realidad.",
+      "content": "<p>El <strong>Aether</strong> es una energía invisible que permea toda la creación. Los estudiosos creen que es el tejido mismo de la realidad.</p><p><strong>Tipos de Magia Aethérica:</strong></p><ul><li><strong>Evocación:</strong> Manipulación de elementos (fuego, agua, aire, tierra)</li><li><strong>Ilusión:</strong> Alteración de percepciones</li><li><strong>Abjuración:</strong> Protección y barreras</li><li><strong>Transmutación:</strong> Cambio de forma y materia</li></ul><p>Solo uno de cada mil nace con la capacidad de canalizar el Aether conscientemente. Estos individuos son llevados a la Torre Arcana para entrenamiento.</p>",
+      "category": "magic",
+      "created": "2024-01-15T13:00:00.000Z",
+      "modified": "2024-01-18T16:30:00.000Z"
+    },
+    {
+      "id": "lore-002",
+      "title": "La Gran Guerra de los Cristales",
+      "summary": "Hace mil años, una guerra devastó el mundo cuando cinco naciones lucharon por controlar los Cristales de Eternidad.",
+      "content": "<p>La <strong>Gran Guerra de los Cristales</strong> (año -1000 a -995) fue el conflicto más devastador en la historia registrada.</p><p><strong>Causas:</strong> El descubrimiento de los cinco Cristales de Eternidad, artefactos de poder inimaginable que podían otorgar vida eterna y control sobre el Aether mismo.</p><p><strong>Consecuencias:</strong></p><ul><li>Destrucción del Imperio Antiguo</li><li>Creación del Yermo Maldito</li><li>Fundación del Consejo de Magos</li><li>Los cristales fueron escondidos y fragmentados</li></ul><p>Se dice que quien reúna los cinco cristales podrá reescribir las leyes de la realidad.</p>",
+      "category": "history",
+      "created": "2024-01-15T13:15:00.000Z",
+      "modified": "2024-01-19T11:00:00.000Z"
+    },
+    {
+      "id": "lore-003",
+      "title": "Los Cristales de Eternidad",
+      "summary": "Cinco artefactos legendarios de poder inconmensurable, fragmentados y escondidos tras la Gran Guerra.",
+      "content": "<p>Los <strong>Cristales de Eternidad</strong> son artefactos pre-cataclísmicos de origen desconocido.</p><p><strong>Los Cinco Cristales:</strong></p><ol><li><strong>Cristal de Luz:</strong> Control sobre la vida y sanación</li><li><strong>Cristal de Sombra:</strong> Dominio sobre la muerte y decadencia</li><li><strong>Cristal de Tiempo:</strong> Manipulación temporal limitada</li><li><strong>Cristal de Espacio:</strong> Teletransportación y portales</li><li><strong>Cristal del Vacío:</strong> Poder puro y destrucción absoluta</li></ol><p>Cada cristal fue fragmentado en tres partes tras la Gran Guerra. Reunir los 15 fragmentos es el objetivo de Morgath.</p>",
+      "category": "item",
+      "created": "2024-01-15T13:30:00.000Z",
+      "modified": "2024-01-20T09:15:00.000Z"
+    },
+    {
+      "id": "lore-004",
+      "title": "La Torre Arcana",
+      "summary": "La institución mágica más prestigiosa del mundo, ubicada en la ciudad capital de Lumina.",
+      "content": "<p>La <strong>Torre Arcana</strong> es un edificio de 50 pisos que se eleva sobre la ciudad de Lumina. Construida hace 500 años, es el centro del conocimiento mágico.</p><p><strong>Estructura:</strong></p><ul><li>Pisos 1-10: Biblioteca y archivos</li><li>Pisos 11-30: Aulas y laboratorios de estudiantes</li><li>Pisos 31-40: Aposentos de maestros</li><li>Pisos 41-49: Laboratorios de investigación avanzada</li><li>Piso 50: Cámara del Archimago</li></ul><p>Solo los magos más talentosos pueden ascender más allá del piso 40. Se dice que existen pisos secretos debajo de la torre.</p>",
+      "category": "location",
+      "created": "2024-01-15T14:00:00.000Z",
+      "modified": "2024-01-18T15:45:00.000Z"
+    },
+    {
+      "id": "lore-005",
+      "title": "La Orden de los Guardianes",
+      "summary": "Una organización militar élite dedicada a proteger el reino y mantener el equilibrio del Aether.",
+      "content": "<p>La <strong>Orden de los Guardianes</strong> fue fundada hace 300 años para proteger el reino de amenazas mágicas y mundanas.</p><p><strong>Jerarquía:</strong></p><ol><li>Gran Maestro</li><li>Comandantes (5)</li><li>Capitanes (20)</li><li>Guardianes (500)</li><li>Iniciados (ilimitados)</li></ol><p><strong>Juramentos:</strong> Proteger a los inocentes, servir al reino, nunca usar magia oscura, lealtad hasta la muerte.</p><p>Kael fue Capitán antes de su trágica misión. La Orden está actualmente comprometida combatiendo incursiones de criaturas corrompidas por Morgath.</p>",
+      "category": "organization",
+      "created": "2024-01-15T14:15:00.000Z",
+      "modified": "2024-01-19T13:20:00.000Z"
+    },
+    {
+      "id": "lore-006",
+      "title": "Los Elfos de Lunargent",
+      "summary": "Una antigua raza élfica que habitaba el Bosque de Lunargent, ahora casi extinta tras el ataque de Morgath.",
+      "content": "<p>Los <strong>Elfos de Lunargent</strong> eran conocidos por su longevidad, gracia y conexión con la naturaleza.</p><p><strong>Características:</strong></p><ul><li>Vida útil: 500-800 años</li><li>Habilidades naturales: Puntería perfecta, visión nocturna, comunicación con la naturaleza</li><li>Cultura: Pacifista, en armonía con el bosque</li></ul><p><strong>La Caída:</strong> Hace 5 años, Morgath atacó el bosque buscando un fragmento de cristal. El ataque duró tres días y dejó el bosque en ruinas. Solo una docena de elfos sobrevivió.</p><p>Lyra es una de las últimas y lleva el peso de preservar su cultura.</p>",
+      "category": "race",
+      "created": "2024-01-15T14:30:00.000Z",
+      "modified": "2024-01-20T10:30:00.000Z"
+    },
+    {
+      "id": "lore-007",
+      "title": "El Culto de las Sombras",
+      "summary": "Una secta oscura que venera a Morgath y busca acelerar su ascenso al poder absoluto.",
+      "content": "<p>El <strong>Culto de las Sombras</strong> es una organización fanática que ve a Morgath como un dios viviente.</p><p><strong>Creencias:</strong> El mundo actual está corrupto y debe ser purgado. Solo bajo el reinado de Morgath puede haber verdadero orden.</p><p><strong>Actividades:</strong></p><ul><li>Sabotaje contra la Torre Arcana y los Guardianes</li><li>Búsqueda de fragmentos de cristales</li><li>Reclutamiento en las sombras</li><li>Rituales de sacrificio para fortalecer a Morgath</li></ul><p>Sus miembros llevan tatuajes de runas oscuras que les otorgan pequeñas habilidades mágicas a cambio de su vida útil.</p>",
+      "category": "religion",
+      "created": "2024-01-15T14:45:00.000Z",
+      "modified": "2024-01-19T16:00:00.000Z"
+    },
+    {
+      "id": "lore-008",
+      "title": "Dragones de Aethermoor",
+      "summary": "Criaturas ancestrales de inmenso poder, consideradas extintas hasta reportes recientes.",
+      "content": "<p>Los <strong>Dragones</strong> son las criaturas más poderosas que han existido. Se creían extintos desde hace 500 años.</p><p><strong>Tipos conocidos:</strong></p><ul><li><strong>Dragones de Fuego:</strong> Escamas rojas, aliento de fuego</li><li><strong>Dragones de Hielo:</strong> Escamas azules, aliento helado</li><li><strong>Dragones Aethéricos:</strong> Escamas iridiscentes, pueden manipular magia pura</li></ul><p><strong>Recientes avistamientos:</strong> Viajeros reportan haber visto dragones en las Montañas del Crepúsculo. Algunos creen que Morgath está intentando controlarlos.</p><p>Un dragón adulto es equivalente a 100 magos en poder destructivo.</p>",
+      "category": "creature",
+      "created": "2024-01-15T15:00:00.000Z",
+      "modified": "2024-01-20T11:45:00.000Z"
+    },
+    {
+      "id": "lore-009",
+      "title": "El Reino de Valdoria",
+      "summary": "La principal nación humana, gobernada por la Reina Celestia III desde la ciudad capital de Lumina.",
+      "content": "<p>El <strong>Reino de Valdoria</strong> es la nación más grande y poderosa de Aethermoor.</p><p><strong>Gobierno:</strong> Monarquía constitucional con un consejo de nobles y representación de la Torre Arcana.</p><p><strong>Economía:</strong> Comercio, agricultura, turismo hacia sitios mágicos</p><p><strong>Población:</strong> ~5 millones (80% humanos, 10% enanos, 7% elfos, 3% otros)</p><p><strong>Ciudades principales:</strong></p><ul><li><strong>Lumina:</strong> Capital, 500,000 habitantes</li><li><strong>Puerto Dorado:</strong> Ciudad costera, comercio</li><li><strong>Fortaleza del Norte:</strong> Ciudad militar</li></ul><p>Valdoria ha conocido paz durante 200 años, pero las actividades de Morgath amenazan la estabilidad.</p>",
+      "category": "world",
+      "created": "2024-01-15T15:15:00.000Z",
+      "modified": "2024-01-18T14:10:00.000Z"
+    },
+    {
+      "id": "lore-010",
+      "title": "La Profecía de la Elegida",
+      "summary": "Una antigua profecía que habla de una maga nacida de ruinas que traerá equilibrio o destrucción total.",
+      "content": "<p>La <strong>Profecía de la Elegida</strong> fue escrita hace 1000 años por el Oráculo del Templo Antiguo.</p><p><strong>Texto (fragmento):</strong></p><blockquote><em>\"Cuando los cristales despierten de su sueño,<br>Nacerá de cenizas quien porta el destino,<br>Con cabello de estrellas y ojos de tormenta,<br>Traerá la salvación o el fin de todo.\"</em></blockquote><p><strong>Interpretaciones:</strong> Muchos creen que Elara es la Elegida debido a su cabello plateado (estrellas) y ojos violetas (tormenta). Fue encontrada bebé en las ruinas del Templo Antiguo.</p><p>La profecía no especifica si la Elegida salvará o destruirá el mundo, creando gran incertidumbre.</p>",
+      "category": "history",
+      "created": "2024-01-15T15:30:00.000Z",
+      "modified": "2024-01-20T08:25:00.000Z"
+    },
+    {
+      "id": "lore-011",
+      "title": "Báculo de las Tormentas",
+      "summary": "Arma legendaria empuñada por el Maestro Aldric, forjada con madera de árbol milenario y cristal de tormenta.",
+      "content": "<p>El <strong>Báculo de las Tormentas</strong> es uno de los artefactos más poderosos en manos de la Torre Arcana.</p><p><strong>Propiedades:</strong></p><ul><li>Amplifica la magia del portador x5</li><li>Puede invocar tormentas eléctricas</li><li>Canaliza el Aether puro sin riesgo de corrupción</li><li>Se vincula mágicamente a su portador</li></ul><p><strong>Historia:</strong> Forjado hace 300 años por el herrero élfico Thalion. Ha sido transmitido a través de los Archimagos de la Torre.</p><p>Aldric lo empuña con maestría, pero algunos susurran que el báculo podría tener consciencia propia.</p>",
+      "category": "item",
+      "created": "2024-01-15T15:45:00.000Z",
+      "modified": "2024-01-19T09:40:00.000Z"
+    },
+    {
+      "id": "lore-012",
+      "title": "Festivales de Valdoria",
+      "summary": "Las principales celebraciones culturales del Reino de Valdoria a lo largo del año.",
+      "content": "<p><strong>Festival de la Luz Eterna</strong> (Primavera): Celebración del renacimiento y nuevos comienzos. Se encienden miles de linternas flotantes.</p><p><strong>Torneo de los Campeones</strong> (Verano): Competencia de guerreros y magos. Atrae participantes de todo el continente.</p><p><strong>Cosecha de Gratitud</strong> (Otoño): Agradecimiento por las buenas cosechas. Grandes banquetes comunales.</p><p><strong>Noche de las Estrellas</strong> (Invierno): Noche más larga del año. Se cuenta que el velo entre mundos se adelgaza y pueden verse espíritus ancestrales.</p><p>Estos festivales son momentos de alegría, pero también vulnerabilidad que Morgath podría explotar.</p>",
+      "category": "culture",
+      "created": "2024-01-15T16:00:00.000Z",
+      "modified": "2024-01-20T13:15:00.000Z"
+    }
+  ],
+  "locations": [
+    {
+      "id": "loc-001",
+      "name": "Lumina - Ciudad Capital",
+      "type": "Ciudad",
+      "description": "<p>Lumina es la ciudad más grande de Valdoria, hogar de medio millón de almas. Construida alrededor de la Torre Arcana, sus edificios de piedra blanca brillan bajo el sol.</p><p>La ciudad se divide en cinco distritos: <strong>Distrito de la Torre</strong> (centro académico), <strong>Barrio Noble</strong> (mansiones de la élite), <strong>Puerto Interior</strong> (comercio), <strong>Distrito Artesanal</strong> (trabajadores), y <strong>Barrio Bajo</strong> (pobres).</p>",
+      "significance": "Centro político, económico y mágico de Valdoria. Alberga el palacio real, la Torre Arcana y los principales gremios comerciales.",
+      "notes": "La Torre Arcana domina el horizonte. Murallas de 20 metros protegen la ciudad.",
+      "image": null,
+      "created": "2024-01-16T09:00:00.000Z",
+      "modified": "2024-01-19T15:30:00.000Z"
+    },
+    {
+      "id": "loc-002",
+      "name": "Torre Arcana",
+      "type": "Edificio",
+      "description": "<p>Un imponente edificio de 50 pisos hecho de mármol blanco y cristal azul. La torre brilla con energía Aethérica visible, especialmente de noche.</p><p>En el piso superior, la cámara del Archimago tiene vistas panorámicas de toda la ciudad. Los pisos inferiores albergan la biblioteca mágica más grande del mundo.</p>",
+      "significance": "Centro del conocimiento y poder mágico. Aquí se entrenan todos los magos del reino y se guardan secretos ancestrales.",
+      "notes": "Se dice que hay niveles subterráneos secretos no marcados en planos oficiales.",
+      "image": null,
+      "created": "2024-01-16T09:15:00.000Z",
+      "modified": "2024-01-20T10:00:00.000Z"
+    },
+    {
+      "id": "loc-003",
+      "name": "Bosque de Lunargent (Ruinas)",
+      "type": "Bosque",
+      "description": "<p>Una vez un bosque místico de árboles plateados, ahora es un lugar de desolación. Los árboles están quemados y retorcidos. Una niebla oscura cubre el suelo.</p><p>En el centro están las ruinas del Árbol Madre, un árbol de 1000 años que era el corazón espiritual de los elfos.</p>",
+      "significance": "Sitio de una masacre reciente por Morgath. Lyra es una de las pocas sobrevivientes. Podría contener pistas sobre los fragmentos de cristal.",
+      "notes": "Peligroso. Criaturas corrompidas habitan las ruinas. La magia curativa no funciona bien aquí.",
+      "image": null,
+      "created": "2024-01-16T09:30:00.000Z",
+      "modified": "2024-01-19T11:45:00.000Z"
+    },
+    {
+      "id": "loc-004",
+      "name": "Montañas del Crepúsculo",
+      "type": "Montaña",
+      "description": "<p>Una cadena montañosa al este de Valdoria, con picos que alcanzan las nubes. Las montañas están perpetuamente envueltas en niebla púrpura al atardecer.</p><p>Cavernas antiguas perforan las montañas. Algunas contienen ruinas de civilizaciones olvidadas.</p>",
+      "significance": "Recientes avistamientos de dragones. Podría ser el escondite de Morgath. Rumores de fragmentos de cristal en las profundidades.",
+      "notes": "Clima extremo. Avalanchas frecuentes. Solo los más valientes se aventuran aquí.",
+      "image": null,
+      "created": "2024-01-16T09:45:00.000Z",
+      "modified": "2024-01-20T14:20:00.000Z"
+    },
+    {
+      "id": "loc-005",
+      "name": "Taberna del Dragón Dormido",
+      "type": "Edificio",
+      "description": "<p>Una taberna acogedora en el Distrito Artesanal de Lumina. Construida hace 100 años, tiene vigas de madera oscura y una chimenea siempre encendida.</p><p>El propietario, Bartek, es un ex-aventurero que ha visto de todo. Las paredes están decoradas con trofeos de caza.</p>",
+      "significance": "Punto de encuentro para aventureros y mercenarios. Lugar donde Elara y su grupo planifican muchas misiones. Se intercambia información valiosa aquí.",
+      "notes": "Famosa por su cerveza enana y estofado de conejo. Bartek es discreto y leal a sus clientes habituales.",
+      "image": null,
+      "created": "2024-01-16T10:00:00.000Z",
+      "modified": "2024-01-18T16:15:00.000Z"
+    },
+    {
+      "id": "loc-006",
+      "name": "Fortaleza Umbral",
+      "type": "Fortaleza",
+      "description": "<p>La fortaleza secreta de Morgath, ubicada en una dimensión de bolsillo accesible solo mediante portales. Construida de piedra negra que absorbe la luz.</p><p>Torres retorcidas se elevan hacia un cielo rojo sangre. Criaturas corrompidas patrullan las murallas.</p>",
+      "significance": "Base de operaciones de Morgath. Aquí realiza sus experimentos más oscuros y planea su conquista.",
+      "notes": "Extremadamente peligrosa. Pocos han entrado y vivido para contarlo. Protegida por magia prohibida.",
+      "image": null,
+      "created": "2024-01-16T10:15:00.000Z",
+      "modified": "2024-01-20T09:50:00.000Z"
+    },
+    {
+      "id": "loc-007",
+      "name": "Biblioteca Infinita",
+      "type": "Edificio",
+      "description": "<p>Los primeros 10 pisos de la Torre Arcana albergan la Biblioteca Infinita. Estantes de 15 metros de altura contienen más de 10 millones de volúmenes.</p><p>Escaleras flotantes mágicas permiten acceder a los niveles superiores. Golem bibliotecarios organizan y protegen los libros.</p>",
+      "significance": "Repositorio del conocimiento mundial. Contiene registros de la Gran Guerra, mapas antiguos y grimorios poderosos. Elara pasa mucho tiempo investigando aquí.",
+      "notes": "Sección restringida en el piso 10 requiere permiso especial del Archimago.",
+      "image": null,
+      "created": "2024-01-16T10:30:00.000Z",
+      "modified": "2024-01-19T13:40:00.000Z"
+    }
+  ],
+  "timeline": [
+    {
+      "id": "timeline-001",
+      "dateMode": "absolute",
+      "date": "Hace 1000 años",
+      "event": "La Gran Guerra de los Cristales",
+      "description": "Guerra devastadora que destruyó el Imperio Antiguo. Los cinco Cristales de Eternidad fueron fragmentados y escondidos.",
+      "participants": [],
+      "location": "loc-004",
+      "importance": "high",
+      "tags": ["guerra", "cristales", "historia antigua"],
+      "relatedScenes": [],
+      "relatedChapters": [],
+      "impacts": "Cambió el mapa político del mundo. Creó el Yermo Maldito. Fundó el Consejo de Magos.",
+      "notes": "Evento más importante de la historia. Sus consecuencias todavía se sienten.",
+      "created": "2024-01-17T10:00:00.000Z",
+      "modified": "2024-01-19T14:30:00.000Z"
+    },
+    {
+      "id": "timeline-002",
+      "dateMode": "absolute",
+      "date": "Hace 500 años",
+      "event": "Fundación de la Torre Arcana",
+      "description": "El primer Archimago, Merindel el Sabio, construye la Torre Arcana como centro de enseñanza mágica.",
+      "participants": [],
+      "location": "loc-002",
+      "importance": "high",
+      "tags": ["torre arcana", "magia", "fundación"],
+      "relatedScenes": [],
+      "relatedChapters": [],
+      "impacts": "Centralización del conocimiento mágico. Establecimiento de estándares éticos para la magia.",
+      "notes": "La Torre se construyó en solo 3 años mediante magia masiva.",
+      "created": "2024-01-17T10:15:00.000Z",
+      "modified": "2024-01-20T11:10:00.000Z"
+    },
+    {
+      "id": "timeline-003",
+      "dateMode": "absolute",
+      "date": "Hace 50 años",
+      "event": "Exilio de Morgath",
+      "description": "Morgath es expulsado de la Torre Arcana por experimentar con magia oscura y nigromancia prohibida.",
+      "participants": ["char-003-morgath", "char-004-aldric"],
+      "location": "loc-002",
+      "importance": "high",
+      "tags": ["morgath", "exilio", "magia oscura"],
+      "relatedScenes": [],
+      "relatedChapters": [],
+      "impacts": "Inicio de la enemistad Morgath-Aldric. Morgath comienza su búsqueda de los cristales.",
+      "notes": "Aldric tuvo que exiliar a su antiguo amigo. Fue una decisión muy dolorosa.",
+      "created": "2024-01-17T10:30:00.000Z",
+      "modified": "2024-01-19T15:50:00.000Z"
+    },
+    {
+      "id": "timeline-004",
+      "dateMode": "absolute",
+      "date": "Hace 24 años",
+      "event": "Descubrimiento de Elara bebé",
+      "description": "Aldric encuentra a una bebé en las ruinas del Templo Antiguo. Sus ojos violetas y cabello plateado sugieren que es la Elegida de la profecía.",
+      "participants": ["char-001-elara", "char-004-aldric"],
+      "location": null,
+      "importance": "high",
+      "tags": ["elara", "profecía", "origen"],
+      "relatedScenes": [],
+      "relatedChapters": [],
+      "impacts": "Elara es llevada a la Torre para ser entrenada. Aldric se convierte en su mentor.",
+      "notes": "Las circunstancias de su nacimiento siguen siendo un misterio.",
+      "created": "2024-01-17T10:45:00.000Z",
+      "modified": "2024-01-20T08:40:00.000Z"
+    },
+    {
+      "id": "timeline-005",
+      "dateMode": "absolute",
+      "date": "Hace 5 años",
+      "event": "Destrucción del Bosque de Lunargent",
+      "description": "Morgath ataca el Bosque de Lunargent buscando un fragmento de cristal. Masacra a casi toda la población élfica.",
+      "participants": ["char-003-morgath", "char-005-lyra"],
+      "location": "loc-003",
+      "importance": "high",
+      "tags": ["morgath", "elfos", "masacre"],
+      "relatedScenes": [],
+      "relatedChapters": [],
+      "impacts": "Los elfos de Lunargent quedan al borde de la extinción. Lyra jura venganza.",
+      "notes": "Morgath obtuvo el fragmento del Cristal de Sombra. Primer ataque directo desde su exilio.",
+      "created": "2024-01-17T11:00:00.000Z",
+      "modified": "2024-01-19T16:20:00.000Z"
+    },
+    {
+      "id": "timeline-006",
+      "dateMode": "absolute",
+      "date": "Hace 2 años",
+      "event": "Tragedia del Escuadrón de Kael",
+      "description": "Kael lidera su escuadrón en una misión contra cultistas. Una emboscada resulta en la muerte de todo su equipo excepto él.",
+      "participants": ["char-002-kael"],
+      "location": null,
+      "importance": "medium",
+      "tags": ["kael", "guardianes", "tragedia"],
+      "relatedScenes": [],
+      "relatedChapters": [],
+      "impacts": "Kael renuncia a los Guardianes. Cae en depresión y busca redención.",
+      "notes": "Kael todavía tiene pesadillas sobre este evento. Se culpa a sí mismo.",
+      "created": "2024-01-17T11:15:00.000Z",
+      "modified": "2024-01-20T12:30:00.000Z"
+    },
+    {
+      "id": "timeline-007",
+      "dateMode": "absolute",
+      "date": "Hace 1 año",
+      "event": "Elara y Lyra se conocen",
+      "description": "Durante una emboscada de bandidos en el camino a Puerto Dorado, Elara y Lyra luchan espalda con espalda. Forman una amistad instantánea.",
+      "participants": ["char-001-elara", "char-005-lyra"],
+      "location": null,
+      "importance": "medium",
+      "tags": ["amistad", "encuentro"],
+      "relatedScenes": [],
+      "relatedChapters": [],
+      "impacts": "Lyra se une a la causa de Elara. Se vuelven mejores amigas.",
+      "notes": "Lyra salvó la vida de Elara con un disparo imposible de 200 metros.",
+      "created": "2024-01-17T11:30:00.000Z",
+      "modified": "2024-01-19T10:15:00.000Z"
+    },
+    {
+      "id": "timeline-008",
+      "dateMode": "absolute",
+      "date": "Hace 6 meses",
+      "event": "Primera confrontación con Morgath",
+      "description": "Elara y su grupo rastrean a Morgath hasta unas ruinas antiguas. Primer encuentro directo termina en empate, pero Morgath escapa con otro fragmento de cristal.",
+      "participants": ["char-001-elara", "char-002-kael", "char-003-morgath", "char-005-lyra"],
+      "location": null,
+      "importance": "high",
+      "tags": ["morgath", "confrontación", "cristales"],
+      "relatedScenes": [],
+      "relatedChapters": [],
+      "impacts": "Elara descubre que Morgath posee 3 fragmentos de cristal. La amenaza se vuelve urgente.",
+      "notes": "Morgath se burló de Elara llamándola 'niña' y cuestionando su destino.",
+      "created": "2024-01-17T11:45:00.000Z",
+      "modified": "2024-01-20T13:45:00.000Z"
+    },
+    {
+      "id": "timeline-009",
+      "dateMode": "absolute",
+      "date": "Hace 1 mes",
+      "event": "Avistamientos de dragones",
+      "description": "Múltiples reportes de dragones en las Montañas del Crepúsculo. El Consejo debate si investigar.",
+      "participants": [],
+      "location": "loc-004",
+      "importance": "medium",
+      "tags": ["dragones", "misterio"],
+      "relatedScenes": [],
+      "relatedChapters": [],
+      "impacts": "Creciente preocupación sobre los planes de Morgath. ¿Está intentando controlar dragones?",
+      "notes": "Algunos creen que son ilusiones. Otros temen lo peor.",
+      "created": "2024-01-17T12:00:00.000Z",
+      "modified": "2024-01-19T14:55:00.000Z"
+    },
+    {
+      "id": "timeline-010",
+      "dateMode": "absolute",
+      "date": "Presente",
+      "event": "Inicio de la búsqueda",
+      "description": "Aldric informa a Elara de una visión: Morgath planea atacar la Torre en la próxima Noche de las Estrellas (en 3 meses). Elara debe encontrar los fragmentos restantes primero.",
+      "participants": ["char-001-elara", "char-004-aldric"],
+      "location": "loc-002",
+      "importance": "high",
+      "tags": ["misión", "urgencia", "inicio"],
+      "relatedScenes": [],
+      "relatedChapters": ["chapter-001"],
+      "impacts": "Inicio de la carrera contra el tiempo. Elara reúne a su grupo para la búsqueda.",
+      "notes": "Punto de inicio de la historia principal.",
+      "created": "2024-01-17T12:15:00.000Z",
+      "modified": "2024-01-20T15:00:00.000Z"
+    }
+  ],
+  "chapters": [
+    {
+      "id": "chapter-001",
+      "number": 1,
+      "title": "La Visión del Destino",
+      "summary": "Elara es convocada a la cámara del Archimago Aldric, quien le revela una visión perturbadora: Morgath planea atacar la Torre Arcana en tres meses durante la Noche de las Estrellas. Para detenerlo, Elara debe reunir los fragmentos de cristal antes que él.",
+      "content": "<p>La luz púrpura del atardecer se filtraba por las ventanas arqueadas de la Torre Arcana mientras Elara Brightwind ascendía la escalera espiral hacia el piso cincuenta. Cada paso resonaba en el silencio, amplificado por la arquitectura mágica del edificio.</p><p>Su corazón latía con aprensión. Era raro que el Maestro Aldric la convocara con tanta urgencia.</p><p>La puerta de roble de la cámara del Archimago se abrió antes de que pudiera tocar, revelando el interior circular revestido de libros antiguos y artefactos brillantes. Aldric estaba de pie frente a la ventana, su silueta enmarcada por el cielo carmesí.</p><p>\"Maestro\", dijo Elara con reverencia. \"Recibí su mensaje.\"</p><p>Aldric se volvió lentamente. Sus ojos normalmente sabios y calmados mostraban una sombra de preocupación que Elara nunca había visto antes.</p><p>\"Elara, mi querida alumna\", comenzó, su voz grave pero cálida. \"He tenido una visión. Y me temo que el tiempo que nos quedaba se ha agotado.\"</p><p>Elara sintió un escalofrío recorrer su espalda. Las visiones de Aldric eran infrecuentes, pero siempre precisas.</p><p>\"Morgath\", continuó el anciano mago, \"ha encontrado tres fragmentos de los Cristales de Eternidad. Y ahora sé su objetivo final: planea atacar esta torre durante la Noche de las Estrellas, cuando el velo entre mundos se adelgaza y su poder será máximo.\"</p><p>\"¿Tres meses?\" susurró Elara. \"Pero... ¿por qué la torre?\"</p><p>\"Porque aquí se guarda el más poderoso de todos los fragmentos\", respondió Aldric, señalando una cámara sellada en el centro de la habitación. \"El fragmento del Cristal de Luz, capaz de contrarrestar toda la oscuridad que él ha acumulado. Con él, podríamos detenerlo. Sin él...\"</p><p>No necesitaba terminar la frase.</p><p>\"¿Qué debo hacer?\" preguntó Elara, su voz ahora firme a pesar del miedo que sentía.</p><p>Aldric le entregó un mapa antiguo marcado con símbolos brillantes. \"Los fragmentos restantes están esparcidos por el reino. Debes encontrarlos antes que Morgath. Reúne a tus compañeros más confiables. Kael, Lyra, cualquiera que pueda ayudarte.\"</p><p>Elara estudió el mapa, memorizando las ubicaciones. \"¿Y si fracaso?\"</p><p>\"Entonces\", dijo Aldric con tristeza, \"el mundo que conocemos dejará de existir. Pero tengo fe en ti, Elara. Eres más fuerte de lo que crees. Quizás... eres verdaderamente la Elegida.\"</p><p>Esa noche, mientras Elara empacaba sus pertenencias, observó su reflejo en el espejo. Sus ojos violetas brillaban con determinación. El cabello plateado parecía capturar la luz de la luna.</p><p>\"Tres meses\", se dijo a sí misma. \"Puedo hacerlo. Debo hacerlo.\"</p><p>Mañana comenzaría la búsqueda. Mañana, su destino se pondría en movimiento.</p>",
+      "status": "final",
+      "created": "2024-01-18T09:00:00.000Z",
+      "modified": "2024-01-20T14:30:00.000Z"
+    },
+    {
+      "id": "chapter-002",
+      "number": 2,
+      "title": "Reuniendo a los Valientes",
+      "summary": "Elara reúne a su grupo de compañeros: Kael el guerrero, Lyra la arquera élfica, y Thorne el enano herrero. Juntos planifican su estrategia en la Taberna del Dragón Dormido antes de partir hacia su primera misión.",
+      "content": "<p>El aroma a cerveza y estofado llenaba la Taberna del Dragón Dormido. Era temprano por la mañana, pero Elara había convocado a sus compañeros para una reunión urgente.</p><p>Kael fue el primero en llegar. Su armadura negra relucía limpia, recién pulida. Se sentó frente a Elara sin decir palabra, pero sus ojos grises la estudiaron con preocupación.</p><p>\"Es malo, ¿verdad?\" preguntó finalmente.</p><p>Elara asintió. \"Peor de lo que imaginaba.\"</p><p>Lyra llegó momentos después, su paso ligero apenas audible. Se dejó caer en una silla con gracia felina. \"Por tu expresión, diría que finalmente vamos tras Morgath.\"</p><p>\"No exactamente\", dijo Elara, desplegando el mapa sobre la mesa. \"Vamos a superarlo en su propio juego.\"</p><p>La puerta de la taberna se abrió nuevamente, y Thorne Ironheart entró con su característico paso pesado. El enano se sirvió una jarra de cerveza antes de unirse al grupo.</p><p>\"Escuché que hay problemas\", gruñó. \"Y donde hay problemas, ahí estoy yo.\"</p><p>Elara sonrió débilmente. \"Morgath tiene tres fragmentos de los Cristales de Eternidad. Planea atacar la Torre en tres meses. Necesitamos encontrar los fragmentos restantes antes que él.\"</p><p>Silencio. Incluso en la ruidosa taberna, el peso de sus palabras creó una burbuja de quietud.</p><p>\"Eso es... ambicioso\", dijo Lyra finalmente. \"¿Cuántos fragmentos quedan?\"</p><p>\"Doce\", respondió Elara. \"Cinco cristales, cada uno dividido en tres fragmentos. Morgath tiene tres. La Torre guarda uno. Eso deja once esparcidos por el reino.\"</p><p>Kael se inclinó sobre el mapa. \"¿Por dónde empezamos?\"</p><p>Elara señaló una ubicación al norte. \"Aquí. Las Ruinas de Thornhelm. Según los registros de Aldric, un fragmento del Cristal de Tiempo fue escondido allí hace siglos.\"</p><p>\"Thornhelm\", murmuró Thorne. \"Esas ruinas están infestadas de muertos vivientes. Nadie ha regresado de allí en años.\"</p><p>\"Razón de más para creer que el fragmento sigue allí\", dijo Lyra con una sonrisa confiada. \"¿Cuándo partimos?\"</p><p>Elara miró a cada uno de sus compañeros. Kael, el guerrero atormentado buscando redención. Lyra, la arquera élfica con sed de venganza. Thorne, el herrero enano con un corazón de oro bajo su exterior gruñón.</p><p>\"Al amanecer\", respondió. \"Preparad vuestro equipo. Esto será peligroso.\"</p><p>\"Peligroso es mi segundo nombre\", bromeó Thorne, alzando su jarra. \"Por la aventura. Y por patearle el trasero a Morgath.\"</p><p>Los otros alzaron sus bebidas. \"Por la aventura.\"</p><p>Esa noche, mientras cada uno se preparaba, Elara se quedó despierta mirando las estrellas desde su ventana en la Torre. En algún lugar, Morgath también estaría despierto, planeando, conspirando.</p><p>Era una carrera. Y el premio era el destino del mundo.</p>",
+      "status": "review",
+      "created": "2024-01-18T10:00:00.000Z",
+      "modified": "2024-01-20T13:15:00.000Z"
+    },
+    {
+      "id": "chapter-003",
+      "number": 3,
+      "title": "Las Ruinas de Thornhelm",
+      "summary": "El grupo viaja a las Ruinas de Thornhelm en busca del primer fragmento. Enfrentan hordas de muertos vivientes y descubren que no son los únicos buscando el cristal.",
+      "content": "<p>El viaje a Thornhelm tomó tres días a caballo. El camino se volvía más desolado con cada kilómetro, la vegetación dando paso a tierra yerma y árboles retorcidos.</p><p>Las ruinas emergieron del paisaje como los huesos de un gigante antiguo. Torres caídas y muros destrozados eran todo lo que quedaba de lo que una vez fue una ciudad próspera.</p><p>\"Alegre lugar\", comentó Lyra sarcásticamente, su arco ya en mano.</p><p>\"Mantened los ojos abiertos\", advirtió Kael, desenvainando su espada. \"Los muertos aquí no descansan en paz.\"</p><p>Como invocados por sus palabras, figuras esqueléticas comenzaron a emerger de las sombras. Docenas de ellas, con armaduras oxidadas y armas antiguas.</p><p>\"¡A la formación!\" gritó Kael.</p><p>La batalla fue caótica. Las flechas de Lyra volaban con precisión letal, cada disparo derribando un esqueleto. Kael se movía como un torbellino, su espada cortando a través de huesos antiguos. Thorne blandía su martillo de guerra con fuerza brutal. Elara lanzaba rayos de energía Aethérica, purificando a los no-muertos.</p><p>Minutos que parecieron horas pasaron antes de que el último esqueleto cayera.</p><p>\"¿Todos bien?\" preguntó Elara, respirando con dificultad.</p><p>Asentimientos silenciosos. Algunos cortes y moretones, pero nada grave.</p><p>\"El fragmento debe estar en el templo central\", dijo Elara, señalando una estructura parcialmente intacta en el corazón de las ruinas.</p><p>Avanzaron con cautela. El interior del templo estaba oscuro y húmedo, decorado con relieves antiguos que mostraban la Gran Guerra de los Cristales.</p><p>En el centro había un pedestal de piedra. Y sobre él, brillando con luz azul pálida, descansaba un fragmento de cristal del tamaño de un puño.</p><p>\"Lo encontramos\", susurró Lyra con asombro.</p><p>Elara se acercó lentamente, extendiendo su mano...</p><p>\"Yo que tú, no haría eso.\"</p><p>La voz vino de las sombras. Una figura encapuchada emergió, rodeada por más cultistas con el símbolo del Culto de las Sombras en sus túnicas.</p><p>\"Este fragmento pertenece a nuestro maestro\", dijo el líder del culto. \"Apartaos, o morid.\"</p><p>Kael dio un paso adelante, levantando su espada. \"Tendréis que pasar sobre nuestros cadáveres.\"</p><p>El cultista sonrió fríamente. \"Como deseen.\"</p><p>Y entonces, todo se volvió violencia y magia...</p><p><em>[Capítulo continúa...]</em></p>",
+      "status": "draft",
+      "created": "2024-01-18T11:00:00.000Z",
+      "modified": "2024-01-20T10:45:00.000Z"
+    }
+  ],
+  "scenes": [
+    {
+      "id": "scene-001",
+      "title": "La Convocatoria de Aldric",
+      "chapter": "chapter-001",
+      "description": "Elara es convocada urgentemente a la cámara del Archimago. Aldric le revela su visión sobre los planes de Morgath y le encomienda la misión de recuperar los fragmentos de cristal.",
+      "characters": ["char-001-elara", "char-004-aldric"],
+      "location": "loc-002",
+      "timelinePosition": null,
+      "notes": "Escena de apertura. Establece la urgencia y la misión principal.",
+      "created": "2024-01-18T14:00:00.000Z",
+      "modified": "2024-01-19T16:45:00.000Z"
+    },
+    {
+      "id": "scene-002",
+      "title": "Reunión en la Taberna",
+      "chapter": "chapter-002",
+      "description": "Elara convoca a Kael, Lyra y Thorne en la Taberna del Dragón Dormido para informarles de la misión. Planifican su estrategia y deciden partir hacia las Ruinas de Thornhelm.",
+      "characters": ["char-001-elara", "char-002-kael", "char-005-lyra", "char-006-thorne"],
+      "location": "loc-005",
+      "timelinePosition": null,
+      "notes": "Introduce a los compañeros principales y establece la dinámica del grupo.",
+      "created": "2024-01-18T14:15:00.000Z",
+      "modified": "2024-01-20T11:30:00.000Z"
+    },
+    {
+      "id": "scene-003",
+      "title": "Batalla en las Ruinas",
+      "chapter": "chapter-003",
+      "description": "El grupo llega a las Ruinas de Thornhelm y es atacado por hordas de muertos vivientes. Primera batalla épica del grupo trabajando en equipo.",
+      "characters": ["char-001-elara", "char-002-kael", "char-005-lyra", "char-006-thorne"],
+      "location": null,
+      "timelinePosition": null,
+      "notes": "Escena de acción. Muestra las habilidades de cada personaje en combate.",
+      "created": "2024-01-18T14:30:00.000Z",
+      "modified": "2024-01-19T15:10:00.000Z"
+    },
+    {
+      "id": "scene-004",
+      "title": "Encuentro con el Culto",
+      "chapter": "chapter-003",
+      "description": "Dentro del templo, el grupo encuentra el primer fragmento pero es confrontado por cultistas de Morgath. Revelación de que no son los únicos buscando los cristales.",
+      "characters": ["char-001-elara", "char-002-kael", "char-005-lyra", "char-006-thorne"],
+      "location": null,
+      "timelinePosition": null,
+      "notes": "Introduce al Culto de las Sombras como antagonistas menores. Cliffhanger para el siguiente capítulo.",
+      "created": "2024-01-18T14:45:00.000Z",
+      "modified": "2024-01-20T14:55:00.000Z"
+    },
+    {
+      "id": "scene-005",
+      "title": "Momento de Duda de Elara",
+      "chapter": "chapter-001",
+      "description": "Después de la reunión con Aldric, Elara reflexiona sola en su habitación sobre el peso de su destino. Se pregunta si realmente es la Elegida o solo una maga talentosa con suerte.",
+      "characters": ["char-001-elara"],
+      "location": "loc-002",
+      "timelinePosition": null,
+      "notes": "Escena introspectiva. Desarrolla la inseguridad interna de Elara a pesar de su exterior confiado.",
+      "created": "2024-01-18T15:00:00.000Z",
+      "modified": "2024-01-19T12:25:00.000Z"
+    },
+    {
+      "id": "scene-006",
+      "title": "Kael y sus Pesadillas",
+      "chapter": "chapter-002",
+      "description": "La noche antes de partir, Kael tiene pesadillas sobre la muerte de su escuadrón. Despierta sudando y sale a entrenar para despejar su mente.",
+      "characters": ["char-002-kael"],
+      "location": null,
+      "timelinePosition": null,
+      "notes": "Profundiza en el trauma de Kael. Muestra su lucha interna con la culpa y el deseo de redención.",
+      "created": "2024-01-18T15:15:00.000Z",
+      "modified": "2024-01-20T09:40:00.000Z"
+    }
+  ],
+  "notes": []
+}
