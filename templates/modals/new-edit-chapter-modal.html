@@ -1,5 +1,6 @@
 <!-- New/Edit Chapter Modal -->
-<div class="legacy-modal" :class="{ 'active': $store.ui.modals.newChapter || $store.ui.modals.editChapter }">
+<template x-if="$store.ui.modals.newChapter || $store.ui.modals.editChapter">
+<div class="legacy-modal active">
     <div class="legacy-modal-content">
         <div class="legacy-modal-header">
             <h2 x-text="$store.ui.modals.editChapter ? $store.i18n.t('chapters.edit') : $store.i18n.t('chapters.new')">Capítulo</h2>
@@ -66,3 +67,4 @@
         </div>
     </div>
 </div>
+</template>

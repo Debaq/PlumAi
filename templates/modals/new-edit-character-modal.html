@@ -1,5 +1,6 @@
 <!-- New/Edit Character Modal -->
-<div class="legacy-modal" :class="{ 'active': $store.ui.modals.newCharacter || $store.ui.modals.editCharacter }">
+<template x-if="$store.ui.modals.newCharacter || $store.ui.modals.editCharacter">
+<div class="legacy-modal active">
     <div class="legacy-modal-content">
         <div class="legacy-modal-header">
             <h2 x-text="$store.ui.modals.editCharacter ? $store.i18n.t('characters.edit') : $store.i18n.t('characters.new')">Personaje</h2>
@@ -285,3 +286,4 @@
         </div>
     </div>
 </div>
+</template>
