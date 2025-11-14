@@ -27,51 +27,11 @@ window.editorAlpineComponent = function() {
             // Esperar a que el elemento esté en el DOM
             this.$nextTick(() => {
                 this.initializeEditor();
-                this.initializeSearchService();
             });
 
-            // Watch para actualizar búsqueda cuando cambien los datos
-            this.$watch('$store.project.characters', () => this.updateSearchIndex());
-            this.$watch('$store.project.scenes', () => this.updateSearchIndex());
-            this.$watch('$store.project.locations', () => this.updateSearchIndex());
-            this.$watch('$store.project.timeline', () => this.updateSearchIndex());
-            this.$watch('$store.project.loreEntries', () => this.updateSearchIndex());
-        },
-
-        /**
-         * Inicializar el SearchService con los datos del proyecto
-         */
-        initializeSearchService() {
-            if (!window.searchService) {
-                console.error('❌ SearchService no encontrado');
-                return;
-            }
-
-            // Inicializar con todos los datos del proyecto
-            window.searchService.initialize({
-                characters: this.$store.project.characters,
-                scenes: this.$store.project.scenes,
-                locations: this.$store.project.locations,
-                timeline: this.$store.project.timeline,
-                chapters: this.$store.project.chapters,
-                loreEntries: this.$store.project.loreEntries
-            });
-        },
-
-        /**
-         * Actualizar índice de búsqueda
-         */
-        updateSearchIndex() {
-            if (!window.searchService) return;
-
-            window.searchService.update({
-                characters: this.$store.project.characters,
-                scenes: this.$store.project.scenes,
-                locations: this.$store.project.locations,
-                timeline: this.$store.project.timeline,
-                chapters: this.$store.project.chapters,
-                loreEntries: this.$store.project.loreEntries
-            });
+            // Nota: La inicialización y actualización del SearchService
+            // ahora se maneja globalmente en app.js con Alpine.effect()
+            // para evitar duplicación y mejorar el rendimiento
         },
 
         /**
