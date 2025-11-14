@@ -166,9 +166,22 @@ document.addEventListener('alpine:init', () => {
                         console.log('⚠️ No se pudo cargar commit, usando estado actual');
                     }
                 } else {
-                    // No hay commits, usar el estado actual
-                    this.lastProjectState = JSON.stringify(Alpine.store('project').exportProject());
-                    console.log('📸 Sin commits previos, usando estado actual');
+                    // No hay commits, usar un proyecto vacío como baseline
+                    // Esto permite detectar cualquier cambio que se haga
+                    const emptyProject = {
+                        projectInfo: Alpine.store('project').projectInfo,
+                        forkInfo: Alpine.store('project').forkInfo,
+                        apiKeys: Alpine.store('project').apiKeys,
+                        characters: [],
+                        locations: [],
+                        chapters: [],
+                        scenes: [],
+                        timeline: [],
+                        notes: [],
+                        loreEntries: []
+                    };
+                    this.lastProjectState = JSON.stringify(emptyProject);
+                    console.log('📸 Sin commits previos, usando proyecto vacío como baseline');
                 }
             } catch (error) {
                 console.error('Error cargando estado del último commit:', error);
@@ -359,12 +372,8 @@ document.addEventListener('alpine:init', () => {
             try {
                 const project = Alpine.store('project');
 
-                // Primer commit: Inicio del proyecto
-                // Sistema v2.0 usa versionControl en lugar de gitService
-                // await window.gitService.saveProjectState(project);
-                // await window.gitService.commit('Inicio del proyecto', { name: 'Demo User', email: 'demo@pluma.local' });
-
-                // Segundo commit: Agregar eventos de timeline
+                // Crear datos de prueba (un solo commit al final con todo)
+                // Agregar eventos de timeline
                 const eventBirth = window.uuid.generateUUID();
                 const eventMeeting = window.uuid.generateUUID();
                 const eventBetrayal = window.uuid.generateUUID();
@@ -451,10 +460,7 @@ document.addEventListener('alpine:init', () => {
                     modified: new Date().toISOString()
                 });
 
-                // await window.gitService.saveProjectState(project);
-                // await window.gitService.commit('Agregar eventos de timeline', { name: 'Demo User', email: 'demo@pluma.local' });
-
-                // Tercer commit: Agregar personajes con estados vitales variados
+                // Agregar personajes con estados vitales variados
                 const elenaId = window.uuid.generateUUID();
                 const marcoId = window.uuid.generateUUID();
                 const sofiaId = window.uuid.generateUUID();
@@ -754,15 +760,24 @@ document.addEventListener('alpine:init', () => {
                     modified: new Date().toISOString()
                 });
 
-                // await window.gitService.saveProjectState(project);
-                // await window.gitService.commit('Agregar primer capítulo', { name: 'Demo User', email: 'demo@pluma.local' });
+                // Crear commit inicial con todos los datos de prueba usando v2.0
+                const projectData = project.exportProject();
+                const author = {
+                    name: localStorage.getItem('userName') || 'Demo User',
+                    email: localStorage.getItem('userEmail') || 'demo@pluma.local'
+                };
+
+                window.versionControl.commit(
+                    projectData,
+                    'Proyecto inicial con datos de prueba',
+                    author
+                );
 
                 // Recargar commits
                 await this.loadCommits();
                 await this.loadStats();
-                this.lastProjectState = JSON.stringify(project.exportProject());
 
-                console.log('✅ Datos de prueba completos creados');
+                console.log('✅ Datos de prueba completos creados con commit inicial');
             } catch (error) {
                 console.error('Error creando datos de prueba:', error);
             }
