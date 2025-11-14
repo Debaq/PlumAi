@@ -463,12 +463,27 @@ window.projectStore = {
 
     // Migrar relaciones antiguas al nuevo formato con historial
     migrateRelationshipToHistory(relationship) {
-        // Si ya tiene el nuevo formato, no hacer nada
+        // Tipo por defecto si no está definido
+        const defaultType = 'friend';
+
+        // Si ya tiene el nuevo formato, verificar que tenga currentType
         if (relationship.history) {
+            // Asegurar que currentType esté definido
+            if (!relationship.currentType) {
+                relationship.currentType = relationship.history[relationship.history.length - 1]?.type || defaultType;
+            }
+            if (!relationship.currentStatus) {
+                relationship.currentStatus = relationship.history[relationship.history.length - 1]?.status || 'active';
+            }
+            if (!relationship.currentDescription) {
+                relationship.currentDescription = relationship.history[relationship.history.length - 1]?.description || '';
+            }
             return relationship;
         }
 
         // Migrar al nuevo formato
+        const relType = relationship.type || defaultType;
+
         return {
             id: relationship.id || window.uuid.generateUUID(),
             characterId: relationship.characterId,
@@ -476,7 +491,7 @@ window.projectStore = {
             history: [
                 {
                     eventId: relationship.startEvent || null,
-                    type: relationship.type,
+                    type: relType,
                     status: relationship.currentStatus || 'active',
                     description: relationship.description || '',
                     notes: relationship.notes || '',
@@ -484,7 +499,7 @@ window.projectStore = {
                 }
             ],
 
-            currentType: relationship.type,
+            currentType: relType,
             currentStatus: relationship.currentStatus || 'active',
             currentDescription: relationship.description || '',
 
@@ -1092,11 +1107,17 @@ window.projectStore = {
 
         // Migración: Relaciones al nuevo formato con historial
         if (projectData.characters && projectData.characters.length > 0) {
-            console.log('🔄 Migrando relaciones al formato con historial temporal');
+            let migrationNeeded = false;
+
             projectData.characters.forEach(character => {
+                // Migrar relaciones
                 if (character.relationships && character.relationships.length > 0) {
                     character.relationships = character.relationships.map(rel => {
-                        return this.migrateRelationshipToHistory(rel);
+                        const migratedRel = this.migrateRelationshipToHistory(rel);
+                        if (!rel.history || !rel.currentType) {
+                            migrationNeeded = true;
+                        }
+                        return migratedRel;
                     });
                 }
 
@@ -1111,8 +1132,13 @@ window.projectStore = {
                         }
                     ];
                     character.currentVitalStatus = 'alive';
+                    migrationNeeded = true;
                 }
             });
+
+            if (migrationNeeded) {
+                console.log('🔄 Migración de datos completada - relaciones y estados vitales actualizados');
+            }
         }
 
         return projectData;
