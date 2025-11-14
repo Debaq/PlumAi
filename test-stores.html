@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Stores</title>
+</head>
+<body>
+    <h1>Testing Store Loading</h1>
+    <div id="results"></div>
+
+    <!-- Load stores in same order as index.html -->
+    <script src="js/i18n/locales/es-global.js"></script>
+    <script src="js/i18n/locales/en-global.js"></script>
+    <script src="js/stores/i18n-global.js"></script>
+    <script src="js/stores/project-global.js"></script>
+    <script src="js/stores/ui-global.js"></script>
+    <script src="js/stores/ai-global.js"></script>
+    <script src="js/stores/version-control-global.js"></script>
+
+    <!-- AI Service -->
+    <script src="js/services/ai-service.js"></script>
+
+    <script>
+        const results = [];
+        results.push(`window.i18nStore: ${typeof window.i18nStore}`);
+        results.push(`window.projectStore: ${typeof window.projectStore}`);
+        results.push(`window.uiStore: ${typeof window.uiStore}`);
+        results.push(`window.aiStore: ${typeof window.aiStore}`);
+        results.push(`window.versionControlStore: ${typeof window.versionControlStore}`);
+        results.push(`window.aiService: ${typeof window.aiService}`);
+
+        // Check for errors
+        window.addEventListener('error', (e) => {
+            results.push(`ERROR: ${e.message} at ${e.filename}:${e.lineno}`);
+            document.getElementById('results').innerHTML = results.join('<br>');
+        });
+
+        setTimeout(() => {
+            document.getElementById('results').innerHTML = results.join('<br>');
+            console.log('Store test results:', results);
+        }, 100);
+    </script>
+</body>
+</html>

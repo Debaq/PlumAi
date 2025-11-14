@@ -8,6 +8,119 @@
             </button>
         </div>
         <div class="modal-body">
+            <!-- AI Configuration Section -->
+            <div class="settings-section" style="margin-bottom: 30px; padding: 20px; border: 1px solid var(--border); border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0; color: var(--text-primary);" x-text="$store.i18n.t('modals.apiKeys.title')">Configurar APIs de IA</h3>
+                    <i data-lucide="brain" width="20" height="20" style="color: var(--text-secondary);"></i>
+                </div>
+
+                <p style="margin: 0 0 20px 0; color: var(--text-secondary); font-size: 14px;" x-text="$store.i18n.t('modals.apiKeys.description')">
+                    Configura las claves de API para usar la IA
+                </p>
+
+                <!-- Provider Selection -->
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label x-text="$store.i18n.t('common.provider')" style="font-weight: 600; margin-bottom: 8px; display: block;">Proveedor</label>
+                    <select x-model="selectedProvider" @change="onProviderChange" style="width: 100%; padding: 10px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary);">
+                        <template x-for="provider in getAvailableProviders()" :key="provider.id">
+                            <option :value="provider.id" x-text="`${provider.name} - ${provider.freeTier}`"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <!-- Provider Info Card -->
+                <div x-show="selectedProvider" style="background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 6px; padding: 15px; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: start; gap: 10px;">
+                        <i data-lucide="info" width="20" height="20" style="color: var(--accent); flex-shrink: 0; margin-top: 2px;"></i>
+                        <div>
+                            <p style="margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; font-size: 14px;" x-text="getProviderName()"></p>
+                            <p style="margin: 0 0 8px 0; color: var(--text-secondary); font-size: 13px;">
+                                <strong>Tier gratuito:</strong> <span x-text="getProviderInfo()?.freeTier || 'No disponible'"></span>
+                            </p>
+                            <p style="margin: 0; color: var(--text-secondary); font-size: 13px;">
+                                <strong>Precio:</strong> <span x-text="getProviderInfo()?.pricing || 'Consultar sitio web'"></span>
+                            </p>
+                            <template x-if="getProviderInfo()?.type === 'local'">
+                                <p style="margin: 8px 0 0 0; color: var(--warning); font-size: 13px;">
+                                    <i data-lucide="download" width="16" height="16" style="vertical-align: text-bottom;"></i>
+                                    Requiere instalación local: <a :href="getProviderInfo()?.instructions || '#'" target="_blank" style="color: var(--accent); text-decoration: underline;">Ver instrucciones</a>
+                                </p>
+                            </template>
+                            <template x-if="getProviderInfo()?.type === 'manual'">
+                                <p style="margin: 8px 0 0 0; color: var(--success); font-size: 13px;">
+                                    <i data-lucide="copy" width="16" height="16" style="vertical-align: text-bottom;"></i>
+                                    Copia el prompt generado y pégalo en cualquier IA web (ChatGPT, Claude, etc.)
+                                </p>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- API Key Input (solo si requiere API key) -->
+                <div x-show="selectedProvider && getProviderInfo()?.requiresApiKey" class="form-group" style="margin-bottom: 15px;">
+                    <label style="font-weight: 600; margin-bottom: 8px; display: block;" x-text="$store.i18n.t('modals.apiKeys.form.key')">Clave API</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input
+                            type="password"
+                            x-model="apiKeyInput"
+                            :placeholder="$store.i18n.t('modals.apiKeys.form.keyPlaceholder')"
+                            style="flex: 1; padding: 10px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary);">
+                        <button
+                            class="btn-secondary"
+                            @click="toggleApiKeyVisibility"
+                            style="padding: 10px;">
+                            <i :data-lucide="showApiKey ? 'eye-off' : 'eye'" width="20" height="20"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Model Selection -->
+                <div x-show="selectedProvider" class="form-group" style="margin-bottom: 15px;">
+                    <label style="font-weight: 600; margin-bottom: 8px; display: block;">Modelo</label>
+                    <select x-model="selectedModel" style="width: 100%; padding: 10px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary);">
+                        <template x-for="model in getProviderModels()" :key="model">
+                            <option :value="model" x-text="model"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <!-- Action Buttons -->
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button
+                        class="btn-primary"
+                        @click="saveApiKey"
+                        :disabled="!canSaveApiKey()"
+                        style="flex: 1;">
+                        <i data-lucide="save" width="16" height="16" style="margin-right: 5px;"></i>
+                        <span x-text="$store.i18n.t('common.save')">Guardar</span>
+                    </button>
+                    <button
+                        class="btn-secondary"
+                        @click="testConnection"
+                        :disabled="!hasApiKey()"
+                        style="flex: 1;">
+                        <i data-lucide="zap" width="16" height="16" style="margin-right: 5px;"></i>
+                        <span x-text="$store.i18n.t('modals.apiKeys.form.test')">Probar</span>
+                    </button>
+                </div>
+
+                <!-- Connection Status -->
+                <div x-show="connectionStatus" :class="connectionStatus === 'success' ? 'success' : connectionStatus === 'error' ? 'error' : ''" style="margin-top: 15px; padding: 12px; border-radius: 6px; text-align: center;" :style="`background: color-mix(in srgb, var(--${connectionStatus === 'success' ? 'success' : 'error'}) 15%, transparent); border: 1px solid var(--${connectionStatus === 'success' ? 'success' : 'error'});`">
+                    <span :style="`color: var(--${connectionStatus === 'success' ? 'success' : 'error'});`" x-text="connectionMessage"></span>
+                </div>
+
+                <!-- Security Warning -->
+                <div style="margin-top: 15px; padding: 12px; background: color-mix(in srgb, var(--warning) 15%, transparent); border: 1px solid var(--warning); border-radius: 6px;">
+                    <div style="display: flex; align-items: start; gap: 10px;">
+                        <i data-lucide="shield" width="16" height="16" style="color: var(--warning); flex-shrink: 0; margin-top: 2px;"></i>
+                        <p style="margin: 0; color: var(--text-secondary); font-size: 13px;" x-text="$store.i18n.t('modals.apiKeys.warning')">
+                            Las claves se guardan en tu dispositivo y no se envían a ningún servidor
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Data Management Section -->
             <div class="settings-section" style="margin-bottom: 30px; padding: 20px; border: 1px solid var(--border); border-radius: 8px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">

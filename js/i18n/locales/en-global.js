@@ -22,6 +22,7 @@ window.translations_en = {
         previous: 'Previous',
         yes: 'Yes',
         no: 'No',
+        provider: 'Provider',
         optional: 'Optional',
         required: 'Required',
         viewAll: 'View All',
@@ -378,6 +379,15 @@ window.translations_en = {
             write: 'AI Writes',
             assist: 'AI Assists'
         },
+        assistantModes: {
+            continue: 'Continue writing',
+            suggest: 'Suggest ideas',
+            analyze: 'Analyze text',
+            improve: 'Improve passage',
+            dialogue: 'Generate dialogue',
+            worldbuild: 'Expand worldbuilding',
+            characterize: 'Develop character'
+        },
         prompt: {
             label: 'Instruction for AI',
             placeholder: 'Tell the AI what you want it to do...',
@@ -627,9 +637,27 @@ window.translations_en = {
             description: 'Set up API keys to use AI features',
             providers: {
                 claude: 'Claude (Anthropic)',
-                kimi: 'Kimi (Moonshot)',
+                openai: 'OpenAI (ChatGPT)',
+                google: 'Google Gemini',
+                groq: 'Groq (Ultra fast)',
+                together: 'Together AI',
                 replicate: 'Replicate',
+                huggingface: 'HuggingFace',
+                ollama: 'Ollama (Local)',
+                manual: 'Copy Prompt (Manual)',
+                kimi: 'Kimi (Moonshot)',
                 qwen: 'Qwen (Alibaba)'
+            },
+            providerInfo: {
+                claude: 'Anthropic API - $5 free',
+                openai: 'OpenAI API - Paid only',
+                google: 'Google API - Generous free tier',
+                groq: 'Generous FREE tier - Ultra fast',
+                together: '$25 free tier on signup',
+                replicate: 'Various models - Pay per use',
+                huggingface: 'Some models free',
+                ollama: '100% FREE - Requires local installation',
+                manual: '100% FREE - Copy prompt to any AI'
             },
             form: {
                 key: 'API Key',

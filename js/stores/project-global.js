@@ -21,9 +21,19 @@ window.projectStore = {
 
     // API Keys (guardadas con el proyecto)
     apiKeys: {
+        // APIs pagadas
+        claude: '',      // Anthropic Claude
+        openai: '',      // OpenAI (ChatGPT)
+        google: '',      // Google Gemini
+        groq: '',        // Groq (FREE tier generoso)
+        together: '',    // Together AI
+        replicate: '',   // Replicate
+
+        // APIs gratuitas
+        huggingface: '', // HuggingFace
+
+        // Legacy (mantener compatibilidad)
         kimi: '',
-        claude: '',
-        replicate: '',
         qwen: ''
     },
 
@@ -582,9 +592,14 @@ window.projectStore = {
                 isPublicPC: false
             };
             this.apiKeys = {
-                kimi: '',
                 claude: '',
+                openai: '',
+                google: '',
+                groq: '',
+                together: '',
                 replicate: '',
+                huggingface: '',
+                kimi: '',
                 qwen: ''
             };
             this.characters = [];
