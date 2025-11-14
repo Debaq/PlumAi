@@ -971,17 +971,90 @@ document.addEventListener('alpine:init', () => {
 
 // Inicializar SearchService después de que Alpine esté listo
 document.addEventListener('alpine:initialized', () => {
-    // Inicializar SearchService con los datos actuales
-    if (window.searchService && Alpine.store('project')) {
-        window.searchService.initialize({
-            characters: Alpine.store('project').characters,
-            scenes: Alpine.store('project').scenes,
-            locations: Alpine.store('project').locations,
-            timeline: Alpine.store('project').timeline,
-            chapters: Alpine.store('project').chapters,
-            loreEntries: Alpine.store('project').loreEntries
-        });
+    if (!window.searchService || !Alpine.store('project')) {
+        console.warn('⚠️ SearchService o project store no disponible');
+        return;
     }
+
+    const projectStore = Alpine.store('project');
+    let debounceTimer = null;
+    let isFirstInit = true;
+
+    /**
+     * Función helper para actualizar el índice de búsqueda
+     * Incluye debounce para evitar reconstrucciones demasiado frecuentes
+     */
+    const updateSearchIndex = (immediate = false) => {
+        // Cancelar timer anterior si existe
+        if (debounceTimer) {
+            clearTimeout(debounceTimer);
+        }
+
+        const doUpdate = () => {
+            try {
+                const startTime = performance.now();
+
+                window.searchService.initialize({
+                    characters: projectStore.characters,
+                    scenes: projectStore.scenes,
+                    locations: projectStore.locations,
+                    timeline: projectStore.timeline,
+                    chapters: projectStore.chapters,
+                    loreEntries: projectStore.loreEntries
+                });
+
+                const endTime = performance.now();
+                const updateTime = (endTime - startTime).toFixed(2);
+
+                if (isFirstInit) {
+                    console.log('📚 SearchService inicializado correctamente', {
+                        personajes: projectStore.characters.length,
+                        escenas: projectStore.scenes.length,
+                        ubicaciones: projectStore.locations.length,
+                        timeline: projectStore.timeline.length,
+                        capítulos: projectStore.chapters.length,
+                        lore: projectStore.loreEntries.length,
+                        tiempo: `${updateTime}ms`
+                    });
+                    isFirstInit = false;
+                } else {
+                    console.log(`🔄 Índice de búsqueda actualizado (${updateTime}ms)`);
+                }
+            } catch (error) {
+                console.error('❌ Error actualizando índice de búsqueda:', error);
+            }
+        };
+
+        if (immediate) {
+            // Actualizar inmediatamente (para inicialización)
+            doUpdate();
+        } else {
+            // Debounce de 500ms para actualizaciones posteriores
+            debounceTimer = setTimeout(doUpdate, 500);
+        }
+    };
+
+    // Inicializar una vez inmediatamente
+    updateSearchIndex(true);
+
+    // Configurar watchers automáticos para actualización reactiva
+    Alpine.effect(() => {
+        // Acceder a los arrays para que Alpine detecte cambios
+        // Usamos .length para detectar adiciones/eliminaciones
+        const charsLen = projectStore.characters.length;
+        const scenesLen = projectStore.scenes.length;
+        const locsLen = projectStore.locations.length;
+        const timeLen = projectStore.timeline.length;
+        const chapsLen = projectStore.chapters.length;
+        const loreLen = projectStore.loreEntries.length;
+
+        // Si no es la primera vez, actualizar con debounce
+        if (!isFirstInit) {
+            updateSearchIndex(false);
+        }
+    });
+
+    console.log('✅ Actualización automática del índice activada');
 });
 
 // Agregar estilos para x-cloak
