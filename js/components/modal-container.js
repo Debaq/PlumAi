@@ -50,8 +50,14 @@ window.modalContainerComponent = function() {
                     <!-- Lore Preview Modal -->
                     <div id="lore-preview-modal-container"></div>
 
+                    <!-- New Relationship Modal -->
+                    <div id="new-relationship-modal-container"></div>
+
                     <!-- Edit Relationship Modal -->
                     <div id="edit-relationship-modal-container"></div>
+
+                    <!-- Vital Status Modal -->
+                    <div id="vital-status-modal-container"></div>
 
                     <!-- Toast Container -->
                     <div class="toast-container">
@@ -115,19 +121,23 @@ window.modalContainerComponent = function() {
                 { containerId: 'settings-modal-container', templatePath: 'templates/modals/settings-modal.html' },
                 { containerId: 'avatar-selector-modal-container', templatePath: 'templates/modals/avatar-selector-modal.html' },
                 { containerId: 'lore-preview-modal-container', templatePath: 'templates/modals/lore-preview-modal.html' },
-                { containerId: 'edit-relationship-modal-container', templatePath: 'templates/modals/edit-relationship-modal.html' }
+                { containerId: 'new-relationship-modal-container', templatePath: 'templates/modals/new-relationship-modal.html' },
+                { containerId: 'edit-relationship-modal-container', templatePath: 'templates/modals/edit-relationship-modal.html' },
+                { containerId: 'vital-status-modal-container', templatePath: 'templates/modals/vital-status-modal.html' }
             ];
 
             // Load each modal template into its respective container
             for (const modal of modalTemplates) {
                 try {
-                    const response = await fetch(modal.templatePath);
+                    // Agregar timestamp para evitar caché
+                    const url = `${modal.templatePath}?v=${Date.now()}`;
+                    const response = await fetch(url, { cache: 'no-store' });
                     const html = await response.text();
-                    
+
                     const container = document.getElementById(modal.containerId);
                     if (container) {
                         container.innerHTML = html;
-                        
+
                         // Initialize Alpine for this specific container if Alpine is available
                         if (window.Alpine) {
                             window.Alpine.initTree(container);

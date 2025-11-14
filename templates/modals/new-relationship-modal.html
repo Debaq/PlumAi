@@ -1,0 +1,162 @@
+<!-- New Relationship Modal -->
+<template x-if="$store.ui.modals.newRelationship">
+<div class="legacy-modal active">
+    <div class="legacy-modal-content" style="max-width: 600px;">
+        <div class="legacy-modal-header">
+            <h2>
+                <i data-lucide="heart" width="20" height="20"></i>
+                <span>Nueva Relación</span>
+            </h2>
+            <button class="btn-close" @click="$store.ui.closeModal()">
+                <i data-lucide="x" width="20" height="20"></i>
+            </button>
+        </div>
+        <div class="modal-body" x-data="{
+            submitForm(form) {
+                const characterId = $store.ui.modalData.characterId;
+
+                const relationshipData = {
+                    characterId: form.querySelector('[name=relatedCharacterId]').value,
+                    type: form.querySelector('[name=type]').value,
+                    description: form.querySelector('[name=description]').value,
+                    startEvent: form.querySelector('[name=startEvent]').value || null,
+                    currentStatus: form.querySelector('[name=currentStatus]').value || 'active',
+                    notes: form.querySelector('[name=notes]').value || ''
+                };
+
+                // Validar que no esté vacío
+                if (!relationshipData.characterId) {
+                    $store.ui.error('Error', 'Debes seleccionar un personaje');
+                    return;
+                }
+
+                // Verificar que no exista ya una relación con este personaje
+                const character = $store.project.getCharacter(characterId);
+                const existingRelation = character.relationships?.find(
+                    r => r.characterId === relationshipData.characterId
+                );
+
+                if (existingRelation) {
+                    $store.ui.error('Error', 'Ya existe una relación con este personaje');
+                    return;
+                }
+
+                // Crear la nueva relación
+                $store.project.addRelationship(characterId, relationshipData);
+
+                $store.ui.success('Relación creada', '');
+                $store.ui.closeModal();
+                lucide.createIcons();
+            }
+        }">
+            <form @submit.prevent="submitForm($el)">
+                <!-- Personaje origen -->
+                <div class="form-group" style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="flex: 1; text-align: center;">
+                            <strong x-text="$store.project.getCharacter($store.ui.modalData?.characterId)?.name || 'Personaje'"></strong>
+                        </div>
+                        <i data-lucide="arrow-right" width="20" height="20"></i>
+                        <div style="flex: 1; text-align: center; color: var(--text-secondary);">
+                            Selecciona el otro personaje
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Personaje relacionado -->
+                <div class="form-group">
+                    <label>Personaje Relacionado *</label>
+                    <select name="relatedCharacterId" required>
+                        <option value="">Selecciona un personaje</option>
+                        <template x-for="char in $store.project.characters.filter(c => c.id !== $store.ui.modalData?.characterId)" :key="char.id">
+                            <option :value="char.id" x-text="char.name"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <!-- Tipo de relación -->
+                <div class="form-group">
+                    <label>Tipo de Relación *</label>
+                    <select name="type" required>
+                        <optgroup label="Positivas">
+                            <option value="friend" x-text="$store.i18n.t('characters.form.relationTypes.friend')">Amigo</option>
+                            <option value="love" x-text="$store.i18n.t('characters.form.relationTypes.love')">Romántico</option>
+                            <option value="family" x-text="$store.i18n.t('characters.form.relationTypes.family')">Familia</option>
+                            <option value="mentor" x-text="$store.i18n.t('characters.form.relationTypes.mentor')">Mentor</option>
+                            <option value="ally" x-text="$store.i18n.t('characters.form.relationTypes.ally')">Aliado</option>
+                        </optgroup>
+                        <optgroup label="Neutras">
+                            <option value="acquaintance" x-text="$store.i18n.t('characters.form.relationTypes.acquaintance')">Conocido</option>
+                            <option value="colleague" x-text="$store.i18n.t('characters.form.relationTypes.colleague')">Colega</option>
+                            <option value="rival" x-text="$store.i18n.t('characters.form.relationTypes.rival')">Rival</option>
+                        </optgroup>
+                        <optgroup label="Negativas">
+                            <option value="enemy" x-text="$store.i18n.t('characters.form.relationTypes.enemy')">Enemigo</option>
+                            <option value="archenemy" x-text="$store.i18n.t('characters.form.relationTypes.archenemy')">Archienemigo</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <!-- Descripción -->
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea name="description"
+                              rows="3"
+                              placeholder="Describe la naturaleza de esta relación"></textarea>
+                    <small class="hint">¿Cómo se conocieron? ¿Qué los une o separa?</small>
+                </div>
+
+                <!-- Estado actual de la relación -->
+                <div class="form-group">
+                    <label>Estado Actual</label>
+                    <select name="currentStatus">
+                        <option value="active">Activa</option>
+                        <option value="strained">Tensa</option>
+                        <option value="improving">Mejorando</option>
+                        <option value="deteriorating">Deteriorándose</option>
+                        <option value="ended">Terminada</option>
+                        <option value="complicated">Complicada</option>
+                    </select>
+                    <small class="hint">Podrás cambiar esto más adelante asociándolo a eventos</small>
+                </div>
+
+                <!-- Evento donde comenzó -->
+                <div class="form-group">
+                    <label>
+                        <i data-lucide="calendar" width="14" height="14"></i>
+                        Evento de Inicio (Opcional)
+                    </label>
+                    <select name="startEvent">
+                        <option value="">Sin evento específico</option>
+                        <template x-for="event in $store.project.timeline" :key="event.id">
+                            <option :value="event.id" x-text="event.event"></option>
+                        </template>
+                    </select>
+                    <small class="hint">¿En qué evento de la historia comenzó esta relación?</small>
+                </div>
+
+                <!-- Notas adicionales -->
+                <div class="form-group">
+                    <label>Notas Adicionales</label>
+                    <textarea name="notes"
+                              rows="2"
+                              placeholder="Detalles adicionales sobre la relación..."></textarea>
+                </div>
+
+                <!-- Footer con acciones -->
+                <div class="modal-footer" style="justify-content: flex-end;">
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" class="btn-secondary" @click="$store.ui.closeModal()">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn-primary">
+                            <i data-lucide="plus" width="16" height="16"></i>
+                            <span>Crear Relación</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</template>

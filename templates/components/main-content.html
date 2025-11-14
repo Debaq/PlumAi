@@ -11,13 +11,9 @@
              },
              async loadView() {
                  const viewMap = {
-                     'dashboard': 'templates/components/views/dashboard.html',
-                     'characters': 'templates/components/views/characters.html',
                      'chapters': 'templates/components/views/chapters.html',
                      'scenes': 'templates/components/views/scenes.html',
-                     'locations': 'templates/components/views/locations.html',
                      'lore': 'templates/components/views/lore.html',
-                     'timeline': 'templates/components/views/timeline.html',
                      'versionControl': 'templates/components/views/version-control.html',
                      'publishing': 'templates/components/views/publishing.html',
                      'editor': 'templates/components/views/editor.html',
@@ -26,12 +22,22 @@
 
                  if (viewMap[this.currentView]) {
                      try {
-                         const response = await fetch(viewMap[this.currentView]);
+                         // Agregar timestamp para evitar caché
+                         const url = viewMap[this.currentView] + '?v=' + Date.now();
+                         console.log('📄 Cargando vista: ' + this.currentView + ' desde ' + url);
+                         const response = await fetch(url, { cache: 'no-store' });
                          const html = await response.text();
+                         console.log('✅ Vista ' + this.currentView + ' cargada, tamaño: ' + html.length + ' caracteres');
+                         console.log('🔍 Contiene heart-pulse: ' + html.includes('heart-pulse'));
+                         console.log('🔍 Contiene vitalStatus: ' + html.includes('vitalStatus'));
                          this.$el.innerHTML = html;
                          if (window.Alpine) window.Alpine.initTree(this.$el);
+                         // Reinitializar iconos de Lucide
+                         if (typeof lucide !== 'undefined') {
+                             setTimeout(function() { lucide.createIcons(); }, 100);
+                         }
                      } catch (error) {
-                         console.error(`Error loading view: ${this.currentView}`, error);
+                         console.error('Error loading view: ' + this.currentView, error);
                      }
                  }
              }

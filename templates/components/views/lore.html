@@ -161,11 +161,22 @@
                         <div class="character-avatar" x-text="character.name.charAt(0).toUpperCase()"></div>
                         <div class="character-info">
                             <div class="character-name" x-text="character.name"></div>
-                            <div class="character-role" x-text="$store.i18n.t('characters.form.roles.' + character.role)"></div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div class="character-role" x-text="$store.i18n.t('characters.form.roles.' + character.role)"></div>
+                                <!-- Estado vital badge (solo si no es alive) -->
+                                <template x-if="character.currentVitalStatus && character.currentVitalStatus !== 'alive'">
+                                    <span class="badge"
+                                          :style="'font-size: 10px; padding: 3px 8px; background: ' + $store.project.getVitalStatusInfo(character.currentVitalStatus).color + '22; color: ' + $store.project.getVitalStatusInfo(character.currentVitalStatus).color + '; border: 1px solid ' + $store.project.getVitalStatusInfo(character.currentVitalStatus).color + '44;'"
+                                          x-text="$store.project.getVitalStatusInfo(character.currentVitalStatus).label"></span>
+                                </template>
+                            </div>
                         </div>
                     </div>
                     <div class="character-description" x-text="character.description || $store.i18n.t('characters.form.descriptionPlaceholder')"></div>
                     <div class="card-actions" style="margin-top: 12px; display: flex; gap: 8px; justify-content: flex-end;">
+                        <button class="btn-icon" @click.stop="$store.ui.openModal('vitalStatus', { character: character })" title="Estado vital">
+                            <i data-lucide="heart-pulse" width="16" height="16"></i>
+                        </button>
                         <button class="btn-icon" @click.stop="if(confirm($store.i18n.t('common.confirmDelete'))) { $store.project.deleteCharacter(character.id); $store.ui.success($store.i18n.t('notifications.success.characterDeleted'), ''); }" :title="$store.i18n.t('common.delete')">
                             <i data-lucide="trash-2" width="16" height="16"></i>
                         </button>
@@ -208,26 +219,40 @@
             <div class="content-grid">
                 <template x-for="character in $store.project.characters.filter(c => c.relationships && c.relationships.length > 0)" :key="character.id">
                     <div class="card">
-                        <h3 x-text="character.name"></h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <h3 x-text="character.name" style="margin: 0;"></h3>
+                            <button class="btn-icon"
+                                    @click.stop="$store.ui.openModal('newRelationship', { characterId: character.id })"
+                                    title="Agregar nueva relación">
+                                <i data-lucide="plus" width="16" height="16"></i>
+                            </button>
+                        </div>
                         <div style="margin-top: 12px;">
-                            <template x-for="(relation, relationIndex) in character.relationships" :key="relation.characterId + '-' + relationIndex">
+                            <template x-for="(relation, relationIndex) in character.relationships" :key="relation.id || (relation.characterId + '-' + relationIndex)">
                                 <div class="clickable"
                                      @click="$store.ui.openModal('editRelationship', {
                                         characterId: character.id,
                                         relationship: relation,
                                         relationshipIndex: relationIndex
                                      })"
-                                     style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.2s;"
+                                     style="padding: 12px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.2s;"
                                      @mouseenter="$el.style.background = 'var(--bg-tertiary)'"
                                      @mouseleave="$el.style.background = 'transparent'">
-                                    <div style="flex: 1;">
+                                    <div>
                                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                                             <i data-lucide="heart" width="14" height="14" style="color: var(--accent);"></i>
-                                            <span style="font-weight: 500;" x-text="$store.i18n.t('characters.form.relationTypes.' + relation.type)"></span>
+                                            <span style="font-weight: 500;" x-text="$store.i18n.t('characters.form.relationTypes.' + (relation.currentType || relation.type))"></span>
                                             <span>→</span>
                                             <span style="font-weight: 500;" x-text="$store.project.getCharacter(relation.characterId)?.name || 'Personaje desconocido'"></span>
+                                            <!-- Badge de historial si existe -->
+                                            <template x-if="relation.history && relation.history.length > 1">
+                                                <span class="badge" style="font-size: 10px; background: rgba(124, 179, 255, 0.2); color: var(--accent);">
+                                                    <i data-lucide="clock" width="10" height="10"></i>
+                                                    <span x-text="relation.history.length + ' cambios'"></span>
+                                                </span>
+                                            </template>
                                         </div>
-                                        <div style="color: var(--text-secondary); font-size: 12px; margin-left: 22px;" x-text="relation.description || 'Sin descripción'"></div>
+                                        <div style="color: var(--text-secondary); font-size: 12px; margin-left: 22px;" x-text="relation.currentDescription || relation.description || 'Sin descripción'"></div>
                                         <template x-if="relation.currentStatus && relation.currentStatus !== 'active'">
                                             <div style="margin-left: 22px; margin-top: 4px;">
                                                 <span class="badge" style="font-size: 10px; padding: 2px 6px;">
@@ -239,9 +264,6 @@
                                                 </span>
                                             </div>
                                         </template>
-                                    </div>
-                                    <div>
-                                        <i data-lucide="edit-2" width="16" height="16" style="color: var(--text-tertiary);"></i>
                                     </div>
                                 </div>
                             </template>

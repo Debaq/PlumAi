@@ -49,12 +49,8 @@
 
         <!-- View Titles for other views -->
         <div x-show="$store.ui.currentView !== 'lore'" class="header-view-title">
-            <span x-show="$store.ui.currentView === 'dashboard'" x-text="$store.i18n.t('dashboard.title')">Dashboard</span>
-            <span x-show="$store.ui.currentView === 'characters'" x-text="$store.i18n.t('characters.title')">Personajes</span>
             <span x-show="$store.ui.currentView === 'chapters'" x-text="$store.i18n.t('chapters.title')">Capítulos</span>
             <span x-show="$store.ui.currentView === 'scenes'" x-text="$store.i18n.t('scenes.title')">Escenas</span>
-            <span x-show="$store.ui.currentView === 'locations'" x-text="$store.i18n.t('locations.title')">Ubicaciones</span>
-            <span x-show="$store.ui.currentView === 'timeline'" x-text="$store.i18n.t('timeline.title')">Timeline</span>
             <span x-show="$store.ui.currentView === 'editor'" x-text="$store.i18n.t('editor.title')">Editor</span>
         </div>
     </div>
@@ -87,14 +83,6 @@
                     @click="$store.ui.openModal('newLocation')">
                 <i data-lucide="plus" width="14" height="14"></i>
                 <span x-text="$store.i18n.t('locations.new')">Nueva Ubicación</span>
-            </button>
-
-            <!-- Characters Actions -->
-            <button x-show="$store.ui.currentView === 'characters'"
-                    class="btn-primary btn-sm"
-                    @click="$store.ui.openModal('newCharacter')">
-                <i data-lucide="plus" width="14" height="14"></i>
-                <span x-text="$store.i18n.t('characters.new')">Nuevo</span>
             </button>
 
             <!-- Chapters Actions -->

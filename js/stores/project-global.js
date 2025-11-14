@@ -58,6 +58,18 @@ window.projectStore = {
             relationships: [],
             notes: '',
             avatar: null,  // { style, seed, url, source }
+
+            // Estado vital con historial temporal
+            vitalStatusHistory: [
+                {
+                    status: 'alive',
+                    eventId: null,
+                    description: 'Personaje creado',
+                    timestamp: new Date().toISOString()
+                }
+            ],
+            currentVitalStatus: 'alive',
+
             created: new Date().toISOString(),
             modified: new Date().toISOString(),
             ...character
@@ -71,6 +83,430 @@ window.projectStore = {
         this.characters.push(newCharacter);
         this.updateModified();
         this.updateSearchIndex(); // Actualizar índice de búsqueda
+    },
+
+    // Métodos para estado vital
+    updateCharacterVitalStatus(characterId, statusData) {
+        const character = this.getCharacter(characterId);
+        if (!character) return;
+
+        // Agregar al historial
+        const newStatusEntry = {
+            status: statusData.status,
+            eventId: statusData.eventId || null,
+            description: statusData.description || '',
+            notes: statusData.notes || '',
+            timestamp: new Date().toISOString()
+        };
+
+        if (!character.vitalStatusHistory) {
+            character.vitalStatusHistory = [];
+        }
+
+        character.vitalStatusHistory.push(newStatusEntry);
+        character.currentVitalStatus = statusData.status;
+        character.modified = new Date().toISOString();
+
+        this.updateModified();
+    },
+
+    editCharacterVitalStatusEntry(characterId, historyIndex, updatedData) {
+        const character = this.getCharacter(characterId);
+        if (!character || !character.vitalStatusHistory || !character.vitalStatusHistory[historyIndex]) return;
+
+        // Actualizar la entrada específica
+        character.vitalStatusHistory[historyIndex] = {
+            ...character.vitalStatusHistory[historyIndex],
+            status: updatedData.status,
+            eventId: updatedData.eventId || null,
+            description: updatedData.description || '',
+            notes: updatedData.notes || ''
+        };
+
+        // Si es la última entrada, actualizar el estado actual
+        if (historyIndex === character.vitalStatusHistory.length - 1) {
+            character.currentVitalStatus = updatedData.status;
+        }
+
+        character.modified = new Date().toISOString();
+        this.updateModified();
+    },
+
+    deleteCharacterVitalStatusEntry(characterId, historyIndex) {
+        const character = this.getCharacter(characterId);
+        if (!character || !character.vitalStatusHistory || !character.vitalStatusHistory[historyIndex]) return;
+
+        // No permitir eliminar si solo hay una entrada
+        if (character.vitalStatusHistory.length === 1) {
+            console.error('No se puede eliminar la única entrada del historial vital');
+            return;
+        }
+
+        // Eliminar la entrada
+        character.vitalStatusHistory.splice(historyIndex, 1);
+
+        // Si eliminamos la última entrada, actualizar el estado actual
+        if (historyIndex === character.vitalStatusHistory.length) {
+            const lastEntry = character.vitalStatusHistory[character.vitalStatusHistory.length - 1];
+            character.currentVitalStatus = lastEntry.status;
+        }
+
+        character.modified = new Date().toISOString();
+        this.updateModified();
+    },
+
+    // Obtener información del estado vital
+    getVitalStatusInfo(status) {
+        console.log(`🔍 getVitalStatusInfo llamado con status: "${status}"`);
+        const statusInfo = {
+            // Vivo/Activo
+            'alive': { label: '🟢 Vivo', category: 'alive', color: '#22c55e' },
+            'healthy': { label: '💚 Saludable', category: 'alive', color: '#10b981' },
+            'injured': { label: '🤕 Herido', category: 'alive', color: '#f59e0b' },
+            'sick': { label: '🤒 Enfermo', category: 'alive', color: '#f97316' },
+            'recovering': { label: '🩹 Recuperándose', category: 'alive', color: '#84cc16' },
+            'imprisoned': { label: '⛓️ Encarcelado', category: 'alive', color: '#64748b' },
+
+            // Nacimiento/Origen
+            'born': { label: '👶 Nació', category: 'birth', color: '#ec4899' },
+            'created': { label: '⚡ Creado', category: 'birth', color: '#8b5cf6' },
+            'appeared': { label: '✨ Apareció', category: 'birth', color: '#a855f7' },
+            'awakened': { label: '🌅 Despertó', category: 'birth', color: '#d946ef' },
+            'reborn': { label: '♻️ Renacido', category: 'birth', color: '#c026d3' },
+
+            // Muerte
+            'dead': { label: '💀 Muerto', category: 'death', color: '#71717a' },
+            'killed': { label: '🗡️ Asesinado', category: 'death', color: '#dc2626' },
+            'executed': { label: '⚰️ Ejecutado', category: 'death', color: '#991b1b' },
+            'sacrificed': { label: '🕯️ Sacrificado', category: 'death', color: '#7f1d1d' },
+            'died_natural': { label: '🌙 Muerte Natural', category: 'death', color: '#525252' },
+            'died_battle': { label: '⚔️ Muerte en Batalla', category: 'death', color: '#b91c1c' },
+
+            // Desaparición
+            'missing': { label: '🔍 Desaparecido', category: 'disappearance', color: '#6366f1' },
+            'lost': { label: '🧭 Perdido', category: 'disappearance', color: '#4f46e5' },
+            'kidnapped': { label: '😱 Secuestrado', category: 'disappearance', color: '#7c2d12' },
+            'exiled': { label: '🚪 Exiliado', category: 'disappearance', color: '#3730a3' },
+            'vanished': { label: '👻 Desvanecido', category: 'disappearance', color: '#581c87' },
+            'escaped': { label: '🏃 Escapó', category: 'disappearance', color: '#0891b2' },
+
+            // Transformación
+            'transformed': { label: '🦋 Transformado', category: 'transformation', color: '#06b6d4' },
+            'cursed': { label: '😈 Maldito', category: 'transformation', color: '#7c3aed' },
+            'possessed': { label: '👹 Poseído', category: 'transformation', color: '#6d28d9' },
+            'corrupted': { label: '🖤 Corrompido', category: 'transformation', color: '#1e1b4b' },
+            'ascended': { label: '🌟 Ascendido', category: 'transformation', color: '#fbbf24' },
+
+            // Desconocido
+            'unknown': { label: '❓ Desconocido', category: 'unknown', color: '#9ca3af' },
+            'presumed_dead': { label: '💭 Presuntamente Muerto', category: 'unknown', color: '#6b7280' },
+            'presumed_alive': { label: '🤷 Presuntamente Vivo', category: 'unknown', color: '#9ca3af' }
+        };
+
+        return statusInfo[status] || { label: status, category: 'unknown', color: '#9ca3af' };
+    },
+
+    // Método para agregar una nueva relación con historial
+    addRelationship(characterId, relationshipData) {
+        const character = this.getCharacter(characterId);
+        if (!character) {
+            console.error('Personaje no encontrado');
+            return null;
+        }
+
+        // Crear la nueva relación con historial
+        const newRelationship = {
+            id: window.uuid.generateUUID(),
+            characterId: relationshipData.characterId,
+
+            // Historial temporal de la relación
+            history: [
+                {
+                    eventId: relationshipData.startEvent || null,
+                    type: relationshipData.type,
+                    status: relationshipData.currentStatus || 'active',
+                    description: relationshipData.description || '',
+                    notes: relationshipData.notes || '',
+                    timestamp: new Date().toISOString()
+                }
+            ],
+
+            // Estado actual (el más reciente)
+            currentType: relationshipData.type,
+            currentStatus: relationshipData.currentStatus || 'active',
+            currentDescription: relationshipData.description || '',
+
+            created: new Date().toISOString(),
+            modified: new Date().toISOString()
+        };
+
+        // Agregar al array de relaciones
+        if (!character.relationships) {
+            character.relationships = [];
+        }
+        character.relationships.push(newRelationship);
+
+        // Crear relación simétrica en el otro personaje
+        this.createSymmetricRelationship(characterId, newRelationship);
+
+        this.updateModified();
+        return newRelationship;
+    },
+
+    // Crear relación simétrica
+    createSymmetricRelationship(originCharacterId, relationship) {
+        const targetCharacter = this.getCharacter(relationship.characterId);
+        if (!targetCharacter) return;
+
+        const originCharacter = this.getCharacter(originCharacterId);
+        if (!originCharacter) return;
+
+        // Verificar si ya existe una relación inversa
+        const existingRelation = targetCharacter.relationships?.find(
+            r => r.characterId === originCharacterId
+        );
+
+        if (existingRelation) {
+            // Actualizar la relación existente
+            this.updateRelationshipHistory(relationship.characterId, existingRelation.id, {
+                type: this.getInverseRelationshipType(relationship.currentType),
+                status: relationship.currentStatus,
+                description: relationship.currentDescription || `${originCharacter.name} es ${this.getRelationshipLabelForType(relationship.currentType)}`,
+                eventId: relationship.history[relationship.history.length - 1].eventId
+            });
+        } else {
+            // Crear nueva relación inversa
+            const inverseRelationship = {
+                id: window.uuid.generateUUID(),
+                characterId: originCharacterId,
+
+                history: [
+                    {
+                        eventId: relationship.history[0].eventId,
+                        type: this.getInverseRelationshipType(relationship.currentType),
+                        status: relationship.currentStatus,
+                        description: relationship.currentDescription || `${originCharacter.name} es ${this.getRelationshipLabelForType(relationship.currentType)}`,
+                        notes: '',
+                        timestamp: new Date().toISOString()
+                    }
+                ],
+
+                currentType: this.getInverseRelationshipType(relationship.currentType),
+                currentStatus: relationship.currentStatus,
+                currentDescription: relationship.currentDescription || `${originCharacter.name} es ${this.getRelationshipLabelForType(relationship.currentType)}`,
+
+                created: new Date().toISOString(),
+                modified: new Date().toISOString()
+            };
+
+            if (!targetCharacter.relationships) {
+                targetCharacter.relationships = [];
+            }
+            targetCharacter.relationships.push(inverseRelationship);
+        }
+    },
+
+    // Actualizar historial de una relación (agregar un nuevo cambio)
+    updateRelationshipHistory(characterId, relationshipId, changeData) {
+        const character = this.getCharacter(characterId);
+        if (!character) return;
+
+        const relationship = character.relationships?.find(r => r.id === relationshipId);
+        if (!relationship) return;
+
+        // Agregar nuevo entry al historial
+        const newHistoryEntry = {
+            eventId: changeData.eventId || null,
+            type: changeData.type,
+            status: changeData.status || 'active',
+            description: changeData.description || '',
+            notes: changeData.notes || '',
+            timestamp: new Date().toISOString()
+        };
+
+        relationship.history.push(newHistoryEntry);
+
+        // Actualizar estado actual
+        relationship.currentType = changeData.type;
+        relationship.currentStatus = changeData.status || 'active';
+        relationship.currentDescription = changeData.description || '';
+        relationship.modified = new Date().toISOString();
+
+        // Actualizar relación simétrica
+        this.updateSymmetricRelationship(characterId, relationship, changeData);
+
+        this.updateModified();
+    },
+
+    // Editar una entrada específica del historial
+    editRelationshipHistoryEntry(characterId, relationshipId, historyIndex, updatedData) {
+        const character = this.getCharacter(characterId);
+        if (!character) return;
+
+        const relationship = character.relationships?.find(r => r.id === relationshipId);
+        if (!relationship || !relationship.history[historyIndex]) return;
+
+        // Actualizar la entrada específica del historial
+        relationship.history[historyIndex] = {
+            ...relationship.history[historyIndex],
+            eventId: updatedData.eventId || null,
+            type: updatedData.type,
+            status: updatedData.status || 'active',
+            description: updatedData.description || '',
+            notes: updatedData.notes || ''
+            // timestamp se mantiene el original
+        };
+
+        // Si estamos editando la última entrada (la más reciente), actualizar el estado actual
+        if (historyIndex === relationship.history.length - 1) {
+            relationship.currentType = updatedData.type;
+            relationship.currentStatus = updatedData.status || 'active';
+            relationship.currentDescription = updatedData.description || '';
+        }
+
+        relationship.modified = new Date().toISOString();
+
+        // Actualizar relación simétrica si es la entrada más reciente
+        if (historyIndex === relationship.history.length - 1) {
+            this.updateSymmetricRelationship(characterId, relationship, updatedData);
+        }
+
+        this.updateModified();
+    },
+
+    // Eliminar una entrada específica del historial
+    deleteRelationshipHistoryEntry(characterId, relationshipId, historyIndex) {
+        const character = this.getCharacter(characterId);
+        if (!character) return;
+
+        const relationship = character.relationships?.find(r => r.id === relationshipId);
+        if (!relationship || !relationship.history[historyIndex]) return;
+
+        // No permitir eliminar si solo hay una entrada
+        if (relationship.history.length === 1) {
+            console.error('No se puede eliminar la última entrada del historial');
+            return;
+        }
+
+        // Eliminar la entrada
+        relationship.history.splice(historyIndex, 1);
+
+        // Si eliminamos la última entrada, actualizar el estado actual con la nueva última entrada
+        if (historyIndex === relationship.history.length) {
+            const lastEntry = relationship.history[relationship.history.length - 1];
+            relationship.currentType = lastEntry.type;
+            relationship.currentStatus = lastEntry.status;
+            relationship.currentDescription = lastEntry.description;
+
+            // Actualizar relación simétrica
+            this.updateSymmetricRelationship(characterId, relationship, {
+                type: lastEntry.type,
+                status: lastEntry.status,
+                description: lastEntry.description,
+                eventId: lastEntry.eventId
+            });
+        }
+
+        relationship.modified = new Date().toISOString();
+        this.updateModified();
+    },
+
+    // Actualizar relación simétrica cuando hay un cambio
+    updateSymmetricRelationship(originCharacterId, relationship, changeData) {
+        const targetCharacter = this.getCharacter(relationship.characterId);
+        if (!targetCharacter) return;
+
+        const inverseRelation = targetCharacter.relationships?.find(
+            r => r.characterId === originCharacterId
+        );
+
+        if (inverseRelation) {
+            const inverseType = this.getInverseRelationshipType(changeData.type);
+
+            const newHistoryEntry = {
+                eventId: changeData.eventId || null,
+                type: inverseType,
+                status: changeData.status || 'active',
+                description: changeData.description || '',
+                notes: '',
+                timestamp: new Date().toISOString()
+            };
+
+            inverseRelation.history.push(newHistoryEntry);
+            inverseRelation.currentType = inverseType;
+            inverseRelation.currentStatus = changeData.status || 'active';
+            inverseRelation.currentDescription = changeData.description || '';
+            inverseRelation.modified = new Date().toISOString();
+        }
+    },
+
+    // Eliminar una relación
+    deleteRelationship(characterId, relationshipId) {
+        const character = this.getCharacter(characterId);
+        if (!character) return;
+
+        const relationship = character.relationships?.find(r => r.id === relationshipId);
+        if (!relationship) return;
+
+        // Eliminar la relación inversa primero
+        const targetCharacter = this.getCharacter(relationship.characterId);
+        if (targetCharacter) {
+            targetCharacter.relationships = targetCharacter.relationships?.filter(
+                r => r.characterId !== characterId
+            );
+        }
+
+        // Eliminar la relación
+        character.relationships = character.relationships.filter(r => r.id !== relationshipId);
+
+        this.updateModified();
+    },
+
+    // Migrar relaciones antiguas al nuevo formato con historial
+    migrateRelationshipToHistory(relationship) {
+        // Tipo por defecto si no está definido
+        const defaultType = 'friend';
+
+        // Si ya tiene el nuevo formato, verificar que tenga currentType
+        if (relationship.history) {
+            // Asegurar que currentType esté definido
+            if (!relationship.currentType) {
+                relationship.currentType = relationship.history[relationship.history.length - 1]?.type || defaultType;
+            }
+            if (!relationship.currentStatus) {
+                relationship.currentStatus = relationship.history[relationship.history.length - 1]?.status || 'active';
+            }
+            if (!relationship.currentDescription) {
+                relationship.currentDescription = relationship.history[relationship.history.length - 1]?.description || '';
+            }
+            return relationship;
+        }
+
+        // Migrar al nuevo formato
+        const relType = relationship.type || defaultType;
+
+        return {
+            id: relationship.id || window.uuid.generateUUID(),
+            characterId: relationship.characterId,
+
+            history: [
+                {
+                    eventId: relationship.startEvent || null,
+                    type: relType,
+                    status: relationship.currentStatus || 'active',
+                    description: relationship.description || '',
+                    notes: relationship.notes || '',
+                    timestamp: relationship.created || new Date().toISOString()
+                }
+            ],
+
+            currentType: relType,
+            currentStatus: relationship.currentStatus || 'active',
+            currentDescription: relationship.description || '',
+
+            created: relationship.created || new Date().toISOString(),
+            modified: relationship.modified || new Date().toISOString()
+        };
     },
 
     updateCharacter(id, updates) {
@@ -669,6 +1105,51 @@ window.projectStore = {
         if (!projectData.scenes) projectData.scenes = [];
         if (!projectData.timeline) projectData.timeline = [];
         if (!projectData.notes) projectData.notes = [];
+
+        // Migración: Relaciones al nuevo formato con historial
+        if (projectData.characters && projectData.characters.length > 0) {
+            console.log(`🔄 Iniciando migración para ${projectData.characters.length} personajes`);
+            let migrationNeeded = false;
+
+            projectData.characters.forEach((character, index) => {
+                console.log(`  👤 Personaje ${index + 1}/${projectData.characters.length}: ${character.name}`);
+
+                // Migrar relaciones
+                if (character.relationships && character.relationships.length > 0) {
+                    character.relationships = character.relationships.map(rel => {
+                        const migratedRel = this.migrateRelationshipToHistory(rel);
+                        if (!rel.history || !rel.currentType) {
+                            migrationNeeded = true;
+                            console.log(`    ↔️ Relación migrada`);
+                        }
+                        return migratedRel;
+                    });
+                }
+
+                // Migración: Agregar estado vital si no existe
+                if (!character.vitalStatusHistory) {
+                    console.log(`    ➕ Agregando estado vital 'alive' a ${character.name}`);
+                    character.vitalStatusHistory = [
+                        {
+                            status: 'alive',
+                            eventId: null,
+                            description: 'Personaje creado',
+                            timestamp: character.created || new Date().toISOString()
+                        }
+                    ];
+                    character.currentVitalStatus = 'alive';
+                    migrationNeeded = true;
+                } else {
+                    console.log(`    ✓ ${character.name} ya tiene estado vital: ${character.currentVitalStatus}`);
+                }
+            });
+
+            if (migrationNeeded) {
+                console.log('✅ Migración de datos completada - relaciones y estados vitales actualizados');
+            } else {
+                console.log('✓ No se necesitó migración - datos ya actualizados');
+            }
+        }
 
         return projectData;
     },
