@@ -346,6 +346,7 @@ window.storageManager = {
                 const fileProjectData = await this.openProjectFile();
                 if (fileProjectData && fileProjectData.projectInfo.id === projectId) {
                     console.log(`📂 Cargado desde archivo: ${fileProjectData.projectInfo.title}`);
+                    this.migrateProjectData(fileProjectData);
                     return fileProjectData;
                 }
             } catch (e) {
@@ -359,6 +360,7 @@ window.storageManager = {
                 projectData = await this.loadFromIndexedDB(projectId);
                 if (projectData) {
                     console.log(`💾 Cargado desde IndexedDB: ${projectData.projectInfo.title}`);
+                    this.migrateProjectData(projectData);
                     return projectData;
                 }
             } catch (e) {
@@ -372,6 +374,7 @@ window.storageManager = {
             if (storedProject) {
                 projectData = JSON.parse(storedProject);
                 console.log(`📝 Cargado desde localStorage: ${projectData.projectInfo.title}`);
+                this.migrateProjectData(projectData);
                 return projectData;
             }
         } catch (e) {
@@ -384,6 +387,7 @@ window.storageManager = {
                 projectData = await this.loadFromCloud(projectId);
                 if (projectData) {
                     console.log(`☁️ Cargado desde servidor: ${projectData.projectInfo.title}`);
+                    this.migrateProjectData(projectData);
                     return projectData;
                 }
             } catch (e) {
@@ -571,6 +575,9 @@ window.storageManager = {
                             try {
                                 // Validar estructura básica del proyecto
                                 if (projectData.projectInfo && projectData.projectInfo.id) {
+                                    // Migrar datos de versiones antiguas
+                                    this.migrateProjectData(projectData);
+
                                     // Guardar el proyecto
                                     await this.save(projectData);
                                     importedProjects.push(projectData);
@@ -595,12 +602,15 @@ window.storageManager = {
                     } else {
                         // Es un archivo de proyecto individual
                         const projectData = data;
-                        
+
                         // Validar estructura básica del proyecto
                         if (!projectData.projectInfo || !projectData.projectInfo.id) {
                             throw new Error('Archivo de proyecto inválido: falta información del proyecto');
                         }
-                        
+
+                        // Migrar datos de versiones antiguas
+                        this.migrateProjectData(projectData);
+
                         // Guardar el proyecto importado
                         await this.save(projectData);
                         
@@ -827,5 +837,30 @@ window.storageManager = {
 
         console.log(`🗑️ Datos eliminados: ${results.localStorage.deleted} de localStorage, ${results.indexedDB.deleted} de IndexedDB`);
         return results;
+    },
+
+    // Migrar datos de formatos antiguos a nuevos
+    migrateProjectData(projectData) {
+        // Migración: lore -> loreEntries
+        if (projectData.lore && !projectData.loreEntries) {
+            console.log('🔄 Migrando lore a loreEntries');
+            projectData.loreEntries = projectData.lore;
+            delete projectData.lore;
+        }
+
+        // Asegurar que loreEntries existe
+        if (!projectData.loreEntries) {
+            projectData.loreEntries = [];
+        }
+
+        // Migración: Asegurar que todos los arrays existan
+        if (!projectData.characters) projectData.characters = [];
+        if (!projectData.locations) projectData.locations = [];
+        if (!projectData.chapters) projectData.chapters = [];
+        if (!projectData.scenes) projectData.scenes = [];
+        if (!projectData.timeline) projectData.timeline = [];
+        if (!projectData.notes) projectData.notes = [];
+
+        return projectData;
     }
 };
