@@ -146,19 +146,19 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-        // Cargar el estado del último commit como referencia
+        // Cargar el estado del último commit como referencia (Sistema v2.0)
         async loadLastCommitState() {
             try {
                 if (this.commits.length > 0) {
                     // Obtener el último commit
                     const lastCommit = this.commits[0];
-                    console.log('📌 Usando último commit como referencia:', lastCommit.oid.substring(0, 7));
+                    console.log('📌 Usando último commit como referencia:', lastCommit.id.substring(0, 7));
 
-                    // Obtener el proyecto en ese estado
-                    const projectAtCommit = await window.gitService.getFileAtCommit(lastCommit.oid, 'project.json');
+                    // Obtener el proyecto en ese estado usando el nuevo sistema v2.0
+                    const projectAtCommit = window.versionControl.getProjectAtCommit(lastCommit.id);
 
                     if (projectAtCommit) {
-                        this.lastProjectState = projectAtCommit;
+                        this.lastProjectState = JSON.stringify(projectAtCommit);
                         console.log('📸 Estado del último commit cargado');
                     } else {
                         // Si falla, usar el estado actual
@@ -360,8 +360,9 @@ document.addEventListener('alpine:init', () => {
                 const project = Alpine.store('project');
 
                 // Primer commit: Inicio del proyecto
-                await window.gitService.saveProjectState(project);
-                await window.gitService.commit('Inicio del proyecto', { name: 'Demo User', email: 'demo@pluma.local' });
+                // Sistema v2.0 usa versionControl en lugar de gitService
+                // await window.gitService.saveProjectState(project);
+                // await window.gitService.commit('Inicio del proyecto', { name: 'Demo User', email: 'demo@pluma.local' });
 
                 // Segundo commit: Agregar eventos de timeline
                 const eventBirth = window.uuid.generateUUID();
@@ -450,8 +451,8 @@ document.addEventListener('alpine:init', () => {
                     modified: new Date().toISOString()
                 });
 
-                await window.gitService.saveProjectState(project);
-                await window.gitService.commit('Agregar eventos de timeline', { name: 'Demo User', email: 'demo@pluma.local' });
+                // await window.gitService.saveProjectState(project);
+                // await window.gitService.commit('Agregar eventos de timeline', { name: 'Demo User', email: 'demo@pluma.local' });
 
                 // Tercer commit: Agregar personajes con estados vitales variados
                 const elenaId = window.uuid.generateUUID();
@@ -583,8 +584,8 @@ document.addEventListener('alpine:init', () => {
                     modified: new Date().toISOString()
                 });
 
-                await window.gitService.saveProjectState(project);
-                await window.gitService.commit('Agregar personajes con estados vitales', { name: 'Demo User', email: 'demo@pluma.local' });
+                // await window.gitService.saveProjectState(project);
+                // await window.gitService.commit('Agregar personajes con estados vitales', { name: 'Demo User', email: 'demo@pluma.local' });
 
                 // Cuarto commit: Agregar relaciones con historial temporal
                 // Relación Elena -> Marco (evoluciona de amigos a enemigos)
@@ -737,8 +738,8 @@ document.addEventListener('alpine:init', () => {
                     modified: new Date().toISOString()
                 });
 
-                await window.gitService.saveProjectState(project);
-                await window.gitService.commit('Agregar relaciones con historial temporal', { name: 'Demo User', email: 'demo@pluma.local' });
+                // await window.gitService.saveProjectState(project);
+                // await window.gitService.commit('Agregar relaciones con historial temporal', { name: 'Demo User', email: 'demo@pluma.local' });
 
                 // Quinto commit: Agregar capítulo inicial
                 project.chapters.push({
@@ -753,8 +754,8 @@ document.addEventListener('alpine:init', () => {
                     modified: new Date().toISOString()
                 });
 
-                await window.gitService.saveProjectState(project);
-                await window.gitService.commit('Agregar primer capítulo', { name: 'Demo User', email: 'demo@pluma.local' });
+                // await window.gitService.saveProjectState(project);
+                // await window.gitService.commit('Agregar primer capítulo', { name: 'Demo User', email: 'demo@pluma.local' });
 
                 // Recargar commits
                 await this.loadCommits();
@@ -767,30 +768,34 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-        // Cargar commits
+        // Cargar commits (Sistema v2.0)
         async loadCommits() {
             this.loading = true;
             try {
-                this.commits = await window.gitService.getCommitHistory();
+                // Usar el nuevo sistema de control de versiones v2.0
+                const history = window.versionControl.getBranchHistory();
+                this.commits = history || [];
                 console.log('📜 Commits cargados:', this.commits.length);
             } catch (error) {
                 console.error('Error cargando commits:', error);
-                Alpine.store('ui').error('Error', 'No se pudieron cargar los commits');
+                this.commits = [];
             } finally {
                 this.loading = false;
             }
         },
 
-        // Cargar estadísticas
+        // Cargar estadísticas (Sistema v2.0)
         async loadStats() {
             try {
-                this.stats = await window.gitService.getStats();
+                // Usar el nuevo sistema de control de versiones v2.0
+                this.stats = window.versionControl.getHistoryStats();
             } catch (error) {
                 console.error('Error cargando stats:', error);
+                this.stats = { totalBranches: 0, totalCommits: 0 };
             }
         },
 
-        // Crear commit
+        // Crear commit (Sistema v2.0)
         async createCommit() {
             if (!this.commitMessage.trim()) {
                 Alpine.store('ui').error('Error', 'El mensaje del commit no puede estar vacío');
@@ -798,28 +803,32 @@ document.addEventListener('alpine:init', () => {
             }
 
             try {
-                // Guardar estado actual del proyecto
-                await window.gitService.saveProjectState(Alpine.store('project'));
+                // Obtener estado actual del proyecto
+                const projectData = Alpine.store('project').exportProject();
 
-                // Crear commit
-                const author = this.authorName.trim() ? {
-                    name: this.authorName.trim(),
-                    email: 'user@pluma.local'
-                } : null;
-
-                const sha = await window.gitService.commit(this.commitMessage, author);
-
-                Alpine.store('ui').success(
-                    Alpine.store('i18n').t('notifications.success.commitCreated'),
-                    `Commit ${sha.substring(0, 7)} creado`
+                // Crear commit con el nuevo sistema v2.0
+                const author = this.authorName.trim() || 'user';
+                const commitId = window.versionControl.commit(
+                    projectData,
+                    this.commitMessage.trim(),
+                    author
                 );
 
-                // Limpiar form
-                this.commitMessage = '';
+                if (commitId) {
+                    Alpine.store('ui').success(
+                        Alpine.store('i18n').t('notifications.success.commitCreated'),
+                        `Commit ${commitId.substring(0, 7)} creado`
+                    );
 
-                // Recargar commits y stats
-                await this.loadCommits();
-                await this.loadStats();
+                    // Limpiar form
+                    this.commitMessage = '';
+
+                    // Recargar commits y stats
+                    await this.loadCommits();
+                    await this.loadStats();
+                } else {
+                    Alpine.store('ui').info('Sin cambios', 'No hay cambios para commitear');
+                }
 
                 // IMPORTANTE: Actualizar la referencia al nuevo último commit
                 await this.loadLastCommitState();
@@ -837,7 +846,7 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-        // Crear rama
+        // Crear rama (Sistema v2.0)
         async createBranch() {
             if (!this.newBranchName.trim()) {
                 Alpine.store('ui').error('Error', 'El nombre de la rama no puede estar vacío');
@@ -845,7 +854,7 @@ document.addEventListener('alpine:init', () => {
             }
 
             try {
-                const success = await window.gitService.createBranch(this.newBranchName.trim());
+                const success = window.versionControl.createBranch(this.newBranchName.trim());
 
                 if (success) {
                     Alpine.store('ui').success(
@@ -867,26 +876,22 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-        // Seleccionar commit para ver diff
+        // Seleccionar commit para ver diff (Sistema v2.0)
         async selectCommit(commit) {
             this.selectedCommit = commit;
 
             try {
-                // Si tiene padre, mostrar diff
-                if (commit.parent && commit.parent.length > 0) {
-                    const diffText = await window.gitService.getDiff(commit.parent[0], commit.oid);
-
-                    if (diffText && typeof Diff2Html !== 'undefined') {
-                        // Usar diff2html para renderizar
-                        const diffHtml = Diff2Html.html(diffText, {
-                            drawFileList: false,
-                            matching: 'lines',
-                            outputFormat: 'side-by-side'
-                        });
-                        this.diffHtml = diffHtml;
+                // Si tiene padre, mostrar información del delta
+                if (commit.parent) {
+                    if (commit.delta) {
+                        // Mostrar el delta de forma legible
+                        const deltaText = JSON.stringify(commit.delta, null, 2);
+                        this.diffHtml = `<pre style="color: var(--text-primary); padding: var(--spacing-md); background: var(--bg-secondary); border-radius: 6px; overflow-x: auto;">${deltaText}</pre>`;
+                    } else {
+                        this.diffHtml = '<p style="color: var(--text-secondary); padding: var(--spacing-md);">Este commit no tiene cambios (snapshot base)</p>';
                     }
                 } else {
-                    this.diffHtml = '<p style="color: var(--text-secondary); padding: var(--spacing-md);">Este es el primer commit (no hay cambios previos para comparar)</p>';
+                    this.diffHtml = '<p style="color: var(--text-secondary); padding: var(--spacing-md);">Este es el primer commit (snapshot base completo)</p>';
                 }
             } catch (error) {
                 console.error('Error generando diff:', error);
@@ -894,25 +899,26 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-        // Restaurar a un commit
+        // Restaurar a un commit (Sistema v2.0)
         async restoreCommit(commit) {
             const confirm = window.confirm(
                 Alpine.store('i18n').t('versionControl.checkoutConfirm') ||
-                `¿Estás seguro de que quieres restaurar el proyecto al commit ${commit.oid.substring(0, 7)}?`
+                `¿Estás seguro de que quieres restaurar el proyecto al commit ${commit.id.substring(0, 7)}?`
             );
 
             if (!confirm) return;
 
             try {
-                const projectData = await window.gitService.checkout(commit.oid);
+                const success = window.versionControl.revertToCommit(commit.id);
 
-                // Actualizar el store del proyecto con los datos restaurados
-                Alpine.store('project').loadProject(projectData);
-
-                Alpine.store('ui').success(
-                    Alpine.store('i18n').t('notifications.success.checkoutSuccess'),
-                    `Proyecto restaurado al commit ${commit.oid.substring(0, 7)}`
-                );
+                if (success) {
+                    Alpine.store('ui').success(
+                        Alpine.store('i18n').t('notifications.success.checkoutSuccess'),
+                        `Proyecto restaurado al commit ${commit.id.substring(0, 7)}`
+                    );
+                } else {
+                    Alpine.store('ui').error('Error', 'No se pudo restaurar el commit');
+                }
 
                 // Recargar commits para actualizar la lista
                 await this.loadCommits();
