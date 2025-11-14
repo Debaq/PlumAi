@@ -129,13 +129,15 @@ window.modalContainerComponent = function() {
             // Load each modal template into its respective container
             for (const modal of modalTemplates) {
                 try {
-                    const response = await fetch(modal.templatePath);
+                    // Agregar timestamp para evitar caché
+                    const url = `${modal.templatePath}?v=${Date.now()}`;
+                    const response = await fetch(url, { cache: 'no-store' });
                     const html = await response.text();
-                    
+
                     const container = document.getElementById(modal.containerId);
                     if (container) {
                         container.innerHTML = html;
-                        
+
                         // Initialize Alpine for this specific container if Alpine is available
                         if (window.Alpine) {
                             window.Alpine.initTree(container);
