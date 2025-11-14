@@ -50,6 +50,9 @@ window.modalContainerComponent = function() {
                     <!-- Lore Preview Modal -->
                     <div id="lore-preview-modal-container"></div>
 
+                    <!-- Edit Relationship Modal -->
+                    <div id="edit-relationship-modal-container"></div>
+
                     <!-- Toast Container -->
                     <div class="toast-container">
                         <template x-for="toast in $store.ui.toasts" :key="toast.id">
@@ -111,7 +114,8 @@ window.modalContainerComponent = function() {
                 { containerId: 'import-modal-container', templatePath: 'templates/modals/import-modal.html' },
                 { containerId: 'settings-modal-container', templatePath: 'templates/modals/settings-modal.html' },
                 { containerId: 'avatar-selector-modal-container', templatePath: 'templates/modals/avatar-selector-modal.html' },
-                { containerId: 'lore-preview-modal-container', templatePath: 'templates/modals/lore-preview-modal.html' }
+                { containerId: 'lore-preview-modal-container', templatePath: 'templates/modals/lore-preview-modal.html' },
+                { containerId: 'edit-relationship-modal-container', templatePath: 'templates/modals/edit-relationship-modal.html' }
             ];
 
             // Load each modal template into its respective container

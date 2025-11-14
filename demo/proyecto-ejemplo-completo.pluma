@@ -38,17 +38,26 @@
         {
           "characterId": "char-002-kael",
           "type": "love",
-          "description": "Amor no correspondido que se desarrolla durante su entrenamiento juntos"
+          "description": "Amor no correspondido que se desarrolla durante su entrenamiento juntos",
+          "currentStatus": "active",
+          "startEvent": null,
+          "notes": "Elara no es consciente de los sentimientos de Kael. La relación se está profundizando con cada misión compartida."
         },
         {
           "characterId": "char-003-morgath",
           "type": "enemy",
-          "description": "Su némesis que busca los mismos cristales de poder"
+          "description": "Su némesis que busca los mismos cristales de poder",
+          "currentStatus": "deteriorating",
+          "startEvent": "timeline-008",
+          "notes": "Desde el primer enfrentamiento, Morgath la ve tanto como amenaza como herramienta potencial. La tensión aumenta con cada fragmento encontrado."
         },
         {
           "characterId": "char-004-aldric",
           "type": "mentor",
-          "description": "Su maestro en la Torre Arcana"
+          "description": "Su maestro en la Torre Arcana",
+          "currentStatus": "active",
+          "startEvent": "timeline-004",
+          "notes": "Aldric la ha guiado desde que era bebé. Su relación es casi paternal, aunque él guarda secretos sobre su verdadero origen."
         }
       ],
       "avatar": {
@@ -72,12 +81,18 @@
         {
           "characterId": "char-001-elara",
           "type": "love",
-          "description": "Sentimientos profundos que mantiene en secreto para no distraerla"
+          "description": "Sentimientos profundos que mantiene en secreto para no distraerla",
+          "currentStatus": "complicated",
+          "startEvent": null,
+          "notes": "Kael oculta sus sentimientos por miedo a distraer a Elara de su misión. El dolor de sus pesadillas lo hace sentir indigno de su afecto."
         },
         {
           "characterId": "char-005-lyra",
           "type": "friend",
-          "description": "Compañera de armas en quien confía plenamente"
+          "description": "Compañera de armas en quien confía plenamente",
+          "currentStatus": "active",
+          "startEvent": "timeline-007",
+          "notes": "Lyra es una de las pocas personas con las que Kael puede hablar abiertamente sobre su pasado traumático."
         }
       ],
       "avatar": {

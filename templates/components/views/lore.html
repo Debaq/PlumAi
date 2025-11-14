@@ -210,13 +210,39 @@
                     <div class="card">
                         <h3 x-text="character.name"></h3>
                         <div style="margin-top: 12px;">
-                            <template x-for="relation in character.relationships" :key="relation.characterId">
-                                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
-                                    <span>
-                                        <span x-text="$store.i18n.t('characters.form.relationTypes.' + relation.type)"></span>:
-                                        <span x-text="$store.project.getCharacter(relation.characterId)?.name || 'Personaje desconocido'"></span>
-                                    </span>
-                                    <span style="color: var(--text-secondary); font-size: 12px;" x-text="relation.description"></span>
+                            <template x-for="(relation, relationIndex) in character.relationships" :key="relation.characterId + '-' + relationIndex">
+                                <div class="clickable"
+                                     @click="$store.ui.openModal('editRelationship', {
+                                        characterId: character.id,
+                                        relationship: relation,
+                                        relationshipIndex: relationIndex
+                                     })"
+                                     style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.2s;"
+                                     @mouseenter="$el.style.background = 'var(--bg-tertiary)'"
+                                     @mouseleave="$el.style.background = 'transparent'">
+                                    <div style="flex: 1;">
+                                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                            <i data-lucide="heart" width="14" height="14" style="color: var(--accent);"></i>
+                                            <span style="font-weight: 500;" x-text="$store.i18n.t('characters.form.relationTypes.' + relation.type)"></span>
+                                            <span>→</span>
+                                            <span style="font-weight: 500;" x-text="$store.project.getCharacter(relation.characterId)?.name || 'Personaje desconocido'"></span>
+                                        </div>
+                                        <div style="color: var(--text-secondary); font-size: 12px; margin-left: 22px;" x-text="relation.description || 'Sin descripción'"></div>
+                                        <template x-if="relation.currentStatus && relation.currentStatus !== 'active'">
+                                            <div style="margin-left: 22px; margin-top: 4px;">
+                                                <span class="badge" style="font-size: 10px; padding: 2px 6px;">
+                                                    <span x-text="relation.currentStatus === 'strained' ? '😰 Tensa' :
+                                                                 relation.currentStatus === 'improving' ? '📈 Mejorando' :
+                                                                 relation.currentStatus === 'deteriorating' ? '📉 Deteriorándose' :
+                                                                 relation.currentStatus === 'ended' ? '💔 Terminada' :
+                                                                 relation.currentStatus === 'complicated' ? '🤔 Complicada' : relation.currentStatus"></span>
+                                                </span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <div>
+                                        <i data-lucide="edit-2" width="16" height="16" style="color: var(--text-tertiary);"></i>
+                                    </div>
                                 </div>
                             </template>
                         </div>
