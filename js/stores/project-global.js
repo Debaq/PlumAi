@@ -205,6 +205,79 @@ window.projectStore = {
         this.updateModified();
     },
 
+    // Editar una entrada específica del historial
+    editRelationshipHistoryEntry(characterId, relationshipId, historyIndex, updatedData) {
+        const character = this.getCharacter(characterId);
+        if (!character) return;
+
+        const relationship = character.relationships?.find(r => r.id === relationshipId);
+        if (!relationship || !relationship.history[historyIndex]) return;
+
+        // Actualizar la entrada específica del historial
+        relationship.history[historyIndex] = {
+            ...relationship.history[historyIndex],
+            eventId: updatedData.eventId || null,
+            type: updatedData.type,
+            status: updatedData.status || 'active',
+            description: updatedData.description || '',
+            notes: updatedData.notes || ''
+            // timestamp se mantiene el original
+        };
+
+        // Si estamos editando la última entrada (la más reciente), actualizar el estado actual
+        if (historyIndex === relationship.history.length - 1) {
+            relationship.currentType = updatedData.type;
+            relationship.currentStatus = updatedData.status || 'active';
+            relationship.currentDescription = updatedData.description || '';
+        }
+
+        relationship.modified = new Date().toISOString();
+
+        // Actualizar relación simétrica si es la entrada más reciente
+        if (historyIndex === relationship.history.length - 1) {
+            this.updateSymmetricRelationship(characterId, relationship, updatedData);
+        }
+
+        this.updateModified();
+    },
+
+    // Eliminar una entrada específica del historial
+    deleteRelationshipHistoryEntry(characterId, relationshipId, historyIndex) {
+        const character = this.getCharacter(characterId);
+        if (!character) return;
+
+        const relationship = character.relationships?.find(r => r.id === relationshipId);
+        if (!relationship || !relationship.history[historyIndex]) return;
+
+        // No permitir eliminar si solo hay una entrada
+        if (relationship.history.length === 1) {
+            console.error('No se puede eliminar la última entrada del historial');
+            return;
+        }
+
+        // Eliminar la entrada
+        relationship.history.splice(historyIndex, 1);
+
+        // Si eliminamos la última entrada, actualizar el estado actual con la nueva última entrada
+        if (historyIndex === relationship.history.length) {
+            const lastEntry = relationship.history[relationship.history.length - 1];
+            relationship.currentType = lastEntry.type;
+            relationship.currentStatus = lastEntry.status;
+            relationship.currentDescription = lastEntry.description;
+
+            // Actualizar relación simétrica
+            this.updateSymmetricRelationship(characterId, relationship, {
+                type: lastEntry.type,
+                status: lastEntry.status,
+                description: lastEntry.description,
+                eventId: lastEntry.eventId
+            });
+        }
+
+        relationship.modified = new Date().toISOString();
+        this.updateModified();
+    },
+
     // Actualizar relación simétrica cuando hay un cambio
     updateSymmetricRelationship(originCharacterId, relationship, changeData) {
         const targetCharacter = this.getCharacter(relationship.characterId);

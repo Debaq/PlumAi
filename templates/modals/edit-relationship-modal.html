@@ -13,6 +13,7 @@
         </div>
         <div class="modal-body" x-data="{
             showHistoryForm: false,
+            editingEntryIndex: null,
 
             getRelationship() {
                 const characterId = $store.ui.modalData.characterId;
@@ -53,6 +54,46 @@
                 // Limpiar el formulario
                 form.reset();
 
+                lucide.createIcons();
+            },
+
+            editHistoryEntry(index, form) {
+                const characterId = $store.ui.modalData.characterId;
+                const relationship = this.getRelationship();
+
+                if (!relationship) return;
+
+                const updatedData = {
+                    type: form.querySelector('[name=editType]').value,
+                    status: form.querySelector('[name=editStatus]').value,
+                    description: form.querySelector('[name=editDescription]').value,
+                    notes: form.querySelector('[name=editNotes]').value || '',
+                    eventId: form.querySelector('[name=editEvent]').value || null
+                };
+
+                $store.project.editRelationshipHistoryEntry(characterId, relationship.id, index, updatedData);
+
+                $store.ui.success('Entrada del historial actualizada', '');
+                this.editingEntryIndex = null;
+
+                lucide.createIcons();
+            },
+
+            deleteHistoryEntry(index) {
+                const relationship = this.getRelationship();
+                if (!relationship) return;
+
+                if (relationship.history.length === 1) {
+                    $store.ui.error('Error', 'No puedes eliminar la única entrada del historial. Elimina toda la relación si quieres borrarla.');
+                    return;
+                }
+
+                if (!confirm('¿Estás seguro de que quieres eliminar esta entrada del historial?')) return;
+
+                const characterId = $store.ui.modalData.characterId;
+                $store.project.deleteRelationshipHistoryEntry(characterId, relationship.id, index);
+
+                $store.ui.success('Entrada eliminada del historial', '');
                 lucide.createIcons();
             },
 
@@ -236,15 +277,16 @@
                         <div style="position: absolute; left: 11px; top: 0; bottom: 0; width: 2px; background: var(--border);"></div>
 
                         <div style="display: flex; flex-direction: column; gap: 16px;">
-                            <template x-for="(entry, index) in [...getRelationship().history].reverse()" :key="index">
-                                <div style="position: relative; padding-left: 36px;">
+                            <template x-for="(entry, idx) in [...getRelationship().history].reverse()" :key="idx">
+                                <div style="position: relative; padding-left: 36px;" x-data="{ actualIndex: getRelationship().history.length - 1 - idx }">
                                     <!-- Punto en la línea temporal -->
                                     <div style="position: absolute; left: 0; top: 4px; width: 24px; height: 24px; background: var(--bg-secondary); border: 2px solid var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
                                         <div style="width: 8px; height: 8px; background: var(--accent); border-radius: 50%;"></div>
                                     </div>
 
-                                    <!-- Contenido del entry -->
-                                    <div style="background: var(--bg-tertiary); padding: 12px; border-radius: 6px; border: 1px solid var(--border);">
+                                    <!-- Vista normal (no editando) -->
+                                    <div x-show="editingEntryIndex !== actualIndex"
+                                         style="background: var(--bg-tertiary); padding: 12px; border-radius: 6px; border: 1px solid var(--border);">
                                         <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
                                             <div>
                                                 <span class="badge" style="margin-right: 8px;" x-text="$store.i18n.t('characters.form.relationTypes.' + entry.type)"></span>
@@ -257,7 +299,24 @@
                                                                  entry.status === 'complicated' ? '🤔 Complicada' : entry.status"></span>
                                                 </span>
                                             </div>
-                                            <div style="font-size: 11px; color: var(--text-tertiary);" x-text="formatDate(entry.timestamp)"></div>
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <div style="font-size: 11px; color: var(--text-tertiary);" x-text="formatDate(entry.timestamp)"></div>
+                                                <button type="button"
+                                                        class="btn-icon btn-sm"
+                                                        @click="editingEntryIndex = actualIndex"
+                                                        title="Editar esta entrada">
+                                                    <i data-lucide="edit-2" width="14" height="14"></i>
+                                                </button>
+                                                <template x-if="getRelationship().history.length > 1">
+                                                    <button type="button"
+                                                            class="btn-icon btn-sm"
+                                                            @click="deleteHistoryEntry(actualIndex)"
+                                                            title="Eliminar esta entrada"
+                                                            style="color: var(--danger);">
+                                                        <i data-lucide="trash-2" width="14" height="14"></i>
+                                                    </button>
+                                                </template>
+                                            </div>
                                         </div>
                                         <div style="font-size: 13px; margin-bottom: 6px;" x-text="entry.description || 'Sin descripción'"></div>
                                         <template x-if="entry.eventId && getEventName(entry.eventId)">
@@ -269,6 +328,87 @@
                                         <template x-if="entry.notes">
                                             <div style="font-size: 11px; color: var(--text-tertiary); margin-top: 6px; font-style: italic;" x-text="entry.notes"></div>
                                         </template>
+                                    </div>
+
+                                    <!-- Formulario de edición inline -->
+                                    <div x-show="editingEntryIndex === actualIndex"
+                                         x-transition
+                                         style="background: var(--bg-tertiary); padding: 12px; border-radius: 6px; border: 2px solid var(--accent);">
+                                        <h5 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 600;">Editando Entrada del Historial</h5>
+                                        <form @submit.prevent="editHistoryEntry(actualIndex, $el)">
+                                            <div class="form-group">
+                                                <label>Tipo de Relación *</label>
+                                                <select name="editType" required>
+                                                    <optgroup label="Positivas">
+                                                        <option value="friend" :selected="entry.type === 'friend'">Amigo</option>
+                                                        <option value="love" :selected="entry.type === 'love'">Romántico</option>
+                                                        <option value="family" :selected="entry.type === 'family'">Familia</option>
+                                                        <option value="mentor" :selected="entry.type === 'mentor'">Mentor</option>
+                                                        <option value="ally" :selected="entry.type === 'ally'">Aliado</option>
+                                                    </optgroup>
+                                                    <optgroup label="Neutras">
+                                                        <option value="acquaintance" :selected="entry.type === 'acquaintance'">Conocido</option>
+                                                        <option value="colleague" :selected="entry.type === 'colleague'">Colega</option>
+                                                        <option value="rival" :selected="entry.type === 'rival'">Rival</option>
+                                                    </optgroup>
+                                                    <optgroup label="Negativas">
+                                                        <option value="enemy" :selected="entry.type === 'enemy'">Enemigo</option>
+                                                        <option value="archenemy" :selected="entry.type === 'archenemy'">Archienemigo</option>
+                                                    </optgroup>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label>Estado</label>
+                                                <select name="editStatus" required>
+                                                    <option value="active" :selected="entry.status === 'active'">Activa</option>
+                                                    <option value="strained" :selected="entry.status === 'strained'">Tensa</option>
+                                                    <option value="improving" :selected="entry.status === 'improving'">Mejorando</option>
+                                                    <option value="deteriorating" :selected="entry.status === 'deteriorating'">Deteriorándose</option>
+                                                    <option value="ended" :selected="entry.status === 'ended'">Terminada</option>
+                                                    <option value="complicated" :selected="entry.status === 'complicated'">Complicada</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label>Descripción *</label>
+                                                <textarea name="editDescription"
+                                                          rows="2"
+                                                          required
+                                                          x-text="entry.description"></textarea>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label>
+                                                    <i data-lucide="calendar" width="14" height="14"></i>
+                                                    Evento Asociado (Opcional)
+                                                </label>
+                                                <select name="editEvent">
+                                                    <option value="">Sin evento específico</option>
+                                                    <template x-for="event in $store.project.timeline" :key="event.id">
+                                                        <option :value="event.id"
+                                                                :selected="event.id === entry.eventId"
+                                                                x-text="event.event"></option>
+                                                    </template>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label>Notas Adicionales</label>
+                                                <textarea name="editNotes"
+                                                          rows="2"
+                                                          x-text="entry.notes"></textarea>
+                                            </div>
+
+                                            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                                                <button type="button" class="btn-secondary btn-sm" @click="editingEntryIndex = null">
+                                                    Cancelar
+                                                </button>
+                                                <button type="submit" class="btn-primary btn-sm">
+                                                    Guardar Cambios
+                                                </button>
+                                            </div>
+                                        </form>
                                     </div>
                                 </div>
                             </template>
