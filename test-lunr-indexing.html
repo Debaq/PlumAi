@@ -257,6 +257,7 @@
 
         <div class="controls">
             <button class="button" onclick="runAllTests()">▶️ Ejecutar Todas las Pruebas</button>
+            <button class="button" onclick="copyResults()">📋 Copiar Resultados</button>
             <button class="button" onclick="location.reload()">🔄 Reiniciar Tests</button>
         </div>
 
@@ -514,11 +515,18 @@
 
             section.appendChild(result);
 
-            // Actualizar contadores
-            if (type === 'success') testResults.passed++;
-            else if (type === 'error') testResults.failed++;
-            else if (type === 'warning') testResults.warnings++;
-            testResults.total++;
+            // Actualizar contadores (solo para tests reales, no para 'info')
+            if (type === 'success') {
+                testResults.passed++;
+                testResults.total++;
+            } else if (type === 'error') {
+                testResults.failed++;
+                testResults.total++;
+            } else if (type === 'warning') {
+                testResults.warnings++;
+                testResults.total++;
+            }
+            // Los resultados 'info' no cuentan como tests
         }
 
         // TEST 1: Verificar Lunr.js
@@ -900,6 +908,105 @@
             `;
 
             summary.style.display = 'block';
+        }
+
+        // Función para copiar resultados al portapapeles
+        function copyResults() {
+            let resultsText = '🔍 REPORTE DE TESTS - INDEXACIÓN LUNR.JS\n';
+            resultsText += '═══════════════════════════════════════════\n\n';
+            resultsText += `Fecha: ${new Date().toLocaleString()}\n\n`;
+
+            // Recopilar todos los resultados de cada sección
+            const sections = [
+                { id: 'test-lunr', name: '1. Verificación de Lunr.js' },
+                { id: 'test-service', name: '2. Verificación de SearchService' },
+                { id: 'test-init', name: '3. Inicialización' },
+                { id: 'test-index', name: '4. Índice Lunr' },
+                { id: 'test-search', name: '5. Búsquedas Básicas' },
+                { id: 'test-advanced', name: '6. Búsquedas Avanzadas' },
+                { id: 'test-performance', name: '7. Rendimiento' }
+            ];
+
+            sections.forEach(section => {
+                const sectionEl = document.getElementById(section.id);
+                if (sectionEl) {
+                    resultsText += `\n${section.name}\n`;
+                    resultsText += '─────────────────────────────────────────\n';
+
+                    const results = sectionEl.querySelectorAll('.test-result');
+                    if (results.length === 0) {
+                        resultsText += '  (No ejecutado)\n';
+                    } else {
+                        results.forEach(result => {
+                            const titleEl = result.querySelector('.result-title');
+                            const contentEl = result.querySelector('.result-content');
+
+                            if (titleEl) {
+                                const icon = result.classList.contains('success') ? '✅' :
+                                           result.classList.contains('error') ? '❌' :
+                                           result.classList.contains('warning') ? '⚠️' : 'ℹ️';
+
+                                const title = titleEl.textContent.trim();
+                                resultsText += `  ${icon} ${title}\n`;
+
+                                if (contentEl) {
+                                    // Limpiar HTML y obtener solo texto
+                                    const content = contentEl.textContent.trim();
+                                    if (content && content.length < 200) {
+                                        resultsText += `     ${content}\n`;
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    resultsText += '\n';
+                }
+            });
+
+            // Agregar resumen final
+            resultsText += '\n═══════════════════════════════════════════\n';
+            resultsText += '📊 RESUMEN FINAL\n';
+            resultsText += '═══════════════════════════════════════════\n\n';
+            resultsText += `✅ Tests pasados: ${testResults.passed}\n`;
+            resultsText += `❌ Tests fallados: ${testResults.failed}\n`;
+            resultsText += `⚠️ Advertencias: ${testResults.warnings}\n`;
+            resultsText += `📝 Total de tests: ${testResults.total}\n\n`;
+
+            const percentage = testResults.total > 0 ?
+                ((testResults.passed / testResults.total) * 100).toFixed(1) : 0;
+            resultsText += `📈 Porcentaje de éxito: ${percentage}%\n\n`;
+
+            if (percentage >= 80) {
+                resultsText += '🎉 ESTADO: EXCELENTE - Sistema funcionando correctamente\n';
+            } else if (percentage >= 50) {
+                resultsText += '⚠️ ESTADO: ADVERTENCIA - Revisar tests fallados\n';
+            } else {
+                resultsText += '❌ ESTADO: CRÍTICO - No usar en producción\n';
+            }
+
+            resultsText += '\n═══════════════════════════════════════════\n';
+            resultsText += 'Generado por: test-lunr-indexing.html\n';
+            resultsText += 'Proyecto: PlumaAI\n';
+
+            // Copiar al portapapeles
+            navigator.clipboard.writeText(resultsText).then(() => {
+                alert('✅ Resultados copiados al portapapeles!\n\nAhora puedes pegarlos en cualquier lugar.');
+            }).catch(err => {
+                // Fallback: crear textarea temporal
+                const textarea = document.createElement('textarea');
+                textarea.value = resultsText;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    alert('✅ Resultados copiados al portapapeles!\n\nAhora puedes pegarlos en cualquier lugar.');
+                } catch (e) {
+                    alert('❌ Error al copiar. Por favor, selecciona el texto manualmente:\n\n' + resultsText);
+                }
+                document.body.removeChild(textarea);
+            });
         }
 
         // Ejecutar automáticamente al cargar
