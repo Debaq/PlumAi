@@ -35,7 +35,7 @@
                     return;
                 }
                 window.storageManager.importProject(file).then(projectData => {
-                    Object.assign($store.project, projectData);
+                    $store.project.loadProject(projectData);
                     $store.ui.success('Proyecto importado', '');
                     $store.ui.closeModal('import');
                     fileInput.value = '';
