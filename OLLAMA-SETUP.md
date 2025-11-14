@@ -81,9 +81,17 @@ ollama run llama3.2 "Di hola"
 2. Ve a **Configuración** (⚙️)
 3. En la sección **APIs de IA**:
    - Selecciona **Ollama (Local)**
-   - Selecciona el modelo (ej: `llama3.2`)
+   - **PlumAI detectará automáticamente** los modelos que tienes instalados 🎉
+   - Selecciona tu modelo (ej: `qwen3:1.7b`, `glm-4.6:cloud`)
    - Haz clic en **Guardar**
 4. ¡Listo! Ya puedes usar IA 100% gratis
+
+### 🔄 Auto-detección de Modelos
+
+PlumAI detecta automáticamente los modelos instalados cuando seleccionas Ollama. Si instalas nuevos modelos:
+1. Ve a Configuración
+2. Cambia a otro proveedor y vuelve a seleccionar Ollama
+3. Los nuevos modelos aparecerán en la lista
 
 ## ❌ Solución de Problemas
 

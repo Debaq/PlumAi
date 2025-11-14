@@ -55,10 +55,19 @@ window.settingsModalComponent = function() {
             return info ? info.models : [];
         },
 
-        onProviderChange() {
+        async onProviderChange() {
             const info = this.getProviderInfo();
             if (info) {
-                this.selectedModel = info.defaultModel;
+                // Si es Ollama, detectar modelos instalados automáticamente
+                if (this.selectedProvider === 'ollama' && window.aiService) {
+                    console.log('🔍 Detectando modelos de Ollama instalados...');
+                    await window.aiService.detectOllamaModels();
+                    // Actualizar el modelo seleccionado con el primer modelo detectado
+                    const models = this.getProviderModels();
+                    this.selectedModel = models.length > 0 ? models[0] : info.defaultModel;
+                } else {
+                    this.selectedModel = info.defaultModel;
+                }
                 this.loadApiKey();
             }
             this.connectionStatus = null;

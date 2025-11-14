@@ -73,15 +73,16 @@ window.aiService = {
         ollama: {
             id: 'ollama',
             name: 'Ollama (Local)',
-            models: ['llama3.2', 'qwen2.5', 'mistral', 'gemma2'],
-            defaultModel: 'llama3.2',
+            models: ['qwen3:1.7b', 'glm-4.6:cloud', 'llama3.2', 'qwen2.5', 'mistral', 'gemma2'], // Primero los instalados, luego sugerencias
+            defaultModel: 'qwen3:1.7b',
             requiresApiKey: false,
             endpoint: 'http://localhost:11434/api/chat',
             freeTier: '100% GRATIS',
             pricing: 'Gratis (local)',
             type: 'local',
             enabled: true,
-            instructions: 'Instalar: https://ollama.ai'
+            instructions: 'Instalar: https://ollama.ai',
+            dynamicModels: true // Indica que debe detectar modelos automáticamente
         },
         huggingface: {
             id: 'huggingface',
@@ -212,6 +213,40 @@ window.aiService = {
 
     getCurrentProvider() {
         return this.providers[this.currentProvider];
+    },
+
+    // Detectar modelos de Ollama instalados automáticamente
+    async detectOllamaModels() {
+        try {
+            const response = await fetch('http://localhost:11434/api/tags', {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (!response.ok) {
+                console.warn('⚠️ No se pudo conectar con Ollama para detectar modelos');
+                return this.providers.ollama.models; // Retornar modelos por defecto
+            }
+
+            const data = await response.json();
+
+            if (data.models && data.models.length > 0) {
+                // Extraer nombres de modelos instalados
+                const installedModels = data.models.map(m => m.name);
+                console.log('✅ Modelos de Ollama detectados:', installedModels);
+
+                // Actualizar la lista de modelos del provider
+                this.providers.ollama.models = installedModels;
+                this.providers.ollama.defaultModel = installedModels[0];
+
+                return installedModels;
+            }
+
+            return this.providers.ollama.models; // Retornar modelos por defecto si no hay instalados
+        } catch (error) {
+            console.warn('⚠️ Error detectando modelos de Ollama:', error.message);
+            return this.providers.ollama.models; // Retornar modelos por defecto
+        }
     },
 
     // ============================================
