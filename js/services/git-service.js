@@ -16,7 +16,6 @@ class GitService {
             // Intentar abrir el repo existente o crear uno nuevo
             try {
                 await git.findRoot({ fs: this.fs, filepath: this.dir });
-                console.log('✅ Repositorio Git existente encontrado');
             } catch (error) {
                 // No existe, crear uno nuevo
                 await git.init({
@@ -24,7 +23,6 @@ class GitService {
                     dir: this.dir,
                     defaultBranch: 'main'
                 });
-                console.log('✅ Nuevo repositorio Git inicializado');
 
                 // Configurar autor por defecto
                 await git.setConfig({
@@ -110,7 +108,6 @@ class GitService {
                 } : undefined
             });
 
-            console.log('✅ Commit creado:', sha);
             return sha;
         } catch (error) {
             console.error('Error creando commit:', error);
@@ -131,7 +128,6 @@ class GitService {
 
             // Si no hay ramas, significa que no hay commits aún
             if (branches.length === 0) {
-                console.log('📭 No hay commits en el repositorio todavía');
                 return [];
             }
 
@@ -153,7 +149,6 @@ class GitService {
         } catch (error) {
             // Si el error es porque no se encuentra la rama, devolver array vacío
             if (error.code === 'NotFoundError' || error.message.includes('Could not find')) {
-                console.log('📭 No hay commits en el repositorio todavía');
                 return [];
             }
             console.error('Error obteniendo historial:', error);
@@ -297,7 +292,6 @@ class GitService {
                 force: false
             });
 
-            console.log(`✅ Rama ${branchName} creada`);
             return true;
         } catch (error) {
             console.error('Error creando rama:', error);

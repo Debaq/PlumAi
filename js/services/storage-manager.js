@@ -66,11 +66,9 @@ window.storageManager = {
             this.fileHandle = fileHandle;
             this.currentMode = this.STORAGE_MODES.FILE;
 
-            console.log(`📁 Archivo abierto: ${file.name}`);
             return projectData;
         } catch (error) {
             if (error.name === 'AbortError') {
-                console.log('Usuario canceló la selección de archivo');
                 return null;
             }
             throw error;
@@ -103,7 +101,6 @@ window.storageManager = {
             this.fileHandle = fileHandle;
             this.currentMode = this.STORAGE_MODES.FILE;
 
-            console.log(`💾 Guardado como archivo: ${fileHandle.name}`);
             return true;
         } catch (error) {
             if (error.name === 'AbortError') {
@@ -129,7 +126,6 @@ window.storageManager = {
             await writable.write(JSON.stringify(projectData, null, 2));
             await writable.close();
 
-            console.log('💾 Archivo actualizado');
             return true;
         } catch (error) {
             console.error('Error guardando en archivo:', error);
@@ -171,18 +167,14 @@ window.storageManager = {
 
     async syncToCloud(projectData) {
         if (!this.config.enableCloudSync) {
-            console.log('☁️ Sincronización con servidor deshabilitada');
             return false;
         }
 
         if (!this.cloudToken) {
-            console.log('⚠️ No hay token de autenticación');
             return false;
         }
 
         // TODO: Implementar cuando haya backend
-        console.log('☁️ Sync to cloud - Por implementar');
-
         /*
         try {
             const response = await fetch('/api/projects/save', {
@@ -209,7 +201,6 @@ window.storageManager = {
 
     async loadFromCloud(projectId) {
         // TODO: Implementar cuando haya backend
-        console.log('☁️ Load from cloud - Por implementar');
         return null;
     },
 
@@ -274,9 +265,6 @@ window.storageManager = {
         if (token) {
             this.cloudToken = token;
         }
-
-        console.log('💾 Storage Manager initialized');
-        console.log('📊 Status:', this.getStatus());
     },
 
     // ============================================
@@ -297,7 +285,6 @@ window.storageManager = {
             if (projectData.projectInfo && projectData.projectInfo.id) {
                 localStorage.setItem(`pluma_project_${projectData.projectInfo.id}`, JSON.stringify(projectData));
                 results.local = true;
-                console.log(`📝 Guardado en localStorage: ${projectData.projectInfo.title}`);
             }
         } catch (e) {
             console.error('Error guardando en localStorage:', e);
@@ -345,7 +332,6 @@ window.storageManager = {
             try {
                 const fileProjectData = await this.openProjectFile();
                 if (fileProjectData && fileProjectData.projectInfo.id === projectId) {
-                    console.log(`📂 Cargado desde archivo: ${fileProjectData.projectInfo.title}`);
                     this.migrateProjectData(fileProjectData);
                     return fileProjectData;
                 }
@@ -359,7 +345,6 @@ window.storageManager = {
             try {
                 projectData = await this.loadFromIndexedDB(projectId);
                 if (projectData) {
-                    console.log(`💾 Cargado desde IndexedDB: ${projectData.projectInfo.title}`);
                     this.migrateProjectData(projectData);
                     return projectData;
                 }
@@ -373,7 +358,6 @@ window.storageManager = {
             const storedProject = localStorage.getItem(`pluma_project_${projectId}`);
             if (storedProject) {
                 projectData = JSON.parse(storedProject);
-                console.log(`📝 Cargado desde localStorage: ${projectData.projectInfo.title}`);
                 this.migrateProjectData(projectData);
                 return projectData;
             }
@@ -386,7 +370,6 @@ window.storageManager = {
             try {
                 projectData = await this.loadFromCloud(projectId);
                 if (projectData) {
-                    console.log(`☁️ Cargado desde servidor: ${projectData.projectInfo.title}`);
                     this.migrateProjectData(projectData);
                     return projectData;
                 }
@@ -458,7 +441,6 @@ window.storageManager = {
                 const putRequest = store.put(cleanProjectData);
 
                 putRequest.onsuccess = () => {
-                    console.log(`📦 Guardado en IndexedDB: ${cleanProjectData.projectInfo.title}`);
                     resolve(putRequest.result);
                 };
                 putRequest.onerror = () => reject(putRequest.error);
@@ -581,9 +563,7 @@ window.storageManager = {
                                     // Guardar el proyecto
                                     await this.save(projectData);
                                     importedProjects.push(projectData);
-                                    console.log(`📦 Proyecto importado: ${projectData.projectInfo.title}`);
                                 } else {
-                                    console.error('Proyecto inválido en backup:', projectData);
                                     failedImports.push({ error: 'Falta información del proyecto', project: projectData });
                                 }
                             } catch (projectError) {
@@ -591,9 +571,8 @@ window.storageManager = {
                                 failedImports.push({ error: projectError.message, project: projectData });
                             }
                         }
-                        
+
                         if (importedProjects.length > 0) {
-                            console.log(`✅ Backup importado: ${importedProjects.length} proyectos importados, ${failedImports.length} fallidos`);
                             // Resolver con el primer proyecto como referencia
                             resolve(importedProjects[0]);
                         } else {
@@ -613,8 +592,7 @@ window.storageManager = {
 
                         // Guardar el proyecto importado
                         await this.save(projectData);
-                        
-                        console.log(`📦 Proyecto importado: ${projectData.projectInfo.title}`);
+
                         resolve(projectData);
                     }
                 } catch (error) {
@@ -653,7 +631,6 @@ window.storageManager = {
                 URL.revokeObjectURL(url);
             }, 100);
 
-            console.log(`📤 Proyecto exportado: ${projectData.projectInfo.title}`);
             return true;
         } catch (error) {
             console.error('Error exportando proyecto:', error);
@@ -835,7 +812,6 @@ window.storageManager = {
         // Limpiar token de cloud
         this.clearCloudToken();
 
-        console.log(`🗑️ Datos eliminados: ${results.localStorage.deleted} de localStorage, ${results.indexedDB.deleted} de IndexedDB`);
         return results;
     },
 
@@ -843,7 +819,6 @@ window.storageManager = {
     migrateProjectData(projectData) {
         // Migración: lore -> loreEntries
         if (projectData.lore && !projectData.loreEntries) {
-            console.log('🔄 Migrando lore a loreEntries');
             projectData.loreEntries = projectData.lore;
             delete projectData.lore;
         }

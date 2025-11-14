@@ -35,8 +35,6 @@ window.versionControl = {
 
     // Inicializar el sistema de control de versiones
     init() {
-        console.log('🔄 Inicializando sistema de control de versiones v2.0');
-
         // Inicializar estructuras
         if (!this.forks) this.forks = {};
         if (!this.branches) this.branches = {};
@@ -72,24 +70,15 @@ window.versionControl = {
 
         // Si es el primer commit de la rama, guardar snapshot completo
         if (!branch.baseSnapshot) {
-            console.log('📸 Primer commit - creando snapshot base');
             branch.baseSnapshot = jsondiffpatch.clone(projectData);
             delta = null; // No hay delta para el primer commit
         } else {
             // Calcular delta (solo cambios)
-            console.log('🔍 Calculando delta...');
             delta = jsondiffpatch.diff(previousState, projectData);
 
             if (delta === null) {
-                console.log('⚠️ No hay cambios para commitear');
                 return null;
             }
-
-            // Calcular tamaño del delta vs snapshot completo
-            const deltaSize = JSON.stringify(delta).length;
-            const fullSize = JSON.stringify(projectData).length;
-            const savings = ((1 - deltaSize / fullSize) * 100).toFixed(1);
-            console.log(`💾 Delta size: ${deltaSize} bytes vs Full: ${fullSize} bytes (${savings}% ahorro)`);
         }
 
         // Crear el objeto commit
@@ -112,7 +101,6 @@ window.versionControl = {
         // Guardar en almacenamiento
         this.saveHistory();
 
-        console.log(`✅ Commit creado: ${commitId} en rama ${this.currentBranch}`);
         return commitId;
     },
 
@@ -138,7 +126,6 @@ window.versionControl = {
             commits: {}
         };
 
-        console.log(`🌿 Rama ${branchName} creada desde estado actual`);
         this.saveHistory();
         return true;
     },
@@ -151,7 +138,6 @@ window.versionControl = {
         }
 
         this.currentBranch = branchName;
-        console.log(`🔀 Cambiado a rama ${branchName}`);
         this.saveHistory();
         return true;
     },
@@ -179,7 +165,6 @@ window.versionControl = {
             'user'
         );
 
-        console.log(`🔗 Rama ${sourceBranch} fusionada en ${targetBranch}`);
         this.saveHistory();
         return true;
     },
@@ -206,7 +191,6 @@ window.versionControl = {
             description: description
         };
 
-        console.log(`⑂ Fork creado: ${forkProjectData.projectInfo.title} desde proyecto ${projectId}`);
         return forkProjectData;
     },
 
@@ -223,7 +207,6 @@ window.versionControl = {
         this.forks[originalProjectId].push(forkInfo);
         this.saveHistory();
 
-        console.log(`📌 Fork registrado: ${forkInfo.forkProjectId} del proyecto ${originalProjectId}`);
         return true;
     },
 
@@ -393,7 +376,6 @@ window.versionControl = {
 
         // Cargar el proyecto en el estado del commit
         Alpine.store('project').loadProject(projectData);
-        console.log(`↩️ Estado revertido al commit ${commitId}`);
         return true;
     },
 
@@ -408,10 +390,6 @@ window.versionControl = {
         };
 
         localStorage.setItem('pluma_version_history', JSON.stringify(historyData));
-
-        // Calcular tamaño
-        const size = new Blob([JSON.stringify(historyData)]).size;
-        console.log(`💾 Historial de versiones guardado (${(size / 1024).toFixed(2)} KB)`);
     },
 
     // Cargar historial desde almacenamiento
@@ -426,19 +404,14 @@ window.versionControl = {
                     this.branches = parsed.branches || {};
                     this.forks = parsed.forks || {};
                     this.currentBranch = parsed.currentBranch || 'main';
-                    console.log('📂 Historial de versiones v2.0 cargado');
                 } else if (parsed.version === undefined) {
                     // Migrar de v1.0 a v2.0
-                    console.log('🔄 Migrando historial de v1.0 a v2.0...');
                     this._migrateFromV1(parsed);
                 } else {
-                    console.warn('⚠️ Versión de historial desconocida, creando nuevo');
                     this.branches = {};
                     this.currentBranch = 'main';
                     this.forks = {};
                 }
-            } else {
-                console.log('🆕 No hay historial de versiones previo');
             }
         } catch (error) {
             console.error('Error cargando historial de versiones:', error);
@@ -451,8 +424,6 @@ window.versionControl = {
 
     // Migrar de formato v1.0 a v2.0
     _migrateFromV1(oldData) {
-        console.log('📦 Iniciando migración v1 -> v2...');
-
         // En v1, teníamos: commits, branches (array de IDs), forks
         const oldCommits = oldData.commits || {};
         const oldBranches = oldData.branches || {};
@@ -527,7 +498,6 @@ window.versionControl = {
 
         // Guardar la versión migrada
         this.saveHistory();
-        console.log('✅ Migración completada');
     },
 
     // Limpiar historial de versiones
@@ -536,7 +506,6 @@ window.versionControl = {
         this.currentBranch = 'main';
         this.forks = {};
         localStorage.removeItem('pluma_version_history');
-        console.log('🗑️ Historial de versiones eliminado');
     },
 
     // Obtener todas las ramas

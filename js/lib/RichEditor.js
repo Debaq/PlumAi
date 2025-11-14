@@ -51,7 +51,6 @@ class RichEditor {
      */
     init() {
         if (!this.element) {
-            console.error('RichEditor: No se proporcionó un elemento');
             return;
         }
 
@@ -795,7 +794,7 @@ class RichEditor {
                 description: 'Agregar comentario',
                 icon: '📝',
                 action: () => {
-                    console.log('Abrir modal de comentario');
+                    // Abrir modal de comentario
                 }
             }
         ];

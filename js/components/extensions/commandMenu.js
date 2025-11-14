@@ -30,11 +30,9 @@ export const CommandMenu = Extension.create({
             // Detectar cuando se presiona '/'
             if (event.key === '/' && !event.ctrlKey && !event.metaKey) {
               // Aquí podríamos activar un menú de comandos
-              // Por ahora solo mostramos una alerta como ejemplo
               event.preventDefault();
-              
+
               // En el futuro, esto abriría un menú flotante
-              console.log('Abriendo menú de comandos');
               return true;
             }
             return false;
@@ -49,13 +47,11 @@ export const CommandMenu = Extension.create({
       // Comando para abrir el menú de comandos
       openCommandMenu: () => ({ editor, tr }) => {
         // Lógica para abrir el menú de comandos
-        console.log('Comando para abrir menú de comandos');
         return true;
       },
-      
+
       // Comando para ejecutar una acción específica
       executeCommand: (commandName) => ({ editor, tr }) => {
-        console.log(`Ejecutando comando: ${commandName}`);
         if (this.options.onCommand) {
           this.options.onCommand(commandName);
         }

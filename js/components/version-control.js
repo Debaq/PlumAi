@@ -1,7 +1,6 @@
 // Componente de control de versiones para la interfaz de usuario
 window.versionControlComponent = {
     init() {
-        console.log('🔄 Componente de control de versiones inicializado');
     },
 
     // Crear un nuevo commit
@@ -25,9 +24,6 @@ window.versionControlComponent = {
         
         try {
             const commitId = store.createCommit(message, 'User');
-            if (commitId) {
-                console.log(`✅ Commit rápido creado: ${commitId.substring(0, 8)}`);
-            }
         } catch (error) {
             console.error('Error creando commit rápido:', error);
         }
@@ -104,10 +100,9 @@ window.versionControlComponent = {
                     i18n.t('notifications.success.forkCreated') || 'Fork creado exitosamente',
                     i18n.t('notifications.success.forkCreatedDesc') || `Fork ${forkName} creado`
                 );
-                
+
                 // Guardar inmediatamente el fork
                 const saveResult = await window.storageManager.save(Alpine.store('project').exportProject());
-                console.log('Fork guardado:', saveResult);
             } else {
                 Alpine.store('ui').error(
                     i18n.t('notifications.error.forkFailed') || 'Error creando fork',

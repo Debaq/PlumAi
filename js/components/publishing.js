@@ -82,8 +82,6 @@ function publishingComponent() {
             if (!this.publishingCopyright) {
                 this.publishingCopyright = `© ${this.publishingYear} ${this.publishingAuthor || 'Tu Nombre'}. Todos los derechos reservados.`;
             }
-
-            console.log('📚 Publishing component initialized');
         },
 
         // ===== PLATFORM METHODS =====
@@ -122,7 +120,6 @@ function publishingComponent() {
             const defaults = platformDefaults[this.publishingPlatform];
             if (defaults) {
                 Object.assign(this, defaults);
-                console.log(`✅ Applied ${this.publishingPlatform} defaults`);
             }
         },
 
@@ -133,7 +130,6 @@ function publishingComponent() {
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     this.publishingCoverImage = e.target.result;
-                    console.log('✅ Cover image uploaded');
                 };
                 reader.readAsDataURL(file);
             } else {
@@ -179,7 +175,6 @@ function publishingComponent() {
                         dataUrl: e.target.result,
                         position: 'beginning' // 'beginning', 'end', 'after-chapterX'
                     });
-                    console.log('✅ Book image added:', imageId);
                 };
                 reader.readAsDataURL(file);
             } else {
@@ -214,7 +209,6 @@ function publishingComponent() {
                 return;
             }
 
-            console.log('📄 Exporting to professional KDP PDF...');
             this.$store.ui.startLoading('global');
 
             try {
@@ -228,7 +222,6 @@ function publishingComponent() {
 
                 // Cargar fuentes personalizadas si están disponibles
                 if (window.fontLoader && !window.fontLoader.loaded) {
-                    console.log('📚 Loading custom fonts before PDF generation...');
                     await window.fontLoader.loadDefaultFonts();
                 }
 
@@ -489,7 +482,6 @@ function publishingComponent() {
                 return;
             }
 
-            console.log('📝 Exporting to DOCX...');
             this.$store.ui.startLoading('global');
 
             try {

@@ -41,7 +41,6 @@ window.richEditorComponent = function(config = {}) {
         createEditor() {
             const container = this.$refs.editorContainer;
             if (!container || !window.RichEditor) {
-                console.error('RichEditor: Container o librería no disponible');
                 return;
             }
 
@@ -122,7 +121,6 @@ window.richEditorComponent = function(config = {}) {
                     icon: '🎬',
                     action: () => {
                         // Aquí podrías abrir un modal para seleccionar escena
-                        console.log('Seleccionar escena...');
                     }
                 });
             }
@@ -135,7 +133,7 @@ window.richEditorComponent = function(config = {}) {
                     description: this.$store.i18n.t('locations.title') || 'Insertar ubicación',
                     icon: '📍',
                     action: () => {
-                        console.log('Seleccionar ubicación...');
+                        // Aquí podrías abrir un modal para seleccionar ubicación
                     }
                 });
             }
@@ -221,7 +219,6 @@ window.richEditorComponent = function(config = {}) {
          */
         handleLorePreview(item) {
             if (!this.$store || !this.$store.ui) {
-                console.warn('Store UI no disponible');
                 return;
             }
 
