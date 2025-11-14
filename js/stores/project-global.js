@@ -157,6 +157,7 @@ window.projectStore = {
 
     // Obtener información del estado vital
     getVitalStatusInfo(status) {
+        console.log(`🔍 getVitalStatusInfo llamado con status: "${status}"`);
         const statusInfo = {
             // Vivo/Activo
             'alive': { label: '🟢 Vivo', category: 'alive', color: '#22c55e' },
@@ -1107,15 +1108,19 @@ window.projectStore = {
 
         // Migración: Relaciones al nuevo formato con historial
         if (projectData.characters && projectData.characters.length > 0) {
+            console.log(`🔄 Iniciando migración para ${projectData.characters.length} personajes`);
             let migrationNeeded = false;
 
-            projectData.characters.forEach(character => {
+            projectData.characters.forEach((character, index) => {
+                console.log(`  👤 Personaje ${index + 1}/${projectData.characters.length}: ${character.name}`);
+
                 // Migrar relaciones
                 if (character.relationships && character.relationships.length > 0) {
                     character.relationships = character.relationships.map(rel => {
                         const migratedRel = this.migrateRelationshipToHistory(rel);
                         if (!rel.history || !rel.currentType) {
                             migrationNeeded = true;
+                            console.log(`    ↔️ Relación migrada`);
                         }
                         return migratedRel;
                     });
@@ -1123,6 +1128,7 @@ window.projectStore = {
 
                 // Migración: Agregar estado vital si no existe
                 if (!character.vitalStatusHistory) {
+                    console.log(`    ➕ Agregando estado vital 'alive' a ${character.name}`);
                     character.vitalStatusHistory = [
                         {
                             status: 'alive',
@@ -1133,11 +1139,15 @@ window.projectStore = {
                     ];
                     character.currentVitalStatus = 'alive';
                     migrationNeeded = true;
+                } else {
+                    console.log(`    ✓ ${character.name} ya tiene estado vital: ${character.currentVitalStatus}`);
                 }
             });
 
             if (migrationNeeded) {
-                console.log('🔄 Migración de datos completada - relaciones y estados vitales actualizados');
+                console.log('✅ Migración de datos completada - relaciones y estados vitales actualizados');
+            } else {
+                console.log('✓ No se necesitó migración - datos ya actualizados');
             }
         }
 

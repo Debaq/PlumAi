@@ -11,7 +11,9 @@
     <!-- Characters Grid -->
     <div x-show="$store.project.characters.length > 0" class="content-grid">
         <template x-for="character in $store.project.characters" :key="character.id">
-            <div class="character-card clickable" @click="$store.ui.openModal('editCharacter', character)">
+            <div class="character-card clickable"
+                 @click="$store.ui.openModal('editCharacter', character)"
+                 x-init="console.log('🎭 Renderizando personaje:', character.name, 'Estado vital:', character.currentVitalStatus)">
                 <div class="character-header">
                     <!-- Avatar con imagen o inicial -->
                     <div class="character-avatar" :style="character.avatar?.url ? 'padding: 0; overflow: hidden;' : ''">
@@ -29,6 +31,7 @@
                             <!-- Estado vital -->
                             <template x-if="character.currentVitalStatus && character.currentVitalStatus !== 'alive'">
                                 <span class="badge"
+                                      x-init="console.log('🎯 Badge de estado vital:', character.currentVitalStatus, $store.project.getVitalStatusInfo(character.currentVitalStatus))"
                                       :style="'font-size: 10px; padding: 3px 8px; background: ' + $store.project.getVitalStatusInfo(character.currentVitalStatus).color + '22; color: ' + $store.project.getVitalStatusInfo(character.currentVitalStatus).color + '; border: 1px solid ' + $store.project.getVitalStatusInfo(character.currentVitalStatus).color + '44;'"
                                       x-text="$store.project.getVitalStatusInfo(character.currentVitalStatus).label"></span>
                             </template>
@@ -36,10 +39,11 @@
                     </div>
                 </div>
                 <div class="character-description" x-text="character.description || $store.i18n.t('characters.form.descriptionPlaceholder')"></div>
-                <div class="card-actions mt-lg flex gap-md justify-end">
+                <div class="card-actions mt-lg flex gap-md justify-end" x-init="console.log('❤️ Renderizando botones de acción para:', character.name)">
                     <button class="btn-icon"
-                            @click.stop="$store.ui.openModal('vitalStatus', { character: character })"
-                            title="Estado vital">
+                            @click.stop="console.log('🔘 Click en botón de estado vital'); $store.ui.openModal('vitalStatus', { character: character })"
+                            title="Estado vital"
+                            x-init="console.log('✅ Botón de estado vital inicializado para:', character.name)">
                         <i data-lucide="heart-pulse" width="16" height="16"></i>
                     </button>
                     <button class="btn-icon" @click.stop="if(confirm($store.i18n.t('common.confirmDelete'))) { $store.project.deleteCharacter(character.id); $store.ui.success($store.i18n.t('notifications.success.characterDeleted'), ''); }" :title="$store.i18n.t('common.delete')">
