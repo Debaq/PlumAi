@@ -24,11 +24,24 @@
                     </div>
                     <div class="character-info">
                         <div class="character-name" x-text="character.name"></div>
-                        <div class="character-role" x-text="$store.i18n.t('characters.form.roles.' + character.role)"></div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div class="character-role" x-text="$store.i18n.t('characters.form.roles.' + character.role)"></div>
+                            <!-- Estado vital -->
+                            <template x-if="character.currentVitalStatus && character.currentVitalStatus !== 'alive'">
+                                <span class="badge"
+                                      :style="'font-size: 10px; padding: 3px 8px; background: ' + $store.project.getVitalStatusInfo(character.currentVitalStatus).color + '22; color: ' + $store.project.getVitalStatusInfo(character.currentVitalStatus).color + '; border: 1px solid ' + $store.project.getVitalStatusInfo(character.currentVitalStatus).color + '44;'"
+                                      x-text="$store.project.getVitalStatusInfo(character.currentVitalStatus).label"></span>
+                            </template>
+                        </div>
                     </div>
                 </div>
                 <div class="character-description" x-text="character.description || $store.i18n.t('characters.form.descriptionPlaceholder')"></div>
                 <div class="card-actions mt-lg flex gap-md justify-end">
+                    <button class="btn-icon"
+                            @click.stop="$store.ui.openModal('vitalStatus', { character: character })"
+                            title="Estado vital">
+                        <i data-lucide="heart-pulse" width="16" height="16"></i>
+                    </button>
                     <button class="btn-icon" @click.stop="if(confirm($store.i18n.t('common.confirmDelete'))) { $store.project.deleteCharacter(character.id); $store.ui.success($store.i18n.t('notifications.success.characterDeleted'), ''); }" :title="$store.i18n.t('common.delete')">
                         <i data-lucide="trash-2" width="16" height="16"></i>
                     </button>

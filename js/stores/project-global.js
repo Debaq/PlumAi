@@ -58,6 +58,18 @@ window.projectStore = {
             relationships: [],
             notes: '',
             avatar: null,  // { style, seed, url, source }
+
+            // Estado vital con historial temporal
+            vitalStatusHistory: [
+                {
+                    status: 'alive',
+                    eventId: null,
+                    description: 'Personaje creado',
+                    timestamp: new Date().toISOString()
+                }
+            ],
+            currentVitalStatus: 'alive',
+
             created: new Date().toISOString(),
             modified: new Date().toISOString(),
             ...character
@@ -71,6 +83,126 @@ window.projectStore = {
         this.characters.push(newCharacter);
         this.updateModified();
         this.updateSearchIndex(); // Actualizar índice de búsqueda
+    },
+
+    // Métodos para estado vital
+    updateCharacterVitalStatus(characterId, statusData) {
+        const character = this.getCharacter(characterId);
+        if (!character) return;
+
+        // Agregar al historial
+        const newStatusEntry = {
+            status: statusData.status,
+            eventId: statusData.eventId || null,
+            description: statusData.description || '',
+            notes: statusData.notes || '',
+            timestamp: new Date().toISOString()
+        };
+
+        if (!character.vitalStatusHistory) {
+            character.vitalStatusHistory = [];
+        }
+
+        character.vitalStatusHistory.push(newStatusEntry);
+        character.currentVitalStatus = statusData.status;
+        character.modified = new Date().toISOString();
+
+        this.updateModified();
+    },
+
+    editCharacterVitalStatusEntry(characterId, historyIndex, updatedData) {
+        const character = this.getCharacter(characterId);
+        if (!character || !character.vitalStatusHistory || !character.vitalStatusHistory[historyIndex]) return;
+
+        // Actualizar la entrada específica
+        character.vitalStatusHistory[historyIndex] = {
+            ...character.vitalStatusHistory[historyIndex],
+            status: updatedData.status,
+            eventId: updatedData.eventId || null,
+            description: updatedData.description || '',
+            notes: updatedData.notes || ''
+        };
+
+        // Si es la última entrada, actualizar el estado actual
+        if (historyIndex === character.vitalStatusHistory.length - 1) {
+            character.currentVitalStatus = updatedData.status;
+        }
+
+        character.modified = new Date().toISOString();
+        this.updateModified();
+    },
+
+    deleteCharacterVitalStatusEntry(characterId, historyIndex) {
+        const character = this.getCharacter(characterId);
+        if (!character || !character.vitalStatusHistory || !character.vitalStatusHistory[historyIndex]) return;
+
+        // No permitir eliminar si solo hay una entrada
+        if (character.vitalStatusHistory.length === 1) {
+            console.error('No se puede eliminar la única entrada del historial vital');
+            return;
+        }
+
+        // Eliminar la entrada
+        character.vitalStatusHistory.splice(historyIndex, 1);
+
+        // Si eliminamos la última entrada, actualizar el estado actual
+        if (historyIndex === character.vitalStatusHistory.length) {
+            const lastEntry = character.vitalStatusHistory[character.vitalStatusHistory.length - 1];
+            character.currentVitalStatus = lastEntry.status;
+        }
+
+        character.modified = new Date().toISOString();
+        this.updateModified();
+    },
+
+    // Obtener información del estado vital
+    getVitalStatusInfo(status) {
+        const statusInfo = {
+            // Vivo/Activo
+            'alive': { label: '🟢 Vivo', category: 'alive', color: '#22c55e' },
+            'healthy': { label: '💚 Saludable', category: 'alive', color: '#10b981' },
+            'injured': { label: '🤕 Herido', category: 'alive', color: '#f59e0b' },
+            'sick': { label: '🤒 Enfermo', category: 'alive', color: '#f97316' },
+            'recovering': { label: '🩹 Recuperándose', category: 'alive', color: '#84cc16' },
+            'imprisoned': { label: '⛓️ Encarcelado', category: 'alive', color: '#64748b' },
+
+            // Nacimiento/Origen
+            'born': { label: '👶 Nació', category: 'birth', color: '#ec4899' },
+            'created': { label: '⚡ Creado', category: 'birth', color: '#8b5cf6' },
+            'appeared': { label: '✨ Apareció', category: 'birth', color: '#a855f7' },
+            'awakened': { label: '🌅 Despertó', category: 'birth', color: '#d946ef' },
+            'reborn': { label: '♻️ Renacido', category: 'birth', color: '#c026d3' },
+
+            // Muerte
+            'dead': { label: '💀 Muerto', category: 'death', color: '#71717a' },
+            'killed': { label: '🗡️ Asesinado', category: 'death', color: '#dc2626' },
+            'executed': { label: '⚰️ Ejecutado', category: 'death', color: '#991b1b' },
+            'sacrificed': { label: '🕯️ Sacrificado', category: 'death', color: '#7f1d1d' },
+            'died_natural': { label: '🌙 Muerte Natural', category: 'death', color: '#525252' },
+            'died_battle': { label: '⚔️ Muerte en Batalla', category: 'death', color: '#b91c1c' },
+
+            // Desaparición
+            'missing': { label: '🔍 Desaparecido', category: 'disappearance', color: '#6366f1' },
+            'lost': { label: '🧭 Perdido', category: 'disappearance', color: '#4f46e5' },
+            'kidnapped': { label: '😱 Secuestrado', category: 'disappearance', color: '#7c2d12' },
+            'exiled': { label: '🚪 Exiliado', category: 'disappearance', color: '#3730a3' },
+            'vanished': { label: '👻 Desvanecido', category: 'disappearance', color: '#581c87' },
+            'escaped': { label: '🏃 Escapó', category: 'disappearance', color: '#0891b2' },
+
+            // Transformación
+            'transformed': { label: '🦋 Transformado', category: 'transformation', color: '#06b6d4' },
+            'cursed': { label: '😈 Maldito', category: 'transformation', color: '#7c3aed' },
+            'possessed': { label: '👹 Poseído', category: 'transformation', color: '#6d28d9' },
+            'corrupted': { label: '🖤 Corrompido', category: 'transformation', color: '#1e1b4b' },
+            'ascended': { label: '🌟 Ascendido', category: 'transformation', color: '#fbbf24' },
+
+            // Desconocido
+            'unknown': { label: '❓ Desconocido', category: 'unknown', color: '#9ca3af' },
+            'presumed_dead': { label: '💭 Presuntamente Muerto', category: 'unknown', color: '#6b7280' },
+            'presumed_alive': { label: '🤷 Presuntamente Vivo', category: 'unknown', color: '#9ca3af' }
+        };
+
+        return statusInfo[status] || { label: status, category: 'unknown', color: '#9ca3af' };
     },
 
     // Método para agregar una nueva relación con historial
@@ -966,6 +1098,19 @@ window.projectStore = {
                     character.relationships = character.relationships.map(rel => {
                         return this.migrateRelationshipToHistory(rel);
                     });
+                }
+
+                // Migración: Agregar estado vital si no existe
+                if (!character.vitalStatusHistory) {
+                    character.vitalStatusHistory = [
+                        {
+                            status: 'alive',
+                            eventId: null,
+                            description: 'Personaje creado',
+                            timestamp: character.created || new Date().toISOString()
+                        }
+                    ];
+                    character.currentVitalStatus = 'alive';
                 }
             });
         }

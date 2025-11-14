@@ -36,6 +36,7 @@ window.uiStore = {
         editTimelineEvent: false,
         newRelationship: false,
         editRelationship: false,
+        vitalStatus: false,
         export: false,
         import: false,
         versionHistory: false,
