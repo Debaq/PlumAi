@@ -978,7 +978,8 @@ document.addEventListener('alpine:initialized', () => {
             scenes: Alpine.store('project').scenes,
             locations: Alpine.store('project').locations,
             timeline: Alpine.store('project').timeline,
-            chapters: Alpine.store('project').chapters
+            chapters: Alpine.store('project').chapters,
+            loreEntries: Alpine.store('project').loreEntries
         });
     }
 });
