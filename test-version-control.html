@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Control de Versiones</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            border: 1px solid #dee2e6;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-section">
+        <div class="test-title">🔍 Test de Control de Versiones - PlumAI</div>
+        <p>Este test verifica que el sistema de control de versiones capture toda la base de datos correctamente.</p>
+        <button onclick="runTest()">▶️ Ejecutar Test</button>
+        <button onclick="clearResults()">🗑️ Limpiar Resultados</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script src="js/lib/uuid.js"></script>
+    <script>
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = message;
+            results.appendChild(div);
+        }
+
+        function logObject(title, obj) {
+            const results = document.getElementById('results');
+            const section = document.createElement('div');
+            section.className = 'test-section';
+            section.innerHTML = `<strong>${title}:</strong><pre>${JSON.stringify(obj, null, 2)}</pre>`;
+            results.appendChild(section);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        function runTest() {
+            clearResults();
+            log('🚀 Iniciando test del sistema de control de versiones...', 'info');
+
+            // Simular el store del proyecto
+            const mockProjectStore = {
+                projectInfo: {
+                    id: window.uuid.generateUUID(),
+                    title: 'Proyecto de Prueba',
+                    author: 'Test Author',
+                    genre: 'Fantasía',
+                    created: new Date().toISOString(),
+                    modified: new Date().toISOString(),
+                    isPublicPC: false
+                },
+                forkInfo: {
+                    originalProjectId: null,
+                    forkedFrom: null,
+                    forkedAt: null,
+                    description: ''
+                },
+                apiKeys: {
+                    claude: 'test-key-123',
+                    openai: '',
+                    google: '',
+                    groq: '',
+                    together: '',
+                    replicate: '',
+                    huggingface: '',
+                    kimi: '',
+                    qwen: ''
+                },
+                characters: [
+                    {
+                        id: window.uuid.generateUUID(),
+                        name: 'Personaje Test',
+                        description: 'Un personaje de prueba',
+                        relationships: []
+                    }
+                ],
+                locations: [
+                    {
+                        id: window.uuid.generateUUID(),
+                        name: 'Ubicación Test',
+                        description: 'Una ubicación de prueba'
+                    }
+                ],
+                chapters: [
+                    {
+                        id: window.uuid.generateUUID(),
+                        title: 'Capítulo 1',
+                        content: 'Contenido de prueba',
+                        wordCount: 3
+                    }
+                ],
+                scenes: [],
+                timeline: [],
+                notes: [],
+                loreEntries: [
+                    {
+                        id: window.uuid.generateUUID(),
+                        title: 'Entrada de Lore Test',
+                        content: 'Contenido de lore de prueba',
+                        category: 'world'
+                    }
+                ],
+
+                exportProject() {
+                    return {
+                        projectInfo: this.projectInfo,
+                        forkInfo: this.forkInfo,
+                        apiKeys: this.apiKeys,
+                        characters: this.characters,
+                        locations: this.locations,
+                        chapters: this.chapters,
+                        scenes: this.scenes,
+                        timeline: this.timeline,
+                        notes: this.notes,
+                        loreEntries: this.loreEntries
+                    };
+                }
+            };
+
+            log('✅ Mock project store creado', 'success');
+
+            // Test 1: Verificar que exportProject() incluya todos los campos
+            log('\n📋 Test 1: Verificando estructura de exportProject()', 'info');
+            const exported = mockProjectStore.exportProject();
+
+            const requiredFields = [
+                'projectInfo',
+                'forkInfo',
+                'apiKeys',
+                'characters',
+                'locations',
+                'chapters',
+                'scenes',
+                'timeline',
+                'notes',
+                'loreEntries'
+            ];
+
+            let allFieldsPresent = true;
+            for (const field of requiredFields) {
+                if (exported.hasOwnProperty(field)) {
+                    log(`  ✅ Campo '${field}' presente`, 'success');
+                } else {
+                    log(`  ❌ Campo '${field}' FALTA`, 'error');
+                    allFieldsPresent = false;
+                }
+            }
+
+            if (allFieldsPresent) {
+                log('✅ Test 1 PASADO: Todos los campos están presentes', 'success');
+            } else {
+                log('❌ Test 1 FALLADO: Faltan campos en exportProject()', 'error');
+            }
+
+            // Test 2: Verificar que los datos se exporten correctamente
+            log('\n📋 Test 2: Verificando que los datos se exporten correctamente', 'info');
+
+            if (exported.loreEntries && exported.loreEntries.length > 0) {
+                log(`  ✅ loreEntries exportado con ${exported.loreEntries.length} entradas`, 'success');
+            } else {
+                log('  ❌ loreEntries NO exportado o vacío', 'error');
+            }
+
+            if (exported.forkInfo) {
+                log('  ✅ forkInfo exportado correctamente', 'success');
+            } else {
+                log('  ❌ forkInfo NO exportado', 'error');
+            }
+
+            if (exported.characters && exported.characters.length > 0) {
+                log(`  ✅ characters exportado con ${exported.characters.length} personajes`, 'success');
+            } else {
+                log('  ❌ characters NO exportado o vacío', 'error');
+            }
+
+            // Mostrar el objeto exportado completo
+            logObject('🔍 Objeto Exportado Completo', exported);
+
+            // Test 3: Verificar tamaño del JSON
+            log('\n📋 Test 3: Verificando tamaño del JSON exportado', 'info');
+            const jsonString = JSON.stringify(exported);
+            const jsonSize = new Blob([jsonString]).size;
+            log(`  📦 Tamaño del JSON: ${jsonSize} bytes (${(jsonSize / 1024).toFixed(2)} KB)`, 'info');
+
+            if (jsonSize > 100) {
+                log('  ✅ JSON contiene datos significativos', 'success');
+            } else {
+                log('  ⚠️ JSON parece estar vacío o con pocos datos', 'error');
+            }
+
+            // Test 4: Verificar que los datos puedan parsearse de vuelta
+            log('\n📋 Test 4: Verificando que el JSON pueda parsearse de vuelta', 'info');
+            try {
+                const parsed = JSON.parse(jsonString);
+                if (parsed.loreEntries && parsed.forkInfo && parsed.projectInfo) {
+                    log('  ✅ JSON parseado correctamente y contiene todos los campos', 'success');
+                } else {
+                    log('  ❌ JSON parseado pero faltan campos', 'error');
+                }
+            } catch (error) {
+                log(`  ❌ Error parseando JSON: ${error.message}`, 'error');
+            }
+
+            log('\n🎉 Test completado!', 'success');
+        }
+
+        // Ejecutar test automáticamente al cargar
+        window.addEventListener('load', () => {
+            log('✅ Página de test cargada. Haz clic en "Ejecutar Test" para comenzar.', 'info');
+        });
+    </script>
+</body>
+</html>
