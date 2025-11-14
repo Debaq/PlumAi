@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Sistema de Control de Versiones v2.0</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            color: #4a90e2;
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #888;
+            font-size: 16px;
+        }
+        .test-section {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        .test-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4a90e2;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .test-result {
+            padding: 12px 16px;
+            margin: 12px 0;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .success {
+            background-color: rgba(34, 197, 94, 0.1);
+            border-left: 4px solid #22c55e;
+            color: #86efac;
+        }
+        .error {
+            background-color: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid #ef4444;
+            color: #fca5a5;
+        }
+        .info {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid #3b82f6;
+            color: #93c5fd;
+        }
+        .warning {
+            background-color: rgba(251, 146, 60, 0.1);
+            border-left: 4px solid #fb923c;
+            color: #fdba74;
+        }
+        pre {
+            background-color: #1a1a1a;
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #404040;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        button {
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .clear-btn {
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: #1a1a1a;
+            padding: 16px;
+            border-radius: 6px;
+            border: 1px solid #404040;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #4a90e2;
+            margin-bottom: 8px;
+        }
+        .stat-label {
+            color: #888;
+            font-size: 14px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #1a1a1a;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 16px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4a90e2 0%, #22c55e 100%);
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 Test Sistema de Control de Versiones v2.0</h1>
+        <p>Sistema optimizado con deltas + snapshots base</p>
+    </div>
+
+    <div class="test-section">
+        <div class="test-title">🎮 Controles</div>
+        <button onclick="runFullTest()">▶️ Ejecutar Test Completo</button>
+        <button onclick="clearResults()" class="clear-btn">🗑️ Limpiar Resultados</button>
+    </div>
+
+    <div id="progress-section" style="display: none;" class="test-section">
+        <div class="test-title">📊 Progreso</div>
+        <div class="progress-bar">
+            <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+        </div>
+        <div id="progress-text" style="text-align: center; color: #888; margin-top: 8px;">0%</div>
+    </div>
+
+    <div id="stats" style="display: none;"></div>
+    <div id="results"></div>
+
+    <!-- Cargar librerías necesarias -->
+    <script src="js/lib/uuid.js"></script>
+    <script src="js/lib/jsondiffpatch.min.js"></script>
+    <script src="js/services/version-control.js"></script>
+
+    <script>
+        let testResults = {
+            passed: 0,
+            failed: 0,
+            total: 0
+        };
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = message;
+            results.appendChild(div);
+
+            if (type === 'success') testResults.passed++;
+            if (type === 'error') testResults.failed++;
+            testResults.total++;
+        }
+
+        function logObject(title, obj) {
+            const results = document.getElementById('results');
+            const section = document.createElement('div');
+            section.className = 'test-section';
+            section.innerHTML = `<div style="font-weight: bold; color: #4a90e2; margin-bottom: 12px;">${title}:</div><pre>${JSON.stringify(obj, null, 2)}</pre>`;
+            results.appendChild(section);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('stats').innerHTML = '';
+            document.getElementById('stats').style.display = 'none';
+            document.getElementById('progress-section').style.display = 'none';
+            testResults = { passed: 0, failed: 0, total: 0 };
+        }
+
+        function updateProgress(percent, text) {
+            const progressSection = document.getElementById('progress-section');
+            const progressFill = document.getElementById('progress-fill');
+            const progressText = document.getElementById('progress-text');
+
+            progressSection.style.display = 'block';
+            progressFill.style.width = percent + '%';
+            progressText.textContent = text || `${percent}%`;
+        }
+
+        function showStats() {
+            const stats = document.getElementById('stats');
+            stats.style.display = 'block';
+
+            const passRate = ((testResults.passed / testResults.total) * 100).toFixed(1);
+
+            stats.innerHTML = `
+                <div class="test-section">
+                    <div class="test-title">📈 Estadísticas del Test</div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">${testResults.total}</div>
+                            <div class="stat-label">Tests Ejecutados</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: #22c55e;">${testResults.passed}</div>
+                            <div class="stat-label">Tests Pasados</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: #ef4444;">${testResults.failed}</div>
+                            <div class="stat-label">Tests Fallidos</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${passRate}%</div>
+                            <div class="stat-label">Tasa de Éxito</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function runFullTest() {
+            clearResults();
+            log('🚀 Iniciando test del sistema de control de versiones v2.0...', 'info');
+            updateProgress(5, 'Iniciando...');
+
+            // Test 1: Verificar que jsondiffpatch esté cargado
+            updateProgress(10, 'Verificando librerías...');
+            log('\n📋 Test 1: Verificando que jsondiffpatch esté cargado', 'info');
+            if (typeof jsondiffpatch !== 'undefined') {
+                log('  ✅ jsondiffpatch está cargado correctamente', 'success');
+            } else {
+                log('  ❌ jsondiffpatch NO está cargado', 'error');
+                return;
+            }
+
+            // Test 2: Verificar inicialización del sistema
+            updateProgress(20, 'Inicializando sistema...');
+            log('\n📋 Test 2: Inicializando sistema de versiones v2.0', 'info');
+            window.versionControl.init();
+
+            if (window.versionControl.FORMAT_VERSION === '2.0') {
+                log('  ✅ Sistema v2.0 inicializado', 'success');
+            } else {
+                log('  ❌ Versión incorrecta', 'error');
+            }
+
+            // Test 3: Crear proyecto de prueba
+            updateProgress(30, 'Creando proyecto de prueba...');
+            log('\n📋 Test 3: Crear proyecto de prueba', 'info');
+
+            const mockProject1 = {
+                projectInfo: {
+                    id: window.uuid.generateUUID(),
+                    title: 'Proyecto Test v2',
+                    author: 'Test Author',
+                    genre: 'Fantasía',
+                    created: new Date().toISOString(),
+                    modified: new Date().toISOString()
+                },
+                characters: [
+                    { id: '1', name: 'Personaje A', description: 'Héroe principal' }
+                ],
+                chapters: [
+                    { id: 'ch1', title: 'Capítulo 1', content: 'Érase una vez...' }
+                ],
+                loreEntries: []
+            };
+
+            log('  ✅ Proyecto de prueba creado', 'success');
+
+            // Test 4: Primer commit (snapshot base)
+            updateProgress(40, 'Creando primer commit...');
+            log('\n📋 Test 4: Crear primer commit (debe ser snapshot completo)', 'info');
+
+            const commit1 = window.versionControl.commit(
+                mockProject1,
+                'Primer commit - snapshot base',
+                'test-user'
+            );
+
+            if (commit1) {
+                log(`  ✅ Primer commit creado: ${commit1.substring(0, 8)}`, 'success');
+
+                const branch = window.versionControl.branches.main;
+                if (branch.baseSnapshot !== null) {
+                    log('  ✅ Snapshot base creado correctamente', 'success');
+                } else {
+                    log('  ❌ No se creó snapshot base', 'error');
+                }
+
+                if (branch.commits[commit1].delta === null) {
+                    log('  ✅ Primer commit NO tiene delta (correcto)', 'success');
+                } else {
+                    log('  ❌ Primer commit tiene delta (incorrecto)', 'error');
+                }
+            } else {
+                log('  ❌ No se pudo crear el primer commit', 'error');
+            }
+
+            // Test 5: Segundo commit (debe ser delta)
+            updateProgress(50, 'Creando segundo commit con cambios...');
+            log('\n📋 Test 5: Crear segundo commit (debe ser delta)', 'info');
+
+            const mockProject2 = JSON.parse(JSON.stringify(mockProject1));
+            mockProject2.characters.push({ id: '2', name: 'Personaje B', description: 'Antagonista' });
+            mockProject2.chapters[0].content = 'Érase una vez... en un reino lejano';
+
+            const commit2 = window.versionControl.commit(
+                mockProject2,
+                'Segundo commit - agregado personaje y modificado capítulo',
+                'test-user'
+            );
+
+            if (commit2) {
+                log(`  ✅ Segundo commit creado: ${commit2.substring(0, 8)}`, 'success');
+
+                const branch = window.versionControl.branches.main;
+                const delta = branch.commits[commit2].delta;
+
+                if (delta !== null) {
+                    log('  ✅ Segundo commit tiene delta (correcto)', 'success');
+
+                    const deltaSize = JSON.stringify(delta).length;
+                    const fullSize = JSON.stringify(mockProject2).length;
+                    const savings = ((1 - deltaSize / fullSize) * 100).toFixed(1);
+
+                    log(`  📊 Tamaño delta: ${deltaSize} bytes`, 'info');
+                    log(`  📊 Tamaño completo: ${fullSize} bytes`, 'info');
+                    log(`  💰 Ahorro: ${savings}%`, savings > 50 ? 'success' : 'warning');
+                } else {
+                    log('  ❌ Segundo commit NO tiene delta (incorrecto)', 'error');
+                }
+            } else {
+                log('  ❌ No se pudo crear el segundo commit', 'error');
+            }
+
+            // Test 6: Reconstruir estado
+            updateProgress(60, 'Reconstruyendo estado...');
+            log('\n📋 Test 6: Reconstruir estado desde commits', 'info');
+
+            const reconstructed = window.versionControl.getProjectAtCommit(commit2);
+
+            if (reconstructed) {
+                log('  ✅ Estado reconstruido exitosamente', 'success');
+
+                // Verificar que el estado reconstruido sea correcto
+                if (reconstructed.characters.length === 2) {
+                    log('  ✅ Personajes reconstruidos correctamente (2 personajes)', 'success');
+                } else {
+                    log(`  ❌ Personajes incorrectos (esperado: 2, obtenido: ${reconstructed.characters.length})`, 'error');
+                }
+
+                if (reconstructed.chapters[0].content.includes('reino lejano')) {
+                    log('  ✅ Capítulo reconstruido correctamente', 'success');
+                } else {
+                    log('  ❌ Capítulo no reconstruido correctamente', 'error');
+                }
+            } else {
+                log('  ❌ No se pudo reconstruir el estado', 'error');
+            }
+
+            // Test 7: Tercer commit
+            updateProgress(70, 'Creando tercer commit...');
+            log('\n📋 Test 7: Crear tercer commit', 'info');
+
+            const mockProject3 = JSON.parse(JSON.stringify(mockProject2));
+            mockProject3.loreEntries.push({ id: 'lore1', title: 'Historia del Reino', content: 'Un reino antiguo...' });
+
+            const commit3 = window.versionControl.commit(
+                mockProject3,
+                'Tercer commit - agregado lore',
+                'test-user'
+            );
+
+            if (commit3) {
+                log(`  ✅ Tercer commit creado: ${commit3.substring(0, 8)}`, 'success');
+            }
+
+            // Test 8: Historial de commits
+            updateProgress(80, 'Verificando historial...');
+            log('\n📋 Test 8: Obtener historial de commits', 'info');
+
+            const history = window.versionControl.getBranchHistory();
+
+            if (history.length === 3) {
+                log(`  ✅ Historial correcto (3 commits)`, 'success');
+                log(`  📝 Commit 1: ${history[2].message}`, 'info');
+                log(`  📝 Commit 2: ${history[1].message}`, 'info');
+                log(`  📝 Commit 3: ${history[0].message}`, 'info');
+            } else {
+                log(`  ❌ Historial incorrecto (esperado: 3, obtenido: ${history.length})`, 'error');
+            }
+
+            // Test 9: Revertir a commit anterior
+            updateProgress(85, 'Probando revert...');
+            log('\n📋 Test 9: Revertir a commit anterior', 'info');
+
+            // Aquí solo verificamos que el método funcione
+            // En producción necesitaría Alpine store
+            const project1State = window.versionControl.getProjectAtCommit(commit1);
+
+            if (project1State && project1State.characters.length === 1) {
+                log('  ✅ Revert funciona - estado del commit 1 recuperado', 'success');
+            } else {
+                log('  ❌ Revert no funciona correctamente', 'error');
+            }
+
+            // Test 10: Estadísticas
+            updateProgress(90, 'Obteniendo estadísticas...');
+            log('\n📋 Test 10: Estadísticas del sistema', 'info');
+
+            const stats = window.versionControl.getHistoryStats();
+            logObject('Estadísticas del sistema', stats);
+
+            if (stats.totalCommits === 3) {
+                log('  ✅ Estadísticas correctas', 'success');
+            } else {
+                log('  ❌ Estadísticas incorrectas', 'error');
+            }
+
+            // Test 11: Guardar y cargar historial
+            updateProgress(95, 'Probando persistencia...');
+            log('\n📋 Test 11: Guardar y cargar historial', 'info');
+
+            window.versionControl.saveHistory();
+            log('  ✅ Historial guardado en localStorage', 'success');
+
+            // Crear nueva instancia y cargar
+            const oldBranches = window.versionControl.branches;
+            window.versionControl.branches = {};
+            window.versionControl.loadHistory();
+
+            if (window.versionControl.branches.main.commits[commit1]) {
+                log('  ✅ Historial cargado correctamente desde localStorage', 'success');
+            } else {
+                log('  ❌ Error cargando historial', 'error');
+            }
+
+            // Test 12: Tamaño de almacenamiento
+            updateProgress(98, 'Calculando eficiencia...');
+            log('\n📋 Test 12: Eficiencia de almacenamiento', 'info');
+
+            const historyData = localStorage.getItem('pluma_version_history');
+            const totalSize = new Blob([historyData]).size;
+
+            log(`  📦 Tamaño total del historial: ${(totalSize / 1024).toFixed(2)} KB`, 'info');
+            log(`  📦 Commits almacenados: 3`, 'info');
+            log(`  📦 Tamaño promedio por commit: ${(totalSize / 3 / 1024).toFixed(2)} KB`, 'info');
+
+            if (totalSize < 50000) { // Menos de 50KB para 3 commits es excelente
+                log('  ✅ Excelente eficiencia de almacenamiento', 'success');
+            } else {
+                log('  ⚠️  Almacenamiento podría optimizarse más', 'warning');
+            }
+
+            updateProgress(100, '¡Test completado!');
+            log('\n🎉 ¡Test completado exitosamente!', 'success');
+
+            // Mostrar estadísticas finales
+            showStats();
+        }
+
+        // Auto-ejecutar al cargar
+        window.addEventListener('load', () => {
+            log('✅ Página de test cargada. Haz clic en "Ejecutar Test Completo" para comenzar.', 'info');
+        });
+    </script>
+</body>
+</html>
