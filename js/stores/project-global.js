@@ -1055,6 +1055,14 @@ window.projectStore = {
 
     // Exportar proyecto completo
     exportProject() {
+        // Obtener el control de versiones actual
+        const versionControlData = window.versionControl ? {
+            version: window.versionControl.FORMAT_VERSION,
+            branches: window.versionControl.branches,
+            forks: window.versionControl.forks,
+            currentBranch: window.versionControl.currentBranch
+        } : null;
+
         return {
             projectInfo: this.projectInfo,
             forkInfo: this.forkInfo,
@@ -1065,7 +1073,8 @@ window.projectStore = {
             scenes: this.scenes,
             timeline: this.timeline,
             notes: this.notes,
-            loreEntries: this.loreEntries
+            loreEntries: this.loreEntries,
+            versionControl: versionControlData
         };
     },
 
@@ -1085,10 +1094,35 @@ window.projectStore = {
             // Migrar datos de versiones antiguas
             this.migrateProjectData(projectData);
 
+            // Restaurar control de versiones antes de asignar datos
+            if (projectData.versionControl && window.versionControl) {
+                // Restaurar el historial de control de versiones
+                window.versionControl.branches = projectData.versionControl.branches || {};
+                window.versionControl.forks = projectData.versionControl.forks || {};
+                window.versionControl.currentBranch = projectData.versionControl.currentBranch || 'main';
+
+                // Guardar en localStorage para persistencia
+                window.versionControl.saveHistory();
+            }
+
             Object.assign(this, projectData);
             return true;
         }
         return false;
+    },
+
+    // Cargar proyecto desde storage (localStorage/IndexedDB/archivo)
+    async loadProjectFromStorage(projectId) {
+        try {
+            const projectData = await window.storageManager.load(projectId);
+            if (projectData) {
+                return this.loadProject(projectData);
+            }
+            return false;
+        } catch (error) {
+            console.error('Error cargando proyecto desde storage:', error);
+            return false;
+        }
     },
 
     // Migrar datos de formatos antiguos a nuevos
