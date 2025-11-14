@@ -173,10 +173,10 @@
                             <template x-for="relation in $store.ui.modalData?.relationships || []" :key="relation.characterId">
                                 <div class="relationship-item flex items-center gap-md p-md bg-secondary rounded-lg mb-md"
                                      :class="{
-                                         'border-l-4 border-green-500': ['friend', 'ally', 'love'].includes(relation.type),
-                                         'border-l-4 border-red-500': ['enemy', 'rival', 'archenemy'].includes(relation.type),
-                                         'border-l-4 border-blue-500': ['family', 'guardian', 'ward'].includes(relation.type),
-                                         'border-l-4 border-yellow-500': ['colleague', 'mentor', 'teacher'].includes(relation.type)
+                                         'border-l-4 border-green-500': ['friend', 'ally', 'love'].includes(relation.currentType || relation.type),
+                                         'border-l-4 border-red-500': ['enemy', 'rival', 'archenemy'].includes(relation.currentType || relation.type),
+                                         'border-l-4 border-blue-500': ['family', 'guardian', 'ward'].includes(relation.currentType || relation.type),
+                                         'border-l-4 border-yellow-500': ['colleague', 'mentor', 'teacher'].includes(relation.currentType || relation.type)
                                      }" style="position: relative; padding-left: 16px;">
                                     <!-- Icono del tipo de relación -->
                                     <div class="text-2xl" style="width: 32px; text-align: center;" x-text="(() => {
@@ -191,7 +191,7 @@
                                             collaborator: '🤝', businessPartner: '💰', partner: '🤝',
                                             rivalLove: '💘'
                                         };
-                                        return icons[relation.type] || '👤';
+                                        return icons[relation.currentType || relation.type] || '👤';
                                     })()"></div>
 
                                     <div class="flex-1">
@@ -199,7 +199,7 @@
                                             const relatedChar = $store.project.getCharacter(relation.characterId);
                                             return relatedChar ? relatedChar.name : 'Personaje desconocido';
                                         })()"></div>
-                                        <div class="text-xs" style="color: var(--accent);" x-text="$store.i18n.t('characters.form.relationTypes.' + relation.type)"></div>
+                                        <div class="text-xs" style="color: var(--accent);" x-text="$store.i18n.t('characters.form.relationTypes.' + (relation.currentType || relation.type))"></div>
                                     </div>
 
                                     <button type="button" class="btn-icon" @click="() => {

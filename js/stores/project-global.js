@@ -1027,6 +1027,12 @@ window.projectStore = {
                 modified: new Date().toISOString(),
                 isPublicPC: false
             };
+            this.forkInfo = {
+                originalProjectId: null,
+                forkedFrom: null,
+                forkedAt: null,
+                description: ''
+            };
             this.apiKeys = {
                 claude: '',
                 openai: '',
@@ -1044,6 +1050,7 @@ window.projectStore = {
             this.scenes = [];
             this.timeline = [];
             this.notes = [];
+            this.loreEntries = [];
         }
     },
 
@@ -1051,13 +1058,15 @@ window.projectStore = {
     exportProject() {
         return {
             projectInfo: this.projectInfo,
+            forkInfo: this.forkInfo,
             apiKeys: this.apiKeys,
             characters: this.characters,
             locations: this.locations,
             chapters: this.chapters,
             scenes: this.scenes,
             timeline: this.timeline,
-            notes: this.notes
+            notes: this.notes,
+            loreEntries: this.loreEntries
         };
     },
 

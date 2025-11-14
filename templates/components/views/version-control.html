@@ -108,13 +108,13 @@
 
             <!-- Commit List -->
             <div x-show="!loading && commits.length > 0" style="flex: 1; overflow-y: auto;">
-                <template x-for="(commit, index) in commits" :key="commit.oid">
+                <template x-for="(commit, index) in commits" :key="commit.id">
                     <div class="commit-item"
                          style="position: relative; padding: var(--spacing-md); padding-left: 40px; border-left: 2px solid var(--border); margin-left: 20px; cursor: pointer; transition: var(--transition-fast);"
-                         :style="selectedCommit?.oid === commit.oid ? 'background: var(--bg-tertiary); border-left-color: var(--accent);' : ''"
+                         :style="selectedCommit?.id === commit.id ? 'background: var(--bg-tertiary); border-left-color: var(--accent);' : ''"
                          @click="selectCommit(commit)"
                          @mouseover="$el.style.background = 'var(--bg-tertiary)'; $el.style.borderLeftColor = 'var(--accent)'"
-                         @mouseout="if(selectedCommit?.oid !== commit.oid) { $el.style.background = 'transparent'; $el.style.borderLeftColor = 'var(--border)'; }">
+                         @mouseout="if(selectedCommit?.id !== commit.id) { $el.style.background = 'transparent'; $el.style.borderLeftColor = 'var(--border)'; }">
 
                         <!-- Dot indicator -->
                         <div style="position: absolute; left: -6px; top: 20px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg-primary);"></div>
@@ -131,7 +131,7 @@
                                 </div>
                             </div>
                             <div style="display: flex; gap: var(--spacing-sm); align-items: center;">
-                                <code style="font-size: var(--font-size-xs); background: var(--bg-primary); padding: 2px 6px; border-radius: 3px; color: var(--accent);" x-text="commit.oid.substring(0, 7)"></code>
+                                <code style="font-size: var(--font-size-xs); background: var(--bg-primary); padding: 2px 6px; border-radius: 3px; color: var(--accent);" x-text="commit.id.substring(0, 7)"></code>
                                 <button class="btn-icon btn-sm"
                                         @click.stop="restoreCommit(commit)"
                                         title="Restaurar a este commit"
@@ -344,60 +344,8 @@ function versionControlView() {
             }
         },
 
-        // Seleccionar commit para ver diff
-        async selectCommit(commit) {
-            this.selectedCommit = commit;
-
-            try {
-                // Si tiene padre, mostrar diff
-                if (commit.parent && commit.parent.length > 0) {
-                    const diffText = await window.gitService.getDiff(commit.parent[0], commit.oid);
-
-                    if (diffText) {
-                        // Usar diff2html para renderizar
-                        const diffHtml = Diff2Html.html(diffText, {
-                            drawFileList: false,
-                            matching: 'lines',
-                            outputFormat: 'side-by-side'
-                        });
-                        this.diffHtml = diffHtml;
-                    }
-                } else {
-                    this.diffHtml = '<p style="color: var(--text-secondary); padding: var(--spacing-md);">Este es el primer commit (no hay cambios previos para comparar)</p>';
-                }
-            } catch (error) {
-                console.error('Error generando diff:', error);
-                this.diffHtml = '<p style="color: var(--error); padding: var(--spacing-md);">Error generando diff</p>';
-            }
-        },
-
-        // Restaurar a un commit
-        async restoreCommit(commit) {
-            const confirm = window.confirm(
-                this.$store.i18n.t('versionControl.checkoutConfirm') ||
-                `¿Estás seguro de que quieres restaurar el proyecto al commit ${commit.oid.substring(0, 7)}?`
-            );
-
-            if (!confirm) return;
-
-            try {
-                const projectData = await window.gitService.checkout(commit.oid);
-
-                // Actualizar el store del proyecto con los datos restaurados
-                Object.assign(this.$store.project, projectData);
-
-                this.$store.ui.success(
-                    this.$store.i18n.t('notifications.success.checkoutSuccess'),
-                    `Proyecto restaurado al commit ${commit.oid.substring(0, 7)}`
-                );
-            } catch (error) {
-                console.error('Error restaurando commit:', error);
-                this.$store.ui.error(
-                    this.$store.i18n.t('notifications.error.checkoutFailed'),
-                    error.message
-                );
-            }
-        },
+        // NOTA: Las funciones selectCommit() y restoreCommit() están en app.js
+        // usando el sistema versionControl v2.0
 
         // Formatear fecha
         formatDate(date) {
