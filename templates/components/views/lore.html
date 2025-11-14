@@ -313,7 +313,7 @@
                                     :y1="50 + Math.sin(charIndex * 0.5) * 25 + '%'"
                                     :x2="50 + Math.cos(($store.project.characters.findIndex(c => c.id === relation.characterId) || 0) * 0.5) * 25 + '%'"
                                     :y2="50 + Math.sin(($store.project.characters.findIndex(c => c.id === relation.characterId) || 0) * 0.5) * 25 + '%'"
-                                    :stroke="window.relationsDiagramHelper.getRelationColor(relation.type)"
+                                    :stroke="window.relationsDiagramHelper.getRelationColor(relation.currentType || relation.type)"
                                     stroke-width="2"
                                     stroke-dasharray="4,4" />
                             </svg>
@@ -329,7 +329,7 @@
                         <div style="max-height: 100px; overflow-y: auto;">
                             <template x-for="rel in window.relationsDiagramHelper.getCharacterRelations($store.ui.selectedCharacter.id, $store.project)" :key="rel.characterId">
                                 <div style="padding: 4px 0; border-bottom: 1px solid var(--border);">
-                                    <span x-text="$store.i18n.t('characters.form.relationTypes.' + rel.type)"></span>: 
+                                    <span x-text="$store.i18n.t('characters.form.relationTypes.' + (rel.currentType || rel.type))"></span>:
                                     <span x-text="rel.relatedCharacter?.name || 'Personaje desconocido'"></span>
                                 </div>
                             </template>
