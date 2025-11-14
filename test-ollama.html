@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Ollama Connection</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test {
+            margin: 15px 0;
+            padding: 15px;
+            background: #252525;
+            border-radius: 8px;
+            border-left: 4px solid #4a90e2;
+        }
+        .success { border-left-color: #4caf50; }
+        .error { border-left-color: #f44336; }
+        .warning { border-left-color: #ff9800; }
+        button {
+            background: #4a90e2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover { background: #357abd; }
+        pre {
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .models { margin-top: 10px; }
+        .model-item {
+            padding: 8px;
+            background: #2f2f2f;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Diagnóstico de Ollama</h1>
+
+    <div class="test">
+        <h3>📋 Comandos para verificar en tu terminal:</h3>
+        <pre># Verificar si Ollama está instalado
+ollama --version
+
+# Listar modelos descargados
+ollama list
+
+# Iniciar servidor Ollama (si no está corriendo)
+ollama serve
+
+# En otra terminal, descargar un modelo (si no tienes ninguno)
+ollama pull llama3.2</pre>
+    </div>
+
+    <div class="test">
+        <h3>🌐 Test de Conexión desde el Navegador</h3>
+        <button onclick="testOllamaConnection()">Probar Conexión con Ollama</button>
+        <button onclick="listOllamaModels()">Listar Modelos</button>
+        <button onclick="testSimpleChat()">Test Chat Simple</button>
+        <div id="connection-result"></div>
+    </div>
+
+    <div class="test">
+        <h3>📊 Resultado del Test</h3>
+        <div id="test-results"></div>
+    </div>
+
+    <script>
+        const resultsDiv = document.getElementById('test-results');
+        const connectionDiv = document.getElementById('connection-result');
+
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `test ${type}`;
+            div.innerHTML = message;
+            resultsDiv.appendChild(div);
+            console.log(message.replace(/<[^>]*>/g, ''));
+        }
+
+        async function testOllamaConnection() {
+            connectionDiv.innerHTML = '<p>⏳ Probando conexión...</p>';
+            resultsDiv.innerHTML = '';
+
+            try {
+                log('Intentando conectar a http://localhost:11434...');
+
+                const response = await fetch('http://localhost:11434/api/version', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ <strong>Ollama está corriendo!</strong><br>Versión: ${data.version || 'N/A'}`, 'success');
+                    connectionDiv.innerHTML = '<p class="success">✅ Conexión exitosa con Ollama</p>';
+                } else {
+                    log(`⚠️ Ollama respondió pero con error: ${response.status}`, 'warning');
+                    connectionDiv.innerHTML = '<p class="warning">⚠️ Ollama respondió pero hay un error</p>';
+                }
+            } catch (error) {
+                log(`❌ <strong>No se pudo conectar con Ollama</strong><br>Error: ${error.message}<br><br>
+                     <strong>Posibles causas:</strong><br>
+                     1. Ollama no está corriendo (corre <code>ollama serve</code>)<br>
+                     2. Ollama está en otro puerto (verifica que sea el 11434)<br>
+                     3. Problema de CORS (prueba con --origins "*" al iniciar)`, 'error');
+                connectionDiv.innerHTML = '<p class="error">❌ No se pudo conectar. Ver detalles abajo.</p>';
+            }
+        }
+
+        async function listOllamaModels() {
+            resultsDiv.innerHTML = '';
+            log('Obteniendo lista de modelos...');
+
+            try {
+                const response = await fetch('http://localhost:11434/api/tags', {
+                    method: 'GET'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.models && data.models.length > 0) {
+                    let modelsHtml = '<strong>Modelos disponibles:</strong><div class="models">';
+                    data.models.forEach(model => {
+                        modelsHtml += `<div class="model-item">
+                            📦 <strong>${model.name}</strong><br>
+                            <small>Tamaño: ${(model.size / 1024 / 1024 / 1024).toFixed(2)} GB</small><br>
+                            <small>Modificado: ${new Date(model.modified_at).toLocaleString()}</small>
+                        </div>`;
+                    });
+                    modelsHtml += '</div>';
+                    log(modelsHtml, 'success');
+                } else {
+                    log(`⚠️ <strong>No hay modelos descargados</strong><br>
+                         Descarga uno con: <code>ollama pull llama3.2</code>`, 'warning');
+                }
+            } catch (error) {
+                log(`❌ Error obteniendo modelos: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSimpleChat() {
+            resultsDiv.innerHTML = '';
+            log('Enviando mensaje de prueba a Ollama...');
+
+            try {
+                const response = await fetch('http://localhost:11434/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'llama3.2',
+                        messages: [{
+                            role: 'user',
+                            content: 'Di solo "OK"'
+                        }],
+                        stream: false
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                log(`✅ <strong>Chat funcionando!</strong><br>
+                     Respuesta: <code>${data.message?.content || JSON.stringify(data)}</code>`, 'success');
+            } catch (error) {
+                log(`❌ Error en chat: ${error.message}<br>
+                     Asegúrate de tener un modelo descargado (ej: <code>ollama pull llama3.2</code>)`, 'error');
+            }
+        }
+
+        // Auto-test al cargar
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testOllamaConnection();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
