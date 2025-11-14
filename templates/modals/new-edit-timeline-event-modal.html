@@ -1,5 +1,6 @@
 <!-- New/Edit Timeline Event Modal -->
-<div class="legacy-modal" :class="{ 'active': $store.ui.modals.newTimelineEvent || $store.ui.modals.editTimelineEvent }">
+<template x-if="$store.ui.modals.newTimelineEvent || $store.ui.modals.editTimelineEvent">
+<div class="legacy-modal active">
     <div class="legacy-modal-content" style="max-width: 800px;">
         <div class="legacy-modal-header">
             <h2 x-text="$store.ui.modals.editTimelineEvent ? $store.i18n.t('timeline.edit') : $store.i18n.t('timeline.new')">Evento</h2>
@@ -267,3 +268,4 @@
         </div>
     </div>
 </div>
+</template>

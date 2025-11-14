@@ -1,5 +1,6 @@
 <!-- New/Edit Location Modal -->
-<div class="legacy-modal" :class="{ 'active': $store.ui.modals.newLocation || $store.ui.modals.editLocation }">
+<template x-if="$store.ui.modals.newLocation || $store.ui.modals.editLocation">
+<div class="legacy-modal active">
     <div class="legacy-modal-content">
         <div class="legacy-modal-header">
             <h2 x-text="$store.ui.modals.editLocation ? $store.i18n.t('locations.edit') : $store.i18n.t('locations.new')">Ubicación</h2>
@@ -217,3 +218,4 @@
         </div>
     </div>
 </div>
+</template>

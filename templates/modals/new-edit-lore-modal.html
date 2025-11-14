@@ -1,5 +1,6 @@
 <!-- New/Edit Lore Entry Modal -->
-<div class="legacy-modal" :class="{ 'active': $store.ui.modals.newLore || $store.ui.modals.editLore }">
+<template x-if="$store.ui.modals.newLore || $store.ui.modals.editLore">
+<div class="legacy-modal active">
     <div class="legacy-modal-content" style="max-width: 700px;">
         <div class="legacy-modal-header">
             <h2 x-text="$store.ui.modals.editLore ? $store.i18n.t('lore.edit') : $store.i18n.t('lore.new')">Elemento de Lore</h2>
@@ -78,3 +79,4 @@
         </div>
     </div>
 </div>
+</template>

@@ -638,11 +638,39 @@ window.projectStore = {
     // Cargar proyecto en el store
     loadProject(projectData) {
         if (projectData) {
+            // Migrar datos de versiones antiguas
+            this.migrateProjectData(projectData);
+
             Object.assign(this, projectData);
             console.log(`✅ Project loaded into store: ${this.projectInfo.title}`);
             return true;
         }
         return false;
+    },
+
+    // Migrar datos de formatos antiguos a nuevos
+    migrateProjectData(projectData) {
+        // Migración: lore -> loreEntries
+        if (projectData.lore && !projectData.loreEntries) {
+            console.log('🔄 Migrando lore a loreEntries');
+            projectData.loreEntries = projectData.lore;
+            delete projectData.lore;
+        }
+
+        // Asegurar que loreEntries existe
+        if (!projectData.loreEntries) {
+            projectData.loreEntries = [];
+        }
+
+        // Migración: Asegurar que todos los arrays existan
+        if (!projectData.characters) projectData.characters = [];
+        if (!projectData.locations) projectData.locations = [];
+        if (!projectData.chapters) projectData.chapters = [];
+        if (!projectData.scenes) projectData.scenes = [];
+        if (!projectData.timeline) projectData.timeline = [];
+        if (!projectData.notes) projectData.notes = [];
+
+        return projectData;
     },
 
     // Guardar proyecto actual manualmente
