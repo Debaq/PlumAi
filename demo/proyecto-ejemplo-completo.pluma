@@ -36,28 +36,61 @@
       "notes": "Tiene una conexión especial con los cristales de Aether. Su mayor miedo es no estar a la altura de las expectativas.",
       "relationships": [
         {
+          "id": "rel-ddqcxge36",
           "characterId": "char-002-kael",
-          "type": "love",
-          "description": "Amor no correspondido que se desarrolla durante su entrenamiento juntos",
+          "history": [
+            {
+              "eventId": null,
+              "type": "love",
+              "status": "active",
+              "description": "Amor no correspondido que se desarrolla durante su entrenamiento juntos",
+              "notes": "Elara no es consciente de los sentimientos de Kael. La relación se está profundizando con cada misión compartida.",
+              "timestamp": "2024-01-15T10:15:00.000Z"
+            }
+          ],
+          "currentType": "love",
           "currentStatus": "active",
-          "startEvent": null,
-          "notes": "Elara no es consciente de los sentimientos de Kael. La relación se está profundizando con cada misión compartida."
+          "currentDescription": "Amor no correspondido que se desarrolla durante su entrenamiento juntos",
+          "created": "2024-01-15T10:15:00.000Z",
+          "modified": "2024-01-20T14:22:00.000Z"
         },
         {
+          "id": "rel-fediiwk6h",
           "characterId": "char-003-morgath",
-          "type": "enemy",
-          "description": "Su némesis que busca los mismos cristales de poder",
+          "history": [
+            {
+              "eventId": "timeline-008",
+              "type": "enemy",
+              "status": "deteriorating",
+              "description": "Su némesis que busca los mismos cristales de poder",
+              "notes": "Desde el primer enfrentamiento, Morgath la ve tanto como amenaza como herramienta potencial. La tensión aumenta con cada fragmento encontrado.",
+              "timestamp": "2024-01-15T10:15:00.000Z"
+            }
+          ],
+          "currentType": "enemy",
           "currentStatus": "deteriorating",
-          "startEvent": "timeline-008",
-          "notes": "Desde el primer enfrentamiento, Morgath la ve tanto como amenaza como herramienta potencial. La tensión aumenta con cada fragmento encontrado."
+          "currentDescription": "Su némesis que busca los mismos cristales de poder",
+          "created": "2024-01-15T10:15:00.000Z",
+          "modified": "2024-01-20T14:22:00.000Z"
         },
         {
+          "id": "rel-ir1l9wevz",
           "characterId": "char-004-aldric",
-          "type": "mentor",
-          "description": "Su maestro en la Torre Arcana",
+          "history": [
+            {
+              "eventId": "timeline-004",
+              "type": "mentor",
+              "status": "active",
+              "description": "Su maestro en la Torre Arcana",
+              "notes": "Aldric la ha guiado desde que era bebé. Su relación es casi paternal, aunque él guarda secretos sobre su verdadero origen.",
+              "timestamp": "2024-01-15T10:15:00.000Z"
+            }
+          ],
+          "currentType": "mentor",
           "currentStatus": "active",
-          "startEvent": "timeline-004",
-          "notes": "Aldric la ha guiado desde que era bebé. Su relación es casi paternal, aunque él guarda secretos sobre su verdadero origen."
+          "currentDescription": "Su maestro en la Torre Arcana",
+          "created": "2024-01-15T10:15:00.000Z",
+          "modified": "2024-01-20T14:22:00.000Z"
         }
       ],
       "avatar": {
@@ -67,7 +100,16 @@
         "source": "dicebear"
       },
       "created": "2024-01-15T10:15:00.000Z",
-      "modified": "2024-01-20T14:22:00.000Z"
+      "modified": "2024-01-20T14:22:00.000Z",
+      "vitalStatusHistory": [
+        {
+          "status": "alive",
+          "eventId": null,
+          "description": "Personaje creado",
+          "timestamp": "2024-01-15T10:15:00.000Z"
+        }
+      ],
+      "currentVitalStatus": "alive"
     },
     {
       "id": "char-002-kael",
@@ -79,20 +121,42 @@
       "notes": "Maestro espadachín. Tiene pesadillas sobre el día que perdió a su escuadrón.",
       "relationships": [
         {
+          "id": "rel-uemuhvt94",
           "characterId": "char-001-elara",
-          "type": "love",
-          "description": "Sentimientos profundos que mantiene en secreto para no distraerla",
+          "history": [
+            {
+              "eventId": null,
+              "type": "love",
+              "status": "complicated",
+              "description": "Sentimientos profundos que mantiene en secreto para no distraerla",
+              "notes": "Kael oculta sus sentimientos por miedo a distraer a Elara de su misión. El dolor de sus pesadillas lo hace sentir indigno de su afecto.",
+              "timestamp": "2024-01-15T10:30:00.000Z"
+            }
+          ],
+          "currentType": "love",
           "currentStatus": "complicated",
-          "startEvent": null,
-          "notes": "Kael oculta sus sentimientos por miedo a distraer a Elara de su misión. El dolor de sus pesadillas lo hace sentir indigno de su afecto."
+          "currentDescription": "Sentimientos profundos que mantiene en secreto para no distraerla",
+          "created": "2024-01-15T10:30:00.000Z",
+          "modified": "2024-01-19T16:45:00.000Z"
         },
         {
+          "id": "rel-296jq5cah",
           "characterId": "char-005-lyra",
-          "type": "friend",
-          "description": "Compañera de armas en quien confía plenamente",
+          "history": [
+            {
+              "eventId": "timeline-007",
+              "type": "friend",
+              "status": "active",
+              "description": "Compañera de armas en quien confía plenamente",
+              "notes": "Lyra es una de las pocas personas con las que Kael puede hablar abiertamente sobre su pasado traumático.",
+              "timestamp": "2024-01-15T10:30:00.000Z"
+            }
+          ],
+          "currentType": "friend",
           "currentStatus": "active",
-          "startEvent": "timeline-007",
-          "notes": "Lyra es una de las pocas personas con las que Kael puede hablar abiertamente sobre su pasado traumático."
+          "currentDescription": "Compañera de armas en quien confía plenamente",
+          "created": "2024-01-15T10:30:00.000Z",
+          "modified": "2024-01-19T16:45:00.000Z"
         }
       ],
       "avatar": {
@@ -102,7 +166,16 @@
         "source": "dicebear"
       },
       "created": "2024-01-15T10:30:00.000Z",
-      "modified": "2024-01-19T16:45:00.000Z"
+      "modified": "2024-01-19T16:45:00.000Z",
+      "vitalStatusHistory": [
+        {
+          "status": "alive",
+          "eventId": null,
+          "description": "Personaje creado",
+          "timestamp": "2024-01-15T10:30:00.000Z"
+        }
+      ],
+      "currentVitalStatus": "alive"
     },
     {
       "id": "char-003-morgath",
@@ -114,14 +187,42 @@
       "notes": "Ha extendido su vida mediante rituales oscuros. Conoce secretos antiguos que otros han olvidado.",
       "relationships": [
         {
+          "id": "rel-qv8uqs98h",
           "characterId": "char-001-elara",
-          "type": "enemy",
-          "description": "Ve en ella tanto una amenaza como una herramienta potencial"
+          "history": [
+            {
+              "eventId": null,
+              "type": "enemy",
+              "status": "active",
+              "description": "Ve en ella tanto una amenaza como una herramienta potencial",
+              "notes": "",
+              "timestamp": "2024-01-15T11:00:00.000Z"
+            }
+          ],
+          "currentType": "enemy",
+          "currentStatus": "active",
+          "currentDescription": "Ve en ella tanto una amenaza como una herramienta potencial",
+          "created": "2024-01-15T11:00:00.000Z",
+          "modified": "2024-01-20T12:10:00.000Z"
         },
         {
+          "id": "rel-9azmukx33",
           "characterId": "char-004-aldric",
-          "type": "rival",
-          "description": "Antiguos colegas que ahora son enemigos mortales"
+          "history": [
+            {
+              "eventId": null,
+              "type": "rival",
+              "status": "active",
+              "description": "Antiguos colegas que ahora son enemigos mortales",
+              "notes": "",
+              "timestamp": "2024-01-15T11:00:00.000Z"
+            }
+          ],
+          "currentType": "rival",
+          "currentStatus": "active",
+          "currentDescription": "Antiguos colegas que ahora son enemigos mortales",
+          "created": "2024-01-15T11:00:00.000Z",
+          "modified": "2024-01-20T12:10:00.000Z"
         }
       ],
       "avatar": {
@@ -131,7 +232,16 @@
         "source": "dicebear"
       },
       "created": "2024-01-15T11:00:00.000Z",
-      "modified": "2024-01-20T12:10:00.000Z"
+      "modified": "2024-01-20T12:10:00.000Z",
+      "vitalStatusHistory": [
+        {
+          "status": "alive",
+          "eventId": null,
+          "description": "Personaje creado",
+          "timestamp": "2024-01-15T11:00:00.000Z"
+        }
+      ],
+      "currentVitalStatus": "alive"
     },
     {
       "id": "char-004-aldric",
@@ -143,14 +253,42 @@
       "notes": "Sabe más de lo que revela. Tiene conexiones con la realeza y el consejo de magos.",
       "relationships": [
         {
+          "id": "rel-b11rin6am",
           "characterId": "char-001-elara",
-          "type": "mentor",
-          "description": "La ha entrenado desde niña y la considera casi una hija"
+          "history": [
+            {
+              "eventId": null,
+              "type": "mentor",
+              "status": "active",
+              "description": "La ha entrenado desde niña y la considera casi una hija",
+              "notes": "",
+              "timestamp": "2024-01-15T11:15:00.000Z"
+            }
+          ],
+          "currentType": "mentor",
+          "currentStatus": "active",
+          "currentDescription": "La ha entrenado desde niña y la considera casi una hija",
+          "created": "2024-01-15T11:15:00.000Z",
+          "modified": "2024-01-18T09:30:00.000Z"
         },
         {
+          "id": "rel-cp3vfmxuk",
           "characterId": "char-003-morgath",
-          "type": "rival",
-          "description": "Antiguo amigo convertido en enemigo tras su caída"
+          "history": [
+            {
+              "eventId": null,
+              "type": "rival",
+              "status": "active",
+              "description": "Antiguo amigo convertido en enemigo tras su caída",
+              "notes": "",
+              "timestamp": "2024-01-15T11:15:00.000Z"
+            }
+          ],
+          "currentType": "rival",
+          "currentStatus": "active",
+          "currentDescription": "Antiguo amigo convertido en enemigo tras su caída",
+          "created": "2024-01-15T11:15:00.000Z",
+          "modified": "2024-01-18T09:30:00.000Z"
         }
       ],
       "avatar": {
@@ -160,7 +298,16 @@
         "source": "dicebear"
       },
       "created": "2024-01-15T11:15:00.000Z",
-      "modified": "2024-01-18T09:30:00.000Z"
+      "modified": "2024-01-18T09:30:00.000Z",
+      "vitalStatusHistory": [
+        {
+          "status": "alive",
+          "eventId": null,
+          "description": "Personaje creado",
+          "timestamp": "2024-01-15T11:15:00.000Z"
+        }
+      ],
+      "currentVitalStatus": "alive"
     },
     {
       "id": "char-005-lyra",
@@ -172,14 +319,42 @@
       "notes": "Su puntería es legendaria. Puede comunicarse con animales del bosque.",
       "relationships": [
         {
+          "id": "rel-yagzue1ra",
           "characterId": "char-002-kael",
-          "type": "friend",
-          "description": "Compañeros de batalla con profundo respeto mutuo"
+          "history": [
+            {
+              "eventId": null,
+              "type": "friend",
+              "status": "active",
+              "description": "Compañeros de batalla con profundo respeto mutuo",
+              "notes": "",
+              "timestamp": "2024-01-15T11:30:00.000Z"
+            }
+          ],
+          "currentType": "friend",
+          "currentStatus": "active",
+          "currentDescription": "Compañeros de batalla con profundo respeto mutuo",
+          "created": "2024-01-15T11:30:00.000Z",
+          "modified": "2024-01-19T14:00:00.000Z"
         },
         {
+          "id": "rel-67wy09r1y",
           "characterId": "char-001-elara",
-          "type": "friend",
-          "description": "Mejores amigas, se conocieron durante una emboscada"
+          "history": [
+            {
+              "eventId": null,
+              "type": "friend",
+              "status": "active",
+              "description": "Mejores amigas, se conocieron durante una emboscada",
+              "notes": "",
+              "timestamp": "2024-01-15T11:30:00.000Z"
+            }
+          ],
+          "currentType": "friend",
+          "currentStatus": "active",
+          "currentDescription": "Mejores amigas, se conocieron durante una emboscada",
+          "created": "2024-01-15T11:30:00.000Z",
+          "modified": "2024-01-19T14:00:00.000Z"
         }
       ],
       "avatar": {
@@ -189,7 +364,16 @@
         "source": "dicebear"
       },
       "created": "2024-01-15T11:30:00.000Z",
-      "modified": "2024-01-19T14:00:00.000Z"
+      "modified": "2024-01-19T14:00:00.000Z",
+      "vitalStatusHistory": [
+        {
+          "status": "alive",
+          "eventId": null,
+          "description": "Personaje creado",
+          "timestamp": "2024-01-15T11:30:00.000Z"
+        }
+      ],
+      "currentVitalStatus": "alive"
     },
     {
       "id": "char-006-thorne",
@@ -201,9 +385,23 @@
       "notes": "Forjó armas legendarias. Conoce secretos de metalurgia antigua perdidos.",
       "relationships": [
         {
+          "id": "rel-enzobmhkt",
           "characterId": "char-002-kael",
-          "type": "friend",
-          "description": "Respeto mutuo entre guerreros, a menudo beben juntos"
+          "history": [
+            {
+              "eventId": null,
+              "type": "friend",
+              "status": "active",
+              "description": "Respeto mutuo entre guerreros, a menudo beben juntos",
+              "notes": "",
+              "timestamp": "2024-01-15T12:00:00.000Z"
+            }
+          ],
+          "currentType": "friend",
+          "currentStatus": "active",
+          "currentDescription": "Respeto mutuo entre guerreros, a menudo beben juntos",
+          "created": "2024-01-15T12:00:00.000Z",
+          "modified": "2024-01-19T10:20:00.000Z"
         }
       ],
       "avatar": {
@@ -213,7 +411,16 @@
         "source": "dicebear"
       },
       "created": "2024-01-15T12:00:00.000Z",
-      "modified": "2024-01-19T10:20:00.000Z"
+      "modified": "2024-01-19T10:20:00.000Z",
+      "vitalStatusHistory": [
+        {
+          "status": "alive",
+          "eventId": null,
+          "description": "Personaje creado",
+          "timestamp": "2024-01-15T12:00:00.000Z"
+        }
+      ],
+      "currentVitalStatus": "alive"
     }
   ],
   "loreEntries": [
@@ -415,7 +622,11 @@
       "participants": [],
       "location": "loc-004",
       "importance": "high",
-      "tags": ["guerra", "cristales", "historia antigua"],
+      "tags": [
+        "guerra",
+        "cristales",
+        "historia antigua"
+      ],
       "relatedScenes": [],
       "relatedChapters": [],
       "impacts": "Cambió el mapa político del mundo. Creó el Yermo Maldito. Fundó el Consejo de Magos.",
@@ -432,7 +643,11 @@
       "participants": [],
       "location": "loc-002",
       "importance": "high",
-      "tags": ["torre arcana", "magia", "fundación"],
+      "tags": [
+        "torre arcana",
+        "magia",
+        "fundación"
+      ],
       "relatedScenes": [],
       "relatedChapters": [],
       "impacts": "Centralización del conocimiento mágico. Establecimiento de estándares éticos para la magia.",
@@ -446,10 +661,17 @@
       "date": "Hace 50 años",
       "event": "Exilio de Morgath",
       "description": "Morgath es expulsado de la Torre Arcana por experimentar con magia oscura y nigromancia prohibida.",
-      "participants": ["char-003-morgath", "char-004-aldric"],
+      "participants": [
+        "char-003-morgath",
+        "char-004-aldric"
+      ],
       "location": "loc-002",
       "importance": "high",
-      "tags": ["morgath", "exilio", "magia oscura"],
+      "tags": [
+        "morgath",
+        "exilio",
+        "magia oscura"
+      ],
       "relatedScenes": [],
       "relatedChapters": [],
       "impacts": "Inicio de la enemistad Morgath-Aldric. Morgath comienza su búsqueda de los cristales.",
@@ -463,10 +685,17 @@
       "date": "Hace 24 años",
       "event": "Descubrimiento de Elara bebé",
       "description": "Aldric encuentra a una bebé en las ruinas del Templo Antiguo. Sus ojos violetas y cabello plateado sugieren que es la Elegida de la profecía.",
-      "participants": ["char-001-elara", "char-004-aldric"],
+      "participants": [
+        "char-001-elara",
+        "char-004-aldric"
+      ],
       "location": null,
       "importance": "high",
-      "tags": ["elara", "profecía", "origen"],
+      "tags": [
+        "elara",
+        "profecía",
+        "origen"
+      ],
       "relatedScenes": [],
       "relatedChapters": [],
       "impacts": "Elara es llevada a la Torre para ser entrenada. Aldric se convierte en su mentor.",
@@ -480,10 +709,17 @@
       "date": "Hace 5 años",
       "event": "Destrucción del Bosque de Lunargent",
       "description": "Morgath ataca el Bosque de Lunargent buscando un fragmento de cristal. Masacra a casi toda la población élfica.",
-      "participants": ["char-003-morgath", "char-005-lyra"],
+      "participants": [
+        "char-003-morgath",
+        "char-005-lyra"
+      ],
       "location": "loc-003",
       "importance": "high",
-      "tags": ["morgath", "elfos", "masacre"],
+      "tags": [
+        "morgath",
+        "elfos",
+        "masacre"
+      ],
       "relatedScenes": [],
       "relatedChapters": [],
       "impacts": "Los elfos de Lunargent quedan al borde de la extinción. Lyra jura venganza.",
@@ -497,10 +733,16 @@
       "date": "Hace 2 años",
       "event": "Tragedia del Escuadrón de Kael",
       "description": "Kael lidera su escuadrón en una misión contra cultistas. Una emboscada resulta en la muerte de todo su equipo excepto él.",
-      "participants": ["char-002-kael"],
+      "participants": [
+        "char-002-kael"
+      ],
       "location": null,
       "importance": "medium",
-      "tags": ["kael", "guardianes", "tragedia"],
+      "tags": [
+        "kael",
+        "guardianes",
+        "tragedia"
+      ],
       "relatedScenes": [],
       "relatedChapters": [],
       "impacts": "Kael renuncia a los Guardianes. Cae en depresión y busca redención.",
@@ -514,10 +756,16 @@
       "date": "Hace 1 año",
       "event": "Elara y Lyra se conocen",
       "description": "Durante una emboscada de bandidos en el camino a Puerto Dorado, Elara y Lyra luchan espalda con espalda. Forman una amistad instantánea.",
-      "participants": ["char-001-elara", "char-005-lyra"],
+      "participants": [
+        "char-001-elara",
+        "char-005-lyra"
+      ],
       "location": null,
       "importance": "medium",
-      "tags": ["amistad", "encuentro"],
+      "tags": [
+        "amistad",
+        "encuentro"
+      ],
       "relatedScenes": [],
       "relatedChapters": [],
       "impacts": "Lyra se une a la causa de Elara. Se vuelven mejores amigas.",
@@ -531,10 +779,19 @@
       "date": "Hace 6 meses",
       "event": "Primera confrontación con Morgath",
       "description": "Elara y su grupo rastrean a Morgath hasta unas ruinas antiguas. Primer encuentro directo termina en empate, pero Morgath escapa con otro fragmento de cristal.",
-      "participants": ["char-001-elara", "char-002-kael", "char-003-morgath", "char-005-lyra"],
+      "participants": [
+        "char-001-elara",
+        "char-002-kael",
+        "char-003-morgath",
+        "char-005-lyra"
+      ],
       "location": null,
       "importance": "high",
-      "tags": ["morgath", "confrontación", "cristales"],
+      "tags": [
+        "morgath",
+        "confrontación",
+        "cristales"
+      ],
       "relatedScenes": [],
       "relatedChapters": [],
       "impacts": "Elara descubre que Morgath posee 3 fragmentos de cristal. La amenaza se vuelve urgente.",
@@ -551,7 +808,10 @@
       "participants": [],
       "location": "loc-004",
       "importance": "medium",
-      "tags": ["dragones", "misterio"],
+      "tags": [
+        "dragones",
+        "misterio"
+      ],
       "relatedScenes": [],
       "relatedChapters": [],
       "impacts": "Creciente preocupación sobre los planes de Morgath. ¿Está intentando controlar dragones?",
@@ -565,12 +825,21 @@
       "date": "Presente",
       "event": "Inicio de la búsqueda",
       "description": "Aldric informa a Elara de una visión: Morgath planea atacar la Torre en la próxima Noche de las Estrellas (en 3 meses). Elara debe encontrar los fragmentos restantes primero.",
-      "participants": ["char-001-elara", "char-004-aldric"],
+      "participants": [
+        "char-001-elara",
+        "char-004-aldric"
+      ],
       "location": "loc-002",
       "importance": "high",
-      "tags": ["misión", "urgencia", "inicio"],
+      "tags": [
+        "misión",
+        "urgencia",
+        "inicio"
+      ],
       "relatedScenes": [],
-      "relatedChapters": ["chapter-001"],
+      "relatedChapters": [
+        "chapter-001"
+      ],
       "impacts": "Inicio de la carrera contra el tiempo. Elara reúne a su grupo para la búsqueda.",
       "notes": "Punto de inicio de la historia principal.",
       "created": "2024-01-17T12:15:00.000Z",
@@ -615,7 +884,10 @@
       "title": "La Convocatoria de Aldric",
       "chapter": "chapter-001",
       "description": "Elara es convocada urgentemente a la cámara del Archimago. Aldric le revela su visión sobre los planes de Morgath y le encomienda la misión de recuperar los fragmentos de cristal.",
-      "characters": ["char-001-elara", "char-004-aldric"],
+      "characters": [
+        "char-001-elara",
+        "char-004-aldric"
+      ],
       "location": "loc-002",
       "timelinePosition": null,
       "notes": "Escena de apertura. Establece la urgencia y la misión principal.",
@@ -627,7 +899,12 @@
       "title": "Reunión en la Taberna",
       "chapter": "chapter-002",
       "description": "Elara convoca a Kael, Lyra y Thorne en la Taberna del Dragón Dormido para informarles de la misión. Planifican su estrategia y deciden partir hacia las Ruinas de Thornhelm.",
-      "characters": ["char-001-elara", "char-002-kael", "char-005-lyra", "char-006-thorne"],
+      "characters": [
+        "char-001-elara",
+        "char-002-kael",
+        "char-005-lyra",
+        "char-006-thorne"
+      ],
       "location": "loc-005",
       "timelinePosition": null,
       "notes": "Introduce a los compañeros principales y establece la dinámica del grupo.",
@@ -639,7 +916,12 @@
       "title": "Batalla en las Ruinas",
       "chapter": "chapter-003",
       "description": "El grupo llega a las Ruinas de Thornhelm y es atacado por hordas de muertos vivientes. Primera batalla épica del grupo trabajando en equipo.",
-      "characters": ["char-001-elara", "char-002-kael", "char-005-lyra", "char-006-thorne"],
+      "characters": [
+        "char-001-elara",
+        "char-002-kael",
+        "char-005-lyra",
+        "char-006-thorne"
+      ],
       "location": null,
       "timelinePosition": null,
       "notes": "Escena de acción. Muestra las habilidades de cada personaje en combate.",
@@ -651,7 +933,12 @@
       "title": "Encuentro con el Culto",
       "chapter": "chapter-003",
       "description": "Dentro del templo, el grupo encuentra el primer fragmento pero es confrontado por cultistas de Morgath. Revelación de que no son los únicos buscando los cristales.",
-      "characters": ["char-001-elara", "char-002-kael", "char-005-lyra", "char-006-thorne"],
+      "characters": [
+        "char-001-elara",
+        "char-002-kael",
+        "char-005-lyra",
+        "char-006-thorne"
+      ],
       "location": null,
       "timelinePosition": null,
       "notes": "Introduce al Culto de las Sombras como antagonistas menores. Cliffhanger para el siguiente capítulo.",
@@ -663,7 +950,9 @@
       "title": "Momento de Duda de Elara",
       "chapter": "chapter-001",
       "description": "Después de la reunión con Aldric, Elara reflexiona sola en su habitación sobre el peso de su destino. Se pregunta si realmente es la Elegida o solo una maga talentosa con suerte.",
-      "characters": ["char-001-elara"],
+      "characters": [
+        "char-001-elara"
+      ],
       "location": "loc-002",
       "timelinePosition": null,
       "notes": "Escena introspectiva. Desarrolla la inseguridad interna de Elara a pesar de su exterior confiado.",
@@ -675,7 +964,9 @@
       "title": "Kael y sus Pesadillas",
       "chapter": "chapter-002",
       "description": "La noche antes de partir, Kael tiene pesadillas sobre la muerte de su escuadrón. Despierta sudando y sale a entrenar para despejar su mente.",
-      "characters": ["char-002-kael"],
+      "characters": [
+        "char-002-kael"
+      ],
       "location": null,
       "timelinePosition": null,
       "notes": "Profundiza en el trauma de Kael. Muestra su lucha interna con la culpa y el deseo de redención.",
