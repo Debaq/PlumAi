@@ -357,36 +357,411 @@ document.addEventListener('alpine:init', () => {
             console.log('📝 Creando datos de prueba...');
 
             try {
+                const project = Alpine.store('project');
+
                 // Primer commit: Inicio del proyecto
-                await window.gitService.saveProjectState(Alpine.store('project'));
+                await window.gitService.saveProjectState(project);
                 await window.gitService.commit('Inicio del proyecto', { name: 'Demo User', email: 'demo@pluma.local' });
 
-                // Segundo commit: Agregar personajes
-                Alpine.store('project').characters.push({
-                    id: 'demo-char-1',
-                    name: 'Juan Pérez',
-                    role: 'protagonist',
-                    description: 'Protagonista de la historia'
-                });
-                await window.gitService.saveProjectState(Alpine.store('project'));
-                await window.gitService.commit('Agregar personaje principal', { name: 'Demo User', email: 'demo@pluma.local' });
+                // Segundo commit: Agregar eventos de timeline
+                const eventBirth = window.uuid.generateUUID();
+                const eventMeeting = window.uuid.generateUUID();
+                const eventBetrayal = window.uuid.generateUUID();
+                const eventBattle = window.uuid.generateUUID();
+                const eventTransformation = window.uuid.generateUUID();
 
-                // Tercer commit: Agregar capítulo
-                Alpine.store('project').chapters.push({
-                    id: 'demo-chapter-1',
-                    title: 'Capítulo 1',
-                    number: 1,
-                    content: 'Contenido del primer capítulo...'
+                project.timeline.push({
+                    id: eventBirth,
+                    position: 0,
+                    event: 'Nacimiento de Elena',
+                    description: 'Elena nace en un pequeño pueblo costero',
+                    dateMode: 'absolute',
+                    date: '1990-03-15',
+                    era: '',
+                    chapter: '',
+                    linkedCharacters: [],
+                    linkedLocations: [],
+                    tags: ['origen'],
+                    created: new Date().toISOString(),
+                    modified: new Date().toISOString()
                 });
-                await window.gitService.saveProjectState(Alpine.store('project'));
+
+                project.timeline.push({
+                    id: eventMeeting,
+                    position: 1,
+                    event: 'Elena conoce a Marco',
+                    description: 'Primer encuentro entre Elena y Marco en la universidad',
+                    dateMode: 'absolute',
+                    date: '2010-09-01',
+                    era: '',
+                    chapter: '',
+                    linkedCharacters: [],
+                    linkedLocations: [],
+                    tags: ['encuentro'],
+                    created: new Date().toISOString(),
+                    modified: new Date().toISOString()
+                });
+
+                project.timeline.push({
+                    id: eventBetrayal,
+                    position: 2,
+                    event: 'La traición',
+                    description: 'Marco traiciona a Elena revelando sus secretos',
+                    dateMode: 'absolute',
+                    date: '2015-06-20',
+                    era: '',
+                    chapter: '',
+                    linkedCharacters: [],
+                    linkedLocations: [],
+                    tags: ['conflicto'],
+                    created: new Date().toISOString(),
+                    modified: new Date().toISOString()
+                });
+
+                project.timeline.push({
+                    id: eventBattle,
+                    position: 3,
+                    event: 'La batalla final',
+                    description: 'Confrontación decisiva donde Marco muere',
+                    dateMode: 'absolute',
+                    date: '2018-12-31',
+                    era: '',
+                    chapter: '',
+                    linkedCharacters: [],
+                    linkedLocations: [],
+                    tags: ['climax', 'muerte'],
+                    created: new Date().toISOString(),
+                    modified: new Date().toISOString()
+                });
+
+                project.timeline.push({
+                    id: eventTransformation,
+                    position: 4,
+                    event: 'Transformación de Sofia',
+                    description: 'Sofia es transformada por una maldición antigua',
+                    dateMode: 'absolute',
+                    date: '2016-10-31',
+                    era: '',
+                    chapter: '',
+                    linkedCharacters: [],
+                    linkedLocations: [],
+                    tags: ['magia', 'transformación'],
+                    created: new Date().toISOString(),
+                    modified: new Date().toISOString()
+                });
+
+                await window.gitService.saveProjectState(project);
+                await window.gitService.commit('Agregar eventos de timeline', { name: 'Demo User', email: 'demo@pluma.local' });
+
+                // Tercer commit: Agregar personajes con estados vitales variados
+                const elenaId = window.uuid.generateUUID();
+                const marcoId = window.uuid.generateUUID();
+                const sofiaId = window.uuid.generateUUID();
+                const alexId = window.uuid.generateUUID();
+
+                // Elena - protagonista viva pero herida
+                project.characters.push({
+                    id: elenaId,
+                    name: 'Elena Martínez',
+                    role: 'protagonist',
+                    description: 'Una joven valiente con un pasado misterioso',
+                    personality: 'Determinada, compasiva pero cautelosa',
+                    background: 'Creció en un pueblo costero sin conocer a sus padres',
+                    relationships: [],
+                    notes: 'Personaje principal de la historia',
+                    avatar: null,
+                    vitalStatusHistory: [
+                        {
+                            status: 'alive',
+                            eventId: eventBirth,
+                            description: 'Nace en el pueblo',
+                            timestamp: new Date('1990-03-15').toISOString()
+                        },
+                        {
+                            status: 'injured',
+                            eventId: eventBattle,
+                            description: 'Gravemente herida en la batalla final',
+                            notes: 'Logró sobrevivir pero necesita tiempo para recuperarse',
+                            timestamp: new Date('2018-12-31').toISOString()
+                        }
+                    ],
+                    currentVitalStatus: 'injured',
+                    created: new Date().toISOString(),
+                    modified: new Date().toISOString()
+                });
+
+                // Marco - antagonista muerto
+                project.characters.push({
+                    id: marcoId,
+                    name: 'Marco Delgado',
+                    role: 'antagonist',
+                    description: 'Ex-aliado convertido en enemigo',
+                    personality: 'Carismático pero manipulador',
+                    background: 'Estudió junto a Elena pero siempre tuvo ambiciones oscuras',
+                    relationships: [],
+                    notes: 'Antagonista principal',
+                    avatar: null,
+                    vitalStatusHistory: [
+                        {
+                            status: 'alive',
+                            eventId: eventMeeting,
+                            description: 'Conoce a Elena en la universidad',
+                            timestamp: new Date('2010-09-01').toISOString()
+                        },
+                        {
+                            status: 'killed',
+                            eventId: eventBattle,
+                            description: 'Muere en la batalla final',
+                            notes: 'Sacrificó todo por poder y perdió',
+                            timestamp: new Date('2018-12-31').toISOString()
+                        }
+                    ],
+                    currentVitalStatus: 'killed',
+                    created: new Date().toISOString(),
+                    modified: new Date().toISOString()
+                });
+
+                // Sofia - personaje transformado
+                project.characters.push({
+                    id: sofiaId,
+                    name: 'Sofia Chen',
+                    role: 'supporting',
+                    description: 'Mejor amiga de Elena, ahora transformada',
+                    personality: 'Leal, inteligente y resiliente',
+                    background: 'Compañera de Elena desde la infancia',
+                    relationships: [],
+                    notes: 'Personaje de apoyo importante',
+                    avatar: null,
+                    vitalStatusHistory: [
+                        {
+                            status: 'alive',
+                            eventId: null,
+                            description: 'Personaje creado',
+                            timestamp: new Date('2008-01-01').toISOString()
+                        },
+                        {
+                            status: 'transformed',
+                            eventId: eventTransformation,
+                            description: 'Transformada por maldición antigua',
+                            notes: 'Ya no es completamente humana, tiene habilidades especiales',
+                            timestamp: new Date('2016-10-31').toISOString()
+                        }
+                    ],
+                    currentVitalStatus: 'transformed',
+                    created: new Date().toISOString(),
+                    modified: new Date().toISOString()
+                });
+
+                // Alex - personaje desaparecido
+                project.characters.push({
+                    id: alexId,
+                    name: 'Alex Rivera',
+                    role: 'secondary',
+                    description: 'Mentor misterioso que desapareció',
+                    personality: 'Sabio, enigmático',
+                    background: 'Antiguo guardián con conocimientos ancestrales',
+                    relationships: [],
+                    notes: 'Su paradero es desconocido',
+                    avatar: null,
+                    vitalStatusHistory: [
+                        {
+                            status: 'alive',
+                            eventId: null,
+                            description: 'Personaje creado',
+                            timestamp: new Date('2005-01-01').toISOString()
+                        },
+                        {
+                            status: 'missing',
+                            eventId: eventBetrayal,
+                            description: 'Desapareció tras la traición',
+                            notes: 'No se sabe si está vivo o muerto',
+                            timestamp: new Date('2015-06-20').toISOString()
+                        }
+                    ],
+                    currentVitalStatus: 'missing',
+                    created: new Date().toISOString(),
+                    modified: new Date().toISOString()
+                });
+
+                await window.gitService.saveProjectState(project);
+                await window.gitService.commit('Agregar personajes con estados vitales', { name: 'Demo User', email: 'demo@pluma.local' });
+
+                // Cuarto commit: Agregar relaciones con historial temporal
+                // Relación Elena -> Marco (evoluciona de amigos a enemigos)
+                const elenaChar = project.characters.find(c => c.id === elenaId);
+                elenaChar.relationships.push({
+                    id: window.uuid.generateUUID(),
+                    characterId: marcoId,
+                    history: [
+                        {
+                            eventId: eventMeeting,
+                            type: 'friend',
+                            status: 'active',
+                            description: 'Se conocen en la universidad',
+                            notes: 'Conexión inmediata, estudian juntos',
+                            timestamp: new Date('2010-09-01').toISOString()
+                        },
+                        {
+                            eventId: null,
+                            type: 'romantic',
+                            status: 'active',
+                            description: 'Comienzan una relación romántica',
+                            notes: 'Relación apasionada pero complicada',
+                            timestamp: new Date('2012-02-14').toISOString()
+                        },
+                        {
+                            eventId: eventBetrayal,
+                            type: 'enemy',
+                            status: 'active',
+                            description: 'Marco la traiciona',
+                            notes: 'Elena descubre que Marco la estuvo usando',
+                            timestamp: new Date('2015-06-20').toISOString()
+                        },
+                        {
+                            eventId: eventBattle,
+                            type: 'enemy',
+                            status: 'ended',
+                            description: 'Marco muere en la batalla',
+                            notes: 'Fin trágico de una relación compleja',
+                            timestamp: new Date('2018-12-31').toISOString()
+                        }
+                    ],
+                    currentType: 'enemy',
+                    currentStatus: 'ended',
+                    currentDescription: 'Marco muere en la batalla',
+                    created: new Date().toISOString(),
+                    modified: new Date().toISOString()
+                });
+
+                // Relación Marco -> Elena (simétrica)
+                const marcoChar = project.characters.find(c => c.id === marcoId);
+                marcoChar.relationships.push({
+                    id: window.uuid.generateUUID(),
+                    characterId: elenaId,
+                    history: [
+                        {
+                            eventId: eventMeeting,
+                            type: 'friend',
+                            status: 'active',
+                            description: 'Se conocen en la universidad',
+                            notes: 'Ve en Elena una oportunidad',
+                            timestamp: new Date('2010-09-01').toISOString()
+                        },
+                        {
+                            eventId: null,
+                            type: 'romantic',
+                            status: 'active',
+                            description: 'Inicia relación romántica',
+                            notes: 'Usa el romance para manipularla',
+                            timestamp: new Date('2012-02-14').toISOString()
+                        },
+                        {
+                            eventId: eventBetrayal,
+                            type: 'enemy',
+                            status: 'active',
+                            description: 'Traiciona a Elena',
+                            notes: 'Revela su verdadera naturaleza',
+                            timestamp: new Date('2015-06-20').toISOString()
+                        },
+                        {
+                            eventId: eventBattle,
+                            type: 'enemy',
+                            status: 'ended',
+                            description: 'Muere enfrentando a Elena',
+                            notes: 'Último intento de destruirla fracasa',
+                            timestamp: new Date('2018-12-31').toISOString()
+                        }
+                    ],
+                    currentType: 'enemy',
+                    currentStatus: 'ended',
+                    currentDescription: 'Muere enfrentando a Elena',
+                    created: new Date().toISOString(),
+                    modified: new Date().toISOString()
+                });
+
+                // Relación Elena -> Sofia (amistad duradera)
+                elenaChar.relationships.push({
+                    id: window.uuid.generateUUID(),
+                    characterId: sofiaId,
+                    history: [
+                        {
+                            eventId: null,
+                            type: 'friend',
+                            status: 'active',
+                            description: 'Mejores amigas desde la infancia',
+                            notes: 'Lazo inquebrantable',
+                            timestamp: new Date('2000-01-01').toISOString()
+                        },
+                        {
+                            eventId: eventTransformation,
+                            type: 'family',
+                            status: 'active',
+                            description: 'Se vuelven como hermanas tras la transformación',
+                            notes: 'Elena ayuda a Sofia a adaptarse a su nuevo estado',
+                            timestamp: new Date('2016-10-31').toISOString()
+                        }
+                    ],
+                    currentType: 'family',
+                    currentStatus: 'active',
+                    currentDescription: 'Hermanas de corazón',
+                    created: new Date().toISOString(),
+                    modified: new Date().toISOString()
+                });
+
+                // Relación Elena -> Alex (mentor)
+                elenaChar.relationships.push({
+                    id: window.uuid.generateUUID(),
+                    characterId: alexId,
+                    history: [
+                        {
+                            eventId: null,
+                            type: 'mentor',
+                            status: 'active',
+                            description: 'Alex se convierte en su mentor',
+                            notes: 'Le enseña sobre sus verdaderos orígenes',
+                            timestamp: new Date('2013-05-15').toISOString()
+                        },
+                        {
+                            eventId: eventBetrayal,
+                            type: 'mentor',
+                            status: 'uncertain',
+                            description: 'Alex desaparece',
+                            notes: 'Elena no sabe qué le pasó a su mentor',
+                            timestamp: new Date('2015-06-20').toISOString()
+                        }
+                    ],
+                    currentType: 'mentor',
+                    currentStatus: 'uncertain',
+                    currentDescription: 'Paradero desconocido',
+                    created: new Date().toISOString(),
+                    modified: new Date().toISOString()
+                });
+
+                await window.gitService.saveProjectState(project);
+                await window.gitService.commit('Agregar relaciones con historial temporal', { name: 'Demo User', email: 'demo@pluma.local' });
+
+                // Quinto commit: Agregar capítulo inicial
+                project.chapters.push({
+                    id: window.uuid.generateUUID(),
+                    title: 'Capítulo 1: El Despertar',
+                    number: 1,
+                    summary: 'Elena despierta herida tras la batalla final y reflexiona sobre todo lo perdido',
+                    content: 'Elena abrió los ojos lentamente. El dolor punzante en su costado le recordó inmediatamente los eventos de la noche anterior...',
+                    wordCount: 0,
+                    status: 'draft',
+                    created: new Date().toISOString(),
+                    modified: new Date().toISOString()
+                });
+
+                await window.gitService.saveProjectState(project);
                 await window.gitService.commit('Agregar primer capítulo', { name: 'Demo User', email: 'demo@pluma.local' });
 
                 // Recargar commits
                 await this.loadCommits();
                 await this.loadStats();
-                this.lastProjectState = JSON.stringify(Alpine.store('project').exportProject());
+                this.lastProjectState = JSON.stringify(project.exportProject());
 
-                console.log('✅ Datos de prueba creados');
+                console.log('✅ Datos de prueba completos creados');
             } catch (error) {
                 console.error('Error creando datos de prueba:', error);
             }
