@@ -22,6 +22,7 @@ window.translations_es = {
         previous: 'Anterior',
         yes: 'Sí',
         no: 'No',
+        provider: 'Proveedor',
         optional: 'Opcional',
         required: 'Requerido',
         viewAll: 'Ver Todos',
@@ -378,6 +379,15 @@ window.translations_es = {
             write: 'IA Escribe',
             assist: 'IA Asiste'
         },
+        assistantModes: {
+            continue: 'Continuar escribiendo',
+            suggest: 'Sugerir ideas',
+            analyze: 'Analizar texto',
+            improve: 'Mejorar pasaje',
+            dialogue: 'Generar diálogo',
+            worldbuild: 'Expandir worldbuilding',
+            characterize: 'Desarrollar personaje'
+        },
         prompt: {
             label: 'Instrucción para la IA',
             placeholder: 'Escribe qué quieres que haga la IA...',
@@ -674,9 +684,27 @@ window.translations_es = {
             description: 'Configura las claves de API para usar la IA',
             providers: {
                 claude: 'Claude (Anthropic)',
-                kimi: 'Kimi (Moonshot)',
+                openai: 'OpenAI (ChatGPT)',
+                google: 'Google Gemini',
+                groq: 'Groq (Ultra rápido)',
+                together: 'Together AI',
                 replicate: 'Replicate',
+                huggingface: 'HuggingFace',
+                ollama: 'Ollama (Local)',
+                manual: 'Copiar Prompt (Manual)',
+                kimi: 'Kimi (Moonshot)',
                 qwen: 'Qwen (Alibaba)'
+            },
+            providerInfo: {
+                claude: 'API de Anthropic - $5 gratis',
+                openai: 'API de OpenAI - Solo pago',
+                google: 'API de Google - Free tier generoso',
+                groq: 'FREE tier generoso - Ultra rápido',
+                together: 'Free tier $25 al inicio',
+                replicate: 'Modelos variados - Pago por uso',
+                huggingface: 'Algunos modelos gratis',
+                ollama: '100% GRATIS - Requiere instalación local',
+                manual: '100% GRATIS - Copia el prompt a cualquier IA'
             },
             form: {
                 key: 'Clave API',
