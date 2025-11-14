@@ -5,7 +5,7 @@
         <div class="legacy-modal-header">
             <h2>
                 <i data-lucide="heart" width="20" height="20"></i>
-                <span x-text="$store.i18n.t('common.edit') + ' Relación'">Editar Relación</span>
+                <span x-text="$store.ui.modalData?.isNew ? 'Nueva Relación' : ($store.i18n.t('common.edit') + ' Relación')">Editar Relación</span>
             </h2>
             <button class="btn-close" @click="$store.ui.closeModal()">
                 <i data-lucide="x" width="20" height="20"></i>
@@ -14,30 +14,92 @@
         <div class="modal-body" x-data="{
             submitForm(form) {
                 const characterId = $store.ui.modalData.characterId;
-                const relationshipIndex = $store.ui.modalData.relationshipIndex;
+                const isNew = $store.ui.modalData.isNew;
                 const character = $store.project.getCharacter(characterId);
 
-                if (!character || !character.relationships || !character.relationships[relationshipIndex]) {
-                    $store.ui.error('Error', 'No se encontró la relación');
+                if (!character) {
+                    $store.ui.error('Error', 'No se encontró el personaje');
                     return;
                 }
 
-                // Actualizar la relación específica
-                const updatedRelationships = [...character.relationships];
-                updatedRelationships[relationshipIndex] = {
+                const newRelation = {
                     characterId: form.querySelector('[name=relatedCharacterId]').value,
                     type: form.querySelector('[name=type]').value,
                     description: form.querySelector('[name=description]').value,
                     startEvent: form.querySelector('[name=startEvent]').value || null,
                     currentStatus: form.querySelector('[name=currentStatus]').value || 'active',
-                    notes: form.querySelector('[name=notes]').value || ''
+                    notes: form.querySelector('[name=notes]').value || '',
+                    history: []
                 };
 
-                $store.project.updateCharacter(characterId, {
-                    relationships: updatedRelationships
-                });
+                if (isNew) {
+                    // Crear nueva relación con historial inicial
+                    if (newRelation.startEvent) {
+                        newRelation.history = [{
+                            eventId: newRelation.startEvent,
+                            timestamp: new Date().toISOString(),
+                            typeChange: null, // Primer registro, no hay cambio
+                            statusChange: null,
+                            note: 'Inicio de la relación'
+                        }];
+                    }
+                    const updatedRelationships = [...(character.relationships || []), newRelation];
+                    $store.project.updateCharacter(characterId, {
+                        relationships: updatedRelationships
+                    });
+                    $store.ui.success('Relación creada', '');
+                } else {
+                    // Actualizar relación existente y registrar cambios en historial
+                    const relationshipIndex = $store.ui.modalData.relationshipIndex;
+                    if (!character.relationships || !character.relationships[relationshipIndex]) {
+                        $store.ui.error('Error', 'No se encontró la relación');
+                        return;
+                    }
 
-                $store.ui.success('Relación actualizada', '');
+                    const oldRelation = character.relationships[relationshipIndex];
+
+                    // Preservar historial existente
+                    newRelation.history = oldRelation.history || [];
+
+                    // Detectar cambios y agregarlos al historial
+                    let hasChanges = false;
+                    let historyEntry = {
+                        eventId: null,
+                        timestamp: new Date().toISOString(),
+                        typeChange: null,
+                        statusChange: null,
+                        note: null
+                    };
+
+                    if (oldRelation.type !== newRelation.type) {
+                        historyEntry.typeChange = {
+                            from: oldRelation.type,
+                            to: newRelation.type
+                        };
+                        hasChanges = true;
+                    }
+
+                    if (oldRelation.currentStatus !== newRelation.currentStatus) {
+                        historyEntry.statusChange = {
+                            from: oldRelation.currentStatus || 'active',
+                            to: newRelation.currentStatus
+                        };
+                        hasChanges = true;
+                    }
+
+                    // Si hay cambios, agregar al historial
+                    if (hasChanges) {
+                        newRelation.history.push(historyEntry);
+                    }
+
+                    const updatedRelationships = [...character.relationships];
+                    updatedRelationships[relationshipIndex] = newRelation;
+                    $store.project.updateCharacter(characterId, {
+                        relationships: updatedRelationships
+                    });
+                    $store.ui.success('Relación actualizada', '');
+                }
+
                 $store.ui.closeModal();
                 lucide.createIcons();
             },
@@ -63,7 +125,7 @@
         }">
             <form @submit.prevent="submitForm($el)">
                 <!-- Información de personajes -->
-                <div class="form-group" style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                <div class="form-group" style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px; margin-bottom: 16px;" x-show="!$store.ui.modalData?.isNew">
                     <div style="display: flex; align-items: center; gap: 12px;">
                         <div style="flex: 1; text-align: center;">
                             <strong x-text="$store.project.getCharacter($store.ui.modalData?.characterId)?.name || 'Personaje'"></strong>
@@ -161,20 +223,105 @@
                               x-text="$store.ui.modalData?.relationship?.notes || ''"></textarea>
                 </div>
 
+                <!-- Historial de la relación -->
+                <div class="form-group" x-show="!$store.ui.modalData?.isNew && $store.ui.modalData?.relationship?.history && $store.ui.modalData.relationship.history.length > 0">
+                    <label>
+                        <i data-lucide="history" width="14" height="14"></i>
+                        Línea de Tiempo de la Relación
+                    </label>
+                    <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 16px; max-height: 300px; overflow-y: auto;">
+                        <!-- Timeline visual -->
+                        <div style="position: relative; padding-left: 24px;">
+                            <!-- Línea vertical -->
+                            <div style="position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: var(--border);"></div>
+
+                            <template x-for="(entry, index) in ($store.ui.modalData?.relationship?.history || [])" :key="index">
+                                <div style="position: relative; margin-bottom: 16px;">
+                                    <!-- Punto en la línea -->
+                                    <div style="position: absolute; left: -20px; top: 4px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg-tertiary);"></div>
+
+                                    <!-- Contenido del evento -->
+                                    <div style="background: var(--bg-secondary); border-radius: 6px; padding: 10px; border: 1px solid var(--border);">
+                                        <!-- Header: evento y fecha -->
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                            <div style="display: flex; align-items: center; gap: 6px;">
+                                                <i data-lucide="calendar" width="12" height="12" style="color: var(--accent);"></i>
+                                                <span style="font-size: 11px; font-weight: 600; color: var(--text-primary);" x-text="(() => {
+                                                    const event = $store.project.timeline.find(e => e.id === entry.eventId);
+                                                    return event ? event.event : 'Inicio de la relación';
+                                                })()"></span>
+                                            </div>
+                                            <span style="font-size: 10px; color: var(--text-tertiary);" x-text="new Date(entry.timestamp).toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' })"></span>
+                                        </div>
+
+                                        <!-- Cambios -->
+                                        <div style="font-size: 12px; color: var(--text-secondary); display: flex; flex-direction: column; gap: 4px;">
+                                            <template x-if="entry.typeChange">
+                                                <div style="display: flex; align-items: center; gap: 6px;">
+                                                    <span style="color: var(--text-tertiary); font-size: 11px;">Tipo:</span>
+                                                    <div style="display: flex; align-items: center; gap: 4px;">
+                                                        <span class="badge" style="font-size: 10px; padding: 2px 6px; background: var(--bg-tertiary);" x-text="$store.i18n.t('characters.form.relationTypes.' + entry.typeChange.from)"></span>
+                                                        <i data-lucide="arrow-right" width="12" height="12"></i>
+                                                        <span class="badge" style="font-size: 10px; padding: 2px 6px; background: var(--accent); color: white;" x-text="$store.i18n.t('characters.form.relationTypes.' + entry.typeChange.to)"></span>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                            <template x-if="entry.statusChange">
+                                                <div style="display: flex; align-items: center; gap: 6px;">
+                                                    <span style="color: var(--text-tertiary); font-size: 11px;">Estado:</span>
+                                                    <div style="display: flex; align-items: center; gap: 4px;">
+                                                        <span class="badge" style="font-size: 10px; padding: 2px 6px; background: var(--bg-tertiary);" x-text="(() => {
+                                                            const statusMap = {
+                                                                active: 'Activa',
+                                                                strained: 'Tensa',
+                                                                improving: 'Mejorando',
+                                                                deteriorating: 'Deteriorándose',
+                                                                ended: 'Terminada',
+                                                                complicated: 'Complicada'
+                                                            };
+                                                            return statusMap[entry.statusChange.from] || entry.statusChange.from;
+                                                        })()"></span>
+                                                        <i data-lucide="arrow-right" width="12" height="12"></i>
+                                                        <span class="badge" style="font-size: 10px; padding: 2px 6px; background: var(--accent); color: white;" x-text="(() => {
+                                                            const statusMap = {
+                                                                active: 'Activa',
+                                                                strained: 'Tensa',
+                                                                improving: 'Mejorando',
+                                                                deteriorating: 'Deteriorándose',
+                                                                ended: 'Terminada',
+                                                                complicated: 'Complicada'
+                                                            };
+                                                            return statusMap[entry.statusChange.to] || entry.statusChange.to;
+                                                        })()"></span>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                            <template x-if="entry.note">
+                                                <div style="margin-top: 4px; padding: 6px; background: var(--bg-tertiary); border-radius: 4px; font-style: italic; font-size: 11px;" x-text="entry.note"></div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Footer con acciones -->
                 <div class="modal-footer" style="justify-content: space-between;">
                     <button type="button"
                             class="btn-danger"
-                            @click="deleteRelationship()">
+                            @click="deleteRelationship()"
+                            x-show="!$store.ui.modalData?.isNew">
                         <i data-lucide="trash-2" width="16" height="16"></i>
                         <span>Eliminar Relación</span>
                     </button>
-                    <div style="display: flex; gap: 8px;">
+                    <div style="display: flex; gap: 8px;" :style="$store.ui.modalData?.isNew ? 'margin-left: auto;' : ''">
                         <button type="button" class="btn-secondary" @click="$store.ui.closeModal()">
                             Cancelar
                         </button>
                         <button type="submit" class="btn-primary">
-                            Guardar Cambios
+                            <span x-text="$store.ui.modalData?.isNew ? 'Crear Relación' : 'Guardar Cambios'">Guardar Cambios</span>
                         </button>
                     </div>
                 </div>

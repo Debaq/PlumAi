@@ -17,6 +17,7 @@
             selectedChapters: $store.ui.modalData?.chapterIds || [],
             tags: $store.ui.modalData?.tags || [],
             tagInput: '',
+            relationshipImpacts: $store.ui.modalData?.impacts || [],
 
             addTag() {
                 if (this.tagInput.trim() && !this.tags.includes(this.tagInput.trim())) {
@@ -27,6 +28,33 @@
 
             removeTag(tag) {
                 this.tags = this.tags.filter(t => t !== tag);
+            },
+
+            addRelationshipImpact() {
+                this.relationshipImpacts.push({
+                    characterId: '',
+                    relatedCharacterId: '',
+                    typeChange: { from: '', to: '' },
+                    statusChange: { from: '', to: '' },
+                    note: ''
+                });
+            },
+
+            removeRelationshipImpact(index) {
+                this.relationshipImpacts.splice(index, 1);
+            },
+
+            getAvailableRelatedCharacters(characterId) {
+                const character = $store.project.getCharacter(characterId);
+                return character?.relationships?.map(rel => ({
+                    id: rel.characterId,
+                    name: $store.project.getCharacter(rel.characterId)?.name || 'Desconocido'
+                })) || [];
+            },
+
+            getCurrentRelationship(characterId, relatedCharacterId) {
+                const character = $store.project.getCharacter(characterId);
+                return character?.relationships?.find(rel => rel.characterId === relatedCharacterId);
             },
 
             toggleParticipant(charId) {
@@ -68,6 +96,7 @@
                     sceneIds: this.selectedScenes,
                     chapterIds: this.selectedChapters,
                     tags: this.tags,
+                    impacts: this.relationshipImpacts,
                     notes: notesEditor?.getContent() || ''
                 };
 
@@ -78,8 +107,52 @@
                     formData.era = form.querySelector('[name=era]')?.value || '';
                 }
 
-                if ($store.ui.modalData?.id) {
-                    $store.project.updateTimelineEvent($store.ui.modalData.id, formData);
+                const eventId = $store.ui.modalData?.id;
+
+                // Aplicar los impactos a las relaciones
+                this.relationshipImpacts.forEach(impact => {
+                    if (!impact.characterId || !impact.relatedCharacterId) return;
+
+                    const character = $store.project.getCharacter(impact.characterId);
+                    if (!character || !character.relationships) return;
+
+                    const relationIndex = character.relationships.findIndex(
+                        rel => rel.characterId === impact.relatedCharacterId
+                    );
+
+                    if (relationIndex === -1) return;
+
+                    const relation = character.relationships[relationIndex];
+                    if (!relation.history) relation.history = [];
+
+                    // Crear entrada de historial
+                    const historyEntry = {
+                        eventId: eventId || window.uuid.generateUUID(),
+                        timestamp: new Date().toISOString(),
+                        typeChange: (impact.typeChange?.from && impact.typeChange?.to) ? impact.typeChange : null,
+                        statusChange: (impact.statusChange?.from && impact.statusChange?.to) ? impact.statusChange : null,
+                        note: impact.note || null
+                    };
+
+                    // Agregar al historial
+                    relation.history.push(historyEntry);
+
+                    // Actualizar el tipo y estado actuales si cambiaron
+                    if (impact.typeChange?.to) {
+                        relation.type = impact.typeChange.to;
+                    }
+                    if (impact.statusChange?.to) {
+                        relation.currentStatus = impact.statusChange.to;
+                    }
+
+                    // Actualizar el personaje
+                    $store.project.updateCharacter(impact.characterId, {
+                        relationships: character.relationships
+                    });
+                });
+
+                if (eventId) {
+                    $store.project.updateTimelineEvent(eventId, formData);
                     $store.ui.success($store.i18n.t('notifications.success.eventUpdated'), '');
                 } else {
                     $store.project.addTimelineEvent(formData);
@@ -248,6 +321,117 @@
                         </template>
                     </div>
                 </div>
+
+                <div class="form-divider"></div>
+
+                <!-- Relationship Impacts -->
+                <div class="form-group">
+                    <label>
+                        <i data-lucide="users" width="14" height="14"></i>
+                        Cambios en Relaciones
+                    </label>
+                    <p class="hint" style="margin-bottom: 12px;">Define cómo este evento afecta las relaciones entre personajes</p>
+
+                    <template x-for="(impact, index) in relationshipImpacts" :key="index">
+                        <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 12px; margin-bottom: 12px; border-left: 3px solid var(--accent);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <span style="font-weight: 600; font-size: 13px;">Impacto en Relación #<span x-text="index + 1"></span></span>
+                                <button type="button" class="btn-icon" @click="removeRelationshipImpact(index)">
+                                    <i data-lucide="trash-2" width="14" height="14"></i>
+                                </button>
+                            </div>
+
+                            <!-- Seleccionar personaje -->
+                            <div style="margin-bottom: 8px;">
+                                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 4px;">Personaje</label>
+                                <select x-model="impact.characterId" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-secondary);">
+                                    <option value="">Seleccionar personaje...</option>
+                                    <template x-for="char in $store.project.characters" :key="char.id">
+                                        <option :value="char.id" x-text="char.name"></option>
+                                    </template>
+                                </select>
+                            </div>
+
+                            <!-- Seleccionar personaje relacionado -->
+                            <div style="margin-bottom: 8px;">
+                                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 4px;">Relación con</label>
+                                <select x-model="impact.relatedCharacterId" :disabled="!impact.characterId" style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-secondary);">
+                                    <option value="">Seleccionar personaje relacionado...</option>
+                                    <template x-for="relChar in getAvailableRelatedCharacters(impact.characterId)" :key="relChar.id">
+                                        <option :value="relChar.id" x-text="relChar.name"></option>
+                                    </template>
+                                </select>
+                            </div>
+
+                            <!-- Cambio de tipo -->
+                            <div style="margin-bottom: 8px;">
+                                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 4px;">Cambio de Tipo (opcional)</label>
+                                <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center;">
+                                    <select x-model="impact.typeChange.from" style="padding: 6px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-secondary); font-size: 12px;">
+                                        <option value="">Tipo anterior</option>
+                                        <option value="friend">Amigo</option>
+                                        <option value="enemy">Enemigo</option>
+                                        <option value="love">Amor</option>
+                                        <option value="family">Familia</option>
+                                        <option value="rival">Rival</option>
+                                        <option value="ally">Aliado</option>
+                                        <option value="mentor">Mentor</option>
+                                    </select>
+                                    <span style="text-align: center;">→</span>
+                                    <select x-model="impact.typeChange.to" style="padding: 6px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-secondary); font-size: 12px;">
+                                        <option value="">Nuevo tipo</option>
+                                        <option value="friend">Amigo</option>
+                                        <option value="enemy">Enemigo</option>
+                                        <option value="love">Amor</option>
+                                        <option value="family">Familia</option>
+                                        <option value="rival">Rival</option>
+                                        <option value="ally">Aliado</option>
+                                        <option value="mentor">Mentor</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Cambio de estado -->
+                            <div style="margin-bottom: 8px;">
+                                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 4px;">Cambio de Estado (opcional)</label>
+                                <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center;">
+                                    <select x-model="impact.statusChange.from" style="padding: 6px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-secondary); font-size: 12px;">
+                                        <option value="">Estado anterior</option>
+                                        <option value="active">Activa</option>
+                                        <option value="strained">Tensa</option>
+                                        <option value="improving">Mejorando</option>
+                                        <option value="deteriorating">Deteriorándose</option>
+                                        <option value="ended">Terminada</option>
+                                        <option value="complicated">Complicada</option>
+                                    </select>
+                                    <span style="text-align: center;">→</span>
+                                    <select x-model="impact.statusChange.to" style="padding: 6px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-secondary); font-size: 12px;">
+                                        <option value="">Nuevo estado</option>
+                                        <option value="active">Activa</option>
+                                        <option value="strained">Tensa</option>
+                                        <option value="improving">Mejorando</option>
+                                        <option value="deteriorating">Deteriorándose</option>
+                                        <option value="ended">Terminada</option>
+                                        <option value="complicated">Complicada</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Nota del cambio -->
+                            <div>
+                                <label style="font-size: 12px; color: var(--text-secondary); display: block; margin-bottom: 4px;">Nota del cambio</label>
+                                <input type="text" x-model="impact.note" placeholder="Ej: Traición durante la batalla..." style="width: 100%; padding: 6px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg-secondary); font-size: 12px;">
+                            </div>
+                        </div>
+                    </template>
+
+                    <button type="button" class="btn-secondary w-full" @click="addRelationshipImpact()">
+                        <i data-lucide="plus" width="16" height="16"></i>
+                        <span>Agregar Cambio en Relación</span>
+                    </button>
+                </div>
+
+                <div class="form-divider"></div>
 
                 <!-- Notes Rich Editor -->
                 <div class="form-group" x-data="richEditorComponent({

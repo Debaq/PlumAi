@@ -204,18 +204,36 @@
         </div>
 
         <!-- Vista de Lista de Relaciones -->
-        <div x-show="(!$store.ui.activeRelationsView || $store.ui.activeRelationsView === 'list') && $store.project.characters.length > 0 && !$store.project.characters.every(c => !c.relationships || c.relationships.length === 0)" style="margin-top: 16px;">
+        <div x-show="(!$store.ui.activeRelationsView || $store.ui.activeRelationsView === 'list') && $store.project.characters.length > 0" style="margin-top: 16px;">
             <div class="content-grid">
-                <template x-for="character in $store.project.characters.filter(c => c.relationships && c.relationships.length > 0)" :key="character.id">
+                <template x-for="character in $store.project.characters" :key="character.id">
                     <div class="card">
-                        <h3 x-text="character.name"></h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <h3 x-text="character.name" style="margin: 0;"></h3>
+                            <button type="button"
+                                    class="btn-primary btn-sm"
+                                    @click="$store.ui.openModal('editRelationship', {
+                                        characterId: character.id,
+                                        isNew: true
+                                    })"
+                                    style="padding: 6px 12px; font-size: 13px;">
+                                <i data-lucide="plus" width="14" height="14"></i>
+                                <span>Nueva Relación</span>
+                            </button>
+                        </div>
                         <div style="margin-top: 12px;">
+                            <template x-if="!character.relationships || character.relationships.length === 0">
+                                <div style="padding: 16px; text-align: center; color: var(--text-tertiary); font-size: 13px;">
+                                    Sin relaciones registradas
+                                </div>
+                            </template>
                             <template x-for="(relation, relationIndex) in character.relationships" :key="relation.characterId + '-' + relationIndex">
                                 <div class="clickable"
                                      @click="$store.ui.openModal('editRelationship', {
                                         characterId: character.id,
                                         relationship: relation,
-                                        relationshipIndex: relationIndex
+                                        relationshipIndex: relationIndex,
+                                        isNew: false
                                      })"
                                      style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.2s;"
                                      @mouseenter="$el.style.background = 'var(--bg-tertiary)'"
