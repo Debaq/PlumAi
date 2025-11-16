@@ -26,7 +26,7 @@ function publishingComponent() {
         publishingSelectedChapters: [],
 
         // ===== IMAGES =====
-        publishingBookImages: [], // { id, file, dataUrl, position }
+        publishingBookImages: [], // { id, file, dataUrl, position, number }
 
         // ===== FRONT MATTER (Estructura preliminar) =====
         publishingIncludeHalfTitle: true,
@@ -210,11 +210,20 @@ function publishingComponent() {
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     const imageId = 'img_' + Date.now();
+                    // Auto-asignar el siguiente número disponible
+                    const existingNumbers = this.publishingBookImages
+                        .map(img => img.number)
+                        .filter(n => n !== undefined && n !== null);
+                    const nextNumber = existingNumbers.length > 0
+                        ? Math.max(...existingNumbers) + 1
+                        : 1;
+
                     this.publishingBookImages.push({
                         id: imageId,
                         file: file,
                         dataUrl: e.target.result,
-                        position: 'beginning' // 'beginning', 'end', 'after-chapterX'
+                        position: 'beginning', // 'beginning', 'end', 'after-chapterX', 'in-chapter'
+                        number: nextNumber // Número para marcadores [IMG:X] o [INLINE-IMG:X]
                     });
                 };
                 reader.readAsDataURL(file);
@@ -602,7 +611,7 @@ ${bookData.isbn ? 'ISBN: ' + bookData.isbn + ' (paperback)' : ''}`;
                     const paragraphs = content.split(/\n\n+/);
 
                     let isFirstParagraph = true;
-                    for (const paragraph of paragraphs) {
+                    for (let paragraph of paragraphs) {
                         if (!paragraph.trim()) continue;
 
                         // Detectar saltos de escena (###, ***, etc.)
@@ -614,24 +623,101 @@ ${bookData.isbn ? 'ISBN: ' + bookData.isbn + ' (paperback)' : ''}`;
                             continue;
                         }
 
-                        const result = renderParagraph(pdf, paragraph, m, yPos, isFirstParagraph);
+                        // Detectar marcadores de imagen de página completa [IMG:X]
+                        const fullPageImageMatch = paragraph.match(/^\[IMG:(\d+)\]$/);
+                        if (fullPageImageMatch) {
+                            const imageNumber = parseInt(fullPageImageMatch[1]);
+                            const image = bookData.images.find(img => img.number === imageNumber);
 
-                        if (result.needsNewPage) {
-                            addPage();
-                            m = getMargins(pageNumber);
-                            yPos = m.top;
-                            pagesMeta[pageNumber] = {
-                                showNumber: true,
-                                showHeader: true,
-                                chapterTitle: chapter.title
-                            };
-                            const retryResult = renderParagraph(pdf, paragraph, m, yPos, false);
-                            yPos = retryResult.y + 3;
-                        } else {
-                            yPos = result.y + 3;
+                            if (image) {
+                                // Agregar página para imagen completa
+                                addPage();
+                                m = getMargins(pageNumber);
+
+                                try {
+                                    // Insertar imagen a página completa con márgenes
+                                    const imgWidth = pageWidth - m.left - m.right;
+                                    const imgHeight = pageHeight - m.top - m.bottom;
+                                    pdf.addImage(image.dataUrl, 'JPEG', m.left, m.top, imgWidth, imgHeight);
+                                    pagesMeta[pageNumber] = { showNumber: false, showHeader: false };
+                                } catch (e) {
+                                    console.warn(`No se pudo agregar imagen ${imageNumber}:`, e);
+                                }
+
+                                // Continuar en nueva página
+                                addPage();
+                                m = getMargins(pageNumber);
+                                yPos = m.top;
+                                pagesMeta[pageNumber] = {
+                                    showNumber: true,
+                                    showHeader: true,
+                                    chapterTitle: chapter.title
+                                };
+                                isFirstParagraph = true;
+                            }
+                            continue;
                         }
 
-                        isFirstParagraph = false;
+                        // Procesar párrafo con posibles marcadores de imagen en línea [INLINE-IMG:X]
+                        const inlineImageRegex = /\[INLINE-IMG:(\d+)\]/g;
+                        const parts = paragraph.split(inlineImageRegex);
+
+                        for (let i = 0; i < parts.length; i++) {
+                            const part = parts[i];
+
+                            // Si el índice es impar, es un número de imagen
+                            if (i % 2 === 1) {
+                                const imageNumber = parseInt(part);
+                                const image = bookData.images.find(img => img.number === imageNumber);
+
+                                if (image) {
+                                    try {
+                                        // Calcular tamaño de imagen para inserción en línea
+                                        const maxImgWidth = (pageWidth - m.left - m.right) * 0.6; // 60% del ancho
+                                        const maxImgHeight = 40; // 40mm max altura
+
+                                        // Verificar si hay espacio en la página actual
+                                        if (yPos + maxImgHeight > pageHeight - m.bottom) {
+                                            addPage();
+                                            m = getMargins(pageNumber);
+                                            yPos = m.top;
+                                            pagesMeta[pageNumber] = {
+                                                showNumber: true,
+                                                showHeader: true,
+                                                chapterTitle: chapter.title
+                                            };
+                                        }
+
+                                        // Centrar imagen en línea
+                                        const xPos = pageWidth / 2 - maxImgWidth / 2;
+                                        pdf.addImage(image.dataUrl, 'JPEG', xPos, yPos, maxImgWidth, maxImgHeight);
+                                        yPos += maxImgHeight + 5;
+                                    } catch (e) {
+                                        console.warn(`No se pudo agregar imagen en línea ${imageNumber}:`, e);
+                                    }
+                                }
+                            } else if (part.trim()) {
+                                // Renderizar texto normal
+                                const result = renderParagraph(pdf, part, m, yPos, isFirstParagraph);
+
+                                if (result.needsNewPage) {
+                                    addPage();
+                                    m = getMargins(pageNumber);
+                                    yPos = m.top;
+                                    pagesMeta[pageNumber] = {
+                                        showNumber: true,
+                                        showHeader: true,
+                                        chapterTitle: chapter.title
+                                    };
+                                    const retryResult = renderParagraph(pdf, part, m, yPos, false);
+                                    yPos = retryResult.y + 3;
+                                } else {
+                                    yPos = result.y + 3;
+                                }
+
+                                isFirstParagraph = false;
+                            }
+                        }
                     }
                 }
 
