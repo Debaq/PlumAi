@@ -950,7 +950,7 @@ ${bookData.isbn ? 'ISBN: ' + bookData.isbn + ' (paperback)' : ''}`;
                     throw new Error('docx no está cargado');
                 }
 
-                const { Document, Packer, Paragraph, AlignmentType, HeadingLevel } = window.docx;
+                const { Document, Packer, Paragraph, AlignmentType, HeadingLevel, ImageRun, PageBreak } = window.docx;
                 const bookData = this.prepareBookData();
 
                 const sections = [];
@@ -1033,7 +1033,75 @@ ${bookData.isbn ? 'ISBN: ' + bookData.isbn + ' (paperback)' : ''}`;
                     const paragraphs = content.split(/\n\n+/);
 
                     paragraphs.forEach(para => {
-                        if (para.trim()) {
+                        if (!para.trim()) return;
+
+                        // Detectar saltos de escena
+                        if (para.trim() === '###' || para.trim() === '***') {
+                            sections.push(
+                                new Paragraph({
+                                    text: para.trim(),
+                                    alignment: AlignmentType.CENTER,
+                                    spacing: { before: 200, after: 200 }
+                                })
+                            );
+                            return;
+                        }
+
+                        // Detectar marcadores de imagen de página completa [IMG:X]
+                        const fullPageImageMatch = para.match(/^\[IMG:(\d+)\]$/);
+                        if (fullPageImageMatch) {
+                            const imageNumber = parseInt(fullPageImageMatch[1]);
+                            const image = bookData.images.find(img => img.number === imageNumber);
+
+                            if (image) {
+                                try {
+                                    // Convertir dataUrl a buffer
+                                    const base64Data = image.dataUrl.split(',')[1];
+                                    const imageBuffer = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+
+                                    // Agregar salto de página antes de la imagen
+                                    sections.push(
+                                        new Paragraph({
+                                            children: [new PageBreak()]
+                                        })
+                                    );
+
+                                    // Agregar imagen de página completa (6 inches width para 6x9)
+                                    sections.push(
+                                        new Paragraph({
+                                            children: [
+                                                new ImageRun({
+                                                    data: imageBuffer,
+                                                    transformation: {
+                                                        width: 450,  // 6.25 inches aprox
+                                                        height: 600  // 8.33 inches aprox
+                                                    }
+                                                })
+                                            ],
+                                            alignment: AlignmentType.CENTER,
+                                            spacing: { before: 200, after: 200 }
+                                        })
+                                    );
+
+                                    // Agregar salto de página después de la imagen
+                                    sections.push(
+                                        new Paragraph({
+                                            children: [new PageBreak()]
+                                        })
+                                    );
+                                } catch (e) {
+                                    console.warn(`No se pudo agregar imagen ${imageNumber} en DOCX:`, e);
+                                }
+                            }
+                            return;
+                        }
+
+                        // Procesar párrafo con posibles marcadores de imagen en línea [INLINE-IMG:X]
+                        const inlineImageRegex = /\[INLINE-IMG:(\d+)\]/g;
+                        const parts = para.split(inlineImageRegex);
+
+                        if (parts.length === 1) {
+                            // No hay marcadores de imagen, texto normal
                             sections.push(
                                 new Paragraph({
                                     text: para.trim(),
@@ -1041,6 +1109,81 @@ ${bookData.isbn ? 'ISBN: ' + bookData.isbn + ' (paperback)' : ''}`;
                                     spacing: { after: 200 }
                                 })
                             );
+                        } else {
+                            // Tiene marcadores de imagen en línea
+                            const children = [];
+
+                            for (let i = 0; i < parts.length; i++) {
+                                const part = parts[i];
+
+                                if (i % 2 === 1) {
+                                    // Es un número de imagen
+                                    const imageNumber = parseInt(part);
+                                    const image = bookData.images.find(img => img.number === imageNumber);
+
+                                    if (image) {
+                                        try {
+                                            const base64Data = image.dataUrl.split(',')[1];
+                                            const imageBuffer = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+
+                                            // Agregar imagen en línea (más pequeña)
+                                            children.push(
+                                                new ImageRun({
+                                                    data: imageBuffer,
+                                                    transformation: {
+                                                        width: 300,  // ~4 inches
+                                                        height: 200  // ~2.8 inches
+                                                    }
+                                                })
+                                            );
+                                        } catch (e) {
+                                            console.warn(`No se pudo agregar imagen en línea ${imageNumber} en DOCX:`, e);
+                                        }
+                                    }
+                                } else if (part.trim()) {
+                                    // Texto antes/después de la imagen
+                                    if (children.length > 0) {
+                                        // Ya hay contenido, agregar como nuevo párrafo
+                                        if (part.trim()) {
+                                            sections.push(
+                                                new Paragraph({
+                                                    children: children,
+                                                    alignment: AlignmentType.JUSTIFIED,
+                                                    spacing: { after: 200 }
+                                                })
+                                            );
+                                            children.length = 0;
+                                            sections.push(
+                                                new Paragraph({
+                                                    text: part.trim(),
+                                                    alignment: AlignmentType.JUSTIFIED,
+                                                    spacing: { after: 200 }
+                                                })
+                                            );
+                                        }
+                                    } else {
+                                        // Primer texto
+                                        sections.push(
+                                            new Paragraph({
+                                                text: part.trim(),
+                                                alignment: AlignmentType.JUSTIFIED,
+                                                spacing: { after: 200 }
+                                            })
+                                        );
+                                    }
+                                }
+                            }
+
+                            // Si quedaron elementos pendientes
+                            if (children.length > 0) {
+                                sections.push(
+                                    new Paragraph({
+                                        children: children,
+                                        alignment: AlignmentType.CENTER,
+                                        spacing: { after: 200 }
+                                    })
+                                );
+                            }
                         }
                     });
                 });
