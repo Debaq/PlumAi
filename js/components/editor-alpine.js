@@ -297,11 +297,16 @@ window.editorAlpineComponent = function() {
         },
 
         /**
-         * Mostrar popup de lista genérico con detección de bordes
+         * Mostrar popup de lista genérico con detección de bordes y navegación por teclado
          */
         showListPopup(items, options = {}) {
             // Cerrar popup existente si hay
             this.closeListPopup();
+
+            // Guardar referencia para navegación por teclado
+            this.popupItems = items;
+            this.popupOptions = options;
+            this.selectedPopupIndex = 0;
 
             // Crear el popup
             const popup = document.createElement('div');
@@ -310,39 +315,40 @@ window.editorAlpineComponent = function() {
                 position: fixed;
                 background: var(--bg-secondary, #2d2d2d);
                 border: 1px solid var(--border, #444);
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                border-radius: 6px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
                 z-index: 10000;
-                min-width: 220px;
-                max-width: 300px;
-                max-height: 250px;
+                min-width: 180px;
+                max-width: 250px;
+                max-height: 200px;
                 overflow-y: auto;
-                padding: 4px;
+                padding: 2px;
             `;
 
             // Agregar items
-            items.forEach(item => {
+            items.forEach((item, index) => {
                 const itemEl = document.createElement('div');
                 itemEl.className = 'editor-list-popup-item';
+                itemEl.dataset.index = index;
                 itemEl.style.cssText = `
-                    padding: 8px 12px;
+                    padding: 6px 10px;
                     cursor: pointer;
                     border-radius: 4px;
-                    transition: background 0.15s;
-                    font-size: 13px;
+                    transition: background 0.1s;
+                    font-size: 12px;
+                    font-weight: 400;
                 `;
-                itemEl.innerHTML = `
-                    <div style="font-weight: 500; color: var(--text-primary, #e0e0e0); margin-bottom: 2px;">
-                        ${item.icon || ''} ${item.label}
-                    </div>
-                    ${item.description ? `<div style="font-size: 11px; color: var(--text-secondary, #999); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${item.description}</div>` : ''}
-                `;
+                itemEl.innerHTML = `${item.icon || ''} ${item.label}`;
+
+                // Seleccionar el primer item por defecto
+                if (index === 0) {
+                    itemEl.style.background = 'var(--accent, #4a90e2)';
+                    itemEl.style.color = '#fff';
+                }
 
                 itemEl.addEventListener('mouseenter', () => {
-                    itemEl.style.background = 'var(--bg-tertiary, #3a3a3a)';
-                });
-                itemEl.addEventListener('mouseleave', () => {
-                    itemEl.style.background = 'transparent';
+                    this.selectedPopupIndex = index;
+                    this.updatePopupSelection();
                 });
                 itemEl.addEventListener('click', () => {
                     if (item.onClick) item.onClick();
@@ -363,23 +369,22 @@ window.editorAlpineComponent = function() {
                 popup.appendChild(separator);
 
                 const newItemEl = document.createElement('div');
-                newItemEl.className = 'editor-list-popup-item';
+                newItemEl.className = 'editor-list-popup-item-new';
+                newItemEl.dataset.index = items.length;
                 newItemEl.style.cssText = `
-                    padding: 8px 12px;
+                    padding: 6px 10px;
                     cursor: pointer;
                     border-radius: 4px;
-                    transition: background 0.15s;
-                    font-size: 13px;
+                    transition: background 0.1s;
+                    font-size: 12px;
                     color: var(--accent, #4a90e2);
                     font-weight: 500;
                 `;
                 newItemEl.innerHTML = `➕ ${options.addNewLabel || 'Agregar nuevo'}`;
 
                 newItemEl.addEventListener('mouseenter', () => {
-                    newItemEl.style.background = 'var(--bg-tertiary, #3a3a3a)';
-                });
-                newItemEl.addEventListener('mouseleave', () => {
-                    newItemEl.style.background = 'transparent';
+                    this.selectedPopupIndex = items.length;
+                    this.updatePopupSelection();
                 });
                 newItemEl.addEventListener('click', () => {
                     options.onAddNew();
@@ -396,6 +401,30 @@ window.editorAlpineComponent = function() {
             // Posicionar cerca del cursor con detección de bordes
             this.positionPopupNearCursor(popup);
 
+            // Event listener para navegación por teclado
+            this.popupKeyHandler = (e) => {
+                if (!this.currentPopup) return;
+
+                const totalItems = items.length + (options.onAddNew ? 1 : 0);
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    this.selectedPopupIndex = Math.min(this.selectedPopupIndex + 1, totalItems - 1);
+                    this.updatePopupSelection();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    this.selectedPopupIndex = Math.max(this.selectedPopupIndex - 1, 0);
+                    this.updatePopupSelection();
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.executeCurrentPopupItem();
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    this.closeListPopup();
+                }
+            };
+            document.addEventListener('keydown', this.popupKeyHandler);
+
             // Cerrar al hacer click fuera
             setTimeout(() => {
                 const closeOnClickOutside = (e) => {
@@ -406,6 +435,45 @@ window.editorAlpineComponent = function() {
                 };
                 document.addEventListener('click', closeOnClickOutside);
             }, 100);
+        },
+
+        /**
+         * Actualizar selección visual del popup
+         */
+        updatePopupSelection() {
+            if (!this.currentPopup) return;
+
+            const allItems = this.currentPopup.querySelectorAll('.editor-list-popup-item, .editor-list-popup-item-new');
+            allItems.forEach((item, index) => {
+                if (index === this.selectedPopupIndex) {
+                    item.style.background = 'var(--accent, #4a90e2)';
+                    item.style.color = '#fff';
+                    // Hacer scroll al item si es necesario
+                    item.scrollIntoView({ block: 'nearest' });
+                } else {
+                    item.style.background = 'transparent';
+                    item.style.color = item.classList.contains('editor-list-popup-item-new') ?
+                        'var(--accent, #4a90e2)' :
+                        'var(--text-primary, #e0e0e0)';
+                }
+            });
+        },
+
+        /**
+         * Ejecutar item actualmente seleccionado del popup
+         */
+        executeCurrentPopupItem() {
+            if (this.selectedPopupIndex < this.popupItems.length) {
+                // Es un item de la lista
+                const item = this.popupItems[this.selectedPopupIndex];
+                if (item.onClick) item.onClick();
+            } else {
+                // Es el botón "Agregar nuevo"
+                if (this.popupOptions.onAddNew) {
+                    this.popupOptions.onAddNew();
+                }
+            }
+            this.closeListPopup();
         },
 
         /**
@@ -460,6 +528,15 @@ window.editorAlpineComponent = function() {
                 this.currentPopup.remove();
                 this.currentPopup = null;
             }
+            // Limpiar event listener de teclado
+            if (this.popupKeyHandler) {
+                document.removeEventListener('keydown', this.popupKeyHandler);
+                this.popupKeyHandler = null;
+            }
+            // Limpiar referencias
+            this.popupItems = null;
+            this.popupOptions = null;
+            this.selectedPopupIndex = 0;
         },
 
         /**
