@@ -3,7 +3,7 @@
     <div class="legacy-modal-content">
         <div class="legacy-modal-header">
             <h2 x-text="$store.i18n.t('modals.import.title')">Importar Proyecto</h2>
-            <button class="btn-close" @click="$store.ui.closeModal('import')">
+            <button class="btn-close" @click="$store.ui.closeModal('import'); $store.ui.openModal('welcome')">
                 <i data-lucide="x" width="20" height="20"></i>
             </button>
         </div>
@@ -26,7 +26,7 @@
             <p class="hint" style="margin-top: 12px;" x-text="$store.i18n.t('modals.import.warning')">Esto creará un nuevo proyecto con los datos importados</p>
         </div>
         <div class="modal-footer">
-            <button class="btn-secondary" @click="$store.ui.closeModal('import')" x-text="$store.i18n.t('common.cancel')">Cancelar</button>
+            <button class="btn-secondary" @click="$store.ui.closeModal('import'); $store.ui.openModal('welcome')" x-text="$store.i18n.t('common.cancel')">Cancelar</button>
             <button class="btn-primary" @click="
                 const fileInput = document.getElementById('import-file-input');
                 const file = fileInput.files[0];

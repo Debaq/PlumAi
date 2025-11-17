@@ -26,12 +26,12 @@ window.welcomeModalComponent = function() {
                 try {
                     // Cerrar el modal actual - acceder a través de Alpine.store
                     Alpine.store('ui').closeModal('welcome');
-                    
+
                     // Cargar el proyecto desde el storage usando el método correcto
                     const projectData = await window.storageManager.load(this.lastProject.id);
                     if (projectData) {
                         Alpine.store('project').loadProject(projectData);
-                        Alpine.store('ui').success(Alpine.store('i18n').t('notifications.success.projectLoaded'), 
+                        Alpine.store('ui').success(Alpine.store('i18n').t('notifications.success.projectLoaded'),
                                                   Alpine.store('i18n').t('notifications.success.projectLoadedDesc', { projectName: projectData.projectInfo.title }));
                     } else {
                         Alpine.store('ui').error(Alpine.store('i18n').t('notifications.error.projectLoad'), '');
@@ -43,6 +43,34 @@ window.welcomeModalComponent = function() {
                     Alpine.store('ui').error(Alpine.store('i18n').t('notifications.error.projectLoad'), error.message);
                     Alpine.store('ui').openModal('newProject');
                 }
+            }
+        },
+
+        async loadDemoProject() {
+            try {
+                // Cerrar el modal
+                Alpine.store('ui').closeModal('welcome');
+                Alpine.store('ui').markAsVisited();
+
+                // Crear un proyecto nuevo con info básica
+                const projectInfo = {
+                    title: 'Proyecto de Demostración',
+                    author: 'Usuario Demo',
+                    genre: 'Genérico',
+                    isPublicPC: false
+                };
+                Alpine.store('project').createNewProject(projectInfo);
+
+                // Crear los datos genéricos simples
+                const versionControl = Alpine.store('versionControl');
+                if (versionControl && versionControl.createSimpleDemoData) {
+                    await versionControl.createSimpleDemoData();
+                }
+
+                Alpine.store('ui').success('Proyecto de demostración cargado', 'Puedes explorar las funciones de PlumaAI con datos de ejemplo');
+            } catch (error) {
+                console.error('Error loading demo project:', error);
+                Alpine.store('ui').error('Error', 'No se pudo cargar el proyecto de demostración');
             }
         }
     };
