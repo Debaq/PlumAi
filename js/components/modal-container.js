@@ -59,6 +59,9 @@ window.modalContainerComponent = function() {
                     <!-- Vital Status Modal -->
                     <div id="vital-status-modal-container"></div>
 
+                    <!-- Password Modal -->
+                    <div id="password-modal-container"></div>
+
                     <!-- Toast Container -->
                     <div class="toast-container">
                         <template x-for="toast in $store.ui.toasts" :key="toast.id">
@@ -123,7 +126,8 @@ window.modalContainerComponent = function() {
                 { containerId: 'lore-preview-modal-container', templatePath: 'templates/modals/lore-preview-modal.html' },
                 { containerId: 'new-relationship-modal-container', templatePath: 'templates/modals/new-relationship-modal.html' },
                 { containerId: 'edit-relationship-modal-container', templatePath: 'templates/modals/edit-relationship-modal.html' },
-                { containerId: 'vital-status-modal-container', templatePath: 'templates/modals/vital-status-modal.html' }
+                { containerId: 'vital-status-modal-container', templatePath: 'templates/modals/vital-status-modal.html' },
+                { containerId: 'password-modal-container', templatePath: 'templates/modals/password-modal.html' }
             ];
 
             // Load each modal template into its respective container
