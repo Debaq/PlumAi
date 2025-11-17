@@ -59,6 +59,14 @@ function publishingComponent() {
         publishingLineHeight: 1.3, // Interlineado 1.3 según specs
         publishingParagraphIndent: 7.62, // 0.3" = 7.62mm
 
+        // ===== UI STATE (Collapsible Sections) =====
+        sectionsOpen: {
+            metadata: true,
+            frontMatter: false,
+            backMatter: false,
+            chapters: true
+        },
+
         // ===== COMPUTED PROPERTIES =====
         get publishingFilteredChapters() {
             let chapters = this.$store.project.chapters;
@@ -183,6 +191,11 @@ function publishingComponent() {
 
         removeCover() {
             this.publishingCoverImage = null;
+        },
+
+        // ===== UI METHODS =====
+        toggleSection(section) {
+            this.sectionsOpen[section] = !this.sectionsOpen[section];
         },
 
         // ===== CHAPTER SELECTION METHODS =====
