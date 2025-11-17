@@ -8,10 +8,28 @@
             </button>
         </div>
         <div class="modal-body" x-data="{
-            encryptApiKeys: false,
+            get hasApiKeys() {
+                const apiKeys = $store.project.apiKeys || {};
+                return Object.keys(apiKeys).length > 0 && Object.values(apiKeys).some(v => v && v.trim().length > 0);
+            },
+            get encryptApiKeys() {
+                return this.hasApiKeys ? true : this._encryptApiKeys;
+            },
+            set encryptApiKeys(value) {
+                this._encryptApiKeys = value;
+            },
+            _encryptApiKeys: false,
             encryptAll: false,
-            showPassword: false
-        }">
+            get showPassword() {
+                return this.encryptApiKeys || this.encryptAll;
+            },
+            getEncryptionSettings() {
+                return {
+                    encryptApiKeys: this.encryptApiKeys,
+                    encryptAll: this.encryptAll
+                };
+            }
+        }" x-init="if(hasApiKeys) { _encryptApiKeys = true; }">
             <p x-text="$store.i18n.t('modals.export.description')">Descarga tu proyecto como archivo PLUMA (*.pluma)</p>
 
             <div style="margin-top: 20px; padding: 16px; background: var(--bg-tertiary); border-radius: 8px;">
@@ -27,19 +45,32 @@
             <div style="margin-top: 20px; padding: 16px; border: 1px solid var(--border); border-radius: 8px;">
                 <h3 style="font-size: 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
                     <i data-lucide="lock" width="16" height="16"></i>
-                    Seguridad (Opcional)
+                    <span x-text="hasApiKeys ? 'Seguridad (Obligatoria)' : 'Seguridad (Opcional)'">Seguridad</span>
                 </h3>
+
+                <!-- Advertencia de API keys -->
+                <template x-if="hasApiKeys">
+                    <div style="margin-bottom: 16px; padding: 12px; background: color-mix(in srgb, var(--warning) 15%, transparent); border: 1px solid var(--warning); border-radius: 6px;">
+                        <div style="display: flex; align-items: start; gap: 10px;">
+                            <i data-lucide="alert-triangle" width="16" height="16" style="color: var(--warning); flex-shrink: 0; margin-top: 2px;"></i>
+                            <p style="margin: 0; color: var(--text-primary); font-size: 13px; line-height: 1.4;">
+                                <strong>Este proyecto contiene API keys.</strong> Por seguridad, es obligatorio encriptarlas. Si olvidas la contraseña solo perderás las claves, no el proyecto.
+                            </p>
+                        </div>
+                    </div>
+                </template>
 
                 <div class="form-group" style="margin-bottom: 12px;">
                     <label class="checkbox-label">
                         <input
                             type="checkbox"
-                            x-model="encryptApiKeys"
-                            @change="if(encryptApiKeys) showPassword = true; if(!encryptApiKeys && !encryptAll) showPassword = false"
+                            :checked="encryptApiKeys"
+                            :disabled="hasApiKeys"
+                            @change="_encryptApiKeys = $event.target.checked"
                         >
-                        <span>Encriptar API keys</span>
+                        <span x-text="hasApiKeys ? 'Encriptar API keys (obligatorio)' : 'Encriptar API keys'">Encriptar API keys</span>
                     </label>
-                    <p class="hint" style="margin-left: 24px;">Protege tus claves de API con contraseña (recomendado)</p>
+                    <p class="hint" style="margin-left: 24px;" x-text="hasApiKeys ? 'Las API keys detectadas serán encriptadas automáticamente' : 'Protege tus claves de API con contraseña (recomendado)'">Protege tus claves de API con contraseña (recomendado)</p>
                 </div>
 
                 <div class="form-group">
@@ -47,11 +78,11 @@
                         <input
                             type="checkbox"
                             x-model="encryptAll"
-                            @change="if(encryptAll) { encryptApiKeys = false; showPassword = true; } else if(!encryptApiKeys) showPassword = false"
+                            @change="if(encryptAll && !hasApiKeys) { _encryptApiKeys = false; }"
                         >
                         <span>Encriptar proyecto completo</span>
                     </label>
-                    <p class="hint" style="margin-left: 24px;">Máxima privacidad - encripta todo el contenido</p>
+                    <p class="hint" style="margin-left: 24px;">Máxima privacidad - encripta todo el contenido (incluye las API keys)</p>
                 </div>
 
                 <!-- Campos de contraseña -->
@@ -89,8 +120,19 @@
                 (async function() {
                     const modalContent = $event.target.closest('.legacy-modal-content');
                     const modalBody = modalContent.querySelector('.modal-body');
-                    const encryptApiKeys = modalBody.querySelector('input[x-model=encryptApiKeys]')?.checked || false;
-                    const encryptAll = modalBody.querySelector('input[x-model=encryptAll]')?.checked || false;
+
+                    // Detectar si hay API keys en el proyecto
+                    const apiKeys = $store.project.apiKeys || {};
+                    const hasApiKeys = Object.keys(apiKeys).length > 0 && Object.values(apiKeys).some(v => v && v.trim().length > 0);
+
+                    // Obtener valores de encriptación
+                    const encryptAllCheckbox = modalBody.querySelector('input[x-model=\"encryptAll\"]');
+                    const encryptAll = encryptAllCheckbox?.checked || false;
+
+                    // Si hay API keys, siempre encriptarlas. Si no, verificar el checkbox
+                    const encryptApiKeysCheckbox = modalBody.querySelector('input[type=\"checkbox\"]:not([x-model])');
+                    const encryptApiKeys = hasApiKeys ? true : (encryptApiKeysCheckbox?.checked || false);
+
                     const passwordField = modalBody.querySelector('[name=exportPassword]');
                     const passwordConfirmField = modalBody.querySelector('[name=exportPasswordConfirm]');
 
