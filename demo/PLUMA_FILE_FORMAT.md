@@ -103,7 +103,7 @@ Información sobre bifurcaciones del proyecto (para versiones alternativas).
 
 Claves de API para servicios de IA (OpenAI, Anthropic, etc.).
 
-### Estructura
+### Estructura Sin Encriptar
 
 ```json
 {
@@ -114,7 +114,22 @@ Claves de API para servicios de IA (OpenAI, Anthropic, etc.).
 }
 ```
 
-> ⚠️ **Nota de Seguridad**: Las API keys se almacenan en el archivo. Ten cuidado al compartir archivos .pluma.
+### Estructura Encriptada
+
+Cuando las API keys están encriptadas con contraseña:
+
+```json
+{
+  "apiKeys": {
+    "_encrypted": true,
+    "_data": "base64-encrypted-data..."
+  }
+}
+```
+
+> ⚠️ **Nota de Seguridad**: Las API keys se almacenan en el archivo. **Se recomienda encarecidamente usar encriptación** al exportar proyectos. Ten cuidado al compartir archivos .pluma sin encriptar.
+
+> 🔒 **Encriptación Recomendada**: PlumaAI puede encriptar automáticamente las API keys usando AES-256-GCM con una contraseña. Ver sección "Encriptación" más abajo.
 
 ---
 
@@ -492,11 +507,153 @@ Para que un archivo .pluma sea válido:
 
 ---
 
+## Encriptación
+
+PlumaAI soporta encriptación de archivos .pluma para proteger datos sensibles.
+
+### Métodos de Encriptación
+
+#### 1. Encriptación de API Keys (Recomendado)
+
+Solo las claves de API se encriptan, el resto del proyecto permanece legible.
+
+**Ventajas:**
+- ✅ Protege datos sensibles (API keys)
+- ✅ El proyecto sigue siendo legible en formato JSON
+- ✅ Fácil de compartir sin exponer credenciales
+- ✅ Menor overhead
+
+**Estructura:**
+```json
+{
+  "projectInfo": { ... },
+  "apiKeys": {
+    "_encrypted": true,
+    "_data": "base64-encrypted-data..."
+  },
+  "characters": [ ... ],
+  ...
+}
+```
+
+#### 2. Encriptación Completa del Proyecto
+
+Todo el contenido del proyecto se encripta.
+
+**Ventajas:**
+- ✅ Máxima privacidad
+- ✅ Protege todo el contenido de la novela
+- ✅ Ideal para proyectos confidenciales
+
+**Desventajas:**
+- ⚠️ No se puede leer sin la contraseña
+- ⚠️ No se puede previsualizar el contenido
+
+**Estructura:**
+```json
+{
+  "_encrypted": true,
+  "_version": "2.0",
+  "_data": "base64-encrypted-data...",
+  "projectInfo": {
+    "id": "project-uuid",
+    "title": "Título visible",
+    "author": "Autor visible"
+  }
+}
+```
+
+> **Nota**: Cuando el proyecto completo está encriptado, solo se mantienen visibles `id`, `title` y `author` de `projectInfo` para identificación.
+
+### Algoritmo de Encriptación
+
+PlumaAI utiliza **AES-256-GCM** (Advanced Encryption Standard con Galois/Counter Mode):
+
+- **Algoritmo**: AES-GCM
+- **Tamaño de clave**: 256 bits
+- **Derivación de clave**: PBKDF2 con SHA-256
+- **Iteraciones PBKDF2**: 100,000
+- **Salt**: 16 bytes aleatorios por encriptación
+- **IV (Vector de Inicialización)**: 12 bytes aleatorios
+- **Autenticación**: Incluida en GCM (protege contra modificaciones)
+
+### Formato de Datos Encriptados
+
+Los datos encriptados en base64 contienen:
+
+```
+[Salt (16 bytes)][IV (12 bytes)][Datos Encriptados][Auth Tag (incluido en GCM)]
+```
+
+### Proceso de Encriptación
+
+1. Usuario proporciona contraseña
+2. Se genera salt aleatorio de 16 bytes
+3. Se deriva clave usando PBKDF2 (100,000 iteraciones)
+4. Se genera IV aleatorio de 12 bytes
+5. Se encripta usando AES-256-GCM
+6. Se combina salt + IV + datos encriptados
+7. Se convierte a base64
+
+### Proceso de Desencriptación
+
+1. Usuario proporciona contraseña
+2. Se decodifica base64
+3. Se extrae salt, IV y datos encriptados
+4. Se deriva clave usando PBKDF2 con el salt
+5. Se desencripta usando AES-256-GCM con el IV
+6. Se verifica autenticación (automático en GCM)
+7. Se retorna datos desencriptados
+
+### Seguridad
+
+✅ **Fortalezas:**
+- AES-256 es estándar de la industria
+- PBKDF2 con 100,000 iteraciones protege contra ataques de fuerza bruta
+- GCM proporciona encriptación autenticada (detecta modificaciones)
+- Salt e IV aleatorios previenen ataques de análisis
+- Implementación usando Web Crypto API (nativa del navegador)
+
+⚠️ **Consideraciones:**
+- La seguridad depende de la fortaleza de la contraseña
+- **Usa contraseñas fuertes**: mínimo 12 caracteres, mezcla de letras, números y símbolos
+- Si olvidas la contraseña, **no hay forma de recuperar los datos**
+- Las contraseñas NO se almacenan en disco (solo en memoria durante la sesión si se selecciona "recordar")
+
+### Uso
+
+**Al Exportar:**
+1. Ir a Configuración → Exportar Proyecto
+2. Seleccionar "Encriptar API keys" o "Encriptar proyecto completo"
+3. Ingresar contraseña segura
+4. Confirmar contraseña
+5. Descargar archivo .pluma encriptado
+
+**Al Importar:**
+1. Seleccionar archivo .pluma encriptado
+2. Si detecta encriptación, solicita contraseña automáticamente
+3. Ingresar contraseña
+4. Opcionalmente marcar "Recordar en esta sesión"
+5. Proyecto se desencripta y carga
+
+### Compatibilidad
+
+- ✅ Archivos sin encriptar se pueden leer normalmente
+- ✅ Archivos con API keys encriptadas funcionan con todas las versiones 2.0+
+- ✅ Archivos completamente encriptados requieren PlumaAI 2.0+
+- ✅ Sistema de migración automática mantiene compatibilidad
+
+---
+
 ## Consideraciones de Seguridad
 
-- ⚠️ **API Keys**: Los archivos .pluma pueden contener claves de API. No compartas estos archivos públicamente sin eliminar las claves primero.
+- 🔒 **Encriptación Recomendada**: **Siempre usa encriptación** al exportar proyectos que contengan API keys. Ver sección "Encriptación" arriba.
+- ⚠️ **API Keys**: Los archivos .pluma sin encriptar pueden contener claves de API. **NO compartas estos archivos públicamente** sin encriptarlos o eliminar las claves primero.
+- 🔑 **Contraseñas Fuertes**: Si usas encriptación, usa contraseñas de al menos 12 caracteres con mezcla de letras, números y símbolos.
+- 💾 **Pérdida de Contraseña**: Si olvidas la contraseña de un proyecto encriptado, **no hay forma de recuperar los datos**. Guarda tus contraseñas de forma segura.
 - ⚠️ **IDs únicos**: Asegúrate de que los IDs sean únicos al combinar proyectos o crear forks.
 - ✅ **Backup**: Haz copias de seguridad regulares de tus archivos .pluma.
+- 🌐 **Compartir Proyectos**: Al compartir proyectos con API keys, usa siempre encriptación o elimina las keys manualmente antes de compartir.
 
 ---
 
