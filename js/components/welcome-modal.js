@@ -55,10 +55,10 @@ window.welcomeModalComponent = function() {
                 // Mostrar loading
                 Alpine.store('ui').startLoading('global');
 
-                // URL del archivo de ejemplo
-                const demoUrl = 'https://tmeduca.org/plumai/ejemplo.pluma';
+                // URL del archivo de ejemplo (ruta relativa)
+                const demoUrl = 'demo/ejemplo.pluma';
 
-                // Descargar el archivo de ejemplo
+                // Cargar el archivo de ejemplo
                 const response = await fetch(demoUrl);
 
                 if (!response.ok) {
