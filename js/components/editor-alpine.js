@@ -402,28 +402,35 @@ window.editorAlpineComponent = function() {
             this.positionPopupNearCursor(popup);
 
             // Event listener para navegación por teclado
-            this.popupKeyHandler = (e) => {
-                if (!this.currentPopup) return;
+            // Usar un pequeño delay para evitar que el Enter del comando anterior se ejecute
+            setTimeout(() => {
+                this.popupKeyHandler = (e) => {
+                    if (!this.currentPopup) return;
 
-                const totalItems = items.length + (options.onAddNew ? 1 : 0);
+                    const totalItems = items.length + (options.onAddNew ? 1 : 0);
 
-                if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    this.selectedPopupIndex = Math.min(this.selectedPopupIndex + 1, totalItems - 1);
-                    this.updatePopupSelection();
-                } else if (e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    this.selectedPopupIndex = Math.max(this.selectedPopupIndex - 1, 0);
-                    this.updatePopupSelection();
-                } else if (e.key === 'Enter') {
-                    e.preventDefault();
-                    this.executeCurrentPopupItem();
-                } else if (e.key === 'Escape') {
-                    e.preventDefault();
-                    this.closeListPopup();
-                }
-            };
-            document.addEventListener('keydown', this.popupKeyHandler);
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.selectedPopupIndex = Math.min(this.selectedPopupIndex + 1, totalItems - 1);
+                        this.updatePopupSelection();
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.selectedPopupIndex = Math.max(this.selectedPopupIndex - 1, 0);
+                        this.updatePopupSelection();
+                    } else if (e.key === 'Enter') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.executeCurrentPopupItem();
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.closeListPopup();
+                    }
+                };
+                document.addEventListener('keydown', this.popupKeyHandler);
+            }, 150);
 
             // Cerrar al hacer click fuera
             setTimeout(() => {
