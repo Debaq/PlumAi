@@ -87,7 +87,8 @@
             <button class="btn-secondary" @click="$store.ui.closeModal('export')" x-text="$store.i18n.t('common.cancel')">Cancelar</button>
             <button class="btn-primary" @click="
                 (async function() {
-                    const modalBody = $event.target.closest('.modal-body');
+                    const modalContent = $event.target.closest('.legacy-modal-content');
+                    const modalBody = modalContent.querySelector('.modal-body');
                     const encryptApiKeys = modalBody.querySelector('input[x-model=encryptApiKeys]')?.checked || false;
                     const encryptAll = modalBody.querySelector('input[x-model=encryptAll]')?.checked || false;
                     const passwordField = modalBody.querySelector('[name=exportPassword]');
