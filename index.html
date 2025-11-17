@@ -330,11 +330,25 @@
             }, 800); // Pequeño delay para asegurar que todo está renderizado
         });
 
-        // Re-initialize icons when Alpine updates the DOM
-        // More frequent updates for dynamic content like slash menu
-        setInterval(() => {
-            lucide.createIcons();
-        }, 300);
+        // Re-initialize icons when Alpine updates the DOM - usar MutationObserver en lugar de polling
+        const iconObserver = new MutationObserver((mutations) => {
+            // Solo recrear iconos si realmente se agregaron/modificaron nodos
+            const hasRelevantChanges = mutations.some(mutation =>
+                mutation.addedNodes.length > 0 ||
+                (mutation.type === 'attributes' && mutation.attributeName === 'data-lucide')
+            );
+            if (hasRelevantChanges) {
+                lucide.createIcons();
+            }
+        });
+
+        // Observar cambios en el body
+        iconObserver.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['data-lucide']
+        });
     </script>
 </body>
 </html>

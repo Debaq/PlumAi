@@ -139,12 +139,10 @@ document.addEventListener('alpine:init', () => {
             // Detectar cambios inmediatamente
             await this.detectChanges();
 
-            // Verificar cambios cada 2 segundos (más confiable que $watch)
-            if (!this.changeDetectionInterval) {
-                this.changeDetectionInterval = setInterval(async () => {
-                    await this.detectChanges();
-                }, 2000);
-            }
+            // Usar Alpine watch en lugar de polling - solo ejecutar cuando HAY cambios
+            this.$watch('$store.project.projectInfo.modified', async () => {
+                await this.detectChanges();
+            });
         },
 
         // Cargar el estado del último commit como referencia (Sistema v2.0)
