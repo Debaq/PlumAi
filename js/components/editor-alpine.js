@@ -433,13 +433,6 @@ window.editorAlpineComponent = function() {
                 }
             }
 
-            // Restaurar la posición del cursor si se guardó antes
-            if (this.editor && this.editor.savedCursorPositionBeforeCommand !== undefined) {
-                this.editor.setCursorPosition(this.editor.savedCursorPositionBeforeCommand);
-                // Limpiar la posición guardada
-                this.editor.savedCursorPositionBeforeCommand = undefined;
-            }
-
             // Event listener para navegación por teclado
             // Usar un pequeño delay para evitar que el Enter del comando anterior se ejecute
             setTimeout(() => {
