@@ -253,6 +253,21 @@ class RichEditor {
             }
         }
 
+        // Detectar // para / literal (escapar comando)
+        if (textBeforeCursor.endsWith('//')) {
+            const sel = window.getSelection();
+            if (sel.rangeCount > 0) {
+                const range = sel.getRangeAt(0);
+                // Eliminar los dos //
+                range.setStart(range.startContainer, range.startOffset - 2);
+                range.deleteContents();
+                // Insertar un / simple
+                document.execCommand('insertText', false, '/');
+            }
+            this.hideAllMenus();
+            return;
+        }
+
         // Detectar / para comandos
         const lastSlashIndex = textBeforeCursor.lastIndexOf('/');
         if (lastSlashIndex !== -1) {
@@ -552,17 +567,7 @@ class RichEditor {
     createMenu() {
         const menu = document.createElement('div');
         menu.className = 'rich-editor-menu';
-        menu.style.cssText = `
-            position: absolute;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 10000;
-            min-width: 300px;
-            max-height: 300px;
-            overflow-y: auto;
-        `;
+        // Los estilos se definen en rich-editor.css
         return menu;
     }
 
