@@ -31,6 +31,16 @@ window.editorAlpineComponent = function() {
             this.saveManuallyHandler = () => this.saveManually();
             window.addEventListener('editor:save-manually', this.saveManuallyHandler);
 
+            // Atajo de teclado Ctrl+S / Cmd+S para guardar
+            this.keyboardHandler = (e) => {
+                // Ctrl+S (Windows/Linux) o Cmd+S (Mac)
+                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                    e.preventDefault(); // Prevenir el diálogo de guardar del navegador
+                    this.saveManually();
+                }
+            };
+            document.addEventListener('keydown', this.keyboardHandler);
+
             // Nota: La inicialización y actualización del SearchService
             // ahora se maneja globalmente en app.js con Alpine.effect()
             // para evitar duplicación y mejorar el rendimiento
@@ -643,6 +653,11 @@ window.editorAlpineComponent = function() {
             // Remover event listener de guardado manual
             if (this.saveManuallyHandler) {
                 window.removeEventListener('editor:save-manually', this.saveManuallyHandler);
+            }
+
+            // Remover event listener de atajo de teclado
+            if (this.keyboardHandler) {
+                document.removeEventListener('keydown', this.keyboardHandler);
             }
 
             if (this.editor) {
