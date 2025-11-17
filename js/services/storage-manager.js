@@ -539,83 +539,37 @@ window.storageManager = {
     },
 
     // Método para importar proyecto desde archivo
-    async importProject(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            
-            reader.onload = async (event) => {
-                try {
-                    const data = JSON.parse(event.target.result);
-                    
-                    // Verificar si es un archivo de backup con múltiples proyectos
-                    if (data.metadata && data.projects && Array.isArray(data.projects)) {
-                        // Es un archivo de backup, importar todos los proyectos
-                        const importedProjects = [];
-                        const failedImports = [];
-                        
-                        for (const projectData of data.projects) {
-                            try {
-                                // Validar estructura básica del proyecto
-                                if (projectData.projectInfo && projectData.projectInfo.id) {
-                                    // Migrar datos de versiones antiguas
-                                    this.migrateProjectData(projectData);
+    async importProject(file, password = null) {
+        try {
+            // Usar zipService para leer el archivo (soporta ZIP y JSON legacy)
+            const projectData = await window.zipService.readPlumaFile(file, password);
 
-                                    // Guardar el proyecto
-                                    await this.save(projectData);
-                                    importedProjects.push(projectData);
-                                } else {
-                                    failedImports.push({ error: 'Falta información del proyecto', project: projectData });
-                                }
-                            } catch (projectError) {
-                                console.error('Error al importar proyecto del backup:', projectError);
-                                failedImports.push({ error: projectError.message, project: projectData });
-                            }
-                        }
+            // Validar estructura básica del proyecto
+            if (!projectData.projectInfo || !projectData.projectInfo.id) {
+                throw new Error('Archivo de proyecto inválido: falta información del proyecto');
+            }
 
-                        if (importedProjects.length > 0) {
-                            // Resolver con el primer proyecto como referencia
-                            resolve(importedProjects[0]);
-                        } else {
-                            throw new Error(`No se pudieron importar proyectos: ${failedImports.length} intentos fallidos`);
-                        }
-                    } else {
-                        // Es un archivo de proyecto individual
-                        const projectData = data;
+            // Migrar datos de versiones antiguas
+            this.migrateProjectData(projectData);
 
-                        // Validar estructura básica del proyecto
-                        if (!projectData.projectInfo || !projectData.projectInfo.id) {
-                            throw new Error('Archivo de proyecto inválido: falta información del proyecto');
-                        }
+            // Guardar el proyecto importado
+            await this.save(projectData);
 
-                        // Migrar datos de versiones antiguas
-                        this.migrateProjectData(projectData);
+            return projectData;
+        } catch (error) {
+            console.error('Error importando proyecto:', error);
 
-                        // Guardar el proyecto importado
-                        await this.save(projectData);
-
-                        resolve(projectData);
-                    }
-                } catch (error) {
-                    console.error('Error importando proyecto:', error);
-                    reject(new Error(`Error al importar proyecto: ${error.message}`));
-                }
-            };
-            
-            reader.onerror = () => {
-                reject(new Error('Error al leer el archivo'));
-            };
-            
-            reader.readAsText(file);
-        });
+            // Re-lanzar el error para que el llamador pueda manejarlo
+            // (por ejemplo, mostrando el modal de contraseña si es necesario)
+            throw error;
+        }
     },
 
     // Método para exportar proyecto
-    exportProject(projectData) {
+    async exportProject(projectData, options = {}) {
         try {
-            // Crear un archivo blob con los datos del proyecto
-            const blob = new Blob([JSON.stringify(projectData, null, 2)], {
-                type: 'application/json'
-            });
+            // Crear archivo .pluma (ZIP) usando zipService
+            const blob = await window.zipService.createPlumaFile(projectData, options);
 
             // Crear un enlace temporal para descargar
             const url = URL.createObjectURL(blob);
@@ -624,7 +578,7 @@ window.storageManager = {
             a.download = `${projectData.projectInfo.title || 'proyecto'}.pluma`;
             document.body.appendChild(a);
             a.click();
-            
+
             // Limpiar después de descargar
             setTimeout(() => {
                 document.body.removeChild(a);
@@ -634,7 +588,7 @@ window.storageManager = {
             return true;
         } catch (error) {
             console.error('Error exportando proyecto:', error);
-            return false;
+            throw error;
         }
     },
 

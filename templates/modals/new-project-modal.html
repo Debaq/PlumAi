@@ -3,7 +3,7 @@
     <div class="legacy-modal-content">
         <div class="legacy-modal-header">
             <h2 x-text="$store.i18n.t('modals.newProject.title')">Nuevo Proyecto</h2>
-            <button class="btn-close" @click="$store.ui.closeModal('newProject')">
+            <button class="btn-close" @click="$store.ui.closeModal('newProject'); $store.ui.openModal('welcome')">
                 <i data-lucide="x" width="20" height="20"></i>
             </button>
         </div>
@@ -42,7 +42,7 @@
                     <p class="hint" x-text="$store.i18n.t('modals.newProject.form.publicPCWarning')">No se guardarán datos automáticamente</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn-secondary" @click="$store.ui.closeModal('newProject')" x-text="$store.i18n.t('common.cancel')">Cancelar</button>
+                    <button type="button" class="btn-secondary" @click="$store.ui.closeModal('newProject'); $store.ui.openModal('welcome')" x-text="$store.i18n.t('common.cancel')">Cancelar</button>
                     <button type="submit" class="btn-primary" x-text="$store.i18n.t('common.create')">Crear</button>
                 </div>
             </form>

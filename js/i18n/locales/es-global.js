@@ -623,6 +623,7 @@ window.translations_es = {
             newProject: 'Crear Nuevo Proyecto',
             loadProject: 'Cargar Proyecto Existente',
             continueProject: 'Continuar con "{projectName}"',
+            justLook: 'Solo Mirar',
             getStarted: 'Comenzar'
         },
         settings: {

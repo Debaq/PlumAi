@@ -17,7 +17,7 @@
                         <span x-text="$store.i18n.t('modals.welcome.continueProject', { projectName: $store.ui.lastProject.title || 'Proyecto sin título' })">Continuar con "<span x-bind:text="$store.ui.lastProject?.title || 'Proyecto sin título'"></span>"</span>
                     </button>
                 </template>
-                
+
                 <button class="welcome-btn" @click="$store.ui.closeModal('welcome'); $store.ui.openModal('newProject')">
                     <i data-lucide="plus-circle" width="24" height="24"></i>
                     <span x-text="$store.i18n.t('modals.welcome.newProject')">Crear Nuevo Proyecto</span>
@@ -25,6 +25,10 @@
                 <button class="welcome-btn" @click="$store.ui.closeModal('welcome'); $store.ui.openModal('import')">
                     <i data-lucide="upload" width="24" height="24"></i>
                     <span x-text="$store.i18n.t('modals.welcome.loadProject')">Cargar Proyecto Existente</span>
+                </button>
+                <button class="welcome-btn" @click="loadDemoProject()">
+                    <i data-lucide="eye" width="24" height="24"></i>
+                    <span x-text="$store.i18n.t('modals.welcome.justLook')">Solo Mirar</span>
                 </button>
             </div>
         </div>

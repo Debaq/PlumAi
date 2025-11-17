@@ -124,12 +124,8 @@ document.addEventListener('alpine:init', () => {
             await this.loadCommits();
             await this.loadStats();
 
-            // Crear datos de prueba si no hay commits
-            if (this.commits.length === 0) {
-                await this.createDemoData();
-                // Recargar commits después de crear datos de prueba
-                await this.loadCommits();
-            }
+            // NO crear datos de prueba automáticamente
+            // El usuario debe elegir explícitamente "Solo mirar" desde el welcome modal
 
             // CLAVE: Obtener el estado del ÚLTIMO COMMIT como referencia
             // NO del estado actual del proyecto

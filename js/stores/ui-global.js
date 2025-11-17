@@ -43,7 +43,8 @@ window.uiStore = {
         forksView: false,
         createCommit: false,
         createFork: false,
-        createTree: false
+        createTree: false,
+        password: false
     },
 
     // Datos temporales para modales

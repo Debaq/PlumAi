@@ -576,6 +576,7 @@ window.translations_en = {
             newProject: 'Create New Project',
             loadProject: 'Load Existing Project',
             continueProject: 'Continue with "{projectName}"',
+            justLook: 'Just Look Around',
             getStarted: 'Get Started'
         },
         settings: {
