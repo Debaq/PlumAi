@@ -61,6 +61,7 @@ function publishingComponent() {
 
         // ===== UI STATE (Collapsible Sections) =====
         sectionsOpen: {
+            kdpConfig: true,
             metadata: true,
             frontMatter: false,
             backMatter: false,
