@@ -330,11 +330,15 @@
             }, 800); // Pequeño delay para asegurar que todo está renderizado
         });
 
-        // Re-initialize icons when Alpine updates the DOM
-        // More frequent updates for dynamic content like slash menu
+        // Re-initialize icons when Alpine updates the DOM - con debounce para evitar bloqueos
+        let iconUpdateTimeout;
         setInterval(() => {
-            lucide.createIcons();
-        }, 300);
+            // Usar debounce para evitar múltiples ejecuciones consecutivas
+            clearTimeout(iconUpdateTimeout);
+            iconUpdateTimeout = setTimeout(() => {
+                lucide.createIcons();
+            }, 100);
+        }, 2000); // Reducido de cada 300ms a cada 2s
     </script>
 </body>
 </html>
