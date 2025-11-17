@@ -48,10 +48,34 @@
         </div>
 
         <!-- View Titles for other views -->
-        <div x-show="$store.ui.currentView !== 'lore'" class="header-view-title">
+        <div x-show="$store.ui.currentView !== 'lore' && $store.ui.currentView !== 'editor'" class="header-view-title">
             <span x-show="$store.ui.currentView === 'chapters'" x-text="$store.i18n.t('chapters.title')">Capítulos</span>
             <span x-show="$store.ui.currentView === 'scenes'" x-text="$store.i18n.t('scenes.title')">Escenas</span>
-            <span x-show="$store.ui.currentView === 'editor'" x-text="$store.i18n.t('editor.title')">Editor</span>
+        </div>
+
+        <!-- Editor Chapter Info (visible only in editor view) -->
+        <div x-show="$store.ui.currentView === 'editor'" class="header-editor-info" x-data="{ get currentChapter() { return $store.project.chapters.find(ch => ch.id === $store.ui.currentEditingChapterId); } }">
+            <template x-if="currentChapter">
+                <div class="header-editor-title-group">
+                    <div class="header-editor-title" x-text="'Capítulo ' + currentChapter.number + ': ' + (currentChapter.title || 'Sin título')"></div>
+                    <button class="btn-icon btn-icon-sm"
+                            @click="$store.ui.openModal('editChapter', currentChapter)"
+                            :title="$store.i18n.t('common.edit') || 'Editar capítulo'">
+                        <i data-lucide="settings" width="16" height="16"></i>
+                    </button>
+                    <div class="header-editor-save-indicator" :class="$store.ui.editorSaveStatus">
+                        <template x-if="$store.ui.editorSaveStatus === 'saving'">
+                            <span x-text="$store.i18n.t('editor.saving')">Guardando...</span>
+                        </template>
+                        <template x-if="$store.ui.editorSaveStatus === 'saved'">
+                            <span x-text="$store.i18n.t('editor.saved')">Guardado</span>
+                        </template>
+                        <template x-if="$store.ui.editorSaveStatus === 'unsaved'">
+                            <span>...</span>
+                        </template>
+                    </div>
+                </div>
+            </template>
         </div>
     </div>
 
