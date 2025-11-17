@@ -129,11 +129,11 @@
                     const hasApiKeys = Object.keys(apiKeys).length > 0 && Object.values(apiKeys).some(v => v && v.trim().length > 0);
 
                     // Obtener valores de encriptación
-                    const encryptAllCheckbox = modalBody.querySelector('input[x-model=\"encryptAll\"]');
+                    const encryptAllCheckbox = modalBody.querySelector('input[x-model=&quot;encryptAll&quot;]');
                     const encryptAll = encryptAllCheckbox?.checked || false;
 
                     // Si hay API keys, siempre encriptarlas. Si no, verificar el checkbox
-                    const encryptApiKeysCheckbox = modalBody.querySelector('input[type=\"checkbox\"]:not([x-model])');
+                    const encryptApiKeysCheckbox = modalBody.querySelector('input[type=&quot;checkbox&quot;]:not([x-model])');
                     const encryptApiKeys = hasApiKeys ? true : (encryptApiKeysCheckbox?.checked || false);
 
                     const passwordField = modalBody.querySelector('[name=exportPassword]');
