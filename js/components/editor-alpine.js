@@ -300,35 +300,26 @@ window.editorAlpineComponent = function() {
          * Abrir selector de personajes
          */
         openCharacterSelector() {
-            // Buscar personajes con SearchService
-            const results = window.searchService?.searchCharacters('') || this.$store.project.characters;
-
-            this.$store.ui.info(
-                this.$store.i18n.t('characters.title'),
-                `${results.length} personajes disponibles`
-            );
+            // Cambiar a la vista de lore y la pestaña de personajes
+            this.$store.ui.setView('lore');
+            this.$store.ui.activeLoreTab = 'characters';
         },
 
         /**
          * Abrir selector de escenas
          */
         openSceneSelector() {
-            const results = window.searchService?.searchScenes('') || this.$store.project.scenes;
-            this.$store.ui.info(
-                this.$store.i18n.t('scenes.title'),
-                `${results.length} escenas disponibles`
-            );
+            // Cambiar a la vista de escenas
+            this.$store.ui.setView('scenes');
         },
 
         /**
          * Abrir selector de ubicaciones
          */
         openLocationSelector() {
-            const results = window.searchService?.searchLocations('') || this.$store.project.locations;
-            this.$store.ui.info(
-                this.$store.i18n.t('locations.title'),
-                `${results.length} ubicaciones disponibles`
-            );
+            // Cambiar a la vista de lore y la pestaña de ubicaciones
+            this.$store.ui.setView('lore');
+            this.$store.ui.activeLoreTab = 'locations';
         },
 
         /**
