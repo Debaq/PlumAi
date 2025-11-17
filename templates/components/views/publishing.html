@@ -14,83 +14,81 @@
         </div>
     </div>
 
-    <!-- CONFIGURACIÓN KDP -->
-    <div class="card" style="margin-bottom: var(--spacing-xl);">
-        <div class="card-header">
-            <div style="display: flex; align-items: center; gap: var(--spacing-md);">
-                <i data-lucide="book-open" width="24" height="24" style="color: var(--accent);"></i>
-                <div>
-                    <h2 class="card-title">Amazon KDP - Formato Profesional</h2>
-                    <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">
-                        Especificaciones profesionales con Amazon Endure 11pt, márgenes dinámicos y estructura completa
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg);">
-            <!-- TAMAÑO DEL LIBRO -->
-            <div>
-                <label style="display: block; font-weight: 600; margin-bottom: var(--spacing-md);" x-text="$store.i18n.t('publishing.bookSize.title')">Tamaño del Libro</label>
-                <div style="display: flex; flex-direction: column; gap: var(--spacing-sm);">
-                    <label class="radio-card" :class="{ 'active': publishingBookSize === 'kdp6x9' }">
-                        <input type="radio" x-model="publishingBookSize" value="kdp6x9" style="margin-right: var(--spacing-sm);">
-                        <div>
-                            <div style="font-weight: 600; font-size: var(--font-size-sm);">6" x 9" (15.24 x 22.86 cm)</div>
-                            <div style="font-size: var(--font-size-xs); color: var(--text-secondary);">Estándar - Más usado</div>
-                        </div>
-                    </label>
-                    <label class="radio-card" :class="{ 'active': publishingBookSize === 'kdp5x8' }">
-                        <input type="radio" x-model="publishingBookSize" value="kdp5x8" style="margin-right: var(--spacing-sm);">
-                        <div>
-                            <div style="font-weight: 600; font-size: var(--font-size-sm);">5" x 8" (12.7 x 20.32 cm)</div>
-                            <div style="font-size: var(--font-size-xs); color: var(--text-secondary);">Compacto - Novelas</div>
-                        </div>
-                    </label>
-                    <label class="radio-card" :class="{ 'active': publishingBookSize === 'kdp5.5x8.5' }">
-                        <input type="radio" x-model="publishingBookSize" value="kdp5.5x8.5" style="margin-right: var(--spacing-sm);">
-                        <div>
-                            <div style="font-weight: 600; font-size: var(--font-size-sm);">5.5" x 8.5" (13.97 x 21.59 cm)</div>
-                            <div style="font-size: var(--font-size-xs); color: var(--text-secondary);">Digest - US Trade</div>
-                        </div>
-                    </label>
-                </div>
-            </div>
-
-            <!-- TIPO DE PAPEL -->
-            <div>
-                <label style="display: block; font-weight: 600; margin-bottom: var(--spacing-md);">Tipo de Papel</label>
-                <div style="display: flex; flex-direction: column; gap: var(--spacing-sm);">
-                    <label class="radio-card" :class="{ 'active': publishingPaperType === 'cream' }">
-                        <input type="radio" x-model="publishingPaperType" value="cream" style="margin-right: var(--spacing-sm);">
-                        <div>
-                            <div style="font-weight: 600; font-size: var(--font-size-sm);">Papel Crema</div>
-                            <div style="font-size: var(--font-size-xs); color: var(--text-secondary);">Recomendado para ficción - Menos fatiga visual</div>
-                        </div>
-                    </label>
-                    <label class="radio-card" :class="{ 'active': publishingPaperType === 'white' }">
-                        <input type="radio" x-model="publishingPaperType" value="white" style="margin-right: var(--spacing-sm);">
-                        <div>
-                            <div style="font-weight: 600; font-size: var(--font-size-sm);">Papel Blanco</div>
-                            <div style="font-size: var(--font-size-xs); color: var(--text-secondary);">Para libros con imágenes a color</div>
-                        </div>
-                    </label>
-                </div>
-            </div>
-        </div>
-
-        <!-- INFO DE ESTIMACIÓN -->
-        <div style="margin-top: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: 6px; font-size: var(--font-size-sm);">
-            <div style="display: flex; align-items: center; gap: var(--spacing-sm); color: var(--text-secondary);">
-                <i data-lucide="info" width="16" height="16"></i>
-                <span>Páginas estimadas: <strong x-text="estimatePageCount()"></strong> | Márgenes: <strong>Dinámicos según grosor</strong></span>
-            </div>
-        </div>
-    </div>
-
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-xl);">
         <!-- COLUMNA IZQUIERDA -->
         <div style="display: flex; flex-direction: column; gap: var(--spacing-xl);">
+
+            <!-- CONFIGURACIÓN KDP -->
+            <div class="card">
+                <div class="card-header">
+                    <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+                        <i data-lucide="book-open" width="20" height="20" style="color: var(--accent);"></i>
+                        <div>
+                            <h2 class="card-title">Amazon KDP</h2>
+                            <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">
+                                Formato profesional con márgenes dinámicos
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAMAÑO DEL LIBRO -->
+                <div style="margin-bottom: var(--spacing-lg);">
+                    <label style="display: block; font-weight: 600; margin-bottom: var(--spacing-md);" x-text="$store.i18n.t('publishing.bookSize.title')">Tamaño del Libro</label>
+                    <div style="display: flex; flex-direction: column; gap: var(--spacing-sm);">
+                        <label class="radio-card" :class="{ 'active': publishingBookSize === 'kdp6x9' }">
+                            <input type="radio" x-model="publishingBookSize" value="kdp6x9" style="margin-right: var(--spacing-sm);">
+                            <div>
+                                <div style="font-weight: 600; font-size: var(--font-size-sm);">6" x 9" (15.24 x 22.86 cm)</div>
+                                <div style="font-size: var(--font-size-xs); color: var(--text-secondary);">Estándar - Más usado</div>
+                            </div>
+                        </label>
+                        <label class="radio-card" :class="{ 'active': publishingBookSize === 'kdp5x8' }">
+                            <input type="radio" x-model="publishingBookSize" value="kdp5x8" style="margin-right: var(--spacing-sm);">
+                            <div>
+                                <div style="font-weight: 600; font-size: var(--font-size-sm);">5" x 8" (12.7 x 20.32 cm)</div>
+                                <div style="font-size: var(--font-size-xs); color: var(--text-secondary);">Compacto - Novelas</div>
+                            </div>
+                        </label>
+                        <label class="radio-card" :class="{ 'active': publishingBookSize === 'kdp5.5x8.5' }">
+                            <input type="radio" x-model="publishingBookSize" value="kdp5.5x8.5" style="margin-right: var(--spacing-sm);">
+                            <div>
+                                <div style="font-weight: 600; font-size: var(--font-size-sm);">5.5" x 8.5" (13.97 x 21.59 cm)</div>
+                                <div style="font-size: var(--font-size-xs); color: var(--text-secondary);">Digest - US Trade</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- TIPO DE PAPEL -->
+                <div style="margin-bottom: var(--spacing-lg);">
+                    <label style="display: block; font-weight: 600; margin-bottom: var(--spacing-md);">Tipo de Papel</label>
+                    <div style="display: flex; flex-direction: column; gap: var(--spacing-sm);">
+                        <label class="radio-card" :class="{ 'active': publishingPaperType === 'cream' }">
+                            <input type="radio" x-model="publishingPaperType" value="cream" style="margin-right: var(--spacing-sm);">
+                            <div>
+                                <div style="font-weight: 600; font-size: var(--font-size-sm);">Papel Crema</div>
+                                <div style="font-size: var(--font-size-xs); color: var(--text-secondary);">Recomendado para ficción</div>
+                            </div>
+                        </label>
+                        <label class="radio-card" :class="{ 'active': publishingPaperType === 'white' }">
+                            <input type="radio" x-model="publishingPaperType" value="white" style="margin-right: var(--spacing-sm);">
+                            <div>
+                                <div style="font-weight: 600; font-size: var(--font-size-sm);">Papel Blanco</div>
+                                <div style="font-size: var(--font-size-xs); color: var(--text-secondary);">Para imágenes a color</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- INFO DE ESTIMACIÓN -->
+                <div style="padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: 6px; font-size: var(--font-size-sm);">
+                    <div style="display: flex; align-items: center; gap: var(--spacing-sm); color: var(--text-secondary);">
+                        <i data-lucide="info" width="16" height="16"></i>
+                        <span>Estimado: <strong x-text="estimatePageCount()"></strong> páginas</span>
+                    </div>
+                </div>
+            </div>
 
             <!-- METADATOS -->
             <div class="card">
