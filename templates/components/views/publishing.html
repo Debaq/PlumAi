@@ -20,65 +20,53 @@
 
             <!-- CONFIGURACIÓN KDP -->
             <div class="card">
-                <div class="card-header">
-                    <div style="display: flex; align-items: center; gap: var(--spacing-md);">
-                        <i data-lucide="book-open" width="20" height="20" style="color: var(--accent);"></i>
-                        <div>
-                            <h2 class="card-title">Amazon KDP</h2>
-                            <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">
-                                Formato profesional con márgenes dinámicos
-                            </p>
+                <div class="card-header" @click="toggleSection('kdpConfig')" style="cursor: pointer;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+                            <i data-lucide="book-open" width="20" height="20" style="color: var(--accent);"></i>
+                            <div>
+                                <h2 class="card-title">Amazon KDP</h2>
+                                <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">
+                                    Formato profesional
+                                </p>
+                            </div>
                         </div>
+                        <i data-lucide="chevron-down" width="20" height="20"
+                           :style="sectionsOpen.kdpConfig ? 'transform: rotate(180deg);' : ''"
+                           style="transition: transform 0.2s; color: var(--text-secondary);"></i>
                     </div>
                 </div>
+                <div x-show="sectionsOpen.kdpConfig" x-collapse>
 
                 <!-- TAMAÑO DEL LIBRO -->
                 <div style="margin-bottom: var(--spacing-lg);">
-                    <label style="display: block; font-weight: 600; margin-bottom: var(--spacing-md);" x-text="$store.i18n.t('publishing.bookSize.title')">Tamaño del Libro</label>
-                    <div style="display: flex; flex-direction: column; gap: var(--spacing-sm);">
-                        <label class="radio-card" :class="{ 'active': publishingBookSize === 'kdp6x9' }">
-                            <input type="radio" x-model="publishingBookSize" value="kdp6x9" style="margin-right: var(--spacing-sm);">
-                            <div>
-                                <div style="font-weight: 600; font-size: var(--font-size-sm);">6" x 9" (15.24 x 22.86 cm)</div>
-                                <div style="font-size: var(--font-size-xs); color: var(--text-secondary);">Estándar - Más usado</div>
-                            </div>
-                        </label>
-                        <label class="radio-card" :class="{ 'active': publishingBookSize === 'kdp5x8' }">
-                            <input type="radio" x-model="publishingBookSize" value="kdp5x8" style="margin-right: var(--spacing-sm);">
-                            <div>
-                                <div style="font-weight: 600; font-size: var(--font-size-sm);">5" x 8" (12.7 x 20.32 cm)</div>
-                                <div style="font-size: var(--font-size-xs); color: var(--text-secondary);">Compacto - Novelas</div>
-                            </div>
-                        </label>
-                        <label class="radio-card" :class="{ 'active': publishingBookSize === 'kdp5.5x8.5' }">
-                            <input type="radio" x-model="publishingBookSize" value="kdp5.5x8.5" style="margin-right: var(--spacing-sm);">
-                            <div>
-                                <div style="font-weight: 600; font-size: var(--font-size-sm);">5.5" x 8.5" (13.97 x 21.59 cm)</div>
-                                <div style="font-size: var(--font-size-xs); color: var(--text-secondary);">Digest - US Trade</div>
-                            </div>
-                        </label>
-                    </div>
+                    <label style="display: block; font-weight: 600; margin-bottom: var(--spacing-sm);" x-text="$store.i18n.t('publishing.bookSize.title')">Tamaño del Libro</label>
+                    <select x-model="publishingBookSize"
+                            style="width: 100%; padding: var(--spacing-md); background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); font-size: var(--font-size-sm);">
+                        <option value="kdp5x8">5" × 8" (12.7 × 20.32 cm) - Compacto</option>
+                        <option value="kdp5.06x7.81">5.06" × 7.81" (12.9 × 19.8 cm) - A Format</option>
+                        <option value="kdp5.25x8">5.25" × 8" (13.3 × 20.3 cm) - Digest</option>
+                        <option value="kdp5.5x8.5">5.5" × 8.5" (13.97 × 21.59 cm) - US Trade</option>
+                        <option value="kdp6x9">6" × 9" (15.24 × 22.86 cm) - Estándar ⭐</option>
+                        <option value="kdp6.14x9.21">6.14" × 9.21" (15.6 × 23.4 cm) - Royal</option>
+                        <option value="kdp6.69x9.61">6.69" × 9.61" (17 × 24.4 cm) - Crown Quarto</option>
+                        <option value="kdp7x10">7" × 10" (17.78 × 25.4 cm) - Grande</option>
+                        <option value="kdp7.44x9.69">7.44" × 9.69" (18.9 × 24.6 cm) - Demy</option>
+                        <option value="kdp7.5x9.25">7.5" × 9.25" (19.1 × 23.5 cm) - Royal</option>
+                        <option value="kdp8x10">8" × 10" (20.32 × 25.4 cm) - Large</option>
+                        <option value="kdp8.25x11">8.25" × 11" (21 × 28 cm) - A4-like</option>
+                        <option value="kdp8.5x11">8.5" × 11" (21.59 × 27.94 cm) - Letter</option>
+                    </select>
                 </div>
 
                 <!-- TIPO DE PAPEL -->
                 <div style="margin-bottom: var(--spacing-lg);">
-                    <label style="display: block; font-weight: 600; margin-bottom: var(--spacing-md);">Tipo de Papel</label>
-                    <div style="display: flex; flex-direction: column; gap: var(--spacing-sm);">
-                        <label class="radio-card" :class="{ 'active': publishingPaperType === 'cream' }">
-                            <input type="radio" x-model="publishingPaperType" value="cream" style="margin-right: var(--spacing-sm);">
-                            <div>
-                                <div style="font-weight: 600; font-size: var(--font-size-sm);">Papel Crema</div>
-                                <div style="font-size: var(--font-size-xs); color: var(--text-secondary);">Recomendado para ficción</div>
-                            </div>
-                        </label>
-                        <label class="radio-card" :class="{ 'active': publishingPaperType === 'white' }">
-                            <input type="radio" x-model="publishingPaperType" value="white" style="margin-right: var(--spacing-sm);">
-                            <div>
-                                <div style="font-weight: 600; font-size: var(--font-size-sm);">Papel Blanco</div>
-                                <div style="font-size: var(--font-size-xs); color: var(--text-secondary);">Para imágenes a color</div>
-                            </div>
-                        </label>
-                    </div>
+                    <label style="display: block; font-weight: 600; margin-bottom: var(--spacing-sm);">Tipo de Papel</label>
+                    <select x-model="publishingPaperType"
+                            style="width: 100%; padding: var(--spacing-md); background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); font-size: var(--font-size-sm);">
+                        <option value="cream">📖 Papel Crema (recomendado para ficción)</option>
+                        <option value="white">📄 Papel Blanco (para imágenes a color)</option>
+                    </select>
                 </div>
 
                 <!-- INFO DE ESTIMACIÓN -->
@@ -87,6 +75,7 @@
                         <i data-lucide="info" width="16" height="16"></i>
                         <span>Estimado: <strong x-text="estimatePageCount()"></strong> páginas</span>
                     </div>
+                </div>
                 </div>
             </div>
 
@@ -439,9 +428,9 @@
                                 <i data-lucide="user" width="32" height="32" style="color: var(--text-tertiary);"></i>
                             </div>
                             <div style="flex: 1;">
-                                <input type="file" id="authorPhotoUpload" accept="image/*" style="display: none;" @change="handleAuthorPhotoUpload($event)">
+                                <input type="file" x-ref="authorPhotoInput" accept="image/*" style="display: none;" @change="handleAuthorPhotoUpload($event)">
                                 <div style="display: flex; gap: var(--spacing-sm);">
-                                    <button class="btn-secondary btn-sm" @click="$el.parentElement.querySelector('#authorPhotoUpload').click()">
+                                    <button class="btn-secondary btn-sm" @click="$refs.authorPhotoInput.click()">
                                         <i data-lucide="upload" width="14" height="14"></i>
                                         <span x-text="publishingAuthorPhoto ? 'Cambiar' : 'Subir foto'"></span>
                                     </button>
