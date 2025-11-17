@@ -1,9 +1,10 @@
 // Publishing Component para Alpine.js
 function publishingComponent() {
     return {
-        // ===== PLATFORM & TEMPLATE =====
+        // ===== PLATFORM & TEMPLATE (KDP ONLY) =====
         publishingPlatform: 'kdp',
         publishingBookSize: 'kdp6x9',
+        publishingPaperType: 'cream', // 'cream' o 'white'
 
         // ===== COVER =====
         publishingCoverImage: null,
@@ -25,17 +26,38 @@ function publishingComponent() {
         publishingSelectedChapters: [],
 
         // ===== IMAGES =====
-        publishingBookImages: [], // { id, file, dataUrl, position }
+        publishingBookImages: [], // { id, file, dataUrl, position, number }
 
-        // ===== FORMAT SETTINGS =====
+        // ===== FRONT MATTER (Estructura preliminar) =====
+        publishingIncludeHalfTitle: true,
+        publishingOtherBooks: '', // Lista de otros libros del autor
+        publishingDedication: '', // Dedicatoria
+        publishingAuthorNote: '', // Nota del autor (inicial)
+        publishingPrologue: '', // Prólogo
+
+        // ===== BACK MATTER (Estructura final) =====
+        publishingEpilogue: '', // Epílogo
+        publishingAuthorNoteFinal: '', // Nota del autor final
+        publishingAcknowledgments: '', // Agradecimientos
+        publishingAboutAuthor: '', // Sobre el autor
+        publishingAuthorPhoto: null, // Foto del autor
+        publishingContactInfo: {
+            website: '',
+            social: '',
+            newsletter: ''
+        },
+
+        // ===== FORMAT SETTINGS (KDP Specs) =====
         publishingIncludePageNumbers: true,
         publishingIncludeToC: true,
+        publishingIncludeHeaders: true,
 
-        // Platform-specific defaults (auto-assigned)
+        // KDP-specific defaults (Amazon Endure, 11pt, interlineado 1.3)
         publishingPageSize: '6x9',
-        publishingMargins: 'normal',
-        publishingFontFamily: 'Garamond',
-        publishingFontSize: '12',
+        publishingFontFamily: 'AmazonEndure',
+        publishingFontSize: '11', // KDP recomienda 11pt
+        publishingLineHeight: 1.3, // Interlineado 1.3 según specs
+        publishingParagraphIndent: 7.62, // 0.3" = 7.62mm
 
         // ===== COMPUTED PROPERTIES =====
         get publishingFilteredChapters() {
@@ -86,41 +108,60 @@ function publishingComponent() {
 
         // ===== PLATFORM METHODS =====
         applyPlatformDefaults() {
-            const platformDefaults = {
-                kdp: {
-                    fontFamily: 'AmazonEndure', // Fuente oficial de Amazon KDP
-                    fontSize: '12',
-                    margins: 'normal',
-                    includePageNumbers: true,
-                    includeToC: true
-                },
-                ingramspark: {
-                    fontFamily: 'Baskerville',
-                    fontSize: '11',
-                    margins: 'normal',
-                    includePageNumbers: true,
-                    includeToC: true
-                },
-                lulu: {
-                    fontFamily: 'Georgia',
-                    fontSize: '12',
-                    margins: 'normal',
-                    includePageNumbers: true,
-                    includeToC: true
-                },
-                custom: {
-                    fontFamily: 'serif',
-                    fontSize: '12',
-                    margins: 'normal',
-                    includePageNumbers: true,
-                    includeToC: true
-                }
-            };
+            // Solo KDP - especificaciones profesionales
+            this.publishingFontFamily = 'AmazonEndure';
+            this.publishingFontSize = '11';
+            this.publishingLineHeight = 1.3;
+            this.publishingIncludePageNumbers = true;
+            this.publishingIncludeToC = true;
+            this.publishingIncludeHeaders = true;
+        },
 
-            const defaults = platformDefaults[this.publishingPlatform];
-            if (defaults) {
-                Object.assign(this, defaults);
+        /**
+         * Calcular márgenes según grosor del libro (especificación KDP)
+         * Basado en conteo de páginas estimado
+         */
+        getKDPMargins(estimatedPages) {
+            // Convertir a pulgadas (usaremos mm luego)
+            let gutterInches, outerInches, topInches, bottomInches;
+
+            if (estimatedPages <= 150) {
+                gutterInches = 0.375;
+                outerInches = 0.375;
+            } else if (estimatedPages <= 300) {
+                gutterInches = 0.5;
+                outerInches = 0.375;
+            } else if (estimatedPages <= 500) {
+                gutterInches = 0.625;
+                outerInches = 0.375;
+            } else if (estimatedPages <= 700) {
+                gutterInches = 0.75;
+                outerInches = 0.375;
+            } else {
+                // 701-828 páginas (máximo papel crema)
+                gutterInches = 0.875;
+                outerInches = 0.375;
             }
+
+            topInches = 0.625;
+            bottomInches = 0.625;
+
+            // Convertir a mm
+            return {
+                gutter: gutterInches * 25.4,
+                outer: outerInches * 25.4,
+                top: topInches * 25.4,
+                bottom: bottomInches * 25.4
+            };
+        },
+
+        /**
+         * Estimar número de páginas basado en palabras
+         * Aproximación: 250-300 palabras por página para 6x9
+         */
+        estimatePageCount() {
+            const wordsPerPage = 280; // Promedio para Amazon Endure 11pt
+            return Math.ceil(this.publishingTotalWords / wordsPerPage);
         },
 
         // ===== COVER METHODS =====
@@ -169,11 +210,20 @@ function publishingComponent() {
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     const imageId = 'img_' + Date.now();
+                    // Auto-asignar el siguiente número disponible
+                    const existingNumbers = this.publishingBookImages
+                        .map(img => img.number)
+                        .filter(n => n !== undefined && n !== null);
+                    const nextNumber = existingNumbers.length > 0
+                        ? Math.max(...existingNumbers) + 1
+                        : 1;
+
                     this.publishingBookImages.push({
                         id: imageId,
                         file: file,
                         dataUrl: e.target.result,
-                        position: 'beginning' // 'beginning', 'end', 'after-chapterX'
+                        position: 'beginning', // 'beginning', 'end', 'after-chapterX', 'in-chapter'
+                        number: nextNumber // Número para marcadores [IMG:X] o [INLINE-IMG:X]
                     });
                 };
                 reader.readAsDataURL(file);
@@ -190,6 +240,27 @@ function publishingComponent() {
             if (index > -1) {
                 this.publishingBookImages.splice(index, 1);
             }
+        },
+
+        // ===== AUTHOR PHOTO METHODS =====
+        handleAuthorPhotoUpload(event) {
+            const file = event.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.publishingAuthorPhoto = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                this.$store.ui.error(
+                    this.$store.i18n.t('common.error'),
+                    'Por favor selecciona una imagen válida para la foto del autor'
+                );
+            }
+        },
+
+        removeAuthorPhoto() {
+            this.publishingAuthorPhoto = null;
         },
 
         // ===== VALIDATION =====
@@ -212,7 +283,6 @@ function publishingComponent() {
             this.$store.ui.startLoading('global');
 
             try {
-                // Verificar que jsPDF esté disponible
                 if (typeof window.jspdf === 'undefined') {
                     throw new Error('jsPDF no está cargado');
                 }
@@ -220,12 +290,12 @@ function publishingComponent() {
                 const { jsPDF } = window.jspdf;
                 const bookData = this.prepareBookData();
 
-                // Cargar fuentes personalizadas si están disponibles
+                // Cargar fuentes personalizadas
                 if (window.fontLoader && !window.fontLoader.loaded) {
                     await window.fontLoader.loadDefaultFonts();
                 }
 
-                // Crear PDF con configuración profesional
+                // Crear PDF con configuración KDP profesional
                 const pdf = new jsPDF({
                     orientation: 'portrait',
                     unit: 'mm',
@@ -234,196 +304,586 @@ function publishingComponent() {
                     compress: true
                 });
 
-                // Aplicar fuentes personalizadas al PDF
                 if (window.fontLoader) {
                     window.fontLoader.applyFonts(pdf);
                 }
 
                 const pageWidth = pdf.internal.pageSize.getWidth();
                 const pageHeight = pdf.internal.pageSize.getHeight();
-                const margin = this.getMargins();
-                const textWidth = pageWidth - 2 * margin;
-                const lineHeight = 7; // mm
-                const minLinesPerPage = 3; // Para evitar viudas/huérfanas
 
-                // Configurar fuente (usará la personalizada si está disponible)
+                // Estimar páginas y calcular márgenes dinámicos KDP
+                const estimatedPages = this.estimatePageCount();
+                const margins = this.getKDPMargins(estimatedPages);
+
+                // Interlineado basado en especificaciones KDP (11pt * 1.3 = 14.3pt ≈ 5.04mm)
+                const fontSize = parseInt(this.publishingFontSize);
+                const lineHeight = fontSize * this.publishingLineHeight * 0.3528; // pt a mm
+
                 const fontName = this.getCustomFontName();
-                pdf.setFont(fontName, 'normal');
 
-                let currentPage = 0;
+                // Sistema de seguimiento de páginas
+                let pageNumber = 0; // Número físico de página
+                let contentPageNumber = 1; // Número que se muestra (inicia en capítulo 1)
+                let isOddPage = true; // Control de páginas impares/pares
+
+                // Páginas que NO deben tener números ni encabezados
+                const pagesMeta = {}; // { pageNum: { showNumber: bool, showHeader: bool, isChapterStart: bool } }
+
+                // ===== HELPER: Agregar página con control impar/par =====
+                const addPage = (forceOdd = false) => {
+                    if (pageNumber > 0) {
+                        if (forceOdd && !isOddPage) {
+                            // Agregar página en blanco para llegar a impar
+                            pdf.addPage();
+                            pageNumber++;
+                            pagesMeta[pageNumber] = { showNumber: false, showHeader: false, blank: true };
+                            isOddPage = true;
+                        }
+                        pdf.addPage();
+                    }
+                    pageNumber++;
+                    isOddPage = !isOddPage;
+                    return pageNumber;
+                };
+
+                // ===== HELPER: Obtener márgenes según página par/impar =====
+                const getMargins = (currentPageNum) => {
+                    const isPageOdd = (currentPageNum % 2 === 1);
+                    if (isPageOdd) {
+                        // Página IMPAR (derecha): margen izquierdo = gutter
+                        return {
+                            left: margins.gutter,
+                            right: margins.outer,
+                            top: margins.top,
+                            bottom: margins.bottom
+                        };
+                    } else {
+                        // Página PAR (izquierda): margen derecho = gutter
+                        return {
+                            left: margins.outer,
+                            right: margins.gutter,
+                            top: margins.top,
+                            bottom: margins.bottom
+                        };
+                    }
+                };
+
+                // ===== HELPER: Renderizar texto en párrafo con sangría =====
+                const renderParagraph = (pdf, text, margins, yPos, isFirstParagraph = false) => {
+                    const textWidth = pageWidth - margins.left - margins.right;
+                    const indentMM = isFirstParagraph ? 0 : this.publishingParagraphIndent; // Primera línea sin sangría
+
+                    const lines = pdf.splitTextToSize(text.trim(), textWidth - indentMM);
+                    let currentY = yPos;
+
+                    for (let i = 0; i < lines.length; i++) {
+                        const line = lines[i];
+                        const xPos = margins.left + (i === 0 ? indentMM : 0);
+
+                        // Verificar espacio disponible (control de viudas/huérfanas)
+                        if (i === 0 && lines.length > 1) {
+                            // Primera línea: necesitamos al menos 2 líneas en esta página
+                            if (currentY + lineHeight * 2 > pageHeight - margins.bottom) {
+                                return { y: currentY, needsNewPage: true, remainingLines: lines };
+                            }
+                        }
+
+                        if (currentY + lineHeight > pageHeight - margins.bottom) {
+                            return { y: currentY, needsNewPage: true, remainingLines: lines.slice(i) };
+                        }
+
+                        // Justificar todas las líneas excepto la última
+                        const isLastLine = i === lines.length - 1;
+                        if (!isLastLine && line.split(' ').length > 1) {
+                            this.renderJustifiedLine(pdf, line, xPos, currentY, textWidth - (i === 0 ? indentMM : 0));
+                        } else {
+                            pdf.text(line, xPos, currentY);
+                        }
+
+                        currentY += lineHeight;
+                    }
+
+                    return { y: currentY, needsNewPage: false };
+                };
 
                 // ===== PORTADA (solo si hay imagen) =====
                 if (bookData.cover) {
                     try {
+                        addPage();
                         pdf.addImage(bookData.cover, 'JPEG', 0, 0, pageWidth, pageHeight);
-                        currentPage++;
+                        pagesMeta[pageNumber] = { showNumber: false, showHeader: false };
                     } catch (e) {
                         console.warn('No se pudo agregar la portada:', e);
                     }
                 }
 
-                // ===== PÁGINA DE TÍTULO =====
-                if (currentPage > 0) pdf.addPage();
-                currentPage++;
+                // ===== FRONT MATTER =====
 
-                let yPosition = pageHeight / 3;
+                // Página en blanco inicial
+                addPage();
+                pagesMeta[pageNumber] = { showNumber: false, showHeader: false, blank: true };
+
+                // Portadilla (Half-Title) - IMPAR
+                addPage(true);
+                let m = getMargins(pageNumber);
+                pdf.setFont(fontName, 'normal');
+                pdf.setFontSize(24);
+                pdf.text(bookData.title, pageWidth / 2, pageHeight / 3, { align: 'center' });
+                pagesMeta[pageNumber] = { showNumber: false, showHeader: false };
+
+                // Reverso portadilla (otros libros o en blanco) - PAR
+                addPage();
+                if (this.publishingOtherBooks && this.publishingOtherBooks.trim()) {
+                    m = getMargins(pageNumber);
+                    pdf.setFontSize(14);
+                    pdf.text(`Otros libros de ${bookData.author}:`, pageWidth / 2, m.top + 20, { align: 'center' });
+                    pdf.setFontSize(11);
+                    const otherBooksLines = pdf.splitTextToSize(this.publishingOtherBooks, pageWidth - m.left - m.right);
+                    pdf.text(otherBooksLines, pageWidth / 2, m.top + 35, { align: 'center' });
+                }
+                pagesMeta[pageNumber] = { showNumber: false, showHeader: false };
+
+                // Portada (Title Page) - IMPAR
+                addPage(true);
+                m = getMargins(pageNumber);
+                let yPos = pageHeight / 3;
                 pdf.setFontSize(28);
-                pdf.text(bookData.title, pageWidth / 2, yPosition, { align: 'center' });
-                yPosition += 15;
+                pdf.text(bookData.title, pageWidth / 2, yPos, { align: 'center' });
+                yPos += 15;
 
                 if (bookData.subtitle) {
-                    pdf.setFontSize(18);
-                    pdf.text(bookData.subtitle, pageWidth / 2, yPosition, { align: 'center' });
-                    yPosition += 12;
+                    pdf.setFontSize(16);
+                    pdf.text(bookData.subtitle, pageWidth / 2, yPos, { align: 'center' });
+                    yPos += 12;
                 }
 
-                pdf.setFontSize(16);
-                yPosition += 10;
-                pdf.text(bookData.author, pageWidth / 2, yPosition, { align: 'center' });
+                yPos += 10;
+                pdf.setFontSize(18);
+                pdf.text(bookData.author, pageWidth / 2, yPos, { align: 'center' });
 
-                // ===== PÁGINA DE COPYRIGHT =====
-                pdf.addPage();
-                currentPage++;
-                yPosition = margin + 40;
-                pdf.setFontSize(10);
-                const copyrightLines = pdf.splitTextToSize(bookData.copyright, textWidth);
-                pdf.text(copyrightLines, margin, yPosition);
+                yPos += 20;
+                if (bookData.publisher) {
+                    pdf.setFontSize(14);
+                    pdf.text(bookData.publisher, pageWidth / 2, yPos, { align: 'center' });
+                }
+                pagesMeta[pageNumber] = { showNumber: false, showHeader: false };
 
-                // ===== TABLA DE CONTENIDOS =====
+                // Página de Copyright - PAR (reverso de portada)
+                addPage();
+                m = getMargins(pageNumber);
+                yPos = m.top + 40;
+                pdf.setFontSize(9);
+                pdf.setFont(fontName, 'normal');
+
+                const copyrightText = `Copyright © ${bookData.year} por ${bookData.author}
+
+Todos los derechos reservados. Ninguna parte de este libro puede ser reproducida, almacenada en un sistema de recuperación, o transmitida de cualquier forma o por cualquier medio, electrónico, mecánico, fotocopia, grabación o de otro tipo, sin el permiso previo por escrito del autor, excepto en el caso de breves citas incorporadas en reseñas críticas y ciertos otros usos no comerciales permitidos por la ley de derechos de autor.
+
+${bookData.genre === 'ficción' || bookData.genre === 'Ficción' ? 'Esta es una obra de ficción. Los nombres, personajes, lugares e incidentes son producto de la imaginación del autor o se utilizan de manera ficticia. Cualquier parecido con personas reales, vivas o muertas, eventos o locales es pura coincidencia.' : ''}
+
+${bookData.publisher || ''}
+
+Primera edición: ${bookData.year}
+
+${bookData.isbn ? 'ISBN: ' + bookData.isbn + ' (paperback)' : ''}`;
+
+                const copyrightLines = pdf.splitTextToSize(copyrightText, pageWidth - m.left - m.right);
+                pdf.text(copyrightLines, m.left, yPos);
+                pagesMeta[pageNumber] = { showNumber: false, showHeader: false };
+
+                // Dedicatoria (si existe) - IMPAR
+                if (this.publishingDedication && this.publishingDedication.trim()) {
+                    addPage(true);
+                    m = getMargins(pageNumber);
+                    yPos = pageHeight / 3;
+                    pdf.setFontSize(14);
+                    pdf.text('DEDICATORIA', pageWidth / 2, yPos, { align: 'center' });
+                    yPos += 15;
+                    pdf.setFontSize(11);
+                    pdf.setFont(fontName, 'italic');
+                    const dedicationLines = pdf.splitTextToSize(this.publishingDedication, pageWidth - m.left - m.right - 40);
+                    pdf.text(dedicationLines, pageWidth / 2, yPos, { align: 'center' });
+                    pdf.setFont(fontName, 'normal');
+                    pagesMeta[pageNumber] = { showNumber: false, showHeader: false };
+                }
+
+                // Tabla de Contenidos - IMPAR
                 if (bookData.format.includeToC && bookData.chapters.length > 0) {
-                    pdf.addPage();
-                    currentPage++;
-                    yPosition = margin;
+                    addPage(true);
+                    m = getMargins(pageNumber);
+                    yPos = m.top;
 
-                    pdf.setFontSize(20);
-                    pdf.text(this.$store.i18n.t('publishing.format.tableOfContents'), margin, yPosition);
-                    yPosition += 15;
+                    pdf.setFontSize(18);
+                    pdf.setFont(fontName, 'bold');
+                    pdf.text('CONTENIDO', pageWidth / 2, yPos, { align: 'center' });
+                    yPos += 15;
 
-                    pdf.setFontSize(12);
+                    pdf.setFont(fontName, 'normal');
+                    pdf.setFontSize(11);
+
                     bookData.chapters.forEach((chapter) => {
-                        if (yPosition > pageHeight - margin - 10) {
-                            pdf.addPage();
-                            currentPage++;
-                            yPosition = margin;
+                        if (yPos > pageHeight - m.bottom - 10) {
+                            addPage();
+                            m = getMargins(pageNumber);
+                            yPos = m.top;
                         }
-                        const chapterLine = `${this.$store.i18n.t('publishing.chapters.chapter')} ${chapter.number}. ${chapter.title}`;
-                        pdf.text(chapterLine, margin + 5, yPosition);
-                        yPosition += 8;
+                        const chapterLine = `Capítulo ${chapter.number}. ${chapter.title}`;
+                        pdf.text(chapterLine, m.left + 5, yPos);
+                        yPos += 8;
                     });
+                    pagesMeta[pageNumber] = { showNumber: false, showHeader: false };
                 }
 
-                // ===== INSERTAR IMÁGENES AL INICIO =====
-                const beginningImages = bookData.images.filter(img => img.position === 'beginning');
-                for (const img of beginningImages) {
-                    pdf.addPage();
-                    currentPage++;
-                    try {
-                        pdf.addImage(img.dataUrl, 'JPEG', 0, 0, pageWidth, pageHeight);
-                    } catch (e) {
-                        console.warn('No se pudo agregar imagen:', e);
+                // Prólogo (si existe) - IMPAR
+                if (this.publishingPrologue && this.publishingPrologue.trim()) {
+                    addPage(true);
+                    m = getMargins(pageNumber);
+                    yPos = m.top;
+
+                    pdf.setFontSize(18);
+                    pdf.setFont(fontName, 'bold');
+                    pdf.text('PRÓLOGO', pageWidth / 2, yPos, { align: 'center' });
+                    yPos += 15;
+
+                    pdf.setFont(fontName, 'normal');
+                    pdf.setFontSize(fontSize);
+
+                    const prologueParas = this.publishingPrologue.split(/\n\n+/);
+                    let isFirst = true;
+                    for (const para of prologueParas) {
+                        if (!para.trim()) continue;
+                        const result = renderParagraph(pdf, para, m, yPos, isFirst);
+                        if (result.needsNewPage) {
+                            addPage();
+                            m = getMargins(pageNumber);
+                            yPos = m.top;
+                            const retryResult = renderParagraph(pdf, para, m, yPos, false);
+                            yPos = retryResult.y + 3;
+                        } else {
+                            yPos = result.y + 3;
+                        }
+                        isFirst = false;
                     }
+                    pagesMeta[pageNumber] = { showNumber: false, showHeader: false };
                 }
 
-                // ===== CAPÍTULOS CON FORMATO PROFESIONAL =====
+                // ===== CAPÍTULOS =====
+                // A partir de aquí comienza la numeración de páginas con números arábigos
+                contentPageNumber = 1;
+
                 for (let i = 0; i < bookData.chapters.length; i++) {
                     const chapter = bookData.chapters[i];
 
-                    // Cada capítulo comienza en página nueva
-                    pdf.addPage();
-                    currentPage++;
-                    yPosition = margin;
+                    // Cada capítulo comienza en página IMPAR
+                    addPage(true);
+                    const chapterStartPage = pageNumber;
+                    m = getMargins(pageNumber);
+                    yPos = m.top;
 
-                    // Título del capítulo
-                    pdf.setFontSize(18);
+                    // Espacio superior (25% de la página)
+                    yPos = pageHeight * 0.25;
+
+                    // Número del capítulo
+                    pdf.setFontSize(48);
                     pdf.setFont(fontName, 'bold');
-                    const chapterTitle = `${this.$store.i18n.t('publishing.chapters.chapter')} ${chapter.number}`;
-                    pdf.text(chapterTitle, margin, yPosition);
-                    yPosition += 10;
+                    pdf.text(`CAPÍTULO ${chapter.number}`, pageWidth / 2, yPos, { align: 'center' });
+                    yPos += 10;
 
-                    pdf.setFontSize(16);
-                    pdf.text(chapter.title, margin, yPosition);
-                    yPosition += 15;
+                    // Nombre del capítulo
+                    pdf.setFontSize(18);
+                    pdf.text(chapter.title, pageWidth / 2, yPos, { align: 'center' });
+                    yPos += 20;
 
-                    // Contenido del capítulo con justificación
+                    // Configurar para contenido
                     pdf.setFont(fontName, 'normal');
-                    pdf.setFontSize(parseInt(bookData.format.fontSize));
+                    pdf.setFontSize(fontSize);
 
-                    const content = chapter.content || this.$store.i18n.t('publishing.chapters.noContent');
+                    // Primera página del capítulo no lleva número ni encabezado
+                    pagesMeta[chapterStartPage] = {
+                        showNumber: false,
+                        showHeader: false,
+                        isChapterStart: true,
+                        chapterTitle: chapter.title
+                    };
+
+                    // Procesar contenido
+                    const content = chapter.content || 'Sin contenido';
                     const paragraphs = content.split(/\n\n+/);
 
-                    for (const paragraph of paragraphs) {
+                    let isFirstParagraph = true;
+                    for (let paragraph of paragraphs) {
                         if (!paragraph.trim()) continue;
 
-                        const lines = pdf.splitTextToSize(paragraph.trim(), textWidth);
-
-                        // Prevención de viudas/huérfanas: verificar espacio disponible
-                        const linesNeeded = Math.min(lines.length, minLinesPerPage);
-                        const spaceNeeded = linesNeeded * lineHeight;
-
-                        if (yPosition + spaceNeeded > pageHeight - margin) {
-                            // No hay suficiente espacio, nueva página
-                            pdf.addPage();
-                            currentPage++;
-                            yPosition = margin;
+                        // Detectar saltos de escena (###, ***, etc.)
+                        if (paragraph.trim() === '###' || paragraph.trim() === '***') {
+                            yPos += lineHeight;
+                            pdf.text(paragraph.trim(), pageWidth / 2, yPos, { align: 'center' });
+                            yPos += lineHeight * 2;
+                            isFirstParagraph = true; // Después de salto de escena, no hay sangría
+                            continue;
                         }
 
-                        // Renderizar líneas con justificación
-                        for (let j = 0; j < lines.length; j++) {
-                            const line = lines[j];
-                            const isLastLine = j === lines.length - 1;
+                        // Detectar marcadores de imagen de página completa [IMG:X]
+                        const fullPageImageMatch = paragraph.match(/^\[IMG:(\d+)\]$/);
+                        if (fullPageImageMatch) {
+                            const imageNumber = parseInt(fullPageImageMatch[1]);
+                            const image = bookData.images.find(img => img.number === imageNumber);
 
-                            if (yPosition > pageHeight - margin - lineHeight) {
-                                pdf.addPage();
-                                currentPage++;
-                                yPosition = margin;
+                            if (image) {
+                                // Agregar página para imagen completa
+                                addPage();
+                                m = getMargins(pageNumber);
+
+                                try {
+                                    // Insertar imagen a página completa con márgenes
+                                    const imgWidth = pageWidth - m.left - m.right;
+                                    const imgHeight = pageHeight - m.top - m.bottom;
+                                    pdf.addImage(image.dataUrl, 'JPEG', m.left, m.top, imgWidth, imgHeight);
+                                    pagesMeta[pageNumber] = { showNumber: false, showHeader: false };
+                                } catch (e) {
+                                    console.warn(`No se pudo agregar imagen ${imageNumber}:`, e);
+                                }
+
+                                // Continuar en nueva página
+                                addPage();
+                                m = getMargins(pageNumber);
+                                yPos = m.top;
+                                pagesMeta[pageNumber] = {
+                                    showNumber: true,
+                                    showHeader: true,
+                                    chapterTitle: chapter.title
+                                };
+                                isFirstParagraph = true;
                             }
+                            continue;
+                        }
 
-                            // Justificar todas las líneas excepto la última del párrafo
-                            if (!isLastLine && line.split(' ').length > 1) {
-                                this.renderJustifiedLine(pdf, line, margin, yPosition, textWidth);
-                            } else {
-                                pdf.text(line, margin, yPosition);
+                        // Procesar párrafo con posibles marcadores de imagen en línea [INLINE-IMG:X]
+                        const inlineImageRegex = /\[INLINE-IMG:(\d+)\]/g;
+                        const parts = paragraph.split(inlineImageRegex);
+
+                        for (let i = 0; i < parts.length; i++) {
+                            const part = parts[i];
+
+                            // Si el índice es impar, es un número de imagen
+                            if (i % 2 === 1) {
+                                const imageNumber = parseInt(part);
+                                const image = bookData.images.find(img => img.number === imageNumber);
+
+                                if (image) {
+                                    try {
+                                        // Calcular tamaño de imagen para inserción en línea
+                                        const maxImgWidth = (pageWidth - m.left - m.right) * 0.6; // 60% del ancho
+                                        const maxImgHeight = 40; // 40mm max altura
+
+                                        // Verificar si hay espacio en la página actual
+                                        if (yPos + maxImgHeight > pageHeight - m.bottom) {
+                                            addPage();
+                                            m = getMargins(pageNumber);
+                                            yPos = m.top;
+                                            pagesMeta[pageNumber] = {
+                                                showNumber: true,
+                                                showHeader: true,
+                                                chapterTitle: chapter.title
+                                            };
+                                        }
+
+                                        // Centrar imagen en línea
+                                        const xPos = pageWidth / 2 - maxImgWidth / 2;
+                                        pdf.addImage(image.dataUrl, 'JPEG', xPos, yPos, maxImgWidth, maxImgHeight);
+                                        yPos += maxImgHeight + 5;
+                                    } catch (e) {
+                                        console.warn(`No se pudo agregar imagen en línea ${imageNumber}:`, e);
+                                    }
+                                }
+                            } else if (part.trim()) {
+                                // Renderizar texto normal
+                                const result = renderParagraph(pdf, part, m, yPos, isFirstParagraph);
+
+                                if (result.needsNewPage) {
+                                    addPage();
+                                    m = getMargins(pageNumber);
+                                    yPos = m.top;
+                                    pagesMeta[pageNumber] = {
+                                        showNumber: true,
+                                        showHeader: true,
+                                        chapterTitle: chapter.title
+                                    };
+                                    const retryResult = renderParagraph(pdf, part, m, yPos, false);
+                                    yPos = retryResult.y + 3;
+                                } else {
+                                    yPos = result.y + 3;
+                                }
+
+                                isFirstParagraph = false;
                             }
-
-                            yPosition += lineHeight;
                         }
-
-                        // Espacio entre párrafos
-                        yPosition += 3;
-                    }
-
-                    // Insertar imágenes después de este capítulo
-                    const afterImages = bookData.images.filter(img => img.position === `after-${chapter.id}`);
-                    for (const img of afterImages) {
-                        pdf.addPage();
-                        currentPage++;
-                        try {
-                            pdf.addImage(img.dataUrl, 'JPEG', 0, 0, pageWidth, pageHeight);
-                        } catch (e) {
-                            console.warn('No se pudo agregar imagen:', e);
-                        }
-                    }
-
-                    // Números de página (si están habilitados)
-                    if (bookData.format.includePageNumbers) {
-                        this.addPageNumbers(pdf, currentPage);
                     }
                 }
 
-                // ===== IMÁGENES AL FINAL =====
-                const endImages = bookData.images.filter(img => img.position === 'end');
-                for (const img of endImages) {
-                    pdf.addPage();
-                    currentPage++;
-                    try {
-                        pdf.addImage(img.dataUrl, 'JPEG', 0, 0, pageWidth, pageHeight);
-                    } catch (e) {
-                        console.warn('No se pudo agregar imagen:', e);
+                // ===== BACK MATTER =====
+
+                // Epílogo (si existe) - IMPAR
+                if (this.publishingEpilogue && this.publishingEpilogue.trim()) {
+                    addPage(true);
+                    m = getMargins(pageNumber);
+                    yPos = m.top;
+
+                    pdf.setFontSize(18);
+                    pdf.setFont(fontName, 'bold');
+                    pdf.text('EPÍLOGO', pageWidth / 2, yPos, { align: 'center' });
+                    yPos += 15;
+
+                    pdf.setFont(fontName, 'normal');
+                    pdf.setFontSize(fontSize);
+
+                    const epilogueParas = this.publishingEpilogue.split(/\n\n+/);
+                    let isFirst = true;
+                    for (const para of epilogueParas) {
+                        if (!para.trim()) continue;
+                        const result = renderParagraph(pdf, para, m, yPos, isFirst);
+                        if (result.needsNewPage) {
+                            addPage();
+                            m = getMargins(pageNumber);
+                            yPos = m.top;
+                            const retryResult = renderParagraph(pdf, para, m, yPos, false);
+                            yPos = retryResult.y + 3;
+                        } else {
+                            yPos = result.y + 3;
+                        }
+                        isFirst = false;
+                    }
+                    pagesMeta[pageNumber] = { showNumber: false, showHeader: false };
+                }
+
+                // Agradecimientos (si existen) - IMPAR
+                if (this.publishingAcknowledgments && this.publishingAcknowledgments.trim()) {
+                    addPage(true);
+                    m = getMargins(pageNumber);
+                    yPos = m.top;
+
+                    pdf.setFontSize(18);
+                    pdf.setFont(fontName, 'bold');
+                    pdf.text('AGRADECIMIENTOS', pageWidth / 2, yPos, { align: 'center' });
+                    yPos += 15;
+
+                    pdf.setFont(fontName, 'normal');
+                    pdf.setFontSize(fontSize);
+
+                    const ackParas = this.publishingAcknowledgments.split(/\n\n+/);
+                    for (const para of ackParas) {
+                        if (!para.trim()) continue;
+                        const result = renderParagraph(pdf, para, m, yPos, false);
+                        if (result.needsNewPage) {
+                            addPage();
+                            m = getMargins(pageNumber);
+                            yPos = m.top;
+                            const retryResult = renderParagraph(pdf, para, m, yPos, false);
+                            yPos = retryResult.y + 3;
+                        } else {
+                            yPos = result.y + 3;
+                        }
+                    }
+                    pagesMeta[pageNumber] = { showNumber: false, showHeader: false };
+                }
+
+                // Sobre el Autor (OBLIGATORIO) - IMPAR
+                if (this.publishingAboutAuthor && this.publishingAboutAuthor.trim()) {
+                    addPage(true);
+                    m = getMargins(pageNumber);
+                    yPos = m.top;
+
+                    pdf.setFontSize(18);
+                    pdf.setFont(fontName, 'bold');
+                    pdf.text('SOBRE EL AUTOR', pageWidth / 2, yPos, { align: 'center' });
+                    yPos += 15;
+
+                    // Foto del autor (si existe)
+                    if (this.publishingAuthorPhoto) {
+                        try {
+                            const photoSize = 30; // 30mm
+                            pdf.addImage(this.publishingAuthorPhoto, 'JPEG',
+                                pageWidth / 2 - photoSize / 2, yPos, photoSize, photoSize);
+                            yPos += photoSize + 10;
+                        } catch (e) {
+                            console.warn('No se pudo agregar foto del autor:', e);
+                        }
+                    }
+
+                    pdf.setFont(fontName, 'normal');
+                    pdf.setFontSize(fontSize);
+
+                    const aboutParas = this.publishingAboutAuthor.split(/\n\n+/);
+                    for (const para of aboutParas) {
+                        if (!para.trim()) continue;
+                        const result = renderParagraph(pdf, para, m, yPos, false);
+                        if (result.needsNewPage) {
+                            addPage();
+                            m = getMargins(pageNumber);
+                            yPos = m.top;
+                            const retryResult = renderParagraph(pdf, para, m, yPos, false);
+                            yPos = retryResult.y + 3;
+                        } else {
+                            yPos = result.y + 3;
+                        }
+                    }
+
+                    // Información de contacto
+                    if (this.publishingContactInfo.website || this.publishingContactInfo.social) {
+                        yPos += 10;
+                        pdf.setFontSize(10);
+                        if (this.publishingContactInfo.website) {
+                            pdf.text(`Sitio web: ${this.publishingContactInfo.website}`, pageWidth / 2, yPos, { align: 'center' });
+                            yPos += 6;
+                        }
+                        if (this.publishingContactInfo.social) {
+                            pdf.text(this.publishingContactInfo.social, pageWidth / 2, yPos, { align: 'center' });
+                            yPos += 6;
+                        }
+                        if (this.publishingContactInfo.newsletter) {
+                            pdf.text(this.publishingContactInfo.newsletter, pageWidth / 2, yPos, { align: 'center' });
+                        }
+                    }
+
+                    pagesMeta[pageNumber] = { showNumber: false, showHeader: false };
+                }
+
+                // ===== AGREGAR NÚMEROS DE PÁGINA Y ENCABEZADOS =====
+                if (bookData.format.includePageNumbers || bookData.format.includeHeaders) {
+                    const totalPages = pdf.internal.getNumberOfPages();
+
+                    for (let i = 1; i <= totalPages; i++) {
+                        pdf.setPage(i);
+                        const meta = pagesMeta[i] || { showNumber: true, showHeader: true };
+                        m = getMargins(i);
+
+                        // Encabezados (solo en páginas que no sean primera de capítulo)
+                        if (bookData.format.includeHeaders && meta.showHeader) {
+                            pdf.setFontSize(9);
+                            pdf.setFont(fontName, 'normal');
+
+                            const isPageOdd = (i % 2 === 1);
+                            if (isPageOdd) {
+                                // Página IMPAR: nombre del libro (derecha)
+                                pdf.text(bookData.title.toUpperCase(), pageWidth - m.right, m.top - 5, { align: 'right' });
+                            } else {
+                                // Página PAR: nombre del capítulo (izquierda)
+                                const chapterName = meta.chapterTitle ? meta.chapterTitle.toUpperCase() : bookData.author.toUpperCase();
+                                pdf.text(chapterName, m.left, m.top - 5);
+                            }
+                        }
+
+                        // Números de página (solo en páginas que corresponda)
+                        if (bookData.format.includePageNumbers && meta.showNumber && i >= contentPageNumber) {
+                            pdf.setFontSize(10);
+                            pdf.setFont(fontName, 'normal');
+                            pdf.text(String(i - contentPageNumber + 1), pageWidth / 2, pageHeight - 15, { align: 'center' });
+                        }
                     }
                 }
 
                 // Guardar PDF
-                const filename = `${bookData.title.replace(/[^a-z0-9]/gi, '_')}.pdf`;
+                const filename = `${bookData.title.replace(/[^a-z0-9]/gi, '_')}_KDP.pdf`;
                 pdf.save(filename);
 
                 this.$store.ui.success(
@@ -490,7 +950,7 @@ function publishingComponent() {
                     throw new Error('docx no está cargado');
                 }
 
-                const { Document, Packer, Paragraph, AlignmentType, HeadingLevel } = window.docx;
+                const { Document, Packer, Paragraph, AlignmentType, HeadingLevel, ImageRun, PageBreak } = window.docx;
                 const bookData = this.prepareBookData();
 
                 const sections = [];
@@ -573,7 +1033,75 @@ function publishingComponent() {
                     const paragraphs = content.split(/\n\n+/);
 
                     paragraphs.forEach(para => {
-                        if (para.trim()) {
+                        if (!para.trim()) return;
+
+                        // Detectar saltos de escena
+                        if (para.trim() === '###' || para.trim() === '***') {
+                            sections.push(
+                                new Paragraph({
+                                    text: para.trim(),
+                                    alignment: AlignmentType.CENTER,
+                                    spacing: { before: 200, after: 200 }
+                                })
+                            );
+                            return;
+                        }
+
+                        // Detectar marcadores de imagen de página completa [IMG:X]
+                        const fullPageImageMatch = para.match(/^\[IMG:(\d+)\]$/);
+                        if (fullPageImageMatch) {
+                            const imageNumber = parseInt(fullPageImageMatch[1]);
+                            const image = bookData.images.find(img => img.number === imageNumber);
+
+                            if (image) {
+                                try {
+                                    // Convertir dataUrl a buffer
+                                    const base64Data = image.dataUrl.split(',')[1];
+                                    const imageBuffer = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+
+                                    // Agregar salto de página antes de la imagen
+                                    sections.push(
+                                        new Paragraph({
+                                            children: [new PageBreak()]
+                                        })
+                                    );
+
+                                    // Agregar imagen de página completa (6 inches width para 6x9)
+                                    sections.push(
+                                        new Paragraph({
+                                            children: [
+                                                new ImageRun({
+                                                    data: imageBuffer,
+                                                    transformation: {
+                                                        width: 450,  // 6.25 inches aprox
+                                                        height: 600  // 8.33 inches aprox
+                                                    }
+                                                })
+                                            ],
+                                            alignment: AlignmentType.CENTER,
+                                            spacing: { before: 200, after: 200 }
+                                        })
+                                    );
+
+                                    // Agregar salto de página después de la imagen
+                                    sections.push(
+                                        new Paragraph({
+                                            children: [new PageBreak()]
+                                        })
+                                    );
+                                } catch (e) {
+                                    console.warn(`No se pudo agregar imagen ${imageNumber} en DOCX:`, e);
+                                }
+                            }
+                            return;
+                        }
+
+                        // Procesar párrafo con posibles marcadores de imagen en línea [INLINE-IMG:X]
+                        const inlineImageRegex = /\[INLINE-IMG:(\d+)\]/g;
+                        const parts = para.split(inlineImageRegex);
+
+                        if (parts.length === 1) {
+                            // No hay marcadores de imagen, texto normal
                             sections.push(
                                 new Paragraph({
                                     text: para.trim(),
@@ -581,6 +1109,81 @@ function publishingComponent() {
                                     spacing: { after: 200 }
                                 })
                             );
+                        } else {
+                            // Tiene marcadores de imagen en línea
+                            const children = [];
+
+                            for (let i = 0; i < parts.length; i++) {
+                                const part = parts[i];
+
+                                if (i % 2 === 1) {
+                                    // Es un número de imagen
+                                    const imageNumber = parseInt(part);
+                                    const image = bookData.images.find(img => img.number === imageNumber);
+
+                                    if (image) {
+                                        try {
+                                            const base64Data = image.dataUrl.split(',')[1];
+                                            const imageBuffer = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+
+                                            // Agregar imagen en línea (más pequeña)
+                                            children.push(
+                                                new ImageRun({
+                                                    data: imageBuffer,
+                                                    transformation: {
+                                                        width: 300,  // ~4 inches
+                                                        height: 200  // ~2.8 inches
+                                                    }
+                                                })
+                                            );
+                                        } catch (e) {
+                                            console.warn(`No se pudo agregar imagen en línea ${imageNumber} en DOCX:`, e);
+                                        }
+                                    }
+                                } else if (part.trim()) {
+                                    // Texto antes/después de la imagen
+                                    if (children.length > 0) {
+                                        // Ya hay contenido, agregar como nuevo párrafo
+                                        if (part.trim()) {
+                                            sections.push(
+                                                new Paragraph({
+                                                    children: children,
+                                                    alignment: AlignmentType.JUSTIFIED,
+                                                    spacing: { after: 200 }
+                                                })
+                                            );
+                                            children.length = 0;
+                                            sections.push(
+                                                new Paragraph({
+                                                    text: part.trim(),
+                                                    alignment: AlignmentType.JUSTIFIED,
+                                                    spacing: { after: 200 }
+                                                })
+                                            );
+                                        }
+                                    } else {
+                                        // Primer texto
+                                        sections.push(
+                                            new Paragraph({
+                                                text: part.trim(),
+                                                alignment: AlignmentType.JUSTIFIED,
+                                                spacing: { after: 200 }
+                                            })
+                                        );
+                                    }
+                                }
+                            }
+
+                            // Si quedaron elementos pendientes
+                            if (children.length > 0) {
+                                sections.push(
+                                    new Paragraph({
+                                        children: children,
+                                        alignment: AlignmentType.CENTER,
+                                        spacing: { after: 200 }
+                                    })
+                                );
+                            }
                         }
                     });
                 });
@@ -733,15 +1336,37 @@ function publishingComponent() {
                 // Imágenes
                 images: this.publishingBookImages,
 
-                // Formato
+                // Front Matter
+                frontMatter: {
+                    includeHalfTitle: this.publishingIncludeHalfTitle,
+                    otherBooks: this.publishingOtherBooks,
+                    dedication: this.publishingDedication,
+                    authorNote: this.publishingAuthorNote,
+                    prologue: this.publishingPrologue
+                },
+
+                // Back Matter
+                backMatter: {
+                    epilogue: this.publishingEpilogue,
+                    authorNoteFinal: this.publishingAuthorNoteFinal,
+                    acknowledgments: this.publishingAcknowledgments,
+                    aboutAuthor: this.publishingAboutAuthor,
+                    authorPhoto: this.publishingAuthorPhoto,
+                    contactInfo: this.publishingContactInfo
+                },
+
+                // Formato KDP
                 format: {
                     platform: this.publishingPlatform,
+                    paperType: this.publishingPaperType,
                     pageSize: this.publishingBookSize,
-                    margins: this.publishingMargins,
                     fontFamily: this.publishingFontFamily,
                     fontSize: this.publishingFontSize,
+                    lineHeight: this.publishingLineHeight,
+                    paragraphIndent: this.publishingParagraphIndent,
                     includePageNumbers: this.publishingIncludePageNumbers,
-                    includeToC: this.publishingIncludeToC
+                    includeToC: this.publishingIncludeToC,
+                    includeHeaders: this.publishingIncludeHeaders
                 }
             };
         }
