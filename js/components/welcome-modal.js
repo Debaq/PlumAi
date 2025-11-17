@@ -52,25 +52,52 @@ window.welcomeModalComponent = function() {
                 Alpine.store('ui').closeModal('welcome');
                 Alpine.store('ui').markAsVisited();
 
-                // Crear un proyecto nuevo con info básica
-                const projectInfo = {
-                    title: 'Proyecto de Demostración',
-                    author: 'Usuario Demo',
-                    genre: 'Genérico',
-                    isPublicPC: false
-                };
-                Alpine.store('project').createNewProject(projectInfo);
+                // Mostrar loading
+                Alpine.store('ui').startLoading('global');
 
-                // Crear los datos genéricos simples
-                const versionControl = Alpine.store('versionControl');
-                if (versionControl && versionControl.createSimpleDemoData) {
-                    await versionControl.createSimpleDemoData();
+                // URL del archivo de ejemplo
+                const demoUrl = 'https://tmeduca.org/plumai/ejemplo.pluma';
+
+                // Descargar el archivo de ejemplo
+                const response = await fetch(demoUrl);
+
+                if (!response.ok) {
+                    throw new Error(`Error al descargar el archivo: ${response.status} ${response.statusText}`);
                 }
 
-                Alpine.store('ui').success('Proyecto de demostración cargado', 'Puedes explorar las funciones de PlumaAI con datos de ejemplo');
+                // Obtener el contenido como texto y parsearlo
+                const jsonText = await response.text();
+                const projectData = JSON.parse(jsonText);
+
+                // Validar estructura básica del proyecto
+                if (!projectData.projectInfo || !projectData.projectInfo.id) {
+                    throw new Error('Archivo de proyecto inválido: falta información del proyecto');
+                }
+
+                // Migrar datos si es necesario (usando el método del storageManager)
+                if (window.storageManager && window.storageManager.migrateProjectData) {
+                    window.storageManager.migrateProjectData(projectData);
+                }
+
+                // Cargar el proyecto en la aplicación
+                Alpine.store('project').loadProject(projectData);
+
+                // Mostrar mensaje de éxito
+                Alpine.store('ui').success(
+                    'Proyecto de demostración cargado',
+                    'Puedes explorar las funciones de PlumaAI con datos de ejemplo'
+                );
             } catch (error) {
                 console.error('Error loading demo project:', error);
-                Alpine.store('ui').error('Error', 'No se pudo cargar el proyecto de demostración');
+                Alpine.store('ui').error(
+                    'Error al cargar proyecto de demostración',
+                    `No se pudo descargar el archivo de ejemplo. ${error.message}`
+                );
+                // Si falla, volver a abrir el modal de bienvenida
+                Alpine.store('ui').openModal('welcome');
+            } finally {
+                // Detener loading
+                Alpine.store('ui').stopLoading('global');
             }
         }
     };
