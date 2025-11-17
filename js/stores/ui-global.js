@@ -82,6 +82,17 @@ window.uiStore = {
 
     // Métodos para vistas
     setView(viewName) {
+        // Verificar si está saliendo del editor con cambios sin guardar
+        if (this.currentView === 'editor' && viewName !== 'editor') {
+            if (this.editorSaveStatus === 'unsaved' || this.editorSaveStatus === 'saving') {
+                if (!confirm('Tienes cambios sin guardar. ¿Estás seguro de que quieres salir?')) {
+                    return; // Cancelar cambio de vista
+                }
+                // Resetear estado
+                this.editorSaveStatus = 'saved';
+            }
+        }
+
         this.currentView = viewName;
 
         // Auto-colapsar sidebar al entrar al sistema de publicación
@@ -283,6 +294,14 @@ window.uiStore = {
     },
 
     closeEditor() {
+        // Verificar si hay cambios sin guardar
+        if (this.editorSaveStatus === 'unsaved' || this.editorSaveStatus === 'saving') {
+            // Preguntar al usuario si quiere salir sin guardar
+            if (!confirm('Tienes cambios sin guardar. ¿Estás seguro de que quieres salir?')) {
+                return; // Cancelar cierre
+            }
+        }
+
         this.currentEditingChapterId = null;
         this.setView('chapters');
         this.editorSaveStatus = 'saved';

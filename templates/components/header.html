@@ -76,9 +76,15 @@
                             <span x-text="$store.i18n.t('editor.saved')">Guardado</span>
                         </template>
                         <template x-if="$store.ui.editorSaveStatus === 'unsaved'">
-                            <span>...</span>
+                            <span style="color: var(--warning, #f59e0b)">Sin guardar</span>
                         </template>
                     </div>
+                    <button class="btn-icon btn-icon-sm"
+                            @click="window.dispatchEvent(new CustomEvent('editor:save-manually'))"
+                            :title="$store.i18n.t('editor.saveNow') || 'Guardar ahora'"
+                            :disabled="$store.ui.editorSaveStatus === 'saving'">
+                        <i data-lucide="save" width="16" height="16"></i>
+                    </button>
                 </div>
             </template>
         </div>
