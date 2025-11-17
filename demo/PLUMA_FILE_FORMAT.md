@@ -4,9 +4,68 @@ Documentación completa de la estructura de archivos `.pluma` para PlumaAI.
 
 ## Descripción General
 
-Los archivos `.pluma` son archivos JSON que contienen toda la información de un proyecto de novela. Este formato permite exportar, importar y compartir proyectos completos de PlumaAI.
+Los archivos `.pluma` son archivos **ZIP comprimidos** que contienen toda la información de un proyecto de novela, incluyendo datos JSON, imágenes, avatares y otros recursos. Este formato permite exportar, importar y compartir proyectos completos de PlumaAI.
 
-## Estructura Principal
+> **Nota**: Versiones anteriores usaban JSON puro. PlumaAI mantiene **retrocompatibilidad** con archivos JSON legacy.
+
+## Estructura del Archivo ZIP
+
+Un archivo `.pluma` es un archivo ZIP con la siguiente estructura:
+
+```
+archivo.pluma (ZIP)
+├── project.json          # Datos del proyecto (ver estructura abajo)
+├── metadata.json         # Metadata del archivo
+└── assets/               # Carpeta de recursos (opcional)
+    ├── avatars/          # Avatares de personajes
+    │   ├── char-001.png
+    │   ├── char-002.jpg
+    │   └── ...
+    ├── covers/           # Portadas de libro
+    │   └── cover.png
+    └── images/           # Otras imágenes
+        └── *.png/jpg
+```
+
+### metadata.json
+
+Archivo de metadata que describe el contenido del .pluma:
+
+```json
+{
+  "version": "2.0",
+  "format": "pluma-zip",
+  "created": "2024-11-17T00:00:00.000Z",
+  "encrypted": false,
+  "encryptedFull": false,
+  "hasAssets": true
+}
+```
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `version` | string | Versión del formato |
+| `format` | string | Tipo de formato (`pluma-zip` o `pluma-json`) |
+| `created` | string | Fecha de creación del archivo |
+| `encrypted` | boolean | Indica si hay datos encriptados |
+| `encryptedFull` | boolean | Indica si TODO el proyecto está encriptado |
+| `hasAssets` | boolean | Indica si incluye carpeta de assets |
+
+### assets/
+
+Carpeta que contiene todos los recursos binarios del proyecto:
+
+- **avatars/**: Avatares de personajes (PNG, JPG)
+  - Nombrados con el ID del personaje: `{characterId}.png`
+
+- **covers/**: Portadas del libro
+  - `cover.png` - Portada principal
+
+- **images/**: Otras imágenes personalizadas
+
+## Estructura de project.json
+
+El archivo `project.json` dentro del ZIP contiene los datos del proyecto en formato JSON:
 
 ```json
 {
@@ -654,6 +713,67 @@ Los datos encriptados en base64 contienen:
 - ⚠️ **IDs únicos**: Asegúrate de que los IDs sean únicos al combinar proyectos o crear forks.
 - ✅ **Backup**: Haz copias de seguridad regulares de tus archivos .pluma.
 - 🌐 **Compartir Proyectos**: Al compartir proyectos con API keys, usa siempre encriptación o elimina las keys manualmente antes de compartir.
+
+---
+
+## Retrocompatibilidad y Formato Legacy
+
+PlumaAI mantiene compatibilidad con archivos .pluma legacy (JSON puro) de versiones anteriores.
+
+### Formato Legacy (JSON Puro)
+
+Versiones anteriores de PlumaAI usaban archivos JSON puros sin compresión ZIP:
+
+```json
+{
+  "projectInfo": { ... },
+  "apiKeys": { ... },
+  "characters": [ ... ],
+  ...
+}
+```
+
+**Limitaciones del formato legacy:**
+- ❌ No soporta imágenes/avatares
+- ❌ Mayor tamaño de archivo
+- ❌ No incluye metadata
+
+### Detección Automática
+
+PlumaAI detecta automáticamente el formato del archivo:
+
+1. **Archivos ZIP** (formato nuevo):
+   - Se identifican por los primeros bytes (`PK` - firma ZIP)
+   - Se procesan con `zipService.readPlumaFile()`
+   - Soportan assets completos
+
+2. **Archivos JSON** (formato legacy):
+   - Se detectan al fallar la lectura ZIP
+   - Se procesan como JSON puro
+   - Completamente compatibles con versión actual
+
+### Migración de Legacy a ZIP
+
+Al importar un archivo legacy (JSON), PlumaAI:
+
+1. Lee el JSON correctamente
+2. Aplica migraciones necesarias
+3. **Al exportar nuevamente**, se guarda en formato ZIP moderno
+
+> ✅ **Recomendación**: Actualiza tus archivos legacy importándolos y re-exportándolos para aprovechar el nuevo formato ZIP.
+
+### Ventajas del Nuevo Formato ZIP
+
+| Característica | Legacy (JSON) | Nuevo (ZIP) |
+|---------------|---------------|-------------|
+| **Soporte de imágenes** | ❌ No | ✅ Sí |
+| **Tamaño de archivo** | Grande | Comprimido |
+| **Metadata** | ❌ No | ✅ Sí |
+| **Avatares de personajes** | ❌ No | ✅ Sí |
+| **Portadas** | ❌ No | ✅ Sí |
+| **Organización** | Todo en un JSON | Estructura de carpetas |
+| **Compresión** | ❌ No | ✅ DEFLATE nivel 9 |
+| **Extensible** | Limitado | Fácil agregar nuevos assets |
 
 ---
 
