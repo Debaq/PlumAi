@@ -57,6 +57,11 @@
         <div x-show="$store.ui.currentView === 'editor'" class="header-editor-info" x-data="{ get currentChapter() { return $store.project.chapters.find(ch => ch.id === $store.ui.currentEditingChapterId); } }">
             <template x-if="currentChapter">
                 <div class="header-editor-title-group">
+                    <button class="btn-icon"
+                            @click="$store.ui.closeEditor()"
+                            :title="$store.i18n.t('common.back')">
+                        <i data-lucide="arrow-left" width="20" height="20"></i>
+                    </button>
                     <div class="header-editor-title" x-text="'Capítulo ' + currentChapter.number + ': ' + (currentChapter.title || 'Sin título')"></div>
                     <button class="btn-icon btn-icon-sm"
                             @click="$store.ui.openModal('editChapter', currentChapter)"
@@ -139,6 +144,14 @@
                     @click="$store.ui.openModal('newTimelineEvent')">
                 <i data-lucide="plus" width="14" height="14"></i>
                 <span x-text="$store.i18n.t('timeline.new')">Nuevo</span>
+            </button>
+
+            <!-- Editor Actions -->
+            <button x-show="$store.ui.currentView === 'editor'"
+                    class="btn-icon"
+                    @click="$store.ui.toggleEditorZenMode(); $nextTick(() => lucide.createIcons())"
+                    :title="$store.ui.editorZenMode ? ($store.i18n.t('editor.exitZenMode') || 'Salir del modo zen') : ($store.i18n.t('editor.zenMode') || 'Modo sin distracciones')">
+                <i :data-lucide="$store.ui.editorZenMode ? 'maximize-2' : 'minimize-2'" width="20" height="20"></i>
             </button>
         </div>
 
