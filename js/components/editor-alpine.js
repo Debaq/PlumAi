@@ -258,10 +258,10 @@ window.editorAlpineComponent = function() {
                 clearTimeout(this.saveTimeout);
             }
 
-            // Esperar 1 segundo antes de guardar
+            // Esperar 3 segundos antes de guardar (reducir carga del searchService)
             this.saveTimeout = setTimeout(() => {
                 this.save();
-            }, 1000);
+            }, 3000);
         },
 
         /**

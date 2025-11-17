@@ -1,5 +1,8 @@
 // Store para gestión del proyecto
 window.projectStore = {
+    // Timeout para debounce de searchIndex
+    _searchIndexTimeout: null,
+
     // Información del proyecto
     projectInfo: {
         id: null,
@@ -1289,18 +1292,26 @@ window.projectStore = {
         return window.versionControl.getHistoryStats();
     },
 
-    // Actualizar índice de búsqueda de Lunr.js
+    // Actualizar índice de búsqueda de Lunr.js con debounce
     updateSearchIndex() {
-        if (window.searchService && window.searchService.isInitialized) {
-            window.searchService.update({
-                characters: this.characters,
-                scenes: this.scenes,
-                locations: this.locations,
-                timeline: this.timeline,
-                chapters: this.chapters,
-                loreEntries: this.loreEntries
-            });
+        // Cancelar timeout anterior
+        if (this._searchIndexTimeout) {
+            clearTimeout(this._searchIndexTimeout);
         }
+
+        // Esperar 2 segundos antes de reconstruir el índice (operación costosa)
+        this._searchIndexTimeout = setTimeout(() => {
+            if (window.searchService && window.searchService.isInitialized) {
+                window.searchService.update({
+                    characters: this.characters,
+                    scenes: this.scenes,
+                    locations: this.locations,
+                    timeline: this.timeline,
+                    chapters: this.chapters,
+                    loreEntries: this.loreEntries
+                });
+            }
+        }, 2000);
     },
 
 

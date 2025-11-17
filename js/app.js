@@ -118,6 +118,11 @@ document.addEventListener('alpine:init', () => {
         lastProjectState: null,
         hasUncommittedChanges: false,
 
+        // Caché para optimizar JSON.stringify
+        _lastModifiedTimestamp: null,
+        _cachedCurrentState: null,
+        _cachedOldState: null,
+
         // Inicialización
         async init() {
             // Cargar datos primero
@@ -193,18 +198,39 @@ document.addEventListener('alpine:init', () => {
             return normalized;
         },
 
-        // Detectar cambios pendientes
+        // Detectar cambios pendientes - Optimizado con caché
         async detectChanges() {
             if (!this.lastProjectState) {
                 return;
             }
 
+            // Verificar si el proyecto fue modificado desde la última verificación
+            const currentModified = Alpine.store('project').projectInfo?.modified;
+
+            // Si no hay cambios en el timestamp, usar caché
+            if (currentModified === this._lastModifiedTimestamp && this._cachedCurrentState) {
+                return; // No hay cambios, salir temprano
+            }
+
+            // Actualizar timestamp
+            this._lastModifiedTimestamp = currentModified;
+
             // Normalizar ambos estados antes de comparar
-            const oldState = this.normalizeState(JSON.parse(this.lastProjectState));
+            const oldState = this._cachedOldState || this.normalizeState(JSON.parse(this.lastProjectState));
+            if (!this._cachedOldState) {
+                this._cachedOldState = oldState; // Cachear para próximas veces
+            }
+
             const newState = this.normalizeState(Alpine.store('project').exportProject());
 
             const currentState = JSON.stringify(newState);
-            const lastState = JSON.stringify(oldState);
+            const lastState = this._cachedCurrentState || JSON.stringify(oldState);
+
+            // Actualizar caché solo si cambió
+            if (currentState !== this._cachedCurrentState) {
+                this._cachedCurrentState = currentState;
+            }
+
             const hasChanges = currentState !== lastState;
 
             // Solo actualizar si realmente cambió
@@ -269,15 +295,17 @@ document.addEventListener('alpine:init', () => {
                     changes.push(`${type}: ${oldLen} → ${newLen} (${sign}${diff})`);
                 }
 
-                // Detectar modificaciones
+                // Detectar modificaciones - Optimizado de O(n²) a O(n)
                 const oldIds = new Set(oldArr.map(item => item.id));
                 const newIds = new Set(newArr.map(item => item.id));
+                // Crear Map para búsqueda O(1) en lugar de find() O(n)
+                const oldItemsMap = new Map(oldArr.map(item => [item.id, item]));
 
                 const added = newArr.filter(item => !oldIds.has(item.id));
                 const removed = oldArr.filter(item => !newIds.has(item.id));
                 const modified = newArr.filter(item => {
                     if (!oldIds.has(item.id)) return false;
-                    const oldItem = oldArr.find(o => o.id === item.id);
+                    const oldItem = oldItemsMap.get(item.id); // O(1) en lugar de find() O(n)
                     return JSON.stringify(oldItem) !== JSON.stringify(item);
                 });
 
