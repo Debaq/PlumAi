@@ -18,7 +18,7 @@ window.aiService = {
             freeTier: '$5 gratis al inicio',
             pricing: 'Desde $3/M tokens',
             type: 'api',
-            enabled: true
+            enabled: false
         },
         openai: {
             id: 'openai',
@@ -30,7 +30,7 @@ window.aiService = {
             freeTier: 'No (solo pago)',
             pricing: 'Desde $0.15/M tokens',
             type: 'api',
-            enabled: true
+            enabled: false
         },
         google: {
             id: 'google',
@@ -42,7 +42,7 @@ window.aiService = {
             freeTier: '15 req/min gratis',
             pricing: 'Free tier generoso',
             type: 'api',
-            enabled: true
+            enabled: false
         },
         groq: {
             id: 'groq',
@@ -66,7 +66,7 @@ window.aiService = {
             freeTier: '$25 gratis al inicio',
             pricing: 'Desde $0.2/M tokens',
             type: 'api',
-            enabled: true
+            enabled: false
         },
 
         // LOCALES / GRATUITAS
@@ -93,7 +93,7 @@ window.aiService = {
             freeTier: 'Rate limited gratis',
             pricing: 'Gratis (algunos modelos)',
             type: 'api',
-            enabled: true
+            enabled: false
         },
 
         // MODO COPY PROMPT (sin API)
@@ -106,7 +106,7 @@ window.aiService = {
             freeTier: '100% GRATIS',
             pricing: 'Gratis',
             type: 'manual',
-            enabled: true,
+            enabled: false,
             description: 'Genera un prompt completo para copiar y pegar en ChatGPT, Claude, etc.'
         }
     },
