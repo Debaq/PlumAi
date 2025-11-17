@@ -317,7 +317,7 @@ window.editorAlpineComponent = function() {
                 border: 1px solid var(--border, #444);
                 border-radius: 6px;
                 box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-                z-index: 10000;
+                z-index: 1000;
                 min-width: 180px;
                 max-width: 250px;
                 max-height: 200px;
@@ -462,18 +462,19 @@ window.editorAlpineComponent = function() {
                     }
                 };
                 document.addEventListener('keydown', this.popupKeyHandler);
-            }, 150);
+            }, 10);
 
             // Cerrar al hacer click fuera
+            const closeOnClickOutside = (e) => {
+                if (!popup.contains(e.target)) {
+                    this.closeListPopup();
+                    document.removeEventListener('click', closeOnClickOutside);
+                }
+            };
+            // Usar setTimeout muy corto para evitar que el click que abre el popup lo cierre inmediatamente
             setTimeout(() => {
-                const closeOnClickOutside = (e) => {
-                    if (!popup.contains(e.target)) {
-                        this.closeListPopup();
-                        document.removeEventListener('click', closeOnClickOutside);
-                    }
-                };
                 document.addEventListener('click', closeOnClickOutside);
-            }, 100);
+            }, 10);
         },
 
         /**

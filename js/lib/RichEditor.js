@@ -111,7 +111,7 @@ class RichEditor {
             // Cerrar menús después de un delay para permitir clicks
             setTimeout(() => {
                 this.hideAllMenus();
-            }, 200);
+            }, 50);
         });
     }
 
@@ -512,6 +512,7 @@ class RichEditor {
 
             menuItem.addEventListener('mousedown', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 this.insertMention(item);
             });
 
@@ -551,6 +552,7 @@ class RichEditor {
 
             menuItem.addEventListener('mousedown', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 this.executeCommand(item);
             });
 
