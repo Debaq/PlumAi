@@ -686,24 +686,28 @@ class RichEditor {
         }
 
         // Comportamiento normal sin texto seleccionado
-        const currentText = this.editor.innerText;
-        const beforeTrigger = currentText.substring(0, this.triggerPosition);
-        const afterCursor = currentText.substring(this.getCaretPosition());
+        // Usar el mismo método que usamos para detectar el trigger
+        const textBeforeCursor = this.getTextBeforeCursor();
+        const beforeTrigger = textBeforeCursor.substring(0, this.triggerPosition);
+        const commandText = textBeforeCursor.substring(this.triggerPosition);
+
+        // Obtener posición actual del cursor
+        const sel = window.getSelection();
+        if (!sel.rangeCount) return;
+
+        const range = sel.getRangeAt(0);
+
+        // Eliminar el comando usando el DOM directamente (más preciso)
+        const deleteRange = range.cloneRange();
+        deleteRange.setStart(deleteRange.startContainer, deleteRange.startOffset - commandText.length);
+        deleteRange.deleteContents();
 
         // Si el comando tiene un template, insertarlo
         if (command.template) {
-            const newText = beforeTrigger + command.template + afterCursor;
-            this.editor.innerText = newText;
-
-            const newCursorPos = beforeTrigger.length + command.template.length;
-            this.setCursorPosition(newCursorPos);
+            document.execCommand('insertText', false, command.template);
         }
         // Si el comando tiene una acción, ejecutarla
         else if (command.action) {
-            // Remover el comando del texto
-            this.editor.innerText = beforeTrigger + afterCursor;
-            this.setCursorPosition(beforeTrigger.length);
-
             // Ejecutar callback si existe
             if (typeof command.action === 'function') {
                 command.action();
