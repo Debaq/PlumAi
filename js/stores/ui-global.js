@@ -82,6 +82,11 @@ window.uiStore = {
     // Métodos para vistas
     setView(viewName) {
         this.currentView = viewName;
+
+        // Auto-colapsar sidebar al entrar al sistema de publicación
+        if (viewName === 'publishing') {
+            this.sidebarCollapsed = true;
+        }
     },
 
     isCurrentView(viewName) {

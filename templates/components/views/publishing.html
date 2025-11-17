@@ -88,7 +88,7 @@
         </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 400px; gap: var(--spacing-xl);">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-xl);">
         <!-- COLUMNA IZQUIERDA -->
         <div style="display: flex; flex-direction: column; gap: var(--spacing-xl);">
 
@@ -103,8 +103,8 @@
                     </div>
                 </div>
                 <div x-show="sectionsOpen.metadata" x-collapse>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-lg);">
-                        <div class="form-group" style="grid-column: 1 / -1;">
+                    <div style="display: grid; grid-template-columns: 1fr; gap: var(--spacing-lg);">
+                        <div class="form-group">
                             <label x-text="$store.i18n.t('publishing.metadata.bookTitle')">Título del Libro *</label>
                             <input type="text" x-model="publishingBookTitle" placeholder="El título de tu libro">
                         </div>
@@ -135,6 +135,175 @@
                     </div>
                 </div>
             </div>
+
+            <!-- SELECCIÓN DE CAPÍTULOS -->
+            <div class="card">
+                <div class="card-header" @click="toggleSection('chapters')" style="cursor: pointer;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <h2 class="card-title" x-text="$store.i18n.t('publishing.chapters.title')">Capítulos</h2>
+                            <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">
+                                <span x-text="publishingFilteredChapters.length + ' capítulos disponibles'"></span> ·
+                                <span x-text="publishingSelectedChapters.length + ' seleccionados'"></span> ·
+                                <span x-text="publishingTotalWords + ' palabras'"></span>
+                            </p>
+                        </div>
+                        <i data-lucide="chevron-down" width="20" height="20"
+                           :style="sectionsOpen.chapters ? 'transform: rotate(180deg);' : ''"
+                           style="transition: transform 0.2s; color: var(--text-secondary);"></i>
+                    </div>
+                </div>
+                <div x-show="sectionsOpen.chapters" x-collapse>
+
+                <!-- FILTROS -->
+                <div style="display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-lg); flex-wrap: wrap;">
+                    <button class="btn-secondary btn-sm"
+                            :class="{ 'active': publishingChapterFilter === 'final' }"
+                            @click="publishingChapterFilter = 'final'"
+                            style="display: flex; align-items: center; gap: var(--spacing-xs);">
+                        <i data-lucide="check-circle" width="14" height="14"></i>
+                        <span x-text="$store.i18n.t('publishing.chapters.onlyFinal')">Solo finales</span>
+                    </button>
+                    <button class="btn-secondary btn-sm"
+                            :class="{ 'active': publishingChapterFilter === 'review' }"
+                            @click="publishingChapterFilter = 'review'">
+                        <span x-text="$store.i18n.t('publishing.chapters.showReview')">Mostrar en revisión</span>
+                    </button>
+                    <button class="btn-secondary btn-sm"
+                            :class="{ 'active': publishingChapterFilter === 'all' }"
+                            @click="publishingChapterFilter = 'all'">
+                        <span x-text="$store.i18n.t('publishing.chapters.statusAll')">Todos</span>
+                    </button>
+                    <div style="flex: 1;"></div>
+                    <button class="btn-secondary btn-sm" @click="publishingSelectAllFiltered()">
+                        <span x-text="$store.i18n.t('publishing.chapters.selectAll')">Seleccionar todos</span>
+                    </button>
+                </div>
+
+                <!-- LISTA DE CAPÍTULOS -->
+                <div x-show="publishingFilteredChapters.length === 0" class="empty-state" style="padding: var(--spacing-xl);">
+                    <i data-lucide="book-open" width="48" height="48"></i>
+                    <p x-text="$store.i18n.t('publishing.chapters.noChapters')">No hay capítulos</p>
+                </div>
+
+                <div x-show="publishingFilteredChapters.length > 0" style="display: flex; flex-direction: column; gap: var(--spacing-sm); max-height: 400px; overflow-y: auto;">
+                    <template x-for="chapter in publishingFilteredChapters" :key="chapter.id">
+                        <div class="chapter-selector-item"
+                             style="display: flex; align-items: center; gap: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: 6px; cursor: pointer; border: 2px solid transparent;"
+                             :style="publishingSelectedChapters.includes(chapter.id) ? 'border-color: var(--accent);' : ''"
+                             @click="toggleChapterSelection(chapter.id)">
+                            <input type="checkbox" :checked="publishingSelectedChapters.includes(chapter.id)"
+                                   @click.stop="toggleChapterSelection(chapter.id)"
+                                   style="width: 18px; height: 18px; cursor: pointer;">
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
+                                    <span style="color: var(--text-tertiary); font-weight: 600;" x-text="'Cap. ' + chapter.number"></span>
+                                    <span style="font-weight: 600;" x-text="chapter.title"></span>
+                                    <!-- Badge de estado -->
+                                    <span x-show="chapter.status === 'final'" style="font-size: 10px; padding: 2px 6px; background: var(--success); color: white; border-radius: 4px; font-weight: 600;">FINAL</span>
+                                    <span x-show="chapter.status === 'review'" style="font-size: 10px; padding: 2px 6px; background: var(--warning); color: white; border-radius: 4px; font-weight: 600;">REVISIÓN</span>
+                                    <span x-show="chapter.status === 'draft'" style="font-size: 10px; padding: 2px 6px; background: var(--text-tertiary); color: white; border-radius: 4px; font-weight: 600;">BORRADOR</span>
+                                </div>
+                                <div style="font-size: var(--font-size-xs); color: var(--text-secondary); margin-top: 2px;">
+                                    <span x-text="Math.round((chapter.content?.split(' ').length || 0)) + ' palabras'"></span>
+                                </div>
+                            </div>
+                            <i data-lucide="check" width="20" height="20"
+                               x-show="publishingSelectedChapters.includes(chapter.id)"
+                               style="color: var(--accent);"></i>
+                        </div>
+                    </template>
+                </div>
+                </div>
+            </div>
+
+            <!-- IMÁGENES DEL LIBRO -->
+            <div class="card">
+                <div class="card-header">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="flex: 1;">
+                            <h2 class="card-title" x-text="$store.i18n.t('publishing.images.title')">Imágenes</h2>
+                            <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">
+                                Puedes insertar imágenes DENTRO de los capítulos usando marcadores
+                            </p>
+                        </div>
+                        <button class="btn-secondary btn-sm" @click="$refs.bookImageInput.click()">
+                            <i data-lucide="plus" width="14" height="14"></i>
+                            <span x-text="$store.i18n.t('publishing.images.addImage')">Agregar</span>
+                        </button>
+                    </div>
+                </div>
+                <input type="file" x-ref="bookImageInput" accept="image/*" style="display: none;" @change="handleImageUpload($event)">
+
+                <!-- EXPLICACIÓN DE MARCADORES -->
+                <div style="margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: 6px; border-left: 4px solid var(--accent);">
+                    <div style="font-weight: 600; margin-bottom: var(--spacing-sm); display: flex; align-items: center; gap: var(--spacing-xs);">
+                        <i data-lucide="lightbulb" width="16" height="16" style="color: var(--accent);"></i>
+                        Cómo insertar imágenes dentro de los capítulos:
+                    </div>
+                    <div style="font-size: var(--font-size-sm); color: var(--text-secondary); line-height: 1.6;">
+                        <p style="margin-bottom: var(--spacing-sm);">Usa estos marcadores en el texto de tus capítulos:</p>
+                        <ul style="margin-left: var(--spacing-lg); list-style: disc;">
+                            <li style="margin-bottom: var(--spacing-xs);">
+                                <code style="background: var(--bg-secondary); padding: 2px 6px; border-radius: 3px; font-family: monospace; color: var(--accent);">[IMG:1]</code>
+                                - Imagen de página completa (inserta una página)
+                            </li>
+                            <li>
+                                <code style="background: var(--bg-secondary); padding: 2px 6px; border-radius: 3px; font-family: monospace; color: var(--accent);">[INLINE-IMG:1]</code>
+                                - Imagen en línea (fluye con el texto)
+                            </li>
+                        </ul>
+                        <p style="margin-top: var(--spacing-sm); font-style: italic;">
+                            El número corresponde al # que aparece en cada imagen abajo.
+                        </p>
+                    </div>
+                </div>
+
+                <div x-show="publishingBookImages.length === 0" class="empty-state" style="padding: var(--spacing-lg);">
+                    <p x-text="$store.i18n.t('publishing.images.noImages')">Sin imágenes</p>
+                </div>
+
+                <div x-show="publishingBookImages.length > 0" style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+                    <template x-for="(img, index) in publishingBookImages" :key="index">
+                        <div style="display: flex; align-items: start; gap: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: 6px; border: 2px solid var(--border); position: relative;">
+                            <!-- NÚMERO DE IMAGEN -->
+                            <div style="position: absolute; top: 8px; left: 8px; background: var(--accent); color: white; padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"
+                                 x-text="'#' + img.number">
+                            </div>
+
+                            <img :src="img.dataUrl" style="width: 80px; height: 100px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border);">
+                            <div style="flex: 1;">
+                                <label style="display: block; font-weight: 600; margin-bottom: var(--spacing-xs); font-size: var(--font-size-sm);">
+                                    <i data-lucide="map-pin" width="14" height="14" style="vertical-align: middle;"></i>
+                                    Posición en el libro:
+                                </label>
+                                <select x-model="img.position"
+                                        style="width: 100%; padding: var(--spacing-sm); background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 4px; color: var(--text-primary); font-size: var(--font-size-sm);">
+                                    <option value="in-chapter">✍️ Dentro de capítulo (usa marcadores [IMG:X] o [INLINE-IMG:X])</option>
+                                    <option value="beginning">📖 Al inicio del libro (Front Matter)</option>
+                                    <template x-for="chapter in $store.project.chapters" :key="chapter.id">
+                                        <option :value="'after-' + chapter.id" x-text="'📄 Después de Capítulo ' + chapter.number + ': ' + chapter.title"></option>
+                                    </template>
+                                    <option value="end">📕 Al final del libro (Back Matter)</option>
+                                </select>
+                                <small style="display: block; margin-top: var(--spacing-xs); color: var(--text-secondary); font-size: var(--font-size-xs);" x-show="img.position !== 'in-chapter'">
+                                    La imagen aparecerá en una página completa
+                                </small>
+                                <small style="display: block; margin-top: var(--spacing-xs); color: var(--accent); font-size: var(--font-size-xs); font-weight: 600;" x-show="img.position === 'in-chapter'">
+                                    Usa <code style="background: var(--bg-secondary); padding: 2px 4px; border-radius: 3px;" x-text="'[IMG:' + img.number + ']'"></code> o <code style="background: var(--bg-secondary); padding: 2px 4px; border-radius: 3px;" x-text="'[INLINE-IMG:' + img.number + ']'"></code> en el texto del capítulo
+                                </small>
+                            </div>
+                            <button class="btn-icon" @click="removeBookImage(img.id)" style="margin-top: 20px;">
+                                <i data-lucide="trash-2" width="16" height="16"></i>
+                            </button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA - FRONT MATTER, BACK MATTER Y EXPORTACIÓN -->
+        <div style="display: flex; flex-direction: column; gap: var(--spacing-xl);">
 
             <!-- FRONT MATTER (Estructura Preliminar) -->
             <div class="card">
@@ -312,212 +481,6 @@
                         <small style="color: var(--text-secondary); font-size: var(--font-size-xs);">Aparecerá al final de "Sobre el Autor"</small>
                     </div>
                 </div>
-                </div>
-            </div>
-
-            <!-- SELECCIÓN DE CAPÍTULOS -->
-            <div class="card">
-                <div class="card-header" @click="toggleSection('chapters')" style="cursor: pointer;">
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <div>
-                            <h2 class="card-title" x-text="$store.i18n.t('publishing.chapters.title')">Capítulos</h2>
-                            <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">
-                                <span x-text="publishingFilteredChapters.length + ' capítulos disponibles'"></span> ·
-                                <span x-text="publishingSelectedChapters.length + ' seleccionados'"></span> ·
-                                <span x-text="publishingTotalWords + ' palabras'"></span>
-                            </p>
-                        </div>
-                        <i data-lucide="chevron-down" width="20" height="20"
-                           :style="sectionsOpen.chapters ? 'transform: rotate(180deg);' : ''"
-                           style="transition: transform 0.2s; color: var(--text-secondary);"></i>
-                    </div>
-                </div>
-                <div x-show="sectionsOpen.chapters" x-collapse>
-
-                <!-- FILTROS -->
-                <div style="display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-lg); flex-wrap: wrap;">
-                    <button class="btn-secondary btn-sm"
-                            :class="{ 'active': publishingChapterFilter === 'final' }"
-                            @click="publishingChapterFilter = 'final'"
-                            style="display: flex; align-items: center; gap: var(--spacing-xs);">
-                        <i data-lucide="check-circle" width="14" height="14"></i>
-                        <span x-text="$store.i18n.t('publishing.chapters.onlyFinal')">Solo finales</span>
-                    </button>
-                    <button class="btn-secondary btn-sm"
-                            :class="{ 'active': publishingChapterFilter === 'review' }"
-                            @click="publishingChapterFilter = 'review'">
-                        <span x-text="$store.i18n.t('publishing.chapters.showReview')">Mostrar en revisión</span>
-                    </button>
-                    <button class="btn-secondary btn-sm"
-                            :class="{ 'active': publishingChapterFilter === 'all' }"
-                            @click="publishingChapterFilter = 'all'">
-                        <span x-text="$store.i18n.t('publishing.chapters.statusAll')">Todos</span>
-                    </button>
-                    <div style="flex: 1;"></div>
-                    <button class="btn-secondary btn-sm" @click="publishingSelectAllFiltered()">
-                        <span x-text="$store.i18n.t('publishing.chapters.selectAll')">Seleccionar todos</span>
-                    </button>
-                </div>
-
-                <!-- LISTA DE CAPÍTULOS -->
-                <div x-show="publishingFilteredChapters.length === 0" class="empty-state" style="padding: var(--spacing-xl);">
-                    <i data-lucide="book-open" width="48" height="48"></i>
-                    <p x-text="$store.i18n.t('publishing.chapters.noChapters')">No hay capítulos</p>
-                </div>
-
-                <div x-show="publishingFilteredChapters.length > 0" style="display: flex; flex-direction: column; gap: var(--spacing-sm); max-height: 400px; overflow-y: auto;">
-                    <template x-for="chapter in publishingFilteredChapters" :key="chapter.id">
-                        <div class="chapter-selector-item"
-                             style="display: flex; align-items: center; gap: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: 6px; cursor: pointer; border: 2px solid transparent;"
-                             :style="publishingSelectedChapters.includes(chapter.id) ? 'border-color: var(--accent);' : ''"
-                             @click="toggleChapterSelection(chapter.id)">
-                            <input type="checkbox" :checked="publishingSelectedChapters.includes(chapter.id)"
-                                   @click.stop="toggleChapterSelection(chapter.id)"
-                                   style="width: 18px; height: 18px; cursor: pointer;">
-                            <div style="flex: 1;">
-                                <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
-                                    <span style="color: var(--text-tertiary); font-weight: 600;" x-text="'Cap. ' + chapter.number"></span>
-                                    <span style="font-weight: 600;" x-text="chapter.title"></span>
-                                    <!-- Badge de estado -->
-                                    <span x-show="chapter.status === 'final'" style="font-size: 10px; padding: 2px 6px; background: var(--success); color: white; border-radius: 4px; font-weight: 600;">FINAL</span>
-                                    <span x-show="chapter.status === 'review'" style="font-size: 10px; padding: 2px 6px; background: var(--warning); color: white; border-radius: 4px; font-weight: 600;">REVISIÓN</span>
-                                    <span x-show="chapter.status === 'draft'" style="font-size: 10px; padding: 2px 6px; background: var(--text-tertiary); color: white; border-radius: 4px; font-weight: 600;">BORRADOR</span>
-                                </div>
-                                <div style="font-size: var(--font-size-xs); color: var(--text-secondary); margin-top: 2px;">
-                                    <span x-text="Math.round((chapter.content?.split(' ').length || 0)) + ' palabras'"></span>
-                                </div>
-                            </div>
-                            <i data-lucide="check" width="20" height="20"
-                               x-show="publishingSelectedChapters.includes(chapter.id)"
-                               style="color: var(--accent);"></i>
-                        </div>
-                    </template>
-                </div>
-                </div>
-            </div>
-
-            <!-- IMÁGENES DEL LIBRO -->
-            <div class="card">
-                <div class="card-header">
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <div style="flex: 1;">
-                            <h2 class="card-title" x-text="$store.i18n.t('publishing.images.title')">Imágenes</h2>
-                            <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">
-                                Puedes insertar imágenes DENTRO de los capítulos usando marcadores
-                            </p>
-                        </div>
-                        <button class="btn-secondary btn-sm" @click="$refs.bookImageInput.click()">
-                            <i data-lucide="plus" width="14" height="14"></i>
-                            <span x-text="$store.i18n.t('publishing.images.addImage')">Agregar</span>
-                        </button>
-                    </div>
-                </div>
-                <input type="file" x-ref="bookImageInput" accept="image/*" style="display: none;" @change="handleImageUpload($event)">
-
-                <!-- EXPLICACIÓN DE MARCADORES -->
-                <div style="margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: 6px; border-left: 4px solid var(--accent);">
-                    <div style="font-weight: 600; margin-bottom: var(--spacing-sm); display: flex; align-items: center; gap: var(--spacing-xs);">
-                        <i data-lucide="lightbulb" width="16" height="16" style="color: var(--accent);"></i>
-                        Cómo insertar imágenes dentro de los capítulos:
-                    </div>
-                    <div style="font-size: var(--font-size-sm); color: var(--text-secondary); line-height: 1.6;">
-                        <p style="margin-bottom: var(--spacing-sm);">Usa estos marcadores en el texto de tus capítulos:</p>
-                        <ul style="margin-left: var(--spacing-lg); list-style: disc;">
-                            <li style="margin-bottom: var(--spacing-xs);">
-                                <code style="background: var(--bg-secondary); padding: 2px 6px; border-radius: 3px; font-family: monospace; color: var(--accent);">[IMG:1]</code>
-                                - Imagen de página completa (inserta una página)
-                            </li>
-                            <li>
-                                <code style="background: var(--bg-secondary); padding: 2px 6px; border-radius: 3px; font-family: monospace; color: var(--accent);">[INLINE-IMG:1]</code>
-                                - Imagen en línea (fluye con el texto)
-                            </li>
-                        </ul>
-                        <p style="margin-top: var(--spacing-sm); font-style: italic;">
-                            El número corresponde al # que aparece en cada imagen abajo.
-                        </p>
-                    </div>
-                </div>
-
-                <div x-show="publishingBookImages.length === 0" class="empty-state" style="padding: var(--spacing-lg);">
-                    <p x-text="$store.i18n.t('publishing.images.noImages')">Sin imágenes</p>
-                </div>
-
-                <div x-show="publishingBookImages.length > 0" style="display: flex; flex-direction: column; gap: var(--spacing-md);">
-                    <template x-for="(img, index) in publishingBookImages" :key="index">
-                        <div style="display: flex; align-items: start; gap: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: 6px; border: 2px solid var(--border); position: relative;">
-                            <!-- NÚMERO DE IMAGEN -->
-                            <div style="position: absolute; top: 8px; left: 8px; background: var(--accent); color: white; padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"
-                                 x-text="'#' + img.number">
-                            </div>
-
-                            <img :src="img.dataUrl" style="width: 80px; height: 100px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border);">
-                            <div style="flex: 1;">
-                                <label style="display: block; font-weight: 600; margin-bottom: var(--spacing-xs); font-size: var(--font-size-sm);">
-                                    <i data-lucide="map-pin" width="14" height="14" style="vertical-align: middle;"></i>
-                                    Posición en el libro:
-                                </label>
-                                <select x-model="img.position"
-                                        style="width: 100%; padding: var(--spacing-sm); background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 4px; color: var(--text-primary); font-size: var(--font-size-sm);">
-                                    <option value="in-chapter">✍️ Dentro de capítulo (usa marcadores [IMG:X] o [INLINE-IMG:X])</option>
-                                    <option value="beginning">📖 Al inicio del libro (Front Matter)</option>
-                                    <template x-for="chapter in $store.project.chapters" :key="chapter.id">
-                                        <option :value="'after-' + chapter.id" x-text="'📄 Después de Capítulo ' + chapter.number + ': ' + chapter.title"></option>
-                                    </template>
-                                    <option value="end">📕 Al final del libro (Back Matter)</option>
-                                </select>
-                                <small style="display: block; margin-top: var(--spacing-xs); color: var(--text-secondary); font-size: var(--font-size-xs);" x-show="img.position !== 'in-chapter'">
-                                    La imagen aparecerá en una página completa
-                                </small>
-                                <small style="display: block; margin-top: var(--spacing-xs); color: var(--accent); font-size: var(--font-size-xs); font-weight: 600;" x-show="img.position === 'in-chapter'">
-                                    Usa <code style="background: var(--bg-secondary); padding: 2px 4px; border-radius: 3px;" x-text="'[IMG:' + img.number + ']'"></code> o <code style="background: var(--bg-secondary); padding: 2px 4px; border-radius: 3px;" x-text="'[INLINE-IMG:' + img.number + ']'"></code> en el texto del capítulo
-                                </small>
-                            </div>
-                            <button class="btn-icon" @click="removeBookImage(img.id)" style="margin-top: 20px;">
-                                <i data-lucide="trash-2" width="16" height="16"></i>
-                            </button>
-                        </div>
-                    </template>
-                </div>
-            </div>
-        </div>
-
-        <!-- COLUMNA DERECHA - PORTADA Y EXPORTACIÓN -->
-        <div style="display: flex; flex-direction: column; gap: var(--spacing-xl); position: sticky; top: var(--spacing-xl);">
-
-            <!-- PORTADA -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title" x-text="$store.i18n.t('publishing.cover.title')">Portada</h2>
-                </div>
-                <div style="text-align: center;">
-                    <div x-show="!publishingCoverImage"
-                         style="width: 100%; height: 400px; background: var(--bg-tertiary); border: 2px dashed var(--border); border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--spacing-md);">
-                        <i data-lucide="image" width="48" height="48" style="color: var(--text-tertiary);"></i>
-                        <span style="font-size: var(--font-size-sm); color: var(--text-tertiary);" x-text="$store.i18n.t('publishing.cover.noCover')">Sin portada</span>
-                    </div>
-                    <div x-show="publishingCoverImage"
-                         style="width: 100%; height: 400px; background: var(--bg-tertiary); border-radius: 6px; overflow: hidden; border: 1px solid var(--border);">
-                        <img :src="publishingCoverImage" alt="Cover" style="width: 100%; height: 100%; object-fit: contain;">
-                    </div>
-
-                    <p style="font-size: var(--font-size-xs); color: var(--text-secondary); margin: var(--spacing-md) 0;" x-text="$store.i18n.t('publishing.cover.recommendation')">
-                        Recomendado: 1600x2400px
-                    </p>
-
-                    <input type="file" id="coverUpload" accept="image/*" style="display: none;" @change="handleCoverUpload($event)">
-                    <div style="display: flex; gap: var(--spacing-sm); justify-content: center;">
-                        <button x-show="!publishingCoverImage" class="btn-primary" @click="$el.parentElement.querySelector('#coverUpload').click()">
-                            <i data-lucide="upload" width="16" height="16"></i>
-                            <span x-text="$store.i18n.t('publishing.cover.upload')">Subir</span>
-                        </button>
-                        <button x-show="publishingCoverImage" class="btn-secondary btn-sm" @click="$el.parentElement.querySelector('#coverUpload').click()">
-                            <i data-lucide="refresh-cw" width="14" height="14"></i>
-                            <span x-text="$store.i18n.t('publishing.cover.change')">Cambiar</span>
-                        </button>
-                        <button x-show="publishingCoverImage" class="btn-secondary btn-sm" @click="publishingCoverImage = null">
-                            <i data-lucide="trash-2" width="14" height="14"></i>
-                        </button>
-                    </div>
                 </div>
             </div>
 
