@@ -211,6 +211,16 @@
     <!-- Floating UI for intelligent popup positioning -->
     <script src="https://cdn.jsdelivr.net/npm/@floating-ui/core@1.6.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/@floating-ui/dom@1.6.3"></script>
+    <script>
+        // Verificar que Floating UI se cargó correctamente
+        window.addEventListener('DOMContentLoaded', () => {
+            if (window.FloatingUIDOM) {
+                console.log('✅ Floating UI loaded successfully:', window.FloatingUIDOM);
+            } else {
+                console.error('❌ Floating UI failed to load!');
+            }
+        });
+    </script>
 
     <!-- Cargar servicios -->
     <script src="js/services/crypto-service.js?v=2"></script>

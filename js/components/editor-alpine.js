@@ -400,9 +400,12 @@ window.editorAlpineComponent = function() {
 
             // Crear elemento de referencia virtual en la posición del cursor
             const sel = window.getSelection();
+            console.log('🔍 [Popup] Selection exists:', sel.rangeCount > 0);
+
             if (sel.rangeCount > 0) {
                 const range = sel.getRangeAt(0);
                 const rect = range.getBoundingClientRect();
+                console.log('📍 [Popup] Cursor rect:', rect);
 
                 // Crear elemento de referencia virtual
                 const virtualReference = {
@@ -410,7 +413,10 @@ window.editorAlpineComponent = function() {
                 };
 
                 // Usar Floating UI para posicionar el popup
+                console.log('🎈 [Popup] FloatingUIDOM exists:', !!window.FloatingUIDOM);
+
                 if (window.FloatingUIDOM) {
+                    console.log('✅ [Popup] Using Floating UI for positioning');
                     window.FloatingUIDOM.computePosition(virtualReference, popup, {
                         placement: 'bottom-start',
                         middleware: [
@@ -419,9 +425,17 @@ window.editorAlpineComponent = function() {
                             window.FloatingUIDOM.shift({ padding: 10 })
                         ]
                     }).then(({ x, y }) => {
+                        console.log('📌 [Popup] Positioned at:', { x, y });
                         popup.style.left = `${x}px`;
                         popup.style.top = `${y}px`;
+                    }).catch(err => {
+                        console.error('❌ [Popup] Floating UI error:', err);
                     });
+                } else {
+                    console.warn('⚠️ [Popup] Floating UI not loaded, using fallback');
+                    // Fallback simple si no carga Floating UI
+                    popup.style.left = `${rect.left}px`;
+                    popup.style.top = `${rect.bottom + 5}px`;
                 }
             }
 
@@ -530,7 +544,10 @@ window.editorAlpineComponent = function() {
          * Abrir selector de personajes
          */
         openCharacterSelector() {
+            console.log('👥 [Command] /personajes executed');
             const characters = this.$store.project.characters || [];
+            console.log('👥 [Command] Found', characters.length, 'characters');
+
             const items = characters.map(char => ({
                 label: char.name,
                 description: char.role || char.description || '',
