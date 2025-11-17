@@ -140,14 +140,14 @@
                             Exportar Proyecto Actual
                         </h4>
                         <p style="margin: 0 0 12px 0; color: var(--text-secondary); font-size: 13px;">
-                            Descarga el proyecto actual como archivo .pluma (formato ZIP con imágenes y encriptación opcional)
+                            Descarga el proyecto actual como archivo .pluma con imágenes y encriptación opcional
                         </p>
                         <button
                             class="btn-primary"
                             style="width: 100%; padding: 10px;"
                             @click="$store.ui.closeModal('settings'); $store.ui.openModal('export')">
-                            <i data-lucide="file-archive" width="16" height="16"></i>
-                            <span>Exportar Proyecto (ZIP)</span>
+                            <i data-lucide="download" width="16" height="16"></i>
+                            <span>Exportar Proyecto</span>
                         </button>
                     </div>
                     
