@@ -398,8 +398,32 @@ window.editorAlpineComponent = function() {
             document.body.appendChild(popup);
             this.currentPopup = popup;
 
-            // Posicionar cerca del cursor con detección de bordes
-            this.positionPopupNearCursor(popup);
+            // Crear elemento de referencia virtual en la posición del cursor
+            const sel = window.getSelection();
+            if (sel.rangeCount > 0) {
+                const range = sel.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
+
+                // Crear elemento de referencia virtual
+                const virtualReference = {
+                    getBoundingClientRect: () => rect
+                };
+
+                // Usar Floating UI para posicionar el popup
+                if (window.FloatingUIDOM) {
+                    window.FloatingUIDOM.computePosition(virtualReference, popup, {
+                        placement: 'bottom-start',
+                        middleware: [
+                            window.FloatingUIDOM.offset(5),
+                            window.FloatingUIDOM.flip(),
+                            window.FloatingUIDOM.shift({ padding: 10 })
+                        ]
+                    }).then(({ x, y }) => {
+                        popup.style.left = `${x}px`;
+                        popup.style.top = `${y}px`;
+                    });
+                }
+            }
 
             // Event listener para navegación por teclado
             // Usar un pequeño delay para evitar que el Enter del comando anterior se ejecute
@@ -481,50 +505,6 @@ window.editorAlpineComponent = function() {
                 }
             }
             this.closeListPopup();
-        },
-
-        /**
-         * Posicionar popup cerca del cursor con detección de bordes
-         */
-        positionPopupNearCursor(popup) {
-            const sel = window.getSelection();
-            if (!sel.rangeCount) return;
-
-            const range = sel.getRangeAt(0);
-            const rect = range.getBoundingClientRect();
-
-            // Calcular posición inicial (debajo del cursor)
-            let left = rect.left;
-            let top = rect.bottom + 5;
-
-            // Obtener dimensiones del popup y la ventana
-            const popupRect = popup.getBoundingClientRect();
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
-
-            // Ajustar horizontalmente si se sale por la derecha
-            if (left + popupRect.width > viewportWidth - 10) {
-                left = viewportWidth - popupRect.width - 10;
-            }
-
-            // Ajustar horizontalmente si se sale por la izquierda
-            if (left < 10) {
-                left = 10;
-            }
-
-            // Ajustar verticalmente si se sale por abajo - mostrar arriba del cursor
-            if (top + popupRect.height > viewportHeight - 10) {
-                top = rect.top - popupRect.height - 5;
-            }
-
-            // Si tampoco cabe arriba, ajustar al espacio disponible
-            if (top < 10) {
-                top = 10;
-                popup.style.maxHeight = (viewportHeight - 20) + 'px';
-            }
-
-            popup.style.left = `${left}px`;
-            popup.style.top = `${top}px`;
         },
 
         /**
