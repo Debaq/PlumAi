@@ -139,12 +139,28 @@ document.addEventListener('alpine:init', () => {
             // Detectar cambios inmediatamente
             await this.detectChanges();
 
-            // Verificar cambios cada 2 segundos (más confiable que $watch)
-            if (!this.changeDetectionInterval) {
-                this.changeDetectionInterval = setInterval(async () => {
-                    await this.detectChanges();
-                }, 2000);
-            }
+            // Usar event-driven en lugar de polling - solo detectar cuando HAY cambios
+            // Watchear el timestamp de modificación del proyecto
+            this.$watch('$store.project.projectInfo.modified', async () => {
+                await this.detectChanges();
+            });
+
+            // También watchear arrays que pueden cambiar sin actualizar modified
+            this.$watch('$store.project.chapters.length', async () => {
+                await this.detectChanges();
+            });
+            this.$watch('$store.project.characters.length', async () => {
+                await this.detectChanges();
+            });
+            this.$watch('$store.project.scenes.length', async () => {
+                await this.detectChanges();
+            });
+            this.$watch('$store.project.locations.length', async () => {
+                await this.detectChanges();
+            });
+            this.$watch('$store.project.loreEntries.length', async () => {
+                await this.detectChanges();
+            });
         },
 
         // Cargar el estado del último commit como referencia (Sistema v2.0)
