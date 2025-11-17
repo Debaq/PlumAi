@@ -60,18 +60,21 @@
                     </div>
                 </template>
 
-                <div class="form-group" style="margin-bottom: 12px;">
-                    <label class="checkbox-label">
-                        <input
-                            type="checkbox"
-                            :checked="encryptApiKeys"
-                            :disabled="hasApiKeys"
-                            @change="_encryptApiKeys = $event.target.checked"
-                        >
-                        <span x-text="hasApiKeys ? 'Encriptar API keys (obligatorio)' : 'Encriptar API keys'">Encriptar API keys</span>
-                    </label>
-                    <p class="hint" style="margin-left: 24px;" x-text="hasApiKeys ? 'Las API keys detectadas serán encriptadas automáticamente' : 'Protege tus claves de API con contraseña (recomendado)'">Protege tus claves de API con contraseña (recomendado)</p>
-                </div>
+                <!-- Solo mostrar opción de encriptar API keys si las hay -->
+                <template x-if="hasApiKeys">
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label class="checkbox-label">
+                            <input
+                                type="checkbox"
+                                :checked="encryptApiKeys"
+                                :disabled="hasApiKeys"
+                                @change="_encryptApiKeys = $event.target.checked"
+                            >
+                            <span>Encriptar API keys (obligatorio)</span>
+                        </label>
+                        <p class="hint" style="margin-left: 24px;">Las API keys detectadas serán encriptadas automáticamente</p>
+                    </div>
+                </template>
 
                 <div class="form-group">
                     <label class="checkbox-label">
