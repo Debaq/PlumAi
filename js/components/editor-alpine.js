@@ -10,7 +10,7 @@ window.editorAlpineComponent = function() {
         editorReady: false,
         wordCount: 0,
         charCount: 0,
-        saveStatus: 'saved', // 'saved' | 'saving' | 'unsaved'
+        // NOTA: saveStatus ahora se maneja en $store.ui.editorSaveStatus
 
         // Obtener capítulo actual
         get currentChapter() {
@@ -26,6 +26,20 @@ window.editorAlpineComponent = function() {
             this.$nextTick(() => {
                 this.initializeEditor();
             });
+
+            // Escuchar evento de guardado manual desde el header
+            this.saveManuallyHandler = () => this.saveManually();
+            window.addEventListener('editor:save-manually', this.saveManuallyHandler);
+
+            // Atajo de teclado Ctrl+S / Cmd+S para guardar
+            this.keyboardHandler = (e) => {
+                // Ctrl+S (Windows/Linux) o Cmd+S (Mac)
+                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                    e.preventDefault(); // Prevenir el diálogo de guardar del navegador
+                    this.saveManually();
+                }
+            };
+            document.addEventListener('keydown', this.keyboardHandler);
 
             // Nota: La inicialización y actualización del SearchService
             // ahora se maneja globalmente en app.js con Alpine.effect()
@@ -243,7 +257,7 @@ window.editorAlpineComponent = function() {
             this.wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
 
             // Marcar como no guardado
-            this.saveStatus = 'unsaved';
+            this.$store.ui.editorSaveStatus = 'unsaved';
 
             // Auto-guardar con debounce
             this.autoSave();
@@ -267,10 +281,10 @@ window.editorAlpineComponent = function() {
         /**
          * Guardar contenido
          */
-        save() {
+        async save() {
             if (!this.editor || !this.currentChapter) return;
 
-            this.saveStatus = 'saving';
+            this.$store.ui.editorSaveStatus = 'saving';
 
             const content = this.editor.getContent();
 
@@ -280,10 +294,11 @@ window.editorAlpineComponent = function() {
                 wordCount: this.wordCount
             });
 
-            // Simular guardado (en el futuro será localStorage/IndexedDB)
+            // updateChapter llama a updateModified() que llama a autoSave()
+            // Esperar a que se complete el guardado automático
             setTimeout(() => {
-                this.saveStatus = 'saved';
-            }, 300);
+                this.$store.ui.editorSaveStatus = 'saved';
+            }, 500);
         },
 
         /**
@@ -634,6 +649,16 @@ window.editorAlpineComponent = function() {
 
             // Cerrar popup si está abierto
             this.closeListPopup();
+
+            // Remover event listener de guardado manual
+            if (this.saveManuallyHandler) {
+                window.removeEventListener('editor:save-manually', this.saveManuallyHandler);
+            }
+
+            // Remover event listener de atajo de teclado
+            if (this.keyboardHandler) {
+                document.removeEventListener('keydown', this.keyboardHandler);
+            }
 
             if (this.editor) {
                 this.editor.destroy();
