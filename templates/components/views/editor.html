@@ -8,39 +8,6 @@
         <div class="editor-container">
             <!-- Editor Main Area -->
             <div class="editor-main">
-                <!-- Toolbar -->
-                <div class="editor-toolbar">
-                    <div class="editor-toolbar-left">
-                        <button class="btn-icon" @click="$store.ui.closeEditor()" :title="$store.i18n.t('common.back')">
-                            <i data-lucide="arrow-left" width="20" height="20"></i>
-                        </button>
-                        <div>
-                            <div class="editor-title" x-text="'Capítulo ' + currentChapter.number + ': ' + (currentChapter.title || 'Sin título')"></div>
-                            <div class="editor-meta">
-                                <span x-text="$store.i18n.t('editor.wordCount', { count: currentChapter.wordCount || 0 })"></span>
-                                <span>·</span>
-                                <span x-text="$store.i18n.t('chapters.form.statuses.' + currentChapter.status)"></span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="editor-toolbar-right">
-                        <div class="editor-save-indicator" :class="$store.ui.editorSaveStatus">
-                            <template x-if="$store.ui.editorSaveStatus === 'saving'">
-                                <span x-text="$store.i18n.t('editor.saving')"></span>
-                            </template>
-                            <template x-if="$store.ui.editorSaveStatus === 'saved'">
-                                <span x-text="$store.i18n.t('editor.saved')"></span>
-                            </template>
-                            <template x-if="$store.ui.editorSaveStatus === 'unsaved'">
-                                <span>...</span>
-                            </template>
-                        </div>
-                        <button class="btn-icon" @click="$store.ui.toggleEditorZenMode(); $nextTick(() => lucide.createIcons())" :title="$store.ui.editorZenMode ? ($store.i18n.t('editor.exitZenMode') || 'Salir del modo zen') : ($store.i18n.t('editor.zenMode') || 'Modo sin distracciones')">
-                            <i :data-lucide="$store.ui.editorZenMode ? 'maximize-2' : 'minimize-2'" width="20" height="20"></i>
-                        </button>
-                    </div>
-                </div>
-
                 <!-- Writing Area -->
                 <div class="editor-writing-area" style="position: relative;">
                     <!-- RichEditor Container -->
