@@ -297,38 +297,296 @@ window.editorAlpineComponent = function() {
         },
 
         /**
+         * Mostrar popup de lista genérico con detección de bordes y navegación por teclado
+         */
+        showListPopup(items, options = {}) {
+            // Cerrar popup existente si hay
+            this.closeListPopup();
+
+            // Guardar referencia para navegación por teclado
+            this.popupItems = items;
+            this.popupOptions = options;
+            this.selectedPopupIndex = 0;
+
+            // Crear el popup
+            const popup = document.createElement('div');
+            popup.className = 'editor-list-popup';
+            popup.style.cssText = `
+                position: fixed;
+                background: var(--bg-secondary, #2d2d2d);
+                border: 1px solid var(--border, #444);
+                border-radius: 6px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                z-index: 10000;
+                min-width: 180px;
+                max-width: 250px;
+                max-height: 200px;
+                overflow-y: auto;
+                padding: 2px;
+            `;
+
+            // Agregar items
+            items.forEach((item, index) => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'editor-list-popup-item';
+                itemEl.dataset.index = index;
+                itemEl.style.cssText = `
+                    padding: 6px 10px;
+                    cursor: pointer;
+                    border-radius: 4px;
+                    transition: background 0.1s;
+                    font-size: 12px;
+                    font-weight: 400;
+                `;
+                itemEl.innerHTML = `${item.icon || ''} ${item.label}`;
+
+                // Seleccionar el primer item por defecto
+                if (index === 0) {
+                    itemEl.style.background = 'var(--accent, #4a90e2)';
+                    itemEl.style.color = '#fff';
+                }
+
+                itemEl.addEventListener('mouseenter', () => {
+                    this.selectedPopupIndex = index;
+                    this.updatePopupSelection();
+                });
+                itemEl.addEventListener('click', () => {
+                    if (item.onClick) item.onClick();
+                    this.closeListPopup();
+                });
+
+                popup.appendChild(itemEl);
+            });
+
+            // Agregar botón "Nuevo" si se proporciona
+            if (options.onAddNew) {
+                const separator = document.createElement('div');
+                separator.style.cssText = `
+                    height: 1px;
+                    background: var(--border, #444);
+                    margin: 4px 0;
+                `;
+                popup.appendChild(separator);
+
+                const newItemEl = document.createElement('div');
+                newItemEl.className = 'editor-list-popup-item-new';
+                newItemEl.dataset.index = items.length;
+                newItemEl.style.cssText = `
+                    padding: 6px 10px;
+                    cursor: pointer;
+                    border-radius: 4px;
+                    transition: background 0.1s;
+                    font-size: 12px;
+                    color: var(--accent, #4a90e2);
+                    font-weight: 500;
+                `;
+                newItemEl.innerHTML = `➕ ${options.addNewLabel || 'Agregar nuevo'}`;
+
+                newItemEl.addEventListener('mouseenter', () => {
+                    this.selectedPopupIndex = items.length;
+                    this.updatePopupSelection();
+                });
+                newItemEl.addEventListener('click', () => {
+                    options.onAddNew();
+                    this.closeListPopup();
+                });
+
+                popup.appendChild(newItemEl);
+            }
+
+            // Agregar al body
+            document.body.appendChild(popup);
+            this.currentPopup = popup;
+
+            // Crear elemento de referencia virtual en la posición del cursor
+            const sel = window.getSelection();
+
+            if (sel.rangeCount > 0) {
+                const range = sel.getRangeAt(0);
+                const rect = range.getBoundingClientRect();
+
+                // Crear elemento de referencia virtual
+                const virtualReference = {
+                    getBoundingClientRect: () => rect
+                };
+
+                // Usar Floating UI para posicionar el popup
+                if (window.FloatingUIDOM) {
+                    window.FloatingUIDOM.computePosition(virtualReference, popup, {
+                        placement: 'bottom-start',
+                        middleware: [
+                            window.FloatingUIDOM.offset(5),
+                            window.FloatingUIDOM.flip(),
+                            window.FloatingUIDOM.shift({ padding: 10 })
+                        ]
+                    }).then(({ x, y }) => {
+                        popup.style.left = `${x}px`;
+                        popup.style.top = `${y}px`;
+                    }).catch(err => {
+                        console.error('❌ [Popup] Floating UI error:', err);
+                    });
+                } else {
+                    console.warn('⚠️ [Popup] Floating UI not loaded, using fallback');
+                    // Fallback simple si no carga Floating UI
+                    popup.style.left = `${rect.left}px`;
+                    popup.style.top = `${rect.bottom + 5}px`;
+                }
+            }
+
+            // Event listener para navegación por teclado
+            // Usar un pequeño delay para evitar que el Enter del comando anterior se ejecute
+            setTimeout(() => {
+                this.popupKeyHandler = (e) => {
+                    if (!this.currentPopup) return;
+
+                    const totalItems = items.length + (options.onAddNew ? 1 : 0);
+
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.selectedPopupIndex = Math.min(this.selectedPopupIndex + 1, totalItems - 1);
+                        this.updatePopupSelection();
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.selectedPopupIndex = Math.max(this.selectedPopupIndex - 1, 0);
+                        this.updatePopupSelection();
+                    } else if (e.key === 'Enter') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.executeCurrentPopupItem();
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        this.closeListPopup();
+                    }
+                };
+                document.addEventListener('keydown', this.popupKeyHandler);
+            }, 150);
+
+            // Cerrar al hacer click fuera
+            setTimeout(() => {
+                const closeOnClickOutside = (e) => {
+                    if (!popup.contains(e.target)) {
+                        this.closeListPopup();
+                        document.removeEventListener('click', closeOnClickOutside);
+                    }
+                };
+                document.addEventListener('click', closeOnClickOutside);
+            }, 100);
+        },
+
+        /**
+         * Actualizar selección visual del popup
+         */
+        updatePopupSelection() {
+            if (!this.currentPopup) return;
+
+            const allItems = this.currentPopup.querySelectorAll('.editor-list-popup-item, .editor-list-popup-item-new');
+            allItems.forEach((item, index) => {
+                if (index === this.selectedPopupIndex) {
+                    item.style.background = 'var(--accent, #4a90e2)';
+                    item.style.color = '#fff';
+                    // Hacer scroll al item si es necesario
+                    item.scrollIntoView({ block: 'nearest' });
+                } else {
+                    item.style.background = 'transparent';
+                    item.style.color = item.classList.contains('editor-list-popup-item-new') ?
+                        'var(--accent, #4a90e2)' :
+                        'var(--text-primary, #e0e0e0)';
+                }
+            });
+        },
+
+        /**
+         * Ejecutar item actualmente seleccionado del popup
+         */
+        executeCurrentPopupItem() {
+            if (this.selectedPopupIndex < this.popupItems.length) {
+                // Es un item de la lista
+                const item = this.popupItems[this.selectedPopupIndex];
+                if (item.onClick) item.onClick();
+            } else {
+                // Es el botón "Agregar nuevo"
+                if (this.popupOptions.onAddNew) {
+                    this.popupOptions.onAddNew();
+                }
+            }
+            this.closeListPopup();
+        },
+
+        /**
+         * Cerrar popup de lista
+         */
+        closeListPopup() {
+            if (this.currentPopup) {
+                this.currentPopup.remove();
+                this.currentPopup = null;
+            }
+            // Limpiar event listener de teclado
+            if (this.popupKeyHandler) {
+                document.removeEventListener('keydown', this.popupKeyHandler);
+                this.popupKeyHandler = null;
+            }
+            // Limpiar referencias
+            this.popupItems = null;
+            this.popupOptions = null;
+            this.selectedPopupIndex = 0;
+        },
+
+        /**
          * Abrir selector de personajes
          */
         openCharacterSelector() {
-            // Buscar personajes con SearchService
-            const results = window.searchService?.searchCharacters('') || this.$store.project.characters;
+            const characters = this.$store.project.characters || [];
 
-            this.$store.ui.info(
-                this.$store.i18n.t('characters.title'),
-                `${results.length} personajes disponibles`
-            );
+            const items = characters.map(char => ({
+                label: char.name,
+                description: char.role || char.description || '',
+                icon: '👤',
+                onClick: () => this.$store.ui.openModal('editCharacter', char)
+            }));
+
+            this.showListPopup(items, {
+                onAddNew: () => this.$store.ui.openModal('newCharacter'),
+                addNewLabel: this.$store.i18n.t('characters.new') || 'Nuevo personaje'
+            });
         },
 
         /**
          * Abrir selector de escenas
          */
         openSceneSelector() {
-            const results = window.searchService?.searchScenes('') || this.$store.project.scenes;
-            this.$store.ui.info(
-                this.$store.i18n.t('scenes.title'),
-                `${results.length} escenas disponibles`
-            );
+            const scenes = this.$store.project.scenes || [];
+            const items = scenes.map(scene => ({
+                label: scene.title,
+                description: scene.description || '',
+                icon: '🎬',
+                onClick: () => this.$store.ui.openModal('editScene', scene)
+            }));
+
+            this.showListPopup(items, {
+                onAddNew: () => this.$store.ui.openModal('newScene'),
+                addNewLabel: this.$store.i18n.t('scenes.new') || 'Nueva escena'
+            });
         },
 
         /**
          * Abrir selector de ubicaciones
          */
         openLocationSelector() {
-            const results = window.searchService?.searchLocations('') || this.$store.project.locations;
-            this.$store.ui.info(
-                this.$store.i18n.t('locations.title'),
-                `${results.length} ubicaciones disponibles`
-            );
+            const locations = this.$store.project.locations || [];
+            const items = locations.map(loc => ({
+                label: loc.name,
+                description: loc.description || '',
+                icon: '📍',
+                onClick: () => this.$store.ui.openModal('editLocation', loc)
+            }));
+
+            this.showListPopup(items, {
+                onAddNew: () => this.$store.ui.openModal('newLocation'),
+                addNewLabel: this.$store.i18n.t('locations.new') || 'Nueva ubicación'
+            });
         },
 
         /**
@@ -372,6 +630,9 @@ window.editorAlpineComponent = function() {
             if (this.saveTimeout) {
                 clearTimeout(this.saveTimeout);
             }
+
+            // Cerrar popup si está abierto
+            this.closeListPopup();
 
             if (this.editor) {
                 this.editor.destroy();

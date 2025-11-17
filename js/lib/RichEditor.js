@@ -253,6 +253,21 @@ class RichEditor {
             }
         }
 
+        // Detectar // para / literal (escapar comando)
+        if (textBeforeCursor.endsWith('//')) {
+            const sel = window.getSelection();
+            if (sel.rangeCount > 0) {
+                const range = sel.getRangeAt(0);
+                // Eliminar los dos //
+                range.setStart(range.startContainer, range.startOffset - 2);
+                range.deleteContents();
+                // Insertar un / simple
+                document.execCommand('insertText', false, '/');
+            }
+            this.hideAllMenus();
+            return;
+        }
+
         // Detectar / para comandos
         const lastSlashIndex = textBeforeCursor.lastIndexOf('/');
         if (lastSlashIndex !== -1) {
@@ -552,17 +567,7 @@ class RichEditor {
     createMenu() {
         const menu = document.createElement('div');
         menu.className = 'rich-editor-menu';
-        menu.style.cssText = `
-            position: absolute;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 10000;
-            min-width: 300px;
-            max-height: 300px;
-            overflow-y: auto;
-        `;
+        // Los estilos se definen en rich-editor.css
         return menu;
     }
 
@@ -681,24 +686,28 @@ class RichEditor {
         }
 
         // Comportamiento normal sin texto seleccionado
-        const currentText = this.editor.innerText;
-        const beforeTrigger = currentText.substring(0, this.triggerPosition);
-        const afterCursor = currentText.substring(this.getCaretPosition());
+        // Usar el mismo método que usamos para detectar el trigger
+        const textBeforeCursor = this.getTextBeforeCursor();
+        const beforeTrigger = textBeforeCursor.substring(0, this.triggerPosition);
+        const commandText = textBeforeCursor.substring(this.triggerPosition);
+
+        // Obtener posición actual del cursor
+        const sel = window.getSelection();
+        if (!sel.rangeCount) return;
+
+        const range = sel.getRangeAt(0);
+
+        // Eliminar el comando usando el DOM directamente (más preciso)
+        const deleteRange = range.cloneRange();
+        deleteRange.setStart(deleteRange.startContainer, deleteRange.startOffset - commandText.length);
+        deleteRange.deleteContents();
 
         // Si el comando tiene un template, insertarlo
         if (command.template) {
-            const newText = beforeTrigger + command.template + afterCursor;
-            this.editor.innerText = newText;
-
-            const newCursorPos = beforeTrigger.length + command.template.length;
-            this.setCursorPosition(newCursorPos);
+            document.execCommand('insertText', false, command.template);
         }
         // Si el comando tiene una acción, ejecutarla
         else if (command.action) {
-            // Remover el comando del texto
-            this.editor.innerText = beforeTrigger + afterCursor;
-            this.setCursorPosition(beforeTrigger.length);
-
             // Ejecutar callback si existe
             if (typeof command.action === 'function') {
                 command.action();
@@ -717,18 +726,69 @@ class RichEditor {
      * Establecer posición del cursor
      */
     setCursorPosition(position) {
-        const textNode = this.editor.childNodes[0];
-        if (!textNode) return;
-
-        const range = document.createRange();
         const sel = window.getSelection();
+        const range = document.createRange();
 
-        const pos = Math.min(position, textNode.length);
-        range.setStart(textNode, pos);
-        range.collapse(true);
+        // Función recursiva para encontrar el nodo y offset correctos
+        const findNodeAtPosition = (node, targetPos) => {
+            let currentPos = 0;
 
-        sel.removeAllRanges();
-        sel.addRange(range);
+            for (let child of node.childNodes) {
+                if (child.nodeType === Node.TEXT_NODE) {
+                    const textLength = child.textContent.length;
+                    if (currentPos + textLength >= targetPos) {
+                        // Encontramos el nodo
+                        return {
+                            node: child,
+                            offset: targetPos - currentPos
+                        };
+                    }
+                    currentPos += textLength;
+                } else if (child.nodeName === 'BR') {
+                    // Los <br> cuentan como 1 carácter (\n)
+                    if (currentPos >= targetPos) {
+                        return {
+                            node: node,
+                            offset: Array.from(node.childNodes).indexOf(child)
+                        };
+                    }
+                    currentPos += 1;
+                } else {
+                    // Recursión para nodos anidados
+                    const result = findNodeAtPosition(child, targetPos - currentPos);
+                    if (result) {
+                        return result;
+                    }
+                    currentPos += child.textContent.length;
+                }
+            }
+
+            // Si no encontramos la posición exacta, ir al final
+            const lastChild = node.childNodes[node.childNodes.length - 1];
+            if (lastChild) {
+                if (lastChild.nodeType === Node.TEXT_NODE) {
+                    return {
+                        node: lastChild,
+                        offset: lastChild.textContent.length
+                    };
+                } else {
+                    return {
+                        node: node,
+                        offset: node.childNodes.length
+                    };
+                }
+            }
+
+            return null;
+        };
+
+        const result = findNodeAtPosition(this.editor, position);
+        if (result) {
+            range.setStart(result.node, result.offset);
+            range.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
     }
 
     /**
