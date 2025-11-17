@@ -7,26 +7,139 @@
                 <i data-lucide="x" width="20" height="20"></i>
             </button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body" x-data="{
+            encryptApiKeys: false,
+            encryptAll: false,
+            showPassword: false
+        }">
             <p x-text="$store.i18n.t('modals.export.description')">Descarga tu proyecto como archivo PLUMA (*.pluma)</p>
+
             <div style="margin-top: 20px; padding: 16px; background: var(--bg-tertiary); border-radius: 8px;">
                 <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 8px;">
                     Proyecto: <strong x-text="$store.project.projectInfo.title"></strong>
                 </p>
                 <p style="font-size: 13px; color: var(--text-secondary);">
-                    Tamaño del archivo: <strong><span x-text="(JSON.stringify($store.project.exportProject()).length / 1024).toFixed(2)"></span> KB</strong>
+                    Formato: <strong>ZIP con imágenes</strong>
                 </p>
+            </div>
+
+            <!-- Opciones de Encriptación -->
+            <div style="margin-top: 20px; padding: 16px; border: 1px solid var(--border); border-radius: 8px;">
+                <h3 style="font-size: 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="lock" width="16" height="16"></i>
+                    Seguridad (Opcional)
+                </h3>
+
+                <div class="form-group" style="margin-bottom: 12px;">
+                    <label class="checkbox-label">
+                        <input
+                            type="checkbox"
+                            x-model="encryptApiKeys"
+                            @change="if(encryptApiKeys) showPassword = true; if(!encryptApiKeys && !encryptAll) showPassword = false"
+                        >
+                        <span>Encriptar API keys</span>
+                    </label>
+                    <p class="hint" style="margin-left: 24px;">Protege tus claves de API con contraseña (recomendado)</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input
+                            type="checkbox"
+                            x-model="encryptAll"
+                            @change="if(encryptAll) { encryptApiKeys = false; showPassword = true; } else if(!encryptApiKeys) showPassword = false"
+                        >
+                        <span>Encriptar proyecto completo</span>
+                    </label>
+                    <p class="hint" style="margin-left: 24px;">Máxima privacidad - encripta todo el contenido</p>
+                </div>
+
+                <!-- Campos de contraseña -->
+                <template x-if="showPassword">
+                    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
+                        <div class="form-group">
+                            <label>Contraseña de encriptación</label>
+                            <input
+                                type="password"
+                                name="exportPassword"
+                                placeholder="Mínimo 12 caracteres"
+                                style="width: 100%;"
+                                minlength="12"
+                                required
+                            >
+                            <p class="hint">Usa una contraseña fuerte. Si la olvidas, no podrás recuperar los datos.</p>
+                        </div>
+                        <div class="form-group">
+                            <label>Confirmar contraseña</label>
+                            <input
+                                type="password"
+                                name="exportPasswordConfirm"
+                                placeholder="Repite la contraseña"
+                                style="width: 100%;"
+                                required
+                            >
+                        </div>
+                    </div>
+                </template>
             </div>
         </div>
         <div class="modal-footer">
             <button class="btn-secondary" @click="$store.ui.closeModal('export')" x-text="$store.i18n.t('common.cancel')">Cancelar</button>
             <button class="btn-primary" @click="
-                if (window.storageManager.exportProject($store.project.exportProject())) {
-                    $store.ui.success('Proyecto exportado', '');
-                    $store.ui.closeModal('export');
-                } else {
-                    $store.ui.error('Error', 'No se pudo exportar el proyecto');
+                async function exportProject(event) {
+                    const modalBody = event.target.closest('.modal-body');
+                    const encryptApiKeys = modalBody.querySelector('input[x-model=encryptApiKeys]')?.checked || false;
+                    const encryptAll = modalBody.querySelector('input[x-model=encryptAll]')?.checked || false;
+                    const passwordField = modalBody.querySelector('[name=exportPassword]');
+                    const passwordConfirmField = modalBody.querySelector('[name=exportPasswordConfirm]');
+
+                    let password = null;
+
+                    // Validar contraseña si se seleccionó encriptación
+                    if (encryptApiKeys || encryptAll) {
+                        if (!passwordField || !passwordField.value) {
+                            $store.ui.error('Error', 'Debes ingresar una contraseña');
+                            return;
+                        }
+
+                        password = passwordField.value;
+                        const passwordConfirm = passwordConfirmField?.value || '';
+
+                        if (password.length < 12) {
+                            $store.ui.error('Error', 'La contraseña debe tener al menos 12 caracteres');
+                            return;
+                        }
+
+                        if (password !== passwordConfirm) {
+                            $store.ui.error('Error', 'Las contraseñas no coinciden');
+                            return;
+                        }
+                    }
+
+                    try {
+                        const options = {
+                            includeAssets: true,  // Siempre incluir imágenes
+                            password: password,
+                            encryptAll: encryptAll
+                        };
+
+                        const success = await window.storageManager.exportProject(
+                            $store.project.exportProject(),
+                            options
+                        );
+
+                        if (success) {
+                            $store.ui.success('Proyecto exportado', 'Archivo descargado correctamente');
+                            $store.ui.closeModal('export');
+                        } else {
+                            $store.ui.error('Error', 'No se pudo exportar el proyecto');
+                        }
+                    } catch (error) {
+                        console.error('Error exportando:', error);
+                        $store.ui.error('Error', error.message || 'No se pudo exportar el proyecto');
+                    }
                 }
+                exportProject(event);
             ">
                 <i data-lucide="download" width="16" height="16"></i>
                 <span x-text="$store.i18n.t('modals.export.download')">Descargar</span>
