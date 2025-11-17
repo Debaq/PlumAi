@@ -140,8 +140,8 @@ document.addEventListener('alpine:init', () => {
             await this.detectChanges();
 
             // Usar event-driven en lugar de polling - solo detectar cuando HAY cambios
-            // Watchear el timestamp de modificación del proyecto
-            this.$watch('$store.project.projectInfo.modified', async () => {
+            // Escuchar evento personalizado cuando el proyecto se modifica
+            window.addEventListener('project:modified', async () => {
                 await this.detectChanges();
             });
 

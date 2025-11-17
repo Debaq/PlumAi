@@ -972,6 +972,8 @@ window.projectStore = {
         this.projectInfo.modified = new Date().toISOString();
         // Auto-guardar después de modificar
         this.autoSave();
+        // Disparar evento personalizado para detección de cambios Git
+        window.dispatchEvent(new CustomEvent('project:modified'));
     },
 
     // Auto-guardado
