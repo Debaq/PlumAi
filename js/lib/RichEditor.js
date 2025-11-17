@@ -728,18 +728,69 @@ class RichEditor {
      * Establecer posición del cursor
      */
     setCursorPosition(position) {
-        const textNode = this.editor.childNodes[0];
-        if (!textNode) return;
-
-        const range = document.createRange();
         const sel = window.getSelection();
+        const range = document.createRange();
 
-        const pos = Math.min(position, textNode.length);
-        range.setStart(textNode, pos);
-        range.collapse(true);
+        // Función recursiva para encontrar el nodo y offset correctos
+        const findNodeAtPosition = (node, targetPos) => {
+            let currentPos = 0;
 
-        sel.removeAllRanges();
-        sel.addRange(range);
+            for (let child of node.childNodes) {
+                if (child.nodeType === Node.TEXT_NODE) {
+                    const textLength = child.textContent.length;
+                    if (currentPos + textLength >= targetPos) {
+                        // Encontramos el nodo
+                        return {
+                            node: child,
+                            offset: targetPos - currentPos
+                        };
+                    }
+                    currentPos += textLength;
+                } else if (child.nodeName === 'BR') {
+                    // Los <br> cuentan como 1 carácter (\n)
+                    if (currentPos >= targetPos) {
+                        return {
+                            node: node,
+                            offset: Array.from(node.childNodes).indexOf(child)
+                        };
+                    }
+                    currentPos += 1;
+                } else {
+                    // Recursión para nodos anidados
+                    const result = findNodeAtPosition(child, targetPos - currentPos);
+                    if (result) {
+                        return result;
+                    }
+                    currentPos += child.textContent.length;
+                }
+            }
+
+            // Si no encontramos la posición exacta, ir al final
+            const lastChild = node.childNodes[node.childNodes.length - 1];
+            if (lastChild) {
+                if (lastChild.nodeType === Node.TEXT_NODE) {
+                    return {
+                        node: lastChild,
+                        offset: lastChild.textContent.length
+                    };
+                } else {
+                    return {
+                        node: node,
+                        offset: node.childNodes.length
+                    };
+                }
+            }
+
+            return null;
+        };
+
+        const result = findNodeAtPosition(this.editor, position);
+        if (result) {
+            range.setStart(result.node, result.offset);
+            range.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
     }
 
     /**
