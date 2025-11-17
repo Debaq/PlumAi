@@ -1124,23 +1124,6 @@ body {
     min-width: 0;
 }
 
-.editor-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--spacing-sm) var(--spacing-lg);
-    background: var(--bg-secondary);
-    border-bottom: 1px solid var(--border);
-    gap: var(--spacing-md);
-}
-
-.editor-toolbar-left,
-.editor-toolbar-right {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-}
-
 .editor-writing-area {
     flex: 1;
     padding: var(--spacing-xl) var(--spacing-xl) var(--spacing-xl) var(--spacing-xl);
