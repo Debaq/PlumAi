@@ -158,6 +158,14 @@ window.uiStore = {
             });
         }
         this.modalData = null;
+
+        // Restaurar foco al editor si existe
+        setTimeout(() => {
+            const editor = document.querySelector('.rich-editor-content');
+            if (editor) {
+                editor.focus();
+            }
+        }, 100);
     },
 
     closeAllModals() {
@@ -165,6 +173,14 @@ window.uiStore = {
             this.modals[key] = false;
         });
         this.modalData = null;
+
+        // Restaurar foco al editor si existe
+        setTimeout(() => {
+            const editor = document.querySelector('.rich-editor-content');
+            if (editor) {
+                editor.focus();
+            }
+        }, 100);
     },
 
     isModalOpen(modalName) {
