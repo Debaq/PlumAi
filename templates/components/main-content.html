@@ -30,8 +30,26 @@
                          console.log('✅ Vista ' + this.currentView + ' cargada, tamaño: ' + html.length + ' caracteres');
                          console.log('🔍 Contiene heart-pulse: ' + html.includes('heart-pulse'));
                          console.log('🔍 Contiene vitalStatus: ' + html.includes('vitalStatus'));
-                         this.$el.innerHTML = html;
+                        // Extract and execute scripts before setting innerHTML
+                         const tempDiv = document.createElement('div');
+                         tempDiv.innerHTML = html;
+                         const scripts = tempDiv.querySelectorAll('script');
+                         const htmlWithoutScripts = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+
+                         this.$el.innerHTML = htmlWithoutScripts;
                          if (window.Alpine) window.Alpine.initTree(this.$el);
+
+                         // Execute scripts after Alpine initializes
+                         scripts.forEach(script => {
+                             const newScript = document.createElement('script');
+                             if (script.src) {
+                                 newScript.src = script.src;
+                             } else {
+                                 newScript.textContent = script.textContent;
+                             }
+                             document.body.appendChild(newScript);
+                             document.body.removeChild(newScript);
+                         });
                          // Reinitializar iconos de Lucide
                          if (typeof lucide !== 'undefined') {
                              setTimeout(function() { lucide.createIcons(); }, 100);
