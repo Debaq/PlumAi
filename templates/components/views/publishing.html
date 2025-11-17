@@ -1,15 +1,4 @@
-<div class="view" x-show="$store.ui.currentView === 'publishing'" x-data="{
-    ...publishingComponent(),
-    sectionsOpen: {
-        metadata: true,
-        frontMatter: false,
-        backMatter: false,
-        chapters: true
-    },
-    toggleSection(section) {
-        this.sectionsOpen[section] = !this.sectionsOpen[section];
-    }
-}" x-cloak>
+<div class="view" x-show="$store.ui.currentView === 'publishing'" x-data="publishingComponent" x-cloak>
     <div class="view-header">
         <div style="display: flex; align-items: center; gap: var(--spacing-md);">
             <button @click="$store.ui.sidebarVisible = !$store.ui.sidebarVisible"
