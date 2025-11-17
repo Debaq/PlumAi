@@ -700,9 +700,15 @@ class RichEditor {
         }
         // Si el comando tiene una acción, ejecutarla
         else if (command.action) {
+            // Guardar posición del cursor ANTES de modificar el texto
+            const savedCursorPos = this.triggerPosition;
+
             // Remover el comando del texto
             this.editor.innerText = beforeTrigger + afterCursor;
             this.setCursorPosition(beforeTrigger.length);
+
+            // Guardar posición para restaurar después (para popups)
+            this.savedCursorPositionBeforeCommand = savedCursorPos;
 
             // Ejecutar callback si existe
             if (typeof command.action === 'function') {
