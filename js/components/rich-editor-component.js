@@ -192,15 +192,19 @@ window.richEditorComponent = function(config = {}) {
          * Usa un modal global compartido por todas las instancias
          */
         injectAIResponseModal() {
+            console.log('🔧 Inicializando modal de respuesta de IA...');
+
             // Verificar si ya existe un modal global
             let modalOverlay = document.querySelector('.ai-response-modal-overlay');
 
             if (modalOverlay) {
+                console.log('♻️ Modal global ya existe, reutilizando y configurando watchers');
                 // Ya existe, solo configurar watchers para esta instancia
                 this.setupAIModalWatchers();
                 return;
             }
 
+            console.log('🆕 Creando nuevo modal global de respuesta de IA');
             // Crear overlay del modal (solo una vez globalmente)
             modalOverlay = document.createElement('div');
             modalOverlay.className = 'ai-response-modal-overlay';
@@ -306,12 +310,14 @@ window.richEditorComponent = function(config = {}) {
             // Ensamblar
             modalOverlay.appendChild(modal);
             document.body.appendChild(modalOverlay);
+            console.log('✅ Modal de respuesta de IA agregado al DOM');
 
             // Configurar listeners globales del modal (solo una vez)
             this.setupGlobalAIModalHandlers(modalOverlay);
 
             // Configurar watchers para esta instancia
             this.setupAIModalWatchers();
+            console.log('🎉 Modal de respuesta de IA completamente inicializado');
         },
 
         /**
@@ -392,8 +398,22 @@ window.richEditorComponent = function(config = {}) {
          * Configurar watchers para mostrar/ocultar el modal de esta instancia
          */
         setupAIModalWatchers() {
+            console.log('⚙️ Configurando watchers del modal de IA para esta instancia');
             const modalOverlay = document.querySelector('.ai-response-modal-overlay');
+
+            if (!modalOverlay) {
+                console.error('❌ ERROR: No se encontró el modal overlay al configurar watchers');
+                return;
+            }
+
             const modal = modalOverlay.querySelector('.ai-response-modal');
+
+            if (!modal) {
+                console.error('❌ ERROR: No se encontró el modal al configurar watchers');
+                return;
+            }
+
+            console.log('✅ Modal encontrado, configurando watcher de showAIResponse');
 
             // Watch para mostrar/ocultar el modal
             this.$watch('showAIResponse', (value) => {
@@ -735,6 +755,8 @@ window.richEditorComponent = function(config = {}) {
          * Ejecutar acción de IA
          */
         async executeAIAction(mode, customPrompt = null) {
+            console.log(`🎬 Ejecutando acción de IA: ${mode}`);
+
             if (!window.aiService) {
                 alert('❌ El servicio de IA no está disponible');
                 return;
@@ -742,6 +764,7 @@ window.richEditorComponent = function(config = {}) {
 
             const selectedText = this.getSelectedText();
             const fullContent = this.getContent();
+            console.log(`📄 Contenido del editor (${fullContent.length} caracteres):`, fullContent.substring(0, 100) + '...');
 
             // Construir prompt según el modo
             let userPrompt = customPrompt;
