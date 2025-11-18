@@ -62,34 +62,39 @@ window.richEditorComponent = function(config = {}) {
                 z-index: 100;
             `;
 
-            // Crear botón flotante fijo
+            // Crear botón flotante fijo (estilo marca de agua, discreto)
             const aiButton = document.createElement('button');
             aiButton.className = 'ai-fixed-button';
-            aiButton.innerHTML = `<i data-lucide="sparkles" width="20" height="20"></i>`;
+            aiButton.innerHTML = `<i data-lucide="sparkles" width="14" height="14"></i>`;
             aiButton.title = 'Asistente IA';
             aiButton.style.cssText = `
-                width: 44px;
-                height: 44px;
+                width: 28px;
+                height: 28px;
                 border-radius: 50%;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                border: 2px solid var(--border-color);
-                color: white;
+                background: rgba(102, 126, 234, 0.08);
+                border: 1px solid rgba(102, 126, 234, 0.15);
+                color: rgba(102, 126, 234, 0.5);
                 cursor: pointer;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                box-shadow: none;
                 transition: all 0.2s ease;
+                opacity: 0.4;
             `;
 
-            // Hover effect
+            // Hover effect sutil
             aiButton.onmouseenter = () => {
-                aiButton.style.transform = 'scale(1.1)';
-                aiButton.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.4)';
+                aiButton.style.opacity = '1';
+                aiButton.style.background = 'rgba(102, 126, 234, 0.12)';
+                aiButton.style.color = 'rgba(102, 126, 234, 0.8)';
+                aiButton.style.borderColor = 'rgba(102, 126, 234, 0.25)';
             };
             aiButton.onmouseleave = () => {
-                aiButton.style.transform = 'scale(1)';
-                aiButton.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                aiButton.style.opacity = '0.4';
+                aiButton.style.background = 'rgba(102, 126, 234, 0.08)';
+                aiButton.style.color = 'rgba(102, 126, 234, 0.5)';
+                aiButton.style.borderColor = 'rgba(102, 126, 234, 0.15)';
             };
 
             // Crear menú flotante
