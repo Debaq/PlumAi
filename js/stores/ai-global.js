@@ -38,6 +38,18 @@ window.aiStore = {
         const projectStore = Alpine.store('project');
         if (!projectStore || !projectStore.apiKeys) return false;
 
+        // Verificar si es nuevo formato (con text/image)
+        if (projectStore.apiKeys.text) {
+            if (provider) {
+                // Verificar si el proveedor tiene al menos una key
+                return projectStore.hasApiKey('text', provider);
+            }
+
+            // Verificar si al menos una key está configurada en cualquier proveedor
+            return Object.values(projectStore.apiKeys.text).some(keys => Array.isArray(keys) && keys.length > 0);
+        }
+
+        // Formato legacy
         if (provider) {
             return projectStore.apiKeys[provider] && projectStore.apiKeys[provider].length > 0;
         }

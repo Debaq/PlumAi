@@ -1,13 +1,19 @@
 // Settings Modal Component for PlumaAI - Function that returns the component object
 window.settingsModalComponent = function() {
     return {
-        // AI Configuration
+        // AI Configuration - Basic
         selectedProvider: 'manual',
         selectedModel: '',
         apiKeyInput: '',
         showApiKey: false,
         connectionStatus: null,
         connectionMessage: '',
+
+        // AI Configuration - Tabs and Multiple Keys
+        activeApiTab: 'text', // 'text' | 'image'
+        savedKeys: [], // Lista de keys guardadas para el proveedor seleccionado
+        editingKeyId: null, // ID de la key que se está editando
+        editingKeyName: '',
 
         // Token Optimization
         tokenLevel: 'normal',
@@ -25,13 +31,20 @@ window.settingsModalComponent = function() {
         understandChecked: false,
 
         init() {
+            // Migrar API keys si es necesario
+            const projectStore = Alpine.store('project');
+            if (projectStore) {
+                projectStore.migrateApiKeys();
+            }
+
             // Initialize AI configuration
             if (window.aiService) {
                 this.selectedProvider = window.aiService.currentProvider || 'manual';
                 this.selectedModel = window.aiService.currentModel || '';
 
-                // Load API key if exists
+                // Load API keys and saved keys list
                 this.loadApiKey();
+                this.loadSavedKeys();
             }
 
             // Initialize token optimization
@@ -77,7 +90,18 @@ window.settingsModalComponent = function() {
 
         getProviderInfo() {
             if (!window.aiService || !this.selectedProvider) return null;
-            return window.aiService.providers[this.selectedProvider];
+
+            // Buscar primero en providers de texto
+            if (window.aiService.providers[this.selectedProvider]) {
+                return window.aiService.providers[this.selectedProvider];
+            }
+
+            // Si no está, buscar en imageProviders
+            if (window.aiService.imageProviders && window.aiService.imageProviders[this.selectedProvider]) {
+                return window.aiService.imageProviders[this.selectedProvider];
+            }
+
+            return null;
         },
 
         getProviderName() {
@@ -88,15 +112,6 @@ window.settingsModalComponent = function() {
         getProviderModels() {
             const info = this.getProviderInfo();
             return info ? info.models : [];
-        },
-
-        onProviderChange() {
-            const info = this.getProviderInfo();
-            if (info) {
-                this.selectedModel = info.defaultModel;
-                this.loadApiKey();
-            }
-            this.connectionStatus = null;
         },
 
         loadApiKey() {
@@ -147,6 +162,9 @@ window.settingsModalComponent = function() {
                     throw new Error('Project store not available');
                 }
 
+                // Migrar API keys si es necesario
+                projectStore.migrateApiKeys();
+
                 // Mapeo de IDs a nombres en el store
                 const keyMap = {
                     'anthropic': 'claude',
@@ -159,11 +177,21 @@ window.settingsModalComponent = function() {
 
                 const keyName = keyMap[this.selectedProvider] || this.selectedProvider;
 
-                // Guardar API key en el store del proyecto
-                if (!projectStore.apiKeys) {
-                    projectStore.apiKeys = {};
+                // Verificar si ya existe una key con el mismo valor
+                const existingKeys = projectStore.getApiKeys('text', keyName);
+                const isDuplicate = existingKeys.some(k => k.key === this.apiKeyInput.trim());
+
+                if (isDuplicate) {
+                    this.connectionStatus = 'error';
+                    this.connectionMessage = 'Esta API key ya está guardada';
+                    return;
                 }
-                projectStore.apiKeys[keyName] = this.apiKeyInput.trim();
+
+                // Agregar nueva API key usando el nuevo método
+                const newKey = projectStore.addApiKey('text', keyName, {
+                    name: existingKeys.length === 0 ? 'Primary' : `Key ${existingKeys.length + 1}`,
+                    key: this.apiKeyInput.trim()
+                });
 
                 // Actualizar el proveedor en aiService
                 if (window.aiService) {
@@ -176,7 +204,10 @@ window.settingsModalComponent = function() {
                 }
 
                 this.connectionStatus = 'success';
-                this.connectionMessage = 'API key guardada correctamente';
+                this.connectionMessage = `API key guardada como "${newKey.name}"`;
+
+                // Limpiar input
+                this.apiKeyInput = '';
 
                 setTimeout(() => {
                     this.connectionStatus = null;
@@ -227,6 +258,208 @@ window.settingsModalComponent = function() {
                 this.connectionStatus = 'error';
                 this.connectionMessage = `✗ Error: ${error.message}`;
             }
+        },
+
+        // ============================================
+        // TABS AND MULTIPLE KEYS MANAGEMENT
+        // ============================================
+
+        switchTab(tab) {
+            this.activeApiTab = tab;
+            this.connectionStatus = null;
+            // Reset provider selection when switching tabs
+            if (tab === 'text') {
+                this.selectedProvider = 'manual';
+            } else {
+                this.selectedProvider = 'googleImagen';
+            }
+            this.loadSavedKeys();
+        },
+
+        getAvailableImageProviders() {
+            return window.aiService && window.aiService.imageProviders
+                ? Object.values(window.aiService.imageProviders)
+                : [];
+        },
+
+        onProviderChange() {
+            const info = this.getProviderInfo();
+            if (info) {
+                this.selectedModel = info.defaultModel;
+                this.loadApiKey();
+                this.loadSavedKeys();
+            }
+            this.connectionStatus = null;
+        },
+
+        loadSavedKeys() {
+            const projectStore = Alpine.store('project');
+            if (!projectStore) {
+                this.savedKeys = [];
+                return;
+            }
+
+            const keyMap = {
+                'anthropic': 'claude',
+                'openai': 'openai',
+                'google': 'google',
+                'groq': 'groq',
+                'together': 'together',
+                'huggingface': 'huggingface',
+                'googleImagen': 'googleImagen',
+                'dalle': 'dalle',
+                'stabilityai': 'stabilityai',
+                'replicateImage': 'replicate',
+                'leonardo': 'leonardo',
+                'midjourney': 'midjourney'
+            };
+
+            const keyName = keyMap[this.selectedProvider] || this.selectedProvider;
+            this.savedKeys = projectStore.getApiKeys(this.activeApiTab, keyName) || [];
+        },
+
+        deleteKey(keyId) {
+            const projectStore = Alpine.store('project');
+            if (!projectStore) return;
+
+            const keyMap = {
+                'anthropic': 'claude',
+                'openai': 'openai',
+                'google': 'google',
+                'groq': 'groq',
+                'together': 'together',
+                'huggingface': 'huggingface',
+                'googleImagen': 'googleImagen',
+                'dalle': 'dalle',
+                'stabilityai': 'stabilityai',
+                'replicateImage': 'replicate',
+                'leonardo': 'leonardo',
+                'midjourney': 'midjourney'
+            };
+
+            const keyName = keyMap[this.selectedProvider] || this.selectedProvider;
+
+            try {
+                projectStore.deleteApiKey(this.activeApiTab, keyName, keyId);
+
+                // Guardar proyecto
+                if (window.storageManager) {
+                    window.storageManager.save(projectStore.exportProject());
+                }
+
+                this.loadSavedKeys();
+                this.connectionStatus = 'success';
+                this.connectionMessage = 'API key eliminada';
+
+                setTimeout(() => {
+                    this.connectionStatus = null;
+                }, 2000);
+
+            } catch (error) {
+                console.error('Error deleting key:', error);
+                this.connectionStatus = 'error';
+                this.connectionMessage = error.message;
+            }
+        },
+
+        setDefaultKey(keyId) {
+            const projectStore = Alpine.store('project');
+            if (!projectStore) return;
+
+            const keyMap = {
+                'anthropic': 'claude',
+                'openai': 'openai',
+                'google': 'google',
+                'groq': 'groq',
+                'together': 'together',
+                'huggingface': 'huggingface',
+                'googleImagen': 'googleImagen',
+                'dalle': 'dalle',
+                'stabilityai': 'stabilityai',
+                'replicateImage': 'replicate',
+                'leonardo': 'leonardo',
+                'midjourney': 'midjourney'
+            };
+
+            const keyName = keyMap[this.selectedProvider] || this.selectedProvider;
+
+            try {
+                projectStore.updateApiKey(this.activeApiTab, keyName, keyId, { isDefault: true });
+
+                // Guardar proyecto
+                if (window.storageManager) {
+                    window.storageManager.save(projectStore.exportProject());
+                }
+
+                this.loadSavedKeys();
+                this.connectionStatus = 'success';
+                this.connectionMessage = 'Key por defecto actualizada';
+
+                setTimeout(() => {
+                    this.connectionStatus = null;
+                }, 2000);
+
+            } catch (error) {
+                console.error('Error setting default key:', error);
+                this.connectionStatus = 'error';
+                this.connectionMessage = error.message;
+            }
+        },
+
+        startEditingKey(key) {
+            this.editingKeyId = key.id;
+            this.editingKeyName = key.name;
+        },
+
+        cancelEditingKey() {
+            this.editingKeyId = null;
+            this.editingKeyName = '';
+        },
+
+        async saveKeyName(keyId) {
+            const projectStore = Alpine.store('project');
+            if (!projectStore) return;
+
+            const keyMap = {
+                'anthropic': 'claude',
+                'openai': 'openai',
+                'google': 'google',
+                'groq': 'groq',
+                'together': 'together',
+                'huggingface': 'huggingface',
+                'googleImagen': 'googleImagen',
+                'dalle': 'dalle',
+                'stabilityai': 'stabilityai',
+                'replicateImage': 'replicate',
+                'leonardo': 'leonardo',
+                'midjourney': 'midjourney'
+            };
+
+            const keyName = keyMap[this.selectedProvider] || this.selectedProvider;
+
+            try {
+                projectStore.updateApiKey(this.activeApiTab, keyName, keyId, {
+                    name: this.editingKeyName.trim() || 'Unnamed'
+                });
+
+                // Guardar proyecto
+                if (window.storageManager) {
+                    await window.storageManager.save(projectStore.exportProject());
+                }
+
+                this.cancelEditingKey();
+                this.loadSavedKeys();
+
+            } catch (error) {
+                console.error('Error updating key name:', error);
+                this.connectionStatus = 'error';
+                this.connectionMessage = error.message;
+            }
+        },
+
+        getKeyMasked(key) {
+            if (!key || key.length < 8) return '••••••••';
+            return key.substring(0, 8) + '••••••••';
         },
 
         // ============================================

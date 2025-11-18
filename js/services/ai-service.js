@@ -112,6 +112,116 @@ window.aiService = {
     },
 
     // ============================================
+    // PROVEEDORES DE GENERACIÓN DE IMÁGENES
+    // ============================================
+
+    imageProviders: {
+        // Google Imagen (Vertex AI)
+        googleImagen: {
+            id: 'googleImagen',
+            name: 'Google Imagen (Vertex AI)',
+            models: ['imagegeneration@006', 'imagegeneration@005', 'imagegeneration@002'],
+            defaultModel: 'imagegeneration@006',
+            requiresApiKey: true,
+            endpoint: 'https://us-central1-aiplatform.googleapis.com/v1/projects',
+            freeTier: 'Limitado con Google Cloud Free Tier',
+            pricing: 'Desde $0.020 por imagen',
+            type: 'api',
+            enabled: false,
+            description: 'Modelo de generación de imágenes de alta calidad de Google',
+            instructions: 'Requiere proyecto en Google Cloud y habilitación de Vertex AI API'
+        },
+
+        // DALL-E (OpenAI)
+        dalle: {
+            id: 'dalle',
+            name: 'DALL-E 3 (OpenAI)',
+            models: ['dall-e-3', 'dall-e-2'],
+            defaultModel: 'dall-e-3',
+            requiresApiKey: true,
+            endpoint: 'https://api.openai.com/v1/images/generations',
+            freeTier: 'No (solo pago)',
+            pricing: 'DALL-E 3: $0.04-$0.12 por imagen | DALL-E 2: $0.016-$0.020',
+            type: 'api',
+            enabled: false,
+            description: 'Generador de imágenes fotorrealistas de alta calidad',
+            instructions: 'Usa la misma API key de OpenAI para texto'
+        },
+
+        // Stability AI (Stable Diffusion)
+        stabilityai: {
+            id: 'stabilityai',
+            name: 'Stable Diffusion (Stability AI)',
+            models: [
+                'stable-diffusion-xl-1024-v1-0',
+                'stable-diffusion-v1-6',
+                'stable-diffusion-xl-beta-v2-2-2'
+            ],
+            defaultModel: 'stable-diffusion-xl-1024-v1-0',
+            requiresApiKey: true,
+            endpoint: 'https://api.stability.ai/v1/generation',
+            freeTier: '25 créditos gratis al inicio',
+            pricing: 'Desde $0.002 por imagen',
+            type: 'api',
+            enabled: false,
+            description: 'Modelo open-source de generación de imágenes, muy versátil',
+            instructions: 'Regístrate en stability.ai y obtén tu API key'
+        },
+
+        // Replicate (Múltiples modelos)
+        replicateImage: {
+            id: 'replicateImage',
+            name: 'Replicate (Flux, SD, etc)',
+            models: [
+                'black-forest-labs/flux-1.1-pro',
+                'black-forest-labs/flux-dev',
+                'stability-ai/sdxl',
+                'playgroundai/playground-v2.5-1024px-aesthetic'
+            ],
+            defaultModel: 'black-forest-labs/flux-1.1-pro',
+            requiresApiKey: true,
+            endpoint: 'https://api.replicate.com/v1/predictions',
+            freeTier: 'Crédito inicial gratis',
+            pricing: 'Pay-per-use desde $0.0025 por imagen',
+            type: 'api',
+            enabled: false,
+            description: 'Plataforma con acceso a múltiples modelos de imagen (Flux, SDXL, etc)',
+            instructions: 'Regístrate en replicate.com y obtén tu API token'
+        },
+
+        // Leonardo AI
+        leonardo: {
+            id: 'leonardo',
+            name: 'Leonardo AI',
+            models: ['leonardo-phoenix-1.0', 'leonardo-kino-xl', 'leonardo-diffusion-xl'],
+            defaultModel: 'leonardo-phoenix-1.0',
+            requiresApiKey: true,
+            endpoint: 'https://cloud.leonardo.ai/api/rest/v1/generations',
+            freeTier: '150 tokens diarios gratis',
+            pricing: 'Free tier generoso, planes desde $10/mes',
+            type: 'api',
+            enabled: false,
+            description: 'IA especializada en arte de videojuegos y conceptual',
+            instructions: 'Regístrate en leonardo.ai y obtén tu API key desde el dashboard'
+        },
+
+        // Midjourney (Nota: No tiene API oficial, pero se incluye para referencia)
+        midjourney: {
+            id: 'midjourney',
+            name: 'Midjourney (Manual)',
+            models: ['v6.1', 'v6', 'v5.2'],
+            defaultModel: 'v6.1',
+            requiresApiKey: false,
+            freeTier: 'No disponible',
+            pricing: 'Desde $10/mes (Discord)',
+            type: 'manual',
+            enabled: false,
+            description: 'Generador artístico de alta calidad (requiere Discord)',
+            instructions: 'Midjourney no tiene API pública. Usa Discord para generar imágenes manualmente.'
+        }
+    },
+
+    // ============================================
     // ESTADO
     // ============================================
 
@@ -814,7 +924,12 @@ window.aiService = {
     // GESTIÓN DE API KEYS
     // ============================================
 
-    getApiKey(providerId) {
+    /**
+     * Obtener API key para un proveedor
+     * Retorna el objeto de key completo { id, name, key, isDefault, lastUsed }
+     * o solo el string de la key si es formato legacy
+     */
+    getApiKey(providerId, keyId = null) {
         const projectStore = Alpine.store('project');
         if (!projectStore || !projectStore.apiKeys) return null;
 
@@ -829,7 +944,110 @@ window.aiService = {
         };
 
         const keyName = keyMap[providerId] || providerId;
+
+        // Verificar si es nuevo formato (con text/image)
+        if (projectStore.apiKeys.text && projectStore.apiKeys.text[keyName]) {
+            // Si se solicita una key específica
+            if (keyId) {
+                const key = projectStore.apiKeys.text[keyName].find(k => k.id === keyId);
+                return key ? key.key : null;
+            }
+
+            // Obtener la key por defecto
+            const defaultKey = projectStore.getDefaultApiKey('text', keyName);
+            return defaultKey ? defaultKey.key : null;
+        }
+
+        // Formato legacy (compatibilidad hacia atrás)
         return projectStore.apiKeys[keyName] || null;
+    },
+
+    /**
+     * Obtener el objeto completo de API key (no solo el string)
+     */
+    getApiKeyObject(providerId, keyId = null) {
+        const projectStore = Alpine.store('project');
+        if (!projectStore || !projectStore.apiKeys) return null;
+
+        const keyMap = {
+            'anthropic': 'claude',
+            'openai': 'openai',
+            'google': 'google',
+            'groq': 'groq',
+            'together': 'together',
+            'huggingface': 'huggingface'
+        };
+
+        const keyName = keyMap[providerId] || providerId;
+
+        // Solo funciona con nuevo formato
+        if (projectStore.apiKeys.text && projectStore.apiKeys.text[keyName]) {
+            if (keyId) {
+                return projectStore.apiKeys.text[keyName].find(k => k.id === keyId);
+            }
+            return projectStore.getDefaultApiKey('text', keyName);
+        }
+
+        return null;
+    },
+
+    /**
+     * Intentar request con fallback automático a siguiente key
+     * Si una key falla, intenta con la siguiente disponible
+     */
+    async sendRequestWithFallback(providerId, requestFn) {
+        const projectStore = Alpine.store('project');
+        if (!projectStore) {
+            throw new Error('Project store no disponible');
+        }
+
+        const keyMap = {
+            'anthropic': 'claude',
+            'openai': 'openai',
+            'google': 'google',
+            'groq': 'groq',
+            'together': 'together',
+            'huggingface': 'huggingface'
+        };
+
+        const keyName = keyMap[providerId] || providerId;
+
+        // Obtener todas las keys disponibles
+        const keys = projectStore.getApiKeys('text', keyName);
+        if (keys.length === 0) {
+            throw new Error(`No hay API keys configuradas para ${providerId}`);
+        }
+
+        // Intentar con cada key hasta que una funcione
+        let lastError = null;
+        for (let i = 0; i < keys.length; i++) {
+            const keyObj = keys[i];
+            try {
+                console.log(`🔑 Intentando con key: ${keyObj.name} (${i + 1}/${keys.length})`);
+
+                // Ejecutar la función de request con esta key
+                const result = await requestFn(keyObj.key);
+
+                // Si tuvo éxito, marcar como usada
+                projectStore.markApiKeyAsUsed('text', keyName, keyObj.id);
+
+                console.log(`✅ Request exitoso con key: ${keyObj.name}`);
+                return result;
+
+            } catch (error) {
+                console.warn(`❌ Falló key ${keyObj.name}:`, error.message);
+                lastError = error;
+
+                // Si no es el último intento, continuar con la siguiente key
+                if (i < keys.length - 1) {
+                    console.log(`↻ Intentando con siguiente key...`);
+                    continue;
+                }
+            }
+        }
+
+        // Si llegamos aquí, todas las keys fallaron
+        throw new Error(`Todas las API keys fallaron. Último error: ${lastError?.message || 'Desconocido'}`);
     },
 
     // ============================================
