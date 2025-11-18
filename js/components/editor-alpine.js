@@ -699,16 +699,9 @@ window.editorAlpineComponent = function() {
         },
 
         /**
-         * Continuar escribiendo (desde sidebar)
+         * Continuar escribiendo (desde sidebar) - Inserta al FINAL del contenido
          */
         async aiContinueWriting() {
-            await this.aiContinue();
-        },
-
-        /**
-         * Sugerir mejoras con IA
-         */
-        async aiSuggestImprovements() {
             if (!window.aiService) {
                 this.$store.ui.error(
                     this.$store.i18n.t('ai.error') || 'Error de IA',
@@ -728,15 +721,84 @@ window.editorAlpineComponent = function() {
             try {
                 this.$store.ui.info(
                     this.$store.i18n.t('ai.processing') || 'Procesando...',
-                    'La IA está analizando el texto...'
+                    'La IA está continuando tu historia...'
                 );
 
+                const chapterId = this.$store.ui.currentEditingChapterId;
+                const userPrompt = 'Continúa el texto desde donde terminé, manteniendo el estilo y tono establecidos';
+
+                const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
+                const useAgenticMode = settings.useAgenticContext !== false;
+
+                let response;
+                if (useAgenticMode && window.agenticContextService) {
+                    response = await window.aiService.sendAgenticRequest(
+                        'continue',
+                        userPrompt,
+                        chapterId,
+                        null
+                    );
+                } else {
+                    response = await window.aiService.sendRequest(
+                        'continue',
+                        userPrompt,
+                        chapterId,
+                        null
+                    );
+                }
+
+                // SIEMPRE insertar al final del contenido (no modal)
+                this.insertAtEnd(response.content || response.prompt);
+                this.$store.ui.success(
+                    this.$store.i18n.t('ai.success') || 'IA',
+                    'Texto continuado e insertado al final del capítulo'
+                );
+
+            } catch (error) {
+                console.error('❌ AI Error:', error);
+                this.$store.ui.error(
+                    this.$store.i18n.t('ai.error') || 'Error de IA',
+                    error.message || 'Ocurrió un error al procesar la solicitud'
+                );
+            }
+        },
+
+        /**
+         * Sugerir mejoras con IA - SIEMPRE muestra en modal (de texto seleccionado o todo el capítulo)
+         */
+        async aiSuggestImprovements() {
+            if (!window.aiService) {
+                this.$store.ui.error(
+                    this.$store.i18n.t('ai.error') || 'Error de IA',
+                    'El servicio de IA no está disponible'
+                );
+                return;
+            }
+
+            if (!this.$store.ai.hasApiKey()) {
+                this.$store.ui.error(
+                    this.$store.i18n.t('ai.error') || 'Error de IA',
+                    'No hay clave API configurada. Ve a Configuración para agregar una.'
+                );
+                return;
+            }
+
+            try {
+                // Obtener texto seleccionado (si hay)
                 const selectedText = this.editor?.getSelectedText ? this.editor.getSelectedText() : '';
+
+                this.$store.ui.info(
+                    this.$store.i18n.t('ai.processing') || 'Procesando...',
+                    selectedText
+                        ? 'La IA está analizando el texto seleccionado...'
+                        : 'La IA está analizando el capítulo completo...'
+                );
+
                 const chapterId = this.$store.ui.currentEditingChapterId;
 
                 const userPrompt = selectedText
-                    ? `Analiza este texto y sugiere mejoras específicas para mejorar la prosa, el ritmo, la claridad y el impacto:\n\n${selectedText}`
-                    : 'Analiza el capítulo completo y sugiere mejoras específicas para mejorar la prosa, el ritmo, la claridad y el impacto';
+                    ? `Analiza este texto y sugiere mejoras específicas para mejorar la prosa, el ritmo, la claridad y el impacto. Proporciona sugerencias concretas y accionables:\n\n${selectedText}`
+                    : 'Analiza el capítulo completo y sugiere mejoras específicas para mejorar la prosa, el ritmo, la claridad y el impacto. Proporciona sugerencias concretas y accionables.';
 
                 const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
                 const useAgenticMode = settings.useAgenticContext !== false;
@@ -758,14 +820,13 @@ window.editorAlpineComponent = function() {
                     );
                 }
 
+                // SIEMPRE mostrar en modal (nunca insertar directamente)
                 const modalOverlay = document.querySelector('.ai-response-modal-overlay');
                 if (modalOverlay) {
                     this.showAIResponseInModal(response);
                 } else {
-                    this.$store.ui.success(
-                        this.$store.i18n.t('ai.success') || 'IA',
-                        response.content || response.prompt
-                    );
+                    // Fallback si no hay modal
+                    alert(response.content || response.prompt);
                 }
 
             } catch (error) {
@@ -778,7 +839,7 @@ window.editorAlpineComponent = function() {
         },
 
         /**
-         * Generar contenido con IA
+         * Generar contenido con IA - Inserta en la posición del CURSOR
          */
         async aiGenerateContent() {
             if (!window.aiService) {
@@ -808,7 +869,7 @@ window.editorAlpineComponent = function() {
 
                 const userPrompt = selectedText
                     ? `Usando este fragmento como referencia, genera contenido adicional que continúe la historia de manera coherente:\n\n${selectedText}`
-                    : 'Genera contenido nuevo para este capítulo basándote en el contexto del proyecto y lo que ya está escrito';
+                    : 'Genera contenido nuevo para insertar en esta posición, considerando el contexto anterior y posterior';
 
                 const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
                 const useAgenticMode = settings.useAgenticContext !== false;
@@ -830,16 +891,12 @@ window.editorAlpineComponent = function() {
                     );
                 }
 
-                const modalOverlay = document.querySelector('.ai-response-modal-overlay');
-                if (modalOverlay) {
-                    this.showAIResponseInModal(response);
-                } else {
-                    this.insertAITextAtCursor(response.content || response.prompt);
-                    this.$store.ui.success(
-                        this.$store.i18n.t('ai.success') || 'IA',
-                        'Contenido generado e insertado en el editor'
-                    );
-                }
+                // Insertar en la posición del cursor (no modal)
+                this.insertAtCursor(response.content || response.prompt);
+                this.$store.ui.success(
+                    this.$store.i18n.t('ai.success') || 'IA',
+                    'Contenido generado e insertado en el cursor'
+                );
 
             } catch (error) {
                 console.error('❌ AI Error:', error);
@@ -851,7 +908,7 @@ window.editorAlpineComponent = function() {
         },
 
         /**
-         * Resumir capítulo con IA
+         * Resumir capítulo con IA - SIEMPRE muestra en modal (resumen de texto seleccionado o capítulo completo)
          */
         async aiSummarizeChapter() {
             if (!window.aiService) {
@@ -871,17 +928,21 @@ window.editorAlpineComponent = function() {
             }
 
             try {
+                // Obtener texto seleccionado (si hay)
+                const selectedText = this.editor?.getSelectedText ? this.editor.getSelectedText() : '';
+
                 this.$store.ui.info(
                     this.$store.i18n.t('ai.processing') || 'Procesando...',
-                    'La IA está resumiendo el capítulo...'
+                    selectedText
+                        ? 'La IA está resumiendo el texto seleccionado...'
+                        : 'La IA está resumiendo el capítulo completo...'
                 );
 
                 const chapterId = this.$store.ui.currentEditingChapterId;
-                const selectedText = this.editor?.getSelectedText ? this.editor.getSelectedText() : '';
 
                 const userPrompt = selectedText
-                    ? `Resume este fragmento de manera concisa, capturando los puntos clave de la trama, desarrollo de personajes y eventos importantes:\n\n${selectedText}`
-                    : 'Resume este capítulo de manera concisa, capturando los puntos clave de la trama, desarrollo de personajes y eventos importantes';
+                    ? `Resume este fragmento de manera concisa y clara, capturando:\n- Puntos clave de la trama\n- Desarrollo de personajes\n- Eventos importantes\n- Temas principales\n\nTexto:\n${selectedText}`
+                    : 'Resume este capítulo de manera concisa y clara, capturando:\n- Puntos clave de la trama\n- Desarrollo de personajes\n- Eventos importantes\n- Temas principales';
 
                 const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
                 const useAgenticMode = settings.useAgenticContext !== false;
@@ -903,14 +964,13 @@ window.editorAlpineComponent = function() {
                     );
                 }
 
+                // SIEMPRE mostrar en modal (nunca insertar)
                 const modalOverlay = document.querySelector('.ai-response-modal-overlay');
                 if (modalOverlay) {
                     this.showAIResponseInModal(response);
                 } else {
-                    this.$store.ui.success(
-                        this.$store.i18n.t('ai.success') || 'IA',
-                        response.content || response.prompt
-                    );
+                    // Fallback si no hay modal
+                    alert(response.content || response.prompt);
                 }
 
             } catch (error) {
@@ -955,11 +1015,11 @@ window.editorAlpineComponent = function() {
                 newInsertBtn.onclick = () => {
                     if (window.activeChapterEditorInstance) {
                         const text = modal.querySelector('.ai-response-text').textContent;
-                        window.activeChapterEditorInstance.insertAITextAtCursor(text);
+                        window.activeChapterEditorInstance.insertAtCursor(text);
                         modalOverlay.style.display = 'none';
                         window.activeChapterEditorInstance.$store.ui.success(
                             'IA',
-                            'Respuesta insertada en el editor'
+                            'Respuesta insertada en el cursor del editor'
                         );
                     }
                 };
@@ -977,24 +1037,68 @@ window.editorAlpineComponent = function() {
         },
 
         /**
-         * Insertar texto de IA en la posición del cursor
+         * Insertar texto al final del contenido del editor
          */
-        insertAITextAtCursor(text) {
+        insertAtEnd(text) {
             if (!this.editor || !text) return;
 
-            // Obtener selección actual
-            const sel = window.getSelection();
-            if (!sel.rangeCount) {
-                // Si no hay selección, agregar al final
+            // Obtener contenido actual
+            const currentContent = this.editor.getContent();
+
+            // Agregar texto al final con saltos de línea
+            const newContent = currentContent + '\n\n' + text;
+
+            // Actualizar contenido del editor
+            this.editor.setContent(newContent);
+
+            // Hacer scroll al final
+            if (this.editor.editor) {
+                this.editor.editor.scrollTop = this.editor.editor.scrollHeight;
                 this.editor.editor.focus();
-                const range = document.createRange();
-                range.selectNodeContents(this.editor.editor);
+            }
+
+            // Trigger content change para que se guarde
+            if (this.editor.onContentChange) {
+                this.editor.onContentChange(newContent);
+            }
+        },
+
+        /**
+         * Insertar texto de IA en la posición del cursor DENTRO DEL EDITOR
+         */
+        insertAtCursor(text) {
+            if (!this.editor || !text) return;
+
+            const editorElement = this.editor.editor;
+            if (!editorElement) return;
+
+            // Focus en el editor primero
+            editorElement.focus();
+
+            // Obtener selección
+            const sel = window.getSelection();
+            let range;
+
+            // Verificar si la selección está dentro del editor
+            if (sel.rangeCount > 0) {
+                range = sel.getRangeAt(0);
+                // Verificar si el range está dentro del editor
+                if (!editorElement.contains(range.commonAncestorContainer)) {
+                    // Si no está dentro del editor, crear un range al final
+                    range = document.createRange();
+                    range.selectNodeContents(editorElement);
+                    range.collapse(false);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                }
+            } else {
+                // No hay selección, crear una al final del editor
+                range = document.createRange();
+                range.selectNodeContents(editorElement);
                 range.collapse(false);
                 sel.removeAllRanges();
                 sel.addRange(range);
             }
-
-            const range = sel.getRangeAt(0);
 
             // Si hay texto seleccionado, eliminarlo
             if (!sel.isCollapsed) {
@@ -1017,7 +1121,7 @@ window.editorAlpineComponent = function() {
             }
 
             // Focus en el editor
-            this.editor.editor.focus();
+            editorElement.focus();
         },
 
         /**
