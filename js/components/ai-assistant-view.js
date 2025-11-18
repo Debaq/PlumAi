@@ -24,6 +24,11 @@ window.aiAssistantView = function() {
             return provider ? provider.models : [];
         },
 
+        // Obtener solo proveedores con API key configurada
+        get providersWithApiKey() {
+            return this.providersStatus.filter(p => p.hasApiKey || !p.requiresApiKey);
+        },
+
         get assistantModes() {
             return Object.values(window.aiService.assistantModes);
         },
@@ -66,15 +71,38 @@ window.aiAssistantView = function() {
         },
 
         loadSavedSettings() {
-            const savedProvider = localStorage.getItem('pluma_ai_provider') || 'manual';
-            const savedModel = localStorage.getItem('pluma_ai_model');
+            const savedProvider = localStorage.getItem('pluma_ai_provider');
 
-            this.selectedProvider = savedProvider;
+            // Obtener proveedores disponibles (con API key)
+            const availableProviders = this.providersWithApiKey;
 
-            if (window.aiService.providers[savedProvider]) {
-                window.aiService.setProvider(savedProvider, savedModel);
+            if (availableProviders.length === 0) {
+                console.warn('⚠️ No hay proveedores con API key configurada');
+                this.selectedProvider = 'manual'; // Fallback a manual
+                return;
+            }
+
+            // Verificar si el proveedor guardado tiene API key
+            const savedHasKey = availableProviders.some(p => p.id === savedProvider);
+
+            if (savedProvider && savedHasKey) {
+                // Usar el guardado si tiene API key
+                this.selectedProvider = savedProvider;
+            } else {
+                // Auto-seleccionar el primer proveedor disponible
+                this.selectedProvider = availableProviders[0].id;
+                console.log('✅ Auto-seleccionado proveedor:', this.selectedProvider);
+            }
+
+            // Configurar el proveedor en aiService
+            if (window.aiService.providers[this.selectedProvider]) {
+                const savedModel = localStorage.getItem('pluma_ai_model');
+                window.aiService.setProvider(this.selectedProvider, savedModel);
                 this.selectedModel = window.aiService.currentModel;
             }
+
+            // Guardar la selección
+            localStorage.setItem('pluma_ai_provider', this.selectedProvider);
         },
 
         onProviderChange() {

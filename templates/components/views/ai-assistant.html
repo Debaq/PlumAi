@@ -17,12 +17,20 @@
                         <i data-lucide="cpu" width="16" height="16" style="vertical-align: middle;"></i>
                         Proveedor de IA
                     </label>
-                    <select x-model="selectedProvider" @change="onProviderChange()" class="p-md bg-primary border rounded-lg" style="width: 100%;">
-                        <template x-for="status in providersStatus" :key="status.id">
-                            <option :value="status.id" :disabled="!status.available" x-text="status.name + (status.hasApiKey ? '' : ' (Sin API Key)')"></option>
-                        </template>
-                    </select>
-                    <p class="form-hint" style="margin-top: 4px; font-size: 12px; color: var(--text-secondary);">
+                    <template x-if="providersWithApiKey.length > 0">
+                        <select x-model="selectedProvider" @change="onProviderChange()" class="p-md bg-primary border rounded-lg" style="width: 100%;">
+                            <template x-for="status in providersWithApiKey" :key="status.id">
+                                <option :value="status.id" x-text="status.name"></option>
+                            </template>
+                        </select>
+                    </template>
+                    <template x-if="providersWithApiKey.length === 0">
+                        <div style="padding: 12px; background: var(--warning-color); color: var(--warning-text); border-radius: 6px; font-size: 13px;">
+                            <i data-lucide="alert-circle" width="16" height="16" style="vertical-align: middle;"></i>
+                            No hay proveedores con API key configurada. Ve a <strong>Configuración IA</strong> para agregar una.
+                        </div>
+                    </template>
+                    <p class="form-hint" style="margin-top: 4px; font-size: 12px; color: var(--text-secondary);" x-show="providersWithApiKey.length > 0">
                         <span x-show="currentProviderInfo">
                             <span x-text="currentProviderInfo?.freeTier"></span> -
                             <span x-text="currentProviderInfo?.pricing"></span>
