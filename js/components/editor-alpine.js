@@ -700,6 +700,7 @@ window.editorAlpineComponent = function() {
 
         /**
          * Continuar escribiendo (desde sidebar) - Inserta al FINAL del contenido
+         * CON SISTEMA DE CONVERSACIONES: Guarda todo el proceso
          */
         async aiContinueWriting() {
             if (!window.aiService) {
@@ -727,6 +728,21 @@ window.editorAlpineComponent = function() {
                 const chapterId = this.$store.ui.currentEditingChapterId;
                 const userPrompt = 'Continúa el texto desde donde terminé, manteniendo el estilo y tono establecidos';
 
+                // CREAR CONVERSACIÓN
+                const conversation = await window.aiConversationsService.createConversation({
+                    mode: 'continue',
+                    userPrompt: userPrompt,
+                    chapterId: chapterId,
+                    selectedText: null
+                });
+
+                // Agregar mensaje del usuario
+                window.aiConversationsService.addUserMessage(conversation, userPrompt);
+
+                // Guardar conversación en el proyecto
+                this.$store.project.addAIConversation(conversation);
+
+                // Enviar request a IA
                 const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
                 const useAgenticMode = settings.useAgenticContext !== false;
 
@@ -747,8 +763,22 @@ window.editorAlpineComponent = function() {
                     );
                 }
 
-                // SIEMPRE insertar al final del contenido (no modal)
+                // Agregar respuesta de IA a la conversación
+                window.aiConversationsService.addAIMessage(conversation, response);
+
+                // Generar nombre de conversación en segundo plano (no bloquea)
+                window.aiConversationsService.generateConversationName(conversation).then(name => {
+                    this.$store.project.updateAIConversation(conversation.id, { name: name });
+                });
+
+                // INSERTAR al final del contenido
                 this.insertAtEnd(response.content || response.prompt);
+
+                // Marcar conversación como usada
+                window.aiConversationsService.markAsUsed(conversation, 'end');
+                window.aiConversationsService.completeConversation(conversation);
+                this.$store.project.updateAIConversation(conversation.id, conversation);
+
                 this.$store.ui.success(
                     this.$store.i18n.t('ai.success') || 'IA',
                     'Texto continuado e insertado al final del capítulo'
@@ -765,6 +795,7 @@ window.editorAlpineComponent = function() {
 
         /**
          * Sugerir mejoras con IA - SIEMPRE muestra en modal (de texto seleccionado o todo el capítulo)
+         * CON SISTEMA DE CONVERSACIONES: Guarda todo el proceso
          */
         async aiSuggestImprovements() {
             if (!window.aiService) {
@@ -800,6 +831,21 @@ window.editorAlpineComponent = function() {
                     ? `Analiza este texto y sugiere mejoras específicas para mejorar la prosa, el ritmo, la claridad y el impacto. Proporciona sugerencias concretas y accionables:\n\n${selectedText}`
                     : 'Analiza el capítulo completo y sugiere mejoras específicas para mejorar la prosa, el ritmo, la claridad y el impacto. Proporciona sugerencias concretas y accionables.';
 
+                // CREAR CONVERSACIÓN
+                const conversation = await window.aiConversationsService.createConversation({
+                    mode: 'improve',
+                    userPrompt: userPrompt,
+                    chapterId: chapterId,
+                    selectedText: selectedText
+                });
+
+                // Agregar mensaje del usuario
+                window.aiConversationsService.addUserMessage(conversation, userPrompt);
+
+                // Guardar conversación en el proyecto
+                this.$store.project.addAIConversation(conversation);
+
+                // Enviar request a IA
                 const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
                 const useAgenticMode = settings.useAgenticContext !== false;
 
@@ -819,6 +865,18 @@ window.editorAlpineComponent = function() {
                         selectedText
                     );
                 }
+
+                // Agregar respuesta de IA a la conversación
+                window.aiConversationsService.addAIMessage(conversation, response);
+
+                // Generar nombre de conversación en segundo plano
+                window.aiConversationsService.generateConversationName(conversation).then(name => {
+                    this.$store.project.updateAIConversation(conversation.id, { name: name });
+                });
+
+                // Marcar como completada (no se insertó)
+                window.aiConversationsService.completeConversation(conversation);
+                this.$store.project.updateAIConversation(conversation.id, conversation);
 
                 // SIEMPRE mostrar en modal (nunca insertar directamente)
                 const modalOverlay = document.querySelector('.ai-response-modal-overlay');
@@ -840,6 +898,7 @@ window.editorAlpineComponent = function() {
 
         /**
          * Generar contenido con IA - Inserta en la posición del CURSOR
+         * CON SISTEMA DE CONVERSACIONES: Guarda todo el proceso
          */
         async aiGenerateContent() {
             if (!window.aiService) {
@@ -871,6 +930,21 @@ window.editorAlpineComponent = function() {
                     ? `Usando este fragmento como referencia, genera contenido adicional que continúe la historia de manera coherente:\n\n${selectedText}`
                     : 'Genera contenido nuevo para insertar en esta posición, considerando el contexto anterior y posterior';
 
+                // CREAR CONVERSACIÓN
+                const conversation = await window.aiConversationsService.createConversation({
+                    mode: 'continue',
+                    userPrompt: userPrompt,
+                    chapterId: chapterId,
+                    selectedText: selectedText
+                });
+
+                // Agregar mensaje del usuario
+                window.aiConversationsService.addUserMessage(conversation, userPrompt);
+
+                // Guardar conversación en el proyecto
+                this.$store.project.addAIConversation(conversation);
+
+                // Enviar request a IA
                 const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
                 const useAgenticMode = settings.useAgenticContext !== false;
 
@@ -891,8 +965,22 @@ window.editorAlpineComponent = function() {
                     );
                 }
 
-                // Insertar en la posición del cursor (no modal)
+                // Agregar respuesta de IA a la conversación
+                window.aiConversationsService.addAIMessage(conversation, response);
+
+                // Generar nombre de conversación en segundo plano
+                window.aiConversationsService.generateConversationName(conversation).then(name => {
+                    this.$store.project.updateAIConversation(conversation.id, { name: name });
+                });
+
+                // INSERTAR en la posición del cursor
                 this.insertAtCursor(response.content || response.prompt);
+
+                // Marcar conversación como usada
+                window.aiConversationsService.markAsUsed(conversation, 'cursor');
+                window.aiConversationsService.completeConversation(conversation);
+                this.$store.project.updateAIConversation(conversation.id, conversation);
+
                 this.$store.ui.success(
                     this.$store.i18n.t('ai.success') || 'IA',
                     'Contenido generado e insertado en el cursor'
@@ -909,6 +997,7 @@ window.editorAlpineComponent = function() {
 
         /**
          * Resumir capítulo con IA - SIEMPRE muestra en modal (resumen de texto seleccionado o capítulo completo)
+         * CON SISTEMA DE CONVERSACIONES: Guarda todo el proceso
          */
         async aiSummarizeChapter() {
             if (!window.aiService) {
@@ -944,6 +1033,21 @@ window.editorAlpineComponent = function() {
                     ? `Resume este fragmento de manera concisa y clara, capturando:\n- Puntos clave de la trama\n- Desarrollo de personajes\n- Eventos importantes\n- Temas principales\n\nTexto:\n${selectedText}`
                     : 'Resume este capítulo de manera concisa y clara, capturando:\n- Puntos clave de la trama\n- Desarrollo de personajes\n- Eventos importantes\n- Temas principales';
 
+                // CREAR CONVERSACIÓN
+                const conversation = await window.aiConversationsService.createConversation({
+                    mode: 'analyze',
+                    userPrompt: userPrompt,
+                    chapterId: chapterId,
+                    selectedText: selectedText
+                });
+
+                // Agregar mensaje del usuario
+                window.aiConversationsService.addUserMessage(conversation, userPrompt);
+
+                // Guardar conversación en el proyecto
+                this.$store.project.addAIConversation(conversation);
+
+                // Enviar request a IA
                 const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
                 const useAgenticMode = settings.useAgenticContext !== false;
 
@@ -963,6 +1067,18 @@ window.editorAlpineComponent = function() {
                         selectedText
                     );
                 }
+
+                // Agregar respuesta de IA a la conversación
+                window.aiConversationsService.addAIMessage(conversation, response);
+
+                // Generar nombre de conversación en segundo plano
+                window.aiConversationsService.generateConversationName(conversation).then(name => {
+                    this.$store.project.updateAIConversation(conversation.id, { name: name });
+                });
+
+                // Marcar como completada (no se insertó)
+                window.aiConversationsService.completeConversation(conversation);
+                this.$store.project.updateAIConversation(conversation.id, conversation);
 
                 // SIEMPRE mostrar en modal (nunca insertar)
                 const modalOverlay = document.querySelector('.ai-response-modal-overlay');
@@ -1122,6 +1238,17 @@ window.editorAlpineComponent = function() {
 
             // Focus en el editor
             editorElement.focus();
+        },
+
+        /**
+         * Abrir una conversación de IA en un modal
+         */
+        openConversation(conversationId) {
+            const conversation = this.$store.project.getAIConversation(conversationId);
+            if (!conversation) return;
+
+            // Abrir modal con información de la conversación
+            this.$store.ui.openModal('viewConversation', conversation);
         },
 
         /**

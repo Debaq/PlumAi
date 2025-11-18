@@ -89,6 +89,38 @@
                             <span x-text="$store.i18n.t('ai.settings.noApiKey')"></span>
                         </p>
                     </template>
+
+                    <!-- Historial de Conversaciones IA -->
+                    <template x-if="$store.project.getChapterConversations($store.ui.currentEditingChapterId).length > 0">
+                        <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
+                            <h4 style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; font-weight: 600; text-transform: uppercase;">
+                                Historial de Conversaciones
+                            </h4>
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                <template x-for="conv in $store.project.getChapterConversations($store.ui.currentEditingChapterId).slice(0, 5)" :key="conv.id">
+                                    <div @click="openConversation(conv.id)" class="ai-conversation-item" style="padding: 8px; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; transition: all 0.2s;">
+                                        <div style="display: flex; align-items: start; gap: 6px;">
+                                            <!-- Icono según el modo -->
+                                            <i :data-lucide="conv.mode === 'continue' ? 'wand-2' : conv.mode === 'improve' ? 'lightbulb' : conv.mode === 'analyze' ? 'book-open' : 'sparkles'" width="14" height="14" style="color: var(--accent); flex-shrink: 0; margin-top: 2px;"></i>
+
+                                            <div style="flex: 1; min-width: 0;">
+                                                <!-- Nombre de la conversación -->
+                                                <div style="font-size: 12px; font-weight: 500; color: var(--text-primary); margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                                    <span x-text="conv.name || 'Generando nombre...'"></span>
+                                                    <!-- Indicador de usado -->
+                                                    <template x-if="conv.metadata.wasUsed">
+                                                        <i data-lucide="check-circle" width="12" height="12" style="color: var(--success); display: inline; margin-left: 4px;"></i>
+                                                    </template>
+                                                </div>
+                                                <!-- Timestamp -->
+                                                <div style="font-size: 10px; color: var(--text-tertiary);" x-text="new Date(conv.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </aside>
         </div>

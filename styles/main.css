@@ -1246,6 +1246,13 @@ body {
     flex-shrink: 0;
 }
 
+/* AI Conversation Items */
+.ai-conversation-item:hover {
+    background: var(--bg-hover);
+    border-color: var(--accent);
+    transform: translateX(2px);
+}
+
 .editor-save-indicator {
     display: flex;
     align-items: center;
