@@ -874,6 +874,8 @@ window.projectStore = {
             status: 'draft',
             wordCount: 0,
             versions: [],
+            image: '',           // URL o data URL de la imagen
+            imageType: 'upload', // 'upload', 'url', 'ai'
             created: new Date().toISOString(),
             modified: new Date().toISOString(),
             ...chapter
@@ -957,6 +959,8 @@ window.projectStore = {
             location: null,
             timelinePosition: 0,
             notes: '',
+            image: '',           // URL o data URL de la imagen
+            imageType: 'upload', // 'upload', 'url', 'ai'
             created: new Date().toISOString(),
             modified: new Date().toISOString(),
             ...scene

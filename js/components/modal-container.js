@@ -47,6 +47,9 @@ window.modalContainerComponent = function() {
                     <!-- Avatar Selector Modal -->
                     <div id="avatar-selector-modal-container"></div>
 
+                    <!-- Manage Image Modal -->
+                    <div id="manage-image-modal-container"></div>
+
                     <!-- Lore Preview Modal -->
                     <div id="lore-preview-modal-container"></div>
 
@@ -123,6 +126,7 @@ window.modalContainerComponent = function() {
                 { containerId: 'import-modal-container', templatePath: 'templates/modals/import-modal.html' },
                 { containerId: 'settings-modal-container', templatePath: 'templates/modals/settings-modal.html' },
                 { containerId: 'avatar-selector-modal-container', templatePath: 'templates/modals/avatar-selector-modal.html' },
+                { containerId: 'manage-image-modal-container', templatePath: 'templates/modals/manage-image-modal.html' },
                 { containerId: 'lore-preview-modal-container', templatePath: 'templates/modals/lore-preview-modal.html' },
                 { containerId: 'new-relationship-modal-container', templatePath: 'templates/modals/new-relationship-modal.html' },
                 { containerId: 'edit-relationship-modal-container', templatePath: 'templates/modals/edit-relationship-modal.html' },
