@@ -10,7 +10,14 @@
         <div class="modal-body" x-data="{
             get hasApiKeys() {
                 const apiKeys = $store.project.apiKeys || {};
-                return Object.keys(apiKeys).length > 0 && Object.values(apiKeys).some(v => v && v.trim().length > 0);
+                // Nuevo formato: { text: { provider: [...] }, image: { provider: [...] } }
+                if (apiKeys.text || apiKeys.image) {
+                    const hasTextKeys = apiKeys.text && Object.values(apiKeys.text).some(arr => Array.isArray(arr) && arr.length > 0);
+                    const hasImageKeys = apiKeys.image && Object.values(apiKeys.image).some(arr => Array.isArray(arr) && arr.length > 0);
+                    return hasTextKeys || hasImageKeys;
+                }
+                // Formato antiguo (por compatibilidad): { provider: 'key' }
+                return Object.keys(apiKeys).length > 0 && Object.values(apiKeys).some(v => typeof v === 'string' && v.trim().length > 0);
             },
             get encryptApiKeys() {
                 return this.hasApiKeys ? true : this._encryptApiKeys;
@@ -126,7 +133,16 @@
 
                     // Detectar si hay API keys en el proyecto
                     const apiKeys = $store.project.apiKeys || {};
-                    const hasApiKeys = Object.keys(apiKeys).length > 0 && Object.values(apiKeys).some(v => v && v.trim().length > 0);
+                    let hasApiKeys = false;
+                    // Nuevo formato: { text: { provider: [...] }, image: { provider: [...] } }
+                    if (apiKeys.text || apiKeys.image) {
+                        const hasTextKeys = apiKeys.text && Object.values(apiKeys.text).some(arr => Array.isArray(arr) && arr.length > 0);
+                        const hasImageKeys = apiKeys.image && Object.values(apiKeys.image).some(arr => Array.isArray(arr) && arr.length > 0);
+                        hasApiKeys = hasTextKeys || hasImageKeys;
+                    } else {
+                        // Formato antiguo (por compatibilidad): { provider: 'key' }
+                        hasApiKeys = Object.keys(apiKeys).length > 0 && Object.values(apiKeys).some(v => typeof v === 'string' && v.trim().length > 0);
+                    }
 
                     // Obtener valores de encriptación
                     const encryptAllCheckbox = modalBody.querySelector('input[x-model=&quot;encryptAll&quot;]');
