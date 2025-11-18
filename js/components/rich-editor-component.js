@@ -151,7 +151,6 @@ window.richEditorComponent = function(config = {}) {
                     // CRÍTICO: Prevenir submit de formulario padre
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('🎯 Click en opción de IA (submit prevenido)');
 
                     const mode = e.currentTarget.dataset.mode;
                     this.executeAIAction(mode);
@@ -165,7 +164,6 @@ window.richEditorComponent = function(config = {}) {
                 // CRÍTICO: Prevenir submit de formulario padre
                 e.preventDefault();
                 e.stopPropagation();
-                console.log('🎯 Click en botón de IA (submit prevenido)');
 
                 this.showAIMenu = !this.showAIMenu;
                 aiMenu.style.display = this.showAIMenu ? 'block' : 'none';
@@ -202,19 +200,15 @@ window.richEditorComponent = function(config = {}) {
          * Usa un modal global compartido por todas las instancias
          */
         injectAIResponseModal() {
-            console.log('🔧 Inicializando modal de respuesta de IA...');
-
             // Verificar si ya existe un modal global
             let modalOverlay = document.querySelector('.ai-response-modal-overlay');
 
             if (modalOverlay) {
-                console.log('♻️ Modal global ya existe, reutilizando y configurando watchers');
                 // Ya existe, solo configurar watchers para esta instancia
                 this.setupAIModalWatchers();
                 return;
             }
 
-            console.log('🆕 Creando nuevo modal global de respuesta de IA');
             // Crear overlay del modal (solo una vez globalmente)
             modalOverlay = document.createElement('div');
             modalOverlay.className = 'ai-response-modal-overlay';
@@ -320,14 +314,12 @@ window.richEditorComponent = function(config = {}) {
             // Ensamblar
             modalOverlay.appendChild(modal);
             document.body.appendChild(modalOverlay);
-            console.log('✅ Modal de respuesta de IA agregado al DOM');
 
             // Configurar listeners globales del modal (solo una vez)
             this.setupGlobalAIModalHandlers(modalOverlay);
 
             // Configurar watchers para esta instancia
             this.setupAIModalWatchers();
-            console.log('🎉 Modal de respuesta de IA completamente inicializado');
         },
 
         /**
@@ -408,27 +400,12 @@ window.richEditorComponent = function(config = {}) {
          * Configurar watchers para mostrar/ocultar el modal de esta instancia
          */
         setupAIModalWatchers() {
-            console.log('⚙️ Configurando watchers del modal de IA para esta instancia');
             const modalOverlay = document.querySelector('.ai-response-modal-overlay');
-
-            if (!modalOverlay) {
-                console.error('❌ ERROR: No se encontró el modal overlay al configurar watchers');
-                return;
-            }
-
             const modal = modalOverlay.querySelector('.ai-response-modal');
-
-            if (!modal) {
-                console.error('❌ ERROR: No se encontró el modal al configurar watchers');
-                return;
-            }
-
-            console.log('✅ Modal encontrado, configurando watcher de showAIResponse');
 
             // Watch para mostrar/ocultar el modal
             this.$watch('showAIResponse', (value) => {
                 if (value && this.aiResponse) {
-                    console.log('👁️ Mostrando modal de respuesta de IA');
                     // Establecer esta instancia como la activa
                     window.activeAIEditorInstance = this;
 
@@ -445,7 +422,6 @@ window.richEditorComponent = function(config = {}) {
 
                     // Mostrar modal
                     modalOverlay.style.display = 'block';
-                    console.log('✨ Modal de respuesta de IA visible en pantalla');
 
                     // Reinicializar iconos de Lucide
                     setTimeout(() => {
@@ -456,7 +432,6 @@ window.richEditorComponent = function(config = {}) {
                 } else {
                     // Solo ocultar si esta es la instancia activa
                     if (window.activeAIEditorInstance === this) {
-                        console.log('🙈 Ocultando modal de respuesta de IA');
                         modalOverlay.style.display = 'none';
                         window.activeAIEditorInstance = null;
                     }
@@ -765,8 +740,6 @@ window.richEditorComponent = function(config = {}) {
          * Ejecutar acción de IA
          */
         async executeAIAction(mode, customPrompt = null) {
-            console.log(`🎬 Ejecutando acción de IA: ${mode}`);
-
             if (!window.aiService) {
                 alert('❌ El servicio de IA no está disponible');
                 return;
@@ -774,7 +747,6 @@ window.richEditorComponent = function(config = {}) {
 
             const selectedText = this.getSelectedText();
             const fullContent = this.getContent();
-            console.log(`📄 Contenido del editor (${fullContent.length} caracteres):`, fullContent.substring(0, 100) + '...');
 
             // Construir prompt según el modo
             let userPrompt = customPrompt;
@@ -836,7 +808,6 @@ window.richEditorComponent = function(config = {}) {
                 // Guardar respuesta
                 this.aiResponse = response;
                 this.showAIResponse = true;
-                console.log('✅ Modal de respuesta de IA activado (showAIResponse = true)');
 
             } catch (error) {
                 console.error('❌ AI Error:', error);
@@ -885,7 +856,6 @@ window.richEditorComponent = function(config = {}) {
          * El contenido solo se limpia cuando se ejecuta una nueva acción de IA
          */
         closeAIResponse() {
-            console.log('🔒 Cerrando modal de respuesta de IA (contenido preservado)');
             this.showAIResponse = false;
             // NO limpiar this.aiResponse aquí - preservar contenido para reabrir
         }
