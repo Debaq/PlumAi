@@ -334,6 +334,129 @@ window.aiService = {
         return supportedProviders.includes(provider.id);
     },
 
+    /**
+     * Clasifica y mejora los mensajes de error para el usuario
+     */
+    getErrorMessage(error, providerId) {
+        const provider = this.providers[providerId];
+        const errorMsg = error.message || error.toString();
+
+        // Errores de red / conexión
+        if (errorMsg.includes('Failed to fetch') || errorMsg.includes('NetworkError') || errorMsg.includes('ECONNREFUSED')) {
+            if (providerId === 'ollama') {
+                return {
+                    type: 'connection',
+                    title: 'Ollama no está disponible',
+                    message: 'No se puede conectar a Ollama en localhost:11434',
+                    suggestions: [
+                        'Verifica que Ollama esté instalado: https://ollama.ai',
+                        'Ejecuta "ollama serve" en la terminal',
+                        'Comprueba que no haya otro proceso usando el puerto 11434'
+                    ]
+                };
+            } else {
+                return {
+                    type: 'connection',
+                    title: `${provider.name} no está disponible`,
+                    message: `No se puede conectar con el servicio de ${provider.name}`,
+                    suggestions: [
+                        'Verifica tu conexión a internet',
+                        `Revisa el estado del servicio: https://status.${providerId}.com`,
+                        'El servicio podría estar experimentando problemas temporales',
+                        'Intenta con otro proveedor de IA mientras tanto'
+                    ]
+                };
+            }
+        }
+
+        // Errores de autenticación / API Key
+        if (errorMsg.includes('401') || errorMsg.includes('Unauthorized') ||
+            errorMsg.includes('invalid_api_key') || errorMsg.includes('authentication')) {
+            return {
+                type: 'auth',
+                title: 'API Key inválida o expirada',
+                message: `La API key de ${provider.name} no es válida`,
+                suggestions: [
+                    'Verifica que la API key esté correctamente configurada en Ajustes',
+                    'Comprueba que la API key no haya expirado',
+                    `Genera una nueva API key en ${this.getProviderDashboard(providerId)}`,
+                    'Asegúrate de copiar la API key completa sin espacios'
+                ]
+            };
+        }
+
+        // Errores de rate limit
+        if (errorMsg.includes('429') || errorMsg.includes('rate_limit') ||
+            errorMsg.includes('quota') || errorMsg.includes('too many requests')) {
+            return {
+                type: 'rate_limit',
+                title: 'Límite de uso excedido',
+                message: `Has alcanzado el límite de requests de ${provider.name}`,
+                suggestions: [
+                    'Espera unos minutos antes de intentar nuevamente',
+                    'Verifica tu cuota disponible en el dashboard del proveedor',
+                    'Considera actualizar tu plan si usas el tier gratuito',
+                    'Usa otro proveedor de IA temporalmente'
+                ]
+            };
+        }
+
+        // Errores de CORS
+        if (errorMsg.includes('CORS') || errorMsg.includes('Cross-Origin')) {
+            return {
+                type: 'cors',
+                title: 'Error de seguridad del navegador',
+                message: 'El navegador está bloqueando la conexión por políticas de seguridad',
+                suggestions: [
+                    'Esto puede ocurrir al usar la app localmente',
+                    'Intenta usar un proveedor diferente',
+                    'Considera usar el modo "Manual" (copiar prompt) como alternativa'
+                ]
+            };
+        }
+
+        // Error de modelo no encontrado
+        if (errorMsg.includes('model_not_found') || errorMsg.includes('model not found')) {
+            return {
+                type: 'model',
+                title: 'Modelo no disponible',
+                message: `El modelo "${this.currentModel}" no está disponible`,
+                suggestions: [
+                    'El modelo podría haber sido deprecado o renombrado',
+                    'Selecciona otro modelo en Ajustes',
+                    'Consulta la documentación del proveedor para modelos disponibles'
+                ]
+            };
+        }
+
+        // Error genérico
+        return {
+            type: 'unknown',
+            title: `Error en ${provider.name}`,
+            message: errorMsg,
+            suggestions: [
+                'Verifica tu configuración en Ajustes',
+                'Intenta con otro proveedor de IA',
+                'Revisa la consola del navegador para más detalles'
+            ]
+        };
+    },
+
+    /**
+     * Obtiene la URL del dashboard del proveedor
+     */
+    getProviderDashboard(providerId) {
+        const dashboards = {
+            'anthropic': 'https://console.anthropic.com',
+            'openai': 'https://platform.openai.com/api-keys',
+            'google': 'https://makersuite.google.com/app/apikey',
+            'groq': 'https://console.groq.com/keys',
+            'together': 'https://api.together.xyz/settings/api-keys',
+            'huggingface': 'https://huggingface.co/settings/tokens'
+        };
+        return dashboards[providerId] || 'el dashboard del proveedor';
+    },
+
     // ============================================
     // CONSTRUCCIÓN DE CONTEXTO
     // ============================================
@@ -648,47 +771,61 @@ window.aiService = {
             window.plumLogger.apiRequest('Anthropic', 'https://api.anthropic.com/v1/messages', model);
         }
 
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': apiKey,
-                'anthropic-version': '2023-06-01'
-            },
-            body: JSON.stringify({
-                model: model,
-                max_tokens: 4096,
-                messages: [
-                    {
-                        role: 'user',
-                        content: prompt
-                    }
-                ]
-            })
-        });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(`Claude API Error: ${error.error?.message || response.statusText}`);
-        }
-
-        const data = await response.json();
-
-        // LOG: API Response
-        if (window.plumLogger) {
-            window.plumLogger.apiResponse(true, {
-                contentLength: data.content[0].text.length,
-                usage: data.usage
+        try {
+            const response = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': apiKey,
+                    'anthropic-version': '2023-06-01'
+                },
+                body: JSON.stringify({
+                    model: model,
+                    max_tokens: 4096,
+                    messages: [
+                        {
+                            role: 'user',
+                            content: prompt
+                        }
+                    ]
+                })
             });
-        }
 
-        return {
-            type: 'api',
-            content: data.content[0].text,
-            model: model,
-            provider: 'anthropic',
-            usage: data.usage
-        };
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({ error: { message: response.statusText } }));
+                const errorMessage = new Error(`${response.status}: ${error.error?.message || response.statusText}`);
+                const detailedError = this.getErrorMessage(errorMessage, 'anthropic');
+                const err = new Error(detailedError.title);
+                err.detailedError = detailedError;
+                throw err;
+            }
+
+            const data = await response.json();
+
+            // LOG: API Response
+            if (window.plumLogger) {
+                window.plumLogger.apiResponse(true, {
+                    contentLength: data.content[0].text.length,
+                    usage: data.usage
+                });
+            }
+
+            return {
+                type: 'api',
+                content: data.content[0].text,
+                model: model,
+                provider: 'anthropic',
+                usage: data.usage
+            };
+        } catch (error) {
+            if (error.detailedError) {
+                throw error;
+            }
+            const detailedError = this.getErrorMessage(error, 'anthropic');
+            const err = new Error(detailedError.title);
+            err.detailedError = detailedError;
+            throw err;
+        }
     },
 
     async sendOpenAIRequest(prompt) {
@@ -737,42 +874,56 @@ window.aiService = {
             window.plumLogger.apiRequest('Google Gemini', `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, model);
         }
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [{
-                        text: prompt
+        try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{
+                            text: prompt
+                        }]
                     }]
-                }]
-            })
-        });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(`Google API Error: ${error.error?.message || response.statusText}`);
-        }
-
-        const data = await response.json();
-
-        // LOG: API Response
-        if (window.plumLogger) {
-            window.plumLogger.apiResponse(true, {
-                contentLength: data.candidates[0].content.parts[0].text.length,
-                usage: data.usageMetadata
+                })
             });
-        }
 
-        return {
-            type: 'api',
-            content: data.candidates[0].content.parts[0].text,
-            model: model,
-            provider: 'google',
-            usage: data.usageMetadata
-        };
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({ error: { message: response.statusText } }));
+                const errorMessage = new Error(`${response.status}: ${error.error?.message || response.statusText}`);
+                const detailedError = this.getErrorMessage(errorMessage, 'google');
+                const err = new Error(detailedError.title);
+                err.detailedError = detailedError;
+                throw err;
+            }
+
+            const data = await response.json();
+
+            // LOG: API Response
+            if (window.plumLogger) {
+                window.plumLogger.apiResponse(true, {
+                    contentLength: data.candidates[0].content.parts[0].text.length,
+                    usage: data.usageMetadata
+                });
+            }
+
+            return {
+                type: 'api',
+                content: data.candidates[0].content.parts[0].text,
+                model: model,
+                provider: 'google',
+                usage: data.usageMetadata
+            };
+        } catch (error) {
+            if (error.detailedError) {
+                throw error;
+            }
+            const detailedError = this.getErrorMessage(error, 'google');
+            const err = new Error(detailedError.title);
+            err.detailedError = detailedError;
+            throw err;
+        }
     },
 
     async sendGroqRequest(prompt) {
@@ -784,47 +935,63 @@ window.aiService = {
             window.plumLogger.apiRequest('Groq', 'https://api.groq.com/openai/v1/chat/completions', model);
         }
 
-        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
-            },
-            body: JSON.stringify({
-                model: model,
-                messages: [
-                    {
-                        role: 'user',
-                        content: prompt
-                    }
-                ],
-                max_tokens: 4096,
-                temperature: 0.7
-            })
-        });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(`Groq API Error: ${error.error?.message || response.statusText}`);
-        }
-
-        const data = await response.json();
-
-        // LOG: API Response
-        if (window.plumLogger) {
-            window.plumLogger.apiResponse(true, {
-                contentLength: data.choices[0].message.content.length,
-                usage: data.usage
+        try {
+            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: model,
+                    messages: [
+                        {
+                            role: 'user',
+                            content: prompt
+                        }
+                    ],
+                    max_tokens: 4096,
+                    temperature: 0.7
+                })
             });
-        }
 
-        return {
-            type: 'api',
-            content: data.choices[0].message.content,
-            model: model,
-            provider: 'groq',
-            usage: data.usage
-        };
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({ error: { message: response.statusText } }));
+                const errorMessage = new Error(`${response.status}: ${error.error?.message || response.statusText}`);
+                const detailedError = this.getErrorMessage(errorMessage, 'groq');
+                const err = new Error(detailedError.title);
+                err.detailedError = detailedError;
+                throw err;
+            }
+
+            const data = await response.json();
+
+            // LOG: API Response
+            if (window.plumLogger) {
+                window.plumLogger.apiResponse(true, {
+                    contentLength: data.choices[0].message.content.length,
+                    usage: data.usage
+                });
+            }
+
+            return {
+                type: 'api',
+                content: data.choices[0].message.content,
+                model: model,
+                provider: 'groq',
+                usage: data.usage
+            };
+        } catch (error) {
+            // Si ya tiene detailedError, re-lanzarlo
+            if (error.detailedError) {
+                throw error;
+            }
+            // Si no, crear uno nuevo
+            const detailedError = this.getErrorMessage(error, 'groq');
+            const err = new Error(detailedError.title);
+            err.detailedError = detailedError;
+            throw err;
+        }
     },
 
     async sendTogetherRequest(prompt) {
@@ -886,7 +1053,12 @@ window.aiService = {
             });
 
             if (!response.ok) {
-                throw new Error(`Ollama no está disponible. ¿Está corriendo? Instala desde https://ollama.ai`);
+                const error = await response.json().catch(() => ({ error: 'Connection failed' }));
+                const errorMessage = new Error(`Failed to fetch`);
+                const detailedError = this.getErrorMessage(errorMessage, 'ollama');
+                const err = new Error(detailedError.title);
+                err.detailedError = detailedError;
+                throw err;
             }
 
             const data = await response.json();
@@ -897,7 +1069,13 @@ window.aiService = {
                 provider: 'ollama'
             };
         } catch (error) {
-            throw new Error(`Ollama Error: ${error.message}. Asegúrate de que Ollama esté corriendo (ollama serve)`);
+            if (error.detailedError) {
+                throw error;
+            }
+            const detailedError = this.getErrorMessage(error, 'ollama');
+            const err = new Error(detailedError.title);
+            err.detailedError = detailedError;
+            throw err;
         }
     },
 

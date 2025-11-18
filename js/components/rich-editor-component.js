@@ -821,7 +821,19 @@ window.richEditorComponent = function(config = {}) {
 
             } catch (error) {
                 console.error('❌ AI Error:', error);
-                alert(`Error de IA: ${error.message}`);
+
+                // Mostrar error detallado si está disponible
+                if (error.detailedError) {
+                    const details = error.detailedError;
+                    let message = `❌ ${details.title}\n\n${details.message}\n\n`;
+                    message += '💡 Sugerencias:\n';
+                    details.suggestions.forEach((suggestion, i) => {
+                        message += `${i + 1}. ${suggestion}\n`;
+                    });
+                    alert(message);
+                } else {
+                    alert(`Error de IA: ${error.message}`);
+                }
             } finally {
                 this.isAIProcessing = false;
             }

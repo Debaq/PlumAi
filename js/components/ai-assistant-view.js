@@ -179,7 +179,22 @@ window.aiAssistantView = function() {
 
             } catch (error) {
                 console.error('❌ AI Error:', error);
-                this.addMessage('assistant', `**Error:** ${error.message}\n\nPor favor verifica tu configuración de API key en Ajustes.`, {
+
+                // Mostrar error detallado si está disponible
+                let errorMessage = `**Error:** ${error.message}\n\n`;
+
+                if (error.detailedError) {
+                    const details = error.detailedError;
+                    errorMessage = `**❌ ${details.title}**\n\n${details.message}\n\n`;
+                    errorMessage += '**💡 Sugerencias:**\n';
+                    details.suggestions.forEach((suggestion, i) => {
+                        errorMessage += `${i + 1}. ${suggestion}\n`;
+                    });
+                } else {
+                    errorMessage += 'Por favor verifica tu configuración de API key en Ajustes.';
+                }
+
+                this.addMessage('assistant', errorMessage, {
                     provider: 'error',
                     model: 'error'
                 });
