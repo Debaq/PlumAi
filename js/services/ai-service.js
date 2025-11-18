@@ -1305,6 +1305,460 @@ window.aiService = {
                 models: provider.models
             };
         });
+    },
+
+    // ============================================
+    // GENERACIÓN DE IMÁGENES CON IA
+    // ============================================
+
+    /**
+     * Obtener API key para proveedores de imágenes
+     */
+    getImageApiKey(providerId, keyId = null) {
+        const projectStore = Alpine.store('project');
+        if (!projectStore || !projectStore.apiKeys) return null;
+
+        // Mapeo de IDs a nombres en el store para imágenes
+        const keyMap = {
+            'googleImagen': 'googleImagen',
+            'dalle': 'dalle',
+            'stabilityai': 'stabilityai',
+            'replicateImage': 'replicate',
+            'leonardo': 'leonardo'
+        };
+
+        const keyName = keyMap[providerId] || providerId;
+
+        // Verificar si es nuevo formato (con text/image)
+        if (projectStore.apiKeys.image && projectStore.apiKeys.image[keyName]) {
+            // Si se solicita una key específica
+            if (keyId) {
+                const key = projectStore.apiKeys.image[keyName].find(k => k.id === keyId);
+                return key ? key.key : null;
+            }
+
+            // Obtener la key por defecto
+            const defaultKey = projectStore.getDefaultApiKey('image', keyName);
+            return defaultKey ? defaultKey.key : null;
+        }
+
+        return null;
+    },
+
+    /**
+     * Obtener proveedores de imágenes disponibles (con API key configurada)
+     */
+    getAvailableImageProviders() {
+        return Object.values(this.imageProviders).filter(provider => {
+            if (provider.type === 'manual') return false; // Excluir Midjourney
+            if (provider.requiresApiKey) {
+                return !!this.getImageApiKey(provider.id);
+            }
+            return true;
+        });
+    },
+
+    /**
+     * Método principal de generación de imágenes
+     * @param {string} prompt - Descripción de la imagen a generar
+     * @param {string} providerId - ID del proveedor (dalle, stabilityai, etc)
+     * @param {Object} options - Opciones adicionales (size, quality, style, etc)
+     */
+    async generateImage(prompt, providerId = null, options = {}) {
+        // Si no se especifica proveedor, usar el primero disponible
+        const provider = providerId
+            ? this.imageProviders[providerId]
+            : this.getAvailableImageProviders()[0];
+
+        if (!provider) {
+            throw new Error('No hay proveedores de imágenes configurados. Configura una API key en Ajustes.');
+        }
+
+        // Verificar API key
+        if (provider.requiresApiKey) {
+            const apiKey = this.getImageApiKey(provider.id);
+            if (!apiKey) {
+                throw new Error(`API Key no configurada para ${provider.name}`);
+            }
+        }
+
+        // LOG
+        if (window.plumLogger) {
+            console.log(`🎨 Generando imagen con ${provider.name}`);
+            console.log(`📝 Prompt: ${prompt.substring(0, 100)}...`);
+        }
+
+        // Llamar al método específico del proveedor
+        try {
+            let result;
+            switch (provider.id) {
+                case 'dalle':
+                    result = await this.generateDALLEImage(prompt, options);
+                    break;
+                case 'stabilityai':
+                    result = await this.generateStabilityAIImage(prompt, options);
+                    break;
+                case 'replicateImage':
+                    result = await this.generateReplicateImage(prompt, options);
+                    break;
+                case 'leonardo':
+                    result = await this.generateLeonardoImage(prompt, options);
+                    break;
+                case 'googleImagen':
+                    result = await this.generateGoogleImage(prompt, options);
+                    break;
+                default:
+                    throw new Error(`Proveedor de imágenes no soportado: ${provider.id}`);
+            }
+
+            if (window.plumLogger) {
+                console.log(`✅ Imagen generada exitosamente`);
+            }
+
+            return result;
+        } catch (error) {
+            if (window.plumLogger) {
+                console.error(`❌ Error generando imagen:`, error);
+            }
+            throw error;
+        }
+    },
+
+    /**
+     * Generar imagen con DALL-E (OpenAI)
+     */
+    async generateDALLEImage(prompt, options = {}) {
+        const apiKey = this.getImageApiKey('dalle');
+        const model = options.model || 'dall-e-3';
+        const size = options.size || '1024x1024';
+        const quality = options.quality || 'standard'; // 'standard' o 'hd'
+        const style = options.style || 'vivid'; // 'vivid' o 'natural'
+
+        const response = await fetch('https://api.openai.com/v1/images/generations', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: model,
+                prompt: prompt,
+                n: 1,
+                size: size,
+                quality: quality,
+                style: style
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ error: { message: response.statusText } }));
+            throw new Error(`DALL-E Error: ${error.error?.message || response.statusText}`);
+        }
+
+        const data = await response.json();
+        return {
+            provider: 'dalle',
+            model: model,
+            url: data.data[0].url,
+            revisedPrompt: data.data[0].revised_prompt || prompt
+        };
+    },
+
+    /**
+     * Generar imagen con Stability AI (Stable Diffusion)
+     */
+    async generateStabilityAIImage(prompt, options = {}) {
+        const apiKey = this.getImageApiKey('stabilityai');
+        const engineId = options.model || 'stable-diffusion-xl-1024-v1-0';
+        const width = options.width || 1024;
+        const height = options.height || 1024;
+        const steps = options.steps || 30;
+        const cfgScale = options.cfgScale || 7;
+
+        const response = await fetch(`https://api.stability.ai/v1/generation/${engineId}/text-to-image`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                text_prompts: [
+                    {
+                        text: prompt,
+                        weight: 1
+                    }
+                ],
+                cfg_scale: cfgScale,
+                height: height,
+                width: width,
+                steps: steps,
+                samples: 1
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ message: response.statusText }));
+            throw new Error(`Stability AI Error: ${error.message || response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        // Convertir base64 a data URL
+        const base64Image = data.artifacts[0].base64;
+        const dataUrl = `data:image/png;base64,${base64Image}`;
+
+        return {
+            provider: 'stabilityai',
+            model: engineId,
+            url: dataUrl,
+            base64: base64Image
+        };
+    },
+
+    /**
+     * Generar imagen con Replicate
+     */
+    async generateReplicateImage(prompt, options = {}) {
+        const apiKey = this.getImageApiKey('replicateImage');
+        const model = options.model || 'black-forest-labs/flux-1.1-pro';
+
+        // Paso 1: Crear predicción
+        const createResponse = await fetch('https://api.replicate.com/v1/predictions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Token ${apiKey}`
+            },
+            body: JSON.stringify({
+                version: model,
+                input: {
+                    prompt: prompt,
+                    width: options.width || 1024,
+                    height: options.height || 1024,
+                    num_outputs: 1
+                }
+            })
+        });
+
+        if (!createResponse.ok) {
+            const error = await createResponse.json().catch(() => ({ detail: createResponse.statusText }));
+            throw new Error(`Replicate Error: ${error.detail || createResponse.statusText}`);
+        }
+
+        const prediction = await createResponse.json();
+
+        // Paso 2: Poll hasta que la imagen esté lista
+        let result = prediction;
+        while (result.status === 'starting' || result.status === 'processing') {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            const statusResponse = await fetch(`https://api.replicate.com/v1/predictions/${prediction.id}`, {
+                headers: {
+                    'Authorization': `Token ${apiKey}`
+                }
+            });
+
+            if (!statusResponse.ok) {
+                throw new Error('Error checking prediction status');
+            }
+
+            result = await statusResponse.json();
+        }
+
+        if (result.status === 'failed') {
+            throw new Error(`Image generation failed: ${result.error}`);
+        }
+
+        return {
+            provider: 'replicate',
+            model: model,
+            url: result.output[0],
+            predictionId: prediction.id
+        };
+    },
+
+    /**
+     * Generar imagen con Leonardo AI
+     */
+    async generateLeonardoImage(prompt, options = {}) {
+        const apiKey = this.getImageApiKey('leonardo');
+        const modelId = options.modelId || 'b24e16ff-06e3-43eb-8d33-4416c2d75876'; // Phoenix 1.0
+
+        // Paso 1: Crear generación
+        const createResponse = await fetch('https://cloud.leonardo.ai/api/rest/v1/generations', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                prompt: prompt,
+                modelId: modelId,
+                width: options.width || 1024,
+                height: options.height || 1024,
+                num_images: 1
+            })
+        });
+
+        if (!createResponse.ok) {
+            const error = await createResponse.json().catch(() => ({ error: createResponse.statusText }));
+            throw new Error(`Leonardo AI Error: ${error.error || createResponse.statusText}`);
+        }
+
+        const generation = await createResponse.json();
+        const generationId = generation.sdGenerationJob.generationId;
+
+        // Paso 2: Poll hasta que la imagen esté lista
+        let imageUrl = null;
+        for (let i = 0; i < 30; i++) { // Max 30 intentos (30 segundos)
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            const statusResponse = await fetch(`https://cloud.leonardo.ai/api/rest/v1/generations/${generationId}`, {
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`
+                }
+            });
+
+            if (!statusResponse.ok) {
+                throw new Error('Error checking generation status');
+            }
+
+            const result = await statusResponse.json();
+
+            if (result.generations_by_pk.status === 'COMPLETE') {
+                imageUrl = result.generations_by_pk.generated_images[0].url;
+                break;
+            } else if (result.generations_by_pk.status === 'FAILED') {
+                throw new Error('Image generation failed');
+            }
+        }
+
+        if (!imageUrl) {
+            throw new Error('Image generation timed out');
+        }
+
+        return {
+            provider: 'leonardo',
+            model: modelId,
+            url: imageUrl,
+            generationId: generationId
+        };
+    },
+
+    /**
+     * Generar imagen con Google Imagen (Vertex AI)
+     */
+    async generateGoogleImage(prompt, options = {}) {
+        const apiKey = this.getImageApiKey('googleImagen');
+        const projectId = options.projectId || 'your-project-id'; // Usuario debe configurar esto
+        const model = options.model || 'imagegeneration@006';
+
+        const endpoint = `https://us-central1-aiplatform.googleapis.com/v1/projects/${projectId}/locations/us-central1/publishers/google/models/${model}:predict`;
+
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                instances: [
+                    {
+                        prompt: prompt
+                    }
+                ],
+                parameters: {
+                    sampleCount: 1,
+                    aspectRatio: options.aspectRatio || '1:1'
+                }
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ error: { message: response.statusText } }));
+            throw new Error(`Google Imagen Error: ${error.error?.message || response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        // Google devuelve la imagen en base64
+        const base64Image = data.predictions[0].bytesBase64Encoded;
+        const dataUrl = `data:image/png;base64,${base64Image}`;
+
+        return {
+            provider: 'googleImagen',
+            model: model,
+            url: dataUrl,
+            base64: base64Image
+        };
+    },
+
+    /**
+     * Construir prompt optimizado para generación de imágenes
+     * basado en el contexto del personaje, lugar, o escena
+     */
+    buildImagePrompt(type, data) {
+        let prompt = '';
+
+        switch (type) {
+            case 'character':
+                prompt = `A detailed character portrait of ${data.name}`;
+                if (data.description) {
+                    const cleanDesc = data.description.replace(/<[^>]*>/g, '').substring(0, 200);
+                    prompt += `, ${cleanDesc}`;
+                }
+                if (data.personality) {
+                    const cleanPersonality = data.personality.replace(/<[^>]*>/g, '').substring(0, 100);
+                    prompt += `. Personality: ${cleanPersonality}`;
+                }
+                prompt += '. High quality, detailed artwork, professional illustration';
+                break;
+
+            case 'location':
+                prompt = `A detailed, atmospheric illustration of ${data.name}`;
+                if (data.type) {
+                    prompt += `, a ${data.type}`;
+                }
+                if (data.description) {
+                    const cleanDesc = data.description.replace(/<[^>]*>/g, '').substring(0, 200);
+                    prompt += `. ${cleanDesc}`;
+                }
+                if (data.significance) {
+                    const cleanSig = data.significance.replace(/<[^>]*>/g, '').substring(0, 100);
+                    prompt += `. ${cleanSig}`;
+                }
+                prompt += '. High quality, detailed artwork, atmospheric lighting, professional illustration';
+                break;
+
+            case 'scene':
+                prompt = `An atmospheric scene illustration`;
+                if (data.name) {
+                    prompt += ` of ${data.name}`;
+                }
+                if (data.description) {
+                    const cleanDesc = data.description.replace(/<[^>]*>/g, '').substring(0, 200);
+                    prompt += `. ${cleanDesc}`;
+                }
+                prompt += '. Cinematic composition, high quality, detailed artwork';
+                break;
+
+            case 'chapter':
+                prompt = `A chapter illustration`;
+                if (data.title) {
+                    prompt += ` for "${data.title}"`;
+                }
+                if (data.summary) {
+                    const cleanSummary = data.summary.replace(/<[^>]*>/g, '').substring(0, 200);
+                    prompt += `. ${cleanSummary}`;
+                }
+                prompt += '. Artistic, evocative, high quality illustration';
+                break;
+
+            default:
+                prompt = data.prompt || 'A high quality illustration';
+        }
+
+        return prompt;
     }
 };
 
