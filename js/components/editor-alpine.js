@@ -625,18 +625,175 @@ window.editorAlpineComponent = function() {
         /**
          * Continuar con IA
          */
-        aiContinue(selectedText) {
-            if (selectedText) {
-                this.$store.ui.info(
-                    this.$store.i18n.t('ai.continue') || 'IA',
-                    `Procesando texto seleccionado: "${selectedText.substring(0, 50)}..." - Funcionalidad en desarrollo`
+        async aiContinue(selectedText) {
+            if (!window.aiService) {
+                this.$store.ui.error(
+                    this.$store.i18n.t('ai.error') || 'Error de IA',
+                    'El servicio de IA no está disponible'
                 );
-            } else {
+                return;
+            }
+
+            try {
+                // Mostrar indicador de procesamiento
                 this.$store.ui.info(
-                    this.$store.i18n.t('ai.continue') || 'Continuar con IA',
-                    'Funcionalidad en desarrollo'
+                    this.$store.i18n.t('ai.processing') || 'Procesando...',
+                    'La IA está generando una respuesta...'
+                );
+
+                // Obtener texto seleccionado o contenido completo
+                const textToUse = selectedText || this.editor.getSelectedText();
+                const fullContent = this.editor.getContent();
+
+                // Construir prompt
+                const userPrompt = textToUse
+                    ? `Continúa este texto:\n\n${textToUse}`
+                    : 'Continúa el texto desde donde terminé';
+
+                // Obtener capítulo activo
+                const chapterId = this.$store.ui.currentEditingChapterId;
+
+                // Verificar si el modo agéntico está activado
+                const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
+                const useAgenticMode = settings.useAgenticContext !== false;
+
+                // Enviar request a IA
+                let response;
+                if (useAgenticMode && window.agenticContextService) {
+                    response = await window.aiService.sendAgenticRequest(
+                        'continue',
+                        userPrompt,
+                        chapterId,
+                        textToUse
+                    );
+                } else {
+                    response = await window.aiService.sendRequest(
+                        'continue',
+                        userPrompt,
+                        chapterId,
+                        textToUse
+                    );
+                }
+
+                // Verificar si existe el modal global de IA
+                const modalOverlay = document.querySelector('.ai-response-modal-overlay');
+                if (modalOverlay) {
+                    // Usar el modal global existente
+                    this.showAIResponseInModal(response);
+                } else {
+                    // Insertar directamente la respuesta
+                    this.insertAITextAtCursor(response.content || response.prompt);
+                    this.$store.ui.success(
+                        this.$store.i18n.t('ai.success') || 'IA',
+                        'Respuesta de IA insertada en el editor'
+                    );
+                }
+
+            } catch (error) {
+                console.error('❌ AI Error:', error);
+                this.$store.ui.error(
+                    this.$store.i18n.t('ai.error') || 'Error de IA',
+                    error.message || 'Ocurrió un error al procesar la solicitud'
                 );
             }
+        },
+
+        /**
+         * Mostrar respuesta de IA en el modal global
+         */
+        showAIResponseInModal(response) {
+            const modalOverlay = document.querySelector('.ai-response-modal-overlay');
+            const modal = modalOverlay.querySelector('.ai-response-modal');
+
+            if (!modal) return;
+
+            // Actualizar contenido del modal
+            const textEl = modal.querySelector('.ai-response-text');
+            const providerEl = modal.querySelector('.ai-provider');
+            const modelEl = modal.querySelector('.ai-model');
+            const typeEl = modal.querySelector('.ai-type');
+
+            if (textEl) textEl.textContent = response.content || response.prompt || '';
+            if (providerEl) providerEl.textContent = response.provider || 'N/A';
+            if (modelEl) modelEl.textContent = response.model || 'N/A';
+            if (typeEl) typeEl.textContent = response.type || 'N/A';
+
+            // Guardar referencia al editor para el botón de insertar
+            window.activeChapterEditorInstance = this;
+
+            // Configurar el botón de insertar para este editor
+            const insertBtn = modal.querySelector('.ai-modal-insert-btn');
+            if (insertBtn) {
+                // Remover listeners anteriores creando un nuevo botón
+                const newInsertBtn = insertBtn.cloneNode(true);
+                insertBtn.parentNode.replaceChild(newInsertBtn, insertBtn);
+
+                newInsertBtn.onclick = () => {
+                    if (window.activeChapterEditorInstance) {
+                        const text = modal.querySelector('.ai-response-text').textContent;
+                        window.activeChapterEditorInstance.insertAITextAtCursor(text);
+                        modalOverlay.style.display = 'none';
+                        window.activeChapterEditorInstance.$store.ui.success(
+                            'IA',
+                            'Respuesta insertada en el editor'
+                        );
+                    }
+                };
+            }
+
+            // Mostrar modal
+            modalOverlay.style.display = 'block';
+
+            // Reinicializar iconos de Lucide
+            setTimeout(() => {
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }, 10);
+        },
+
+        /**
+         * Insertar texto de IA en la posición del cursor
+         */
+        insertAITextAtCursor(text) {
+            if (!this.editor || !text) return;
+
+            // Obtener selección actual
+            const sel = window.getSelection();
+            if (!sel.rangeCount) {
+                // Si no hay selección, agregar al final
+                this.editor.editor.focus();
+                const range = document.createRange();
+                range.selectNodeContents(this.editor.editor);
+                range.collapse(false);
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+
+            const range = sel.getRangeAt(0);
+
+            // Si hay texto seleccionado, eliminarlo
+            if (!sel.isCollapsed) {
+                range.deleteContents();
+            }
+
+            // Insertar texto de IA
+            const textNode = document.createTextNode('\n\n' + text);
+            range.insertNode(textNode);
+
+            // Mover cursor al final del texto insertado
+            range.setStartAfter(textNode);
+            range.setEndAfter(textNode);
+            sel.removeAllRanges();
+            sel.addRange(range);
+
+            // Trigger content change para que se guarde
+            if (this.editor.onContentChange) {
+                this.editor.onContentChange(this.editor.getContent());
+            }
+
+            // Focus en el editor
+            this.editor.editor.focus();
         },
 
         /**
