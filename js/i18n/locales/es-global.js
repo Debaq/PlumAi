@@ -33,17 +33,6 @@ window.translations_es = {
         author: 'Autor:'
     },
 
-    // Avatares
-    avatars: {
-        selectAvatar: 'Seleccionar Avatar',
-        change: 'Cambiar Avatar',
-        select: 'Seleccionar',
-        upload: 'Subir',
-        preview: 'Vista Previa',
-        seedPlaceholder: 'Nombre para generar',
-        hint: 'Los avatares se generan usando tu nombre como semilla. Cambia el nombre de vista previa para ver diferentes variaciones.'
-    },
-
     // Header
     header: {
         title: 'PlumaAI',

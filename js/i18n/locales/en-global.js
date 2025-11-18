@@ -33,17 +33,6 @@ window.translations_en = {
         author: 'Author:'
     },
 
-    // Avatars
-    avatars: {
-        selectAvatar: 'Select Avatar',
-        change: 'Change Avatar',
-        select: 'Select',
-        upload: 'Upload',
-        preview: 'Preview',
-        seedPlaceholder: 'Name to generate',
-        hint: 'Avatars are generated using your name as a seed. Change the preview name to see different variations.'
-    },
-
     // Header
     header: {
         title: 'PlumaAI',
@@ -506,7 +495,54 @@ window.translations_en = {
             orderByDate: 'Date',
             includeInExport: 'Include in export',
             noChapters: 'No chapters to export',
-            createChapter: 'Create first chapter'
+            createChapter: 'Create first chapter',
+            filterByStatus: 'Filter by status',
+            statusAll: 'All statuses',
+            statusFinal: 'Final only',
+            statusReview: 'In review',
+            statusDraft: 'Drafts',
+            showDrafts: 'Show drafts',
+            showReview: 'Show in review',
+            onlyFinal: 'Only final chapters'
+        },
+
+        platform: {
+            title: 'Publishing Platform',
+            kdp: 'Amazon KDP',
+            kdpDesc: 'Amazon Kindle Direct Publishing standard format',
+            ingramspark: 'IngramSpark',
+            ingramDesc: 'Professional distribution to bookstores',
+            lulu: 'Lulu',
+            luluDesc: 'Flexible self-publishing',
+            custom: 'Custom',
+            customDesc: 'Full manual configuration'
+        },
+
+        bookSize: {
+            title: 'Book Size',
+            kdp6x9: '6" x 9" (15.24 x 22.86 cm)',
+            kdp6x9Desc: 'Standard size for novels - KDP',
+            kdp5x8: '5" x 8" (12.7 x 20.32 cm)',
+            kdp5x8Desc: 'Compact - KDP',
+            kdp55x85: '5.5" x 8.5" (13.97 x 21.59 cm)',
+            kdp55x85Desc: 'US Standard - KDP',
+            a4: 'A4 (21 x 29.7 cm)',
+            a5: 'A5 (14.8 x 21 cm)',
+            letter: 'Letter (21.6 x 27.9 cm)'
+        },
+
+        images: {
+            title: 'Book Images',
+            addImage: 'Add Image',
+            fullPage: 'Full page',
+            position: 'Position in book',
+            afterChapter: 'After chapter',
+            beforeChapter: 'Before chapter',
+            atBeginning: 'At beginning of book',
+            atEnd: 'At end of book',
+            reorder: 'Reorder',
+            remove: 'Remove',
+            noImages: 'No images added'
         },
 
         format: {
