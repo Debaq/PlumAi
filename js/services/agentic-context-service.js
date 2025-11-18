@@ -518,10 +518,3 @@ Analiza y responde:`;
         }
     }
 };
-
-// Disponible globalmente
-if (typeof window !== 'undefined') {
-    window.agenticContextService = window.agenticContextService;
-}
-
-export default window.agenticContextService;

@@ -238,5 +238,3 @@ class Logger {
 
 // Instancia global
 window.plumLogger = window.plumLogger || new Logger();
-
-export default window.plumLogger;
