@@ -189,10 +189,20 @@ window.richEditorComponent = function(config = {}) {
 
         /**
          * Inyectar modal de respuesta de IA
+         * Usa un modal global compartido por todas las instancias
          */
         injectAIResponseModal() {
-            // Crear overlay del modal
-            const modalOverlay = document.createElement('div');
+            // Verificar si ya existe un modal global
+            let modalOverlay = document.querySelector('.ai-response-modal-overlay');
+
+            if (modalOverlay) {
+                // Ya existe, solo configurar watchers para esta instancia
+                this.setupAIModalWatchers();
+                return;
+            }
+
+            // Crear overlay del modal (solo una vez globalmente)
+            modalOverlay = document.createElement('div');
             modalOverlay.className = 'ai-response-modal-overlay';
             modalOverlay.style.cssText = `
                 display: none;
@@ -293,25 +303,104 @@ window.richEditorComponent = function(config = {}) {
                 insertBtn.style.transform = 'scale(1)';
             };
 
-            // Close handlers
-            closeBtn.onclick = () => this.closeAIResponse();
-            modalOverlay.onclick = (e) => {
-                if (e.target === modalOverlay) {
-                    this.closeAIResponse();
-                }
-            };
-
-            // Action handlers
-            copyBtn.onclick = () => this.copyAIResponse();
-            insertBtn.onclick = () => this.insertAIResponse();
-
             // Ensamblar
             modalOverlay.appendChild(modal);
             document.body.appendChild(modalOverlay);
 
+            // Configurar listeners globales del modal (solo una vez)
+            this.setupGlobalAIModalHandlers(modalOverlay);
+
+            // Configurar watchers para esta instancia
+            this.setupAIModalWatchers();
+        },
+
+        /**
+         * Configurar event handlers globales del modal (solo una vez)
+         */
+        setupGlobalAIModalHandlers(modalOverlay) {
+            const modal = modalOverlay.querySelector('.ai-response-modal');
+            const closeBtn = modal.querySelector('.ai-modal-close-btn');
+            const copyBtn = modal.querySelector('.ai-modal-copy-btn');
+            const insertBtn = modal.querySelector('.ai-modal-insert-btn');
+
+            // Guardar referencia a la instancia activa en el modal
+            if (!window.activeAIEditorInstance) {
+                window.activeAIEditorInstance = null;
+            }
+
+            // Hover effects
+            closeBtn.onmouseenter = () => {
+                closeBtn.style.background = 'var(--bg-tertiary)';
+                closeBtn.style.color = 'var(--text-primary)';
+            };
+            closeBtn.onmouseleave = () => {
+                closeBtn.style.background = 'transparent';
+                closeBtn.style.color = 'var(--text-secondary)';
+            };
+
+            copyBtn.onmouseenter = () => {
+                copyBtn.style.background = 'var(--bg-secondary)';
+                copyBtn.style.borderColor = 'var(--primary-color)';
+            };
+            copyBtn.onmouseleave = () => {
+                copyBtn.style.background = 'transparent';
+                copyBtn.style.borderColor = 'var(--border-color)';
+            };
+
+            insertBtn.onmouseenter = () => {
+                insertBtn.style.opacity = '0.9';
+                insertBtn.style.transform = 'scale(1.02)';
+            };
+            insertBtn.onmouseleave = () => {
+                insertBtn.style.opacity = '1';
+                insertBtn.style.transform = 'scale(1)';
+            };
+
+            // Close handlers - usan la instancia activa
+            closeBtn.onclick = () => {
+                if (window.activeAIEditorInstance) {
+                    window.activeAIEditorInstance.closeAIResponse();
+                }
+            };
+            modalOverlay.onclick = (e) => {
+                if (e.target === modalOverlay && window.activeAIEditorInstance) {
+                    window.activeAIEditorInstance.closeAIResponse();
+                }
+            };
+
+            // Action handlers - usan la instancia activa
+            copyBtn.onclick = () => {
+                if (window.activeAIEditorInstance) {
+                    window.activeAIEditorInstance.copyAIResponse();
+                }
+            };
+            insertBtn.onclick = () => {
+                if (window.activeAIEditorInstance) {
+                    window.activeAIEditorInstance.insertAIResponse();
+                }
+            };
+
+            // ESC key para cerrar (solo un listener global)
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && window.activeAIEditorInstance && window.activeAIEditorInstance.showAIResponse) {
+                    window.activeAIEditorInstance.closeAIResponse();
+                }
+            });
+        },
+
+        /**
+         * Configurar watchers para mostrar/ocultar el modal de esta instancia
+         */
+        setupAIModalWatchers() {
+            const modalOverlay = document.querySelector('.ai-response-modal-overlay');
+            const modal = modalOverlay.querySelector('.ai-response-modal');
+
             // Watch para mostrar/ocultar el modal
             this.$watch('showAIResponse', (value) => {
                 if (value && this.aiResponse) {
+                    // Establecer esta instancia como la activa
+                    window.activeAIEditorInstance = this;
+
                     // Actualizar contenido del modal
                     const textEl = modal.querySelector('.ai-response-text');
                     const providerEl = modal.querySelector('.ai-provider');
@@ -333,15 +422,11 @@ window.richEditorComponent = function(config = {}) {
                         }
                     }, 10);
                 } else {
-                    // Ocultar modal
-                    modalOverlay.style.display = 'none';
-                }
-            });
-
-            // ESC key para cerrar
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && this.showAIResponse) {
-                    this.closeAIResponse();
+                    // Solo ocultar si esta es la instancia activa
+                    if (window.activeAIEditorInstance === this) {
+                        modalOverlay.style.display = 'none';
+                        window.activeAIEditorInstance = null;
+                    }
                 }
             });
         },
