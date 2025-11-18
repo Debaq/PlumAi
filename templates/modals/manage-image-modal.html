@@ -3,7 +3,7 @@
 <div class="legacy-modal active">
     <div class="legacy-modal-content" style="max-width: 900px;">
         <div class="legacy-modal-header">
-            <h2>Gestionar Imagen</h2>
+            <h2 x-text="$store.i18n.t('modals.manageImage.title')"></h2>
             <button class="btn-close" @click="$store.ui.closeModal()">
                 <i data-lucide="x" width="20" height="20"></i>
             </button>
@@ -53,13 +53,13 @@
 
             async generateWithAI() {
                 if (!window.aiService) {
-                    $store.ui.error('Error', 'Servicio de IA no disponible');
+                    $store.ui.error('Error', $store.i18n.t('publishing.images.errors.serviceNotAvailable'));
                     return;
                 }
 
                 const providers = this.availableAIProviders;
                 if (providers.length === 0) {
-                    $store.ui.error('Error', 'No hay proveedores de IA configurados');
+                    $store.ui.error('Error', $store.i18n.t('publishing.images.errors.noProviders'));
                     return;
                 }
 
@@ -75,10 +75,10 @@
                     const result = await window.aiService.generateImage(prompt, this.selectedAIProvider);
                     this.newImageUrl = result.url;
 
-                    $store.ui.success('Imagen generada', `Generada con ${result.provider}`);
+                    $store.ui.success($store.i18n.t('publishing.images.generated'), `${$store.i18n.t('publishing.images.generatedWith')} ${result.provider}`);
                 } catch (error) {
                     console.error('Error generando imagen:', error);
-                    $store.ui.error('Error generando imagen', error.message);
+                    $store.ui.error($store.i18n.t('publishing.images.errors.generationFailed'), error.message);
                 } finally {
                     this.generatingImage = false;
                 }
@@ -86,7 +86,7 @@
 
             saveChanges() {
                 if (!this.newImageUrl) {
-                    $store.ui.error('Error', 'No hay imagen nueva para guardar');
+                    $store.ui.error('Error', $store.i18n.t('publishing.images.errors.noNewImage'));
                     return;
                 }
 
@@ -98,21 +98,21 @@
                 );
 
                 if (success) {
-                    $store.ui.success('Imagen actualizada', '');
+                    $store.ui.success($store.i18n.t('publishing.images.updated'), '');
                     $store.ui.closeModal();
                 } else {
-                    $store.ui.error('Error', 'No se pudo actualizar la imagen');
+                    $store.ui.error('Error', $store.i18n.t('publishing.images.errors.updateFailed'));
                 }
             },
 
             deleteImage() {
-                if (confirm(`¿Eliminar imagen de "${this.image.entityName}"?`)) {
+                if (confirm($store.i18n.t('publishing.images.confirmDelete', {name: this.image.entityName}))) {
                     const success = window.imagesGalleryService.removeImage(this.image.type, this.image.id);
                     if (success) {
-                        $store.ui.success('Imagen eliminada', '');
+                        $store.ui.success($store.i18n.t('publishing.images.deleted'), '');
                         $store.ui.closeModal();
                     } else {
-                        $store.ui.error('Error', 'No se pudo eliminar la imagen');
+                        $store.ui.error('Error', $store.i18n.t('publishing.images.errors.deleteFailed'));
                     }
                 }
             },
@@ -136,15 +136,15 @@
 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 13px;">
                     <div>
-                        <strong style="color: var(--text-secondary);">Creado:</strong>
+                        <strong style="color: var(--text-secondary);" x-text="$store.i18n.t('common.created') + ':'"></strong>
                         <span x-text="new Date(image.created).toLocaleString()"></span>
                     </div>
                     <div>
-                        <strong style="color: var(--text-secondary);">Modificado:</strong>
+                        <strong style="color: var(--text-secondary);" x-text="$store.i18n.t('common.modified') + ':'"></strong>
                         <span x-text="new Date(image.modified).toLocaleString()"></span>
                     </div>
                     <div x-show="image.imageType || image.source">
-                        <strong style="color: var(--text-secondary);">Origen:</strong>
+                        <strong style="color: var(--text-secondary);" x-text="$store.i18n.t('publishing.images.source') + ':'"></strong>
                         <span>
                             <template x-if="image.imageType === 'ai' || image.source === 'ai'">IA</template>
                             <template x-if="image.imageType === 'upload'">Upload</template>
@@ -153,7 +153,7 @@
                         </span>
                     </div>
                     <div x-show="image.provider">
-                        <strong style="color: var(--text-secondary);">Proveedor:</strong>
+                        <strong style="color: var(--text-secondary);" x-text="$store.i18n.t('publishing.images.provider') + ':'"></strong>
                         <span x-text="image.provider"></span>
                     </div>
                 </div>
@@ -166,21 +166,21 @@
                     :class="{ 'btn-primary': imageAction === 'view' }"
                     @click="imageAction = 'view'; newImageUrl = ''">
                     <i data-lucide="eye" width="16" height="16"></i>
-                    <span>Ver</span>
+                    <span x-text="$store.i18n.t('common.view')"></span>
                 </button>
                 <button
                     class="btn-secondary"
                     :class="{ 'btn-primary': imageAction === 'replace' }"
                     @click="imageAction = 'replace'; newImageUrl = ''">
                     <i data-lucide="upload" width="16" height="16"></i>
-                    <span>Reemplazar</span>
+                    <span x-text="$store.i18n.t('publishing.images.replace')"></span>
                 </button>
                 <button
                     class="btn-secondary"
                     :class="{ 'btn-primary': imageAction === 'generate' }"
                     @click="imageAction = 'generate'; newImageUrl = ''">
                     <i data-lucide="wand-2" width="16" height="16"></i>
-                    <span>Regenerar con IA</span>
+                    <span x-text="$store.i18n.t('publishing.images.regenerateWithAI')"></span>
                 </button>
             </div>
 
@@ -193,15 +193,15 @@
                 <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
                     <button class="btn-secondary" @click="downloadImage()">
                         <i data-lucide="download" width="16" height="16"></i>
-                        <span>Descargar</span>
+                        <span x-text="$store.i18n.t('common.download')"></span>
                     </button>
                     <button class="btn-secondary" @click="window.imagesGalleryService.editEntity(image.type, image.id); $store.ui.closeModal()">
                         <i data-lucide="edit" width="16" height="16"></i>
-                        <span>Editar <span x-text="window.imagesGalleryService.getTypeLabel(image.type)"></span></span>
+                        <span><span x-text="$store.i18n.t('common.edit')"></span> <span x-text="window.imagesGalleryService.getTypeLabel(image.type)"></span></span>
                     </button>
                     <button class="btn-secondary" @click="deleteImage()" style="color: var(--error);">
                         <i data-lucide="trash-2" width="16" height="16"></i>
-                        <span>Eliminar Imagen</span>
+                        <span x-text="$store.i18n.t('publishing.images.delete')"></span>
                     </button>
                 </div>
             </div>
@@ -209,12 +209,12 @@
             <!-- Vista: Reemplazar imagen -->
             <div x-show="imageAction === 'replace'">
                 <div style="margin-bottom: 16px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">Subir nueva imagen</label>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500;" x-text="$store.i18n.t('publishing.images.uploadNew')"></label>
                     <input type="file" accept="image/*" @change="handleFileUpload($event)" class="file-input">
                 </div>
 
                 <div x-show="newImageUrl" style="margin-bottom: 16px; text-align: center;">
-                    <p style="margin-bottom: 8px; font-size: 13px; color: var(--text-secondary);">Preview:</p>
+                    <p style="margin-bottom: 8px; font-size: 13px; color: var(--text-secondary);" x-text="$store.i18n.t('common.preview') + ':'"></p>
                     <img :src="newImageUrl" style="max-width: 100%; max-height: 300px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                 </div>
             </div>
@@ -222,9 +222,9 @@
             <!-- Vista: Regenerar con IA -->
             <div x-show="imageAction === 'generate'" style="padding: 16px; background: var(--bg-tertiary); border-radius: 8px;">
                 <div x-show="availableAIProviders.length > 1" style="margin-bottom: 16px;">
-                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">Proveedor de IA</label>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500;" x-text="$store.i18n.t('publishing.images.aiProvider')"></label>
                     <select x-model="selectedAIProvider" class="input">
-                        <option :value="null">Automático</option>
+                        <option :value="null" x-text="$store.i18n.t('common.automatic')"></option>
                         <template x-for="provider in availableAIProviders" :key="provider.id">
                             <option :value="provider.id" x-text="provider.name"></option>
                         </template>
@@ -233,12 +233,12 @@
 
                 <div style="margin-bottom: 16px;">
                     <label style="display: block; margin-bottom: 8px; font-weight: 500;">
-                        Prompt personalizado (opcional)
-                        <span style="font-size: 11px; color: var(--text-tertiary); font-weight: normal;">- Si está vacío, se generará automáticamente</span>
+                        <span x-text="$store.i18n.t('publishing.images.customPrompt')"></span>
+                        <span style="font-size: 11px; color: var(--text-tertiary); font-weight: normal;" x-text="$store.i18n.t('publishing.images.seedHint')"></span>
                     </label>
                     <textarea
                         x-model="aiPrompt"
-                        placeholder="Describe la imagen que quieres generar..."
+                        :placeholder="$store.i18n.t('publishing.images.promptPlaceholder')"
                         class="input"
                         style="min-height: 80px; resize: vertical;">
                     </textarea>
@@ -252,24 +252,24 @@
                     <template x-if="!generatingImage">
                         <span>
                             <i data-lucide="wand-2" width="18" height="18" style="vertical-align: middle;"></i>
-                            Generar Imagen
+                            <span x-text="$store.i18n.t('publishing.images.generate')"></span>
                         </span>
                     </template>
                     <template x-if="generatingImage">
                         <span>
                             <div class="spinner" style="width: 18px; height: 18px; display: inline-block; vertical-align: middle;"></div>
-                            Generando...
+                            <span x-text="$store.i18n.t('publishing.images.generating')"></span>
                         </span>
                     </template>
                 </button>
 
                 <div x-show="availableAIProviders.length === 0" style="margin-top: 12px; padding: 12px; background: rgba(255,160,0,0.1); border: 1px solid rgba(255,160,0,0.3); border-radius: 6px; font-size: 13px;">
                     <i data-lucide="alert-circle" width="16" height="16" style="vertical-align: middle;"></i>
-                    No hay proveedores de IA configurados. Ve a Ajustes para configurar una API key.
+                    <span x-text="$store.i18n.t('publishing.images.noProvidersConfigured')"></span>
                 </div>
 
                 <div x-show="newImageUrl" style="margin-top: 16px; text-align: center;">
-                    <p style="margin-bottom: 8px; font-size: 13px; color: var(--text-secondary);">Imagen generada:</p>
+                    <p style="margin-bottom: 8px; font-size: 13px; color: var(--text-secondary);" x-text="$store.i18n.t('publishing.images.generatedImage') + ':'"></p>
                     <img :src="newImageUrl" style="max-width: 100%; max-height: 300px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                 </div>
             </div>
@@ -277,7 +277,7 @@
             <!-- Footer con acciones -->
             <div class="modal-footer">
                 <button type="button" class="btn-secondary" @click="$store.ui.closeModal()">
-                    <span x-text="imageAction === 'view' ? 'Cerrar' : 'Cancelar'"></span>
+                    <span x-text="imageAction === 'view' ? $store.i18n.t('common.close') : $store.i18n.t('common.cancel')"></span>
                 </button>
                 <button
                     x-show="imageAction !== 'view' && newImageUrl"
@@ -285,7 +285,7 @@
                     class="btn-primary"
                     @click="saveChanges()">
                     <i data-lucide="save" width="16" height="16"></i>
-                    <span>Guardar Cambios</span>
+                    <span x-text="$store.i18n.t('common.saveChanges')"></span>
                 </button>
             </div>
         </div>

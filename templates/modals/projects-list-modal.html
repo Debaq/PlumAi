@@ -13,16 +13,16 @@
     loadProject(projectId) {
         if ($store.project.loadProjectFromStorage(projectId)) {
             $store.ui.closeModal('projectsList');
-            $store.ui.success('Proyecto cargado', '');
+            $store.ui.success($store.i18n.t('project.loaded'), '');
         } else {
-            $store.ui.error('Error', 'No se pudo cargar el proyecto');
+            $store.ui.error('Error', $store.i18n.t('project.errors.loadFailed'));
         }
     },
     deleteProject(project) {
-        if (confirm('¿Eliminar el proyecto ' + project.title + '?')) {
+        if (confirm($store.i18n.t('project.confirmDelete', {name: project.title}))) {
             if (window.storageManager.delete(project.id)) {
                 this.loadProjects();
-                $store.ui.success('Proyecto eliminado', '');
+                $store.ui.success($store.i18n.t('project.deleted'), '');
             }
         }
     },
@@ -32,7 +32,7 @@
 }" x-init="$watch('$store.ui.modals.projectsList', value => { if (value) loadProjects(); })">
     <div class="legacy-modal-content" style="max-width: 700px;">
         <div class="legacy-modal-header">
-            <h2>Mis Proyectos</h2>
+            <h2 x-text="$store.i18n.t('modals.projectsList.title')"></h2>
             <button class="btn-close" @click="$store.ui.closeModal('projectsList')">
                 <i data-lucide="x" width="20" height="20"></i>
             </button>
@@ -41,9 +41,8 @@
             <template x-if="projects.length === 0">
                 <div class="empty-state">
                     <i data-lucide="inbox" width="48" height="48"></i>
-                    <p>No hay proyectos guardados</p>
-                    <button class="btn-primary" @click="$store.ui.closeModal('projectsList'); $store.ui.openModal('newProject');" style="margin-top: 16px;">
-                        Crear Nuevo Proyecto
+                    <p x-text="$store.i18n.t('modals.projectsList.noProjects')"></p>
+                    <button class="btn-primary" @click="$store.ui.closeModal('projectsList'); $store.ui.openModal('newProject');" style="margin-top: 16px;" x-text="$store.i18n.t('project.createNew')">
                     </button>
                 </div>
             </template>
@@ -55,18 +54,17 @@
                             <div style="flex: 1;">
                                 <div style="font-weight: 600; margin-bottom: 4px;" x-text="project.title"></div>
                                 <div style="font-size: 13px; color: var(--text-secondary);">
-                                    <span x-text="project.author || 'Sin autor'"></span>
+                                    <span x-text="project.author || $store.i18n.t('project.noAuthor')"></span>
                                     <span x-show="project.genre"> • </span>
                                     <span x-text="project.genre"></span>
                                 </div>
                                 <div style="font-size: 12px; color: var(--text-tertiary); margin-top: 4px;">
-                                    Modificado: <span x-text="formatDate(project.modified)"></span>
+                                    <span x-text="$store.i18n.t('common.modified') + ': '"></span><span x-text="formatDate(project.modified)"></span>
                                 </div>
                             </div>
-                            <button class="btn-primary" @click="loadProject(project.id)" style="padding: 8px 16px;">
-                                Abrir
+                            <button class="btn-primary" @click="loadProject(project.id)" style="padding: 8px 16px;" x-text="$store.i18n.t('common.open')">
                             </button>
-                            <button class="btn-icon" @click="deleteProject(project)" title="Eliminar">
+                            <button class="btn-icon" @click="deleteProject(project)" :title="$store.i18n.t('common.delete')">
                                 <i data-lucide="trash-2" width="18" height="18"></i>
                             </button>
                         </div>
@@ -77,11 +75,11 @@
             <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); display: flex; gap: 8px;">
                 <button class="btn-secondary" @click="$store.ui.closeModal('projectsList'); $store.ui.openModal('newProject');" style="flex: 1;">
                     <i data-lucide="plus" width="16" height="16"></i>
-                    <span>Nuevo Proyecto</span>
+                    <span x-text="$store.i18n.t('project.new')"></span>
                 </button>
                 <button class="btn-secondary" @click="$store.ui.closeModal('projectsList'); $store.ui.openModal('import');" style="flex: 1;">
                     <i data-lucide="upload" width="16" height="16"></i>
-                    <span>Importar</span>
+                    <span x-text="$store.i18n.t('common.import')"></span>
                 </button>
             </div>
         </div>

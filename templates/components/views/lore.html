@@ -107,7 +107,7 @@
                         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                             <span class="lore-tag" x-text="$store.i18n.t('lore.form.categories.' + lore.category)" style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 12px; font-size: 12px; color: var(--text-secondary);"></span>
                             <template x-if="lore.relatedEntities && lore.relatedEntities.length > 0">
-                                <span style="font-size: 12px; color: var(--text-tertiary);" x-text="'Relacionado con ' + lore.relatedEntities.length + ' entidades'"></span>
+                                <span style="font-size: 12px; color: var(--text-tertiary);" x-text="$store.i18n.t('lore.relatedEntities', { count: lore.relatedEntities.length })"></span>
                             </template>
                         </div>
                     </div>
@@ -138,7 +138,7 @@
 
             <div x-show="$store.project.timeline.length === 0" class="empty-state" style="padding: 20px;">
                 <i data-lucide="clock" width="32" height="32"></i>
-                <p>No hay eventos temporales</p>
+                <p x-text="$store.i18n.t('timeline.noEvents')">No hay eventos temporales</p>
             </div>
         </div>
     </div>
@@ -192,24 +192,24 @@
         <!-- Empty State -->
         <div x-show="$store.project.characters.length === 0 || $store.project.characters.every(c => !c.relationships || c.relationships.length === 0)" class="empty-state">
             <i data-lucide="heart" width="64" height="64"></i>
-            <p>No hay relaciones creadas</p>
-            <span class="hint">Crea relaciones entre personajes en la sección de edición de personajes</span>
+            <p x-text="$store.i18n.t('relationships.empty')">No hay relaciones creadas</p>
+            <span class="hint" x-text="$store.i18n.t('relationships.emptyHint')">Crea relaciones entre personajes en la sección de edición de personajes</span>
         </div>
 
         <!-- Tabs para vista de relaciones -->
         <div x-show="$store.project.characters.length > 0 && !$store.project.characters.every(c => !c.relationships || c.relationships.length === 0)" style="margin-bottom: 24px;">
             <div class="tabs">
-                <button class="tab-btn" 
-                        :class="{ 'active': !$store.ui.activeRelationsView || $store.ui.activeRelationsView === 'list' }" 
+                <button class="tab-btn"
+                        :class="{ 'active': !$store.ui.activeRelationsView || $store.ui.activeRelationsView === 'list' }"
                         @click="$store.ui.activeRelationsView = 'list'">
                     <i data-lucide="list" width="16" height="16"></i>
-                    <span>Lista</span>
+                    <span x-text="$store.i18n.t('common.list')">Lista</span>
                 </button>
-                <button class="tab-btn" 
-                        :class="{ 'active': $store.ui.activeRelationsView === 'diagram' }" 
+                <button class="tab-btn"
+                        :class="{ 'active': $store.ui.activeRelationsView === 'diagram' }"
                         @click="$store.ui.activeRelationsView = 'diagram'">
                     <i data-lucide="layout-dashboard" width="16" height="16"></i>
-                    <span>Diagrama</span>
+                    <span x-text="$store.i18n.t('relationships.diagram')">Diagrama</span>
                 </button>
             </div>
         </div>
@@ -223,7 +223,7 @@
                             <h3 x-text="character.name" style="margin: 0;"></h3>
                             <button class="btn-icon"
                                     @click.stop="$store.ui.openModal('newRelationship', { characterId: character.id })"
-                                    title="Agregar nueva relación">
+                                    :title="$store.i18n.t('relationships.addNew')">
                                 <i data-lucide="plus" width="16" height="16"></i>
                             </button>
                         </div>
@@ -243,24 +243,20 @@
                                             <i data-lucide="heart" width="14" height="14" style="color: var(--accent);"></i>
                                             <span style="font-weight: 500;" x-text="$store.i18n.t('characters.form.relationTypes.' + (relation.currentType || relation.type))"></span>
                                             <span>→</span>
-                                            <span style="font-weight: 500;" x-text="$store.project.getCharacter(relation.characterId)?.name || 'Personaje desconocido'"></span>
+                                            <span style="font-weight: 500;" x-text="$store.project.getCharacter(relation.characterId)?.name || $store.i18n.t('characters.unknownCharacter')"></span>
                                             <!-- Badge de historial si existe -->
                                             <template x-if="relation.history && relation.history.length > 1">
                                                 <span class="badge" style="font-size: 10px; background: rgba(124, 179, 255, 0.2); color: var(--accent);">
                                                     <i data-lucide="clock" width="10" height="10"></i>
-                                                    <span x-text="relation.history.length + ' cambios'"></span>
+                                                    <span x-text="$store.i18n.t('relationships.changesCount', { count: relation.history.length })"></span>
                                                 </span>
                                             </template>
                                         </div>
-                                        <div style="color: var(--text-secondary); font-size: 12px; margin-left: 22px;" x-text="relation.currentDescription || relation.description || 'Sin descripción'"></div>
+                                        <div style="color: var(--text-secondary); font-size: 12px; margin-left: 22px;" x-text="relation.currentDescription || relation.description || $store.i18n.t('relationships.noDescription')"></div>
                                         <template x-if="relation.currentStatus && relation.currentStatus !== 'active'">
                                             <div style="margin-left: 22px; margin-top: 4px;">
                                                 <span class="badge" style="font-size: 10px; padding: 2px 6px;">
-                                                    <span x-text="relation.currentStatus === 'strained' ? '😰 Tensa' :
-                                                                 relation.currentStatus === 'improving' ? '📈 Mejorando' :
-                                                                 relation.currentStatus === 'deteriorating' ? '📉 Deteriorándose' :
-                                                                 relation.currentStatus === 'ended' ? '💔 Terminada' :
-                                                                 relation.currentStatus === 'complicated' ? '🤔 Complicada' : relation.currentStatus"></span>
+                                                    <span x-text="$store.i18n.t('relationships.statuses.' + relation.currentStatus)"></span>
                                                 </span>
                                             </div>
                                         </template>
@@ -278,15 +274,15 @@
              style="margin-top: 16px; height: 600px; background: var(--bg-tertiary); border-radius: 8px; position: relative; overflow: hidden;">
             <div id="relations-diagram" style="width: 100%; height: 100%; position: relative;">
                 <div style="position: absolute; top: 16px; left: 16px; z-index: 100; background: var(--bg-secondary); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border);">
-                    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Leyenda:</div>
+                    <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;" x-text="$store.i18n.t('relationships.legend')">Leyenda:</div>
                     <div style="display: flex; gap: 12px; flex-wrap: wrap;">
                         <div style="display: flex; align-items: center; gap: 4px;">
                             <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent);"></div>
-                            <span style="font-size: 11px;">Personaje Principal</span>
+                            <span style="font-size: 11px;" x-text="$store.i18n.t('characters.mainCharacter')">Personaje Principal</span>
                         </div>
                         <div style="display: flex; align-items: center; gap: 4px;">
                             <div style="width: 6px; height: 6px; border-radius: 50%; background: var(--text-secondary);"></div>
-                            <span style="font-size: 11px;">Otro Personaje</span>
+                            <span style="font-size: 11px;" x-text="$store.i18n.t('characters.otherCharacter')">Otro Personaje</span>
                         </div>
                     </div>
                 </div>
@@ -330,7 +326,7 @@
                             <template x-for="rel in window.relationsDiagramHelper.getCharacterRelations($store.ui.selectedCharacter.id, $store.project)" :key="rel.characterId">
                                 <div style="padding: 4px 0; border-bottom: 1px solid var(--border);">
                                     <span x-text="$store.i18n.t('characters.form.relationTypes.' + (rel.currentType || rel.type))"></span>:
-                                    <span x-text="rel.relatedCharacter?.name || 'Personaje desconocido'"></span>
+                                    <span x-text="rel.relatedCharacter?.name || $store.i18n.t('characters.unknownCharacter')"></span>
                                 </div>
                             </template>
                         </div>
