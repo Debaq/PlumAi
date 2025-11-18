@@ -26,14 +26,14 @@
                         :style="`padding: 10px 20px; background: ${activeApiTab === 'text' ? 'var(--accent)' : 'transparent'}; color: ${activeApiTab === 'text' ? 'white' : 'var(--text-secondary)'}; border: none; border-bottom: 3px solid ${activeApiTab === 'text' ? 'var(--accent)' : 'transparent'}; cursor: pointer; font-weight: 600; transition: all 0.2s;`"
                         type="button">
                         <i data-lucide="type" width="16" height="16" style="vertical-align: text-bottom; margin-right: 5px;"></i>
-                        APIs de Texto
+                        <span x-text="$store.i18n.t('modals.settings.textAPIs')">APIs de Texto</span>
                     </button>
                     <button
                         @click="switchTab('image')"
                         :style="`padding: 10px 20px; background: ${activeApiTab === 'image' ? 'var(--accent)' : 'transparent'}; color: ${activeApiTab === 'image' ? 'white' : 'var(--text-secondary)'}; border: none; border-bottom: 3px solid ${activeApiTab === 'image' ? 'var(--accent)' : 'transparent'}; cursor: pointer; font-weight: 600; transition: all 0.2s;`"
                         type="button">
                         <i data-lucide="image" width="16" height="16" style="vertical-align: text-bottom; margin-right: 5px;"></i>
-                        APIs de Imágenes
+                        <span x-text="$store.i18n.t('modals.settings.imageAPIs')">APIs de Imágenes</span>
                     </button>
                 </div>
 
@@ -49,7 +49,7 @@
 
                 <!-- Provider Selection (Imágenes) -->
                 <div x-show="activeApiTab === 'image'" class="form-group" style="margin-bottom: 20px;">
-                    <label style="font-weight: 600; margin-bottom: 8px; display: block;">Proveedor de Imágenes</label>
+                    <label style="font-weight: 600; margin-bottom: 8px; display: block;" x-text="$store.i18n.t('modals.settings.imageProvider')">Proveedor de Imágenes</label>
                     <select x-model="selectedProvider" @change="onProviderChange" style="width: 100%; padding: 10px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary);">
                         <template x-for="provider in getAvailableImageProviders()" :key="provider.id">
                             <option :value="provider.id" x-text="`${provider.name} - ${provider.freeTier}`"></option>
@@ -72,13 +72,13 @@
                             <template x-if="getProviderInfo()?.type === 'local'">
                                 <p style="margin: 8px 0 0 0; color: var(--warning); font-size: 13px;">
                                     <i data-lucide="download" width="16" height="16" style="vertical-align: text-bottom;"></i>
-                                    Requiere instalación local: <a :href="getProviderInfo()?.instructions || '#'" target="_blank" style="color: var(--accent); text-decoration: underline;">Ver instrucciones</a>
+                                    <span x-text="$store.i18n.t('modals.settings.requiresLocalInstall')">Requiere instalación local: Ver instrucciones</span>
                                 </p>
                             </template>
                             <template x-if="getProviderInfo()?.type === 'manual'">
                                 <p style="margin: 8px 0 0 0; color: var(--success); font-size: 13px;">
                                     <i data-lucide="copy" width="16" height="16" style="vertical-align: text-bottom;"></i>
-                                    Copia el prompt generado y pégalo en cualquier IA web (ChatGPT, Claude, etc.)
+                                    <span x-text="$store.i18n.t('modals.settings.manualPromptCopy')">Copia el prompt generado y pégalo en cualquier IA web (ChatGPT, Claude, etc.)</span>
                                 </p>
                             </template>
                         </div>
@@ -142,7 +142,7 @@
                 <div x-show="savedKeys.length > 0" style="margin-top: 20px;">
                     <h4 style="margin: 0 0 10px 0; font-size: 14px; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
                         <i data-lucide="key" width="16" height="16"></i>
-                        Keys Guardadas (<span x-text="savedKeys.length"></span>)
+                        <span x-text="$store.i18n.t('modals.settings.savedKeys')">Keys Guardadas</span> (<span x-text="savedKeys.length"></span>)
                     </h4>
 
                     <div style="border: 1px solid var(--border); border-radius: 6px; overflow: hidden;">
@@ -204,7 +204,7 @@
                                 <!-- Last Used -->
                                 <div x-show="key.lastUsed" style="margin-top: 4px; font-size: 11px; color: var(--text-tertiary); display: flex; align-items: center; gap: 5px;">
                                     <i data-lucide="clock" width="10" height="10"></i>
-                                    <span>Último uso: <span x-text="new Date(key.lastUsed).toLocaleString('es-ES')"></span></span>
+                                    <span><span x-text="$store.i18n.t('modals.settings.lastUsed')">Último uso:</span> <span x-text="new Date(key.lastUsed).toLocaleString('es-ES')"></span></span>
                                 </div>
                             </div>
                         </template>
@@ -214,7 +214,7 @@
                     <div style="margin-top: 10px; padding: 10px; background: linear-gradient(135deg, rgba(74, 144, 226, 0.1) 0%, rgba(124, 179, 255, 0.05) 100%); border: 1px solid var(--accent); border-radius: 6px;">
                         <p style="margin: 0; color: var(--text-secondary); font-size: 12px;">
                             <i data-lucide="info" width="12" height="12" style="vertical-align: text-bottom; margin-right: 4px;"></i>
-                            <strong>Fallback automático:</strong> Si una key falla, el sistema intentará automáticamente con la siguiente disponible.
+                            <span x-text="$store.i18n.t('modals.settings.autoFallbackHint')">Fallback automático: Si una key falla, el sistema intentará automáticamente con la siguiente disponible.</span>
                         </p>
                     </div>
                 </div>
@@ -223,7 +223,7 @@
                 <div style="margin-top: 15px; padding: 12px; background: color-mix(in srgb, var(--warning) 15%, transparent); border: 1px solid var(--warning); border-radius: 6px;">
                     <div style="display: flex; align-items: start; gap: 10px;">
                         <i data-lucide="shield" width="16" height="16" style="color: var(--warning); flex-shrink: 0; margin-top: 2px;"></i>
-                        <p style="margin: 0; color: var(--text-secondary); font-size: 13px;" x-text="$store.i18n.t('modals.apiKeys.warning')">
+                        <p style="margin: 0; color: var(--text-secondary); font-size: 13px;" x-text="$store.i18n.t('modals.settings.keysPrivacy')">
                             Las claves se guardan en tu dispositivo y no se envían a ningún servidor
                         </p>
                     </div>
@@ -233,11 +233,11 @@
             <!-- Token Optimization Section -->
             <div class="settings-section" style="margin-bottom: 30px; padding: 20px; border: 1px solid var(--border); border-radius: 8px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h3 style="margin: 0; color: var(--text-primary);">Optimización de Tokens</h3>
+                    <h3 style="margin: 0; color: var(--text-primary);" x-text="$store.i18n.t('modals.settings.tokenOptimization')">Optimización de Tokens</h3>
                     <i data-lucide="zap" width="20" height="20" style="color: var(--text-secondary);"></i>
                 </div>
 
-                <p style="margin: 0 0 20px 0; color: var(--text-secondary); font-size: 14px;">
+                <p style="margin: 0 0 20px 0; color: var(--text-secondary); font-size: 14px;" x-text="$store.i18n.t('modals.settings.tokenOptimizationDesc')">
                     Controla cuánto contexto se envía a la IA para ahorrar tokens y reducir costos
                 </p>
 
@@ -245,10 +245,10 @@
                 <div class="form-group" style="margin-bottom: 20px;">
                     <label style="font-weight: 600; margin-bottom: 8px; display: block;">Nivel de Contexto</label>
                     <select x-model="tokenLevel" @change="saveTokenLevel" style="width: 100%; padding: 10px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary);">
-                        <option value="minimal">⚡ Mínimo (~1,000 tokens) - Solo lo esencial</option>
+                        <option value="minimal" x-text="$store.i18n.t('modals.settings.tokenLevels.minimal')">⚡ Mínimo (~1,000 tokens) - Solo lo esencial</option>
                         <option value="normal">⚖️ Normal (~3,000 tokens) - Balanceado (recomendado)</option>
                         <option value="complete">📚 Completo (~8,000 tokens) - Todo el contexto</option>
-                        <option value="unlimited">🚀 Sin límite - Enviar todo</option>
+                        <option value="unlimited" x-text="$store.i18n.t('modals.settings.tokenLevels.unlimited')">🚀 Sin límite - Enviar todo</option>
                     </select>
                 </div>
 
@@ -259,8 +259,8 @@
                         <div>
                             <template x-if="tokenLevel === 'minimal'">
                                 <div>
-                                    <p style="margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; font-size: 14px;">Nivel Mínimo</p>
-                                    <p style="margin: 0; color: var(--text-secondary); font-size: 13px;">
+                                    <p style="margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; font-size: 14px;" x-text="$store.i18n.t('modals.settings.minimalLevel')">Nivel Mínimo</p>
+                                    <p style="margin: 0; color: var(--text-secondary); font-size: 13px;" x-text="$store.i18n.t('modals.settings.minimalLevelDesc')">
                                         Solo incluye: Protagonista, antagonista, capítulo actual. Ideal para ahorrar tokens.
                                     </p>
                                 </div>
@@ -268,7 +268,7 @@
                             <template x-if="tokenLevel === 'normal'">
                                 <div>
                                     <p style="margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; font-size: 14px;">Nivel Normal (Recomendado)</p>
-                                    <p style="margin: 0; color: var(--text-secondary); font-size: 13px;">
+                                    <p style="margin: 0; color: var(--text-secondary); font-size: 13px;" x-text="$store.i18n.t('modals.settings.smartLevelDesc')">
                                         Incluye: Personajes mencionados, lore relevante, locaciones citadas. Balance perfecto entre calidad y costo.
                                     </p>
                                 </div>
@@ -276,15 +276,15 @@
                             <template x-if="tokenLevel === 'complete'">
                                 <div>
                                     <p style="margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; font-size: 14px;">Nivel Completo</p>
-                                    <p style="margin: 0; color: var(--text-secondary); font-size: 13px;">
+                                    <p style="margin: 0; color: var(--text-secondary); font-size: 13px;" x-text="$store.i18n.t('modals.settings.fullLevelDesc')">
                                         Incluye: Todos los personajes, todo el lore, todas las locaciones. Máxima calidad, mayor costo.
                                     </p>
                                 </div>
                             </template>
                             <template x-if="tokenLevel === 'unlimited'">
                                 <div>
-                                    <p style="margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; font-size: 14px;">Sin Límite</p>
-                                    <p style="margin: 0; color: var(--text-secondary); font-size: 13px;">
+                                    <p style="margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; font-size: 14px;" x-text="$store.i18n.t('modals.settings.unlimitedLevel')">Sin Límite</p>
+                                    <p style="margin: 0; color: var(--text-secondary); font-size: 13px;" x-text="$store.i18n.t('modals.settings.unlimitedLevelWarning')">
                                         ⚠️ Envía TODO sin restricciones. Puede consumir muchos tokens en proyectos grandes.
                                     </p>
                                 </div>
@@ -295,8 +295,8 @@
 
                 <!-- Info about savings -->
                 <div style="background: var(--success-bg, #e8f5e9); border: 1px solid var(--success, #4caf50); border-radius: 6px; padding: 12px;">
-                    <p style="margin: 0; color: var(--success-text, #2e7d32); font-size: 13px;">
-                        <strong>💡 Ahorro inteligente:</strong> El sistema detecta automáticamente personajes y lore mencionados en tu texto para incluir solo lo relevante.
+                    <p style="margin: 0; color: var(--success-text, #2e7d32); font-size: 13px;" x-text="$store.i18n.t('modals.settings.smartSavingTip')">
+                        💡 Ahorro inteligente: El sistema detecta automáticamente personajes y lore mencionados en tu texto para incluir solo lo relevante.
                     </p>
                 </div>
             </div>
@@ -304,11 +304,11 @@
             <!-- Agentic AI Context Section -->
             <div class="settings-section" style="margin-bottom: 30px; padding: 20px; border: 1px solid var(--border); border-radius: 8px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h3 style="margin: 0; color: var(--text-primary);">🤖 Sistema de IA Agéntica</h3>
+                    <h3 style="margin: 0; color: var(--text-primary);" x-text="$store.i18n.t('modals.settings.agenticSystem')">🤖 Sistema de IA Agéntica</h3>
                     <i data-lucide="brain" width="20" height="20" style="color: var(--text-secondary);"></i>
                 </div>
 
-                <p style="margin: 0 0 20px 0; color: var(--text-secondary); font-size: 14px;">
+                <p style="margin: 0 0 20px 0; color: var(--text-secondary); font-size: 14px;" x-text="$store.i18n.t('modals.settings.agenticSystemDesc')">
                     La IA analiza tu tarea y decide qué contexto necesita, enviando solo lo relevante
                 </p>
 
@@ -317,8 +317,8 @@
                     <div style="display: flex; align-items: center; gap: 12px;">
                         <i data-lucide="sparkles" width="20" height="20" style="color: var(--accent);"></i>
                         <div>
-                            <p style="margin: 0; color: var(--text-primary); font-weight: 500; font-size: 14px;">Modo Agéntico</p>
-                            <p style="margin: 4px 0 0 0; color: var(--text-secondary); font-size: 12px;">La IA decide qué contexto necesita (recomendado)</p>
+                            <p style="margin: 0; color: var(--text-primary); font-weight: 500; font-size: 14px;" x-text="$store.i18n.t('modals.settings.agenticMode')">Modo Agéntico</p>
+                            <p style="margin: 4px 0 0 0; color: var(--text-secondary); font-size: 12px;" x-text="$store.i18n.t('modals.settings.agenticModeDesc')">La IA decide qué contexto necesita (recomendado)</p>
                         </div>
                     </div>
                     <label class="switch">
@@ -377,8 +377,8 @@
                     <div style="display: flex; align-items: center; gap: 12px;">
                         <i data-lucide="eye" width="20" height="20" style="color: var(--text-secondary);"></i>
                         <div>
-                            <p style="margin: 0; color: var(--text-primary); font-weight: 500; font-size: 14px;">Mostrar Logs</p>
-                            <p style="margin: 4px 0 0 0; color: var(--text-secondary); font-size: 12px;">Ver información detallada del sistema de IA</p>
+                            <p style="margin: 0; color: var(--text-primary); font-weight: 500; font-size: 14px;" x-text="$store.i18n.t('modals.settings.showLogs')">Mostrar Logs</p>
+                            <p style="margin: 4px 0 0 0; color: var(--text-secondary); font-size: 12px;" x-text="$store.i18n.t('modals.settings.showLogsDesc')">Ver información detallada del sistema de IA</p>
                         </div>
                     </div>
                     <label class="switch">
@@ -417,7 +417,7 @@
                 </div>
 
                 <div class="form-group">
-                    <p style="margin: 0 0 15px 0; color: var(--text-secondary); font-size: 14px;" x-text="$store.i18n.t('modals.settings.dataManagement.description')">
+                    <p style="margin: 0 0 15px 0; color: var(--text-secondary); font-size: 14px;" x-text="$store.i18n.t('modals.settings.localDataDesc')">
                         Gestiona los datos almacenados localmente en este navegador (Proyectos PLUMA)
                     </p>
 
@@ -425,7 +425,7 @@
                     <div style="background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 6px; padding: 15px; margin-bottom: 20px;">
                         <h4 style="margin: 0 0 10px 0; font-size: 14px; color: var(--text-primary);">
                             <i data-lucide="download" width="16" height="16" style="vertical-align: text-bottom;"></i>
-                            Exportar Proyecto Actual
+                            <span x-text="$store.i18n.t('modals.settings.exportCurrentProject')">Exportar Proyecto Actual</span>
                         </h4>
                         <p style="margin: 0 0 12px 0; color: var(--text-secondary); font-size: 13px;">
                             Descarga el proyecto actual como archivo .pluma con imágenes y encriptación opcional
@@ -435,7 +435,7 @@
                             style="width: 100%; padding: 10px;"
                             @click="$store.ui.closeModal('settings'); $store.ui.openModal('export')">
                             <i data-lucide="download" width="16" height="16"></i>
-                            <span>Exportar Proyecto</span>
+                            <span x-text="$store.i18n.t('modals.settings.exportProject')">Exportar Proyecto</span>
                         </button>
                     </div>
                     
@@ -457,11 +457,11 @@
                         <label style="color: var(--error); font-weight: 600; margin-bottom: 8px; display: block;" x-text="$store.i18n.t('modals.settings.dataManagement.exportBeforeDeleteLabel')">
                             Recomendamos exportar tus datos antes de eliminarlos:
                         </label>
-                        <button 
-                            class="btn-secondary" 
+                        <button
+                            class="btn-secondary"
                             style="width: 100%; padding: 8px; margin-bottom: 15px;"
                             @click="exportAllData"
-                            x-text="$store.i18n.t('modals.settings.dataManagement.exportAllButton')">
+                            x-text="$store.i18n.t('modals.settings.exportAllData')">
                             Exportar Todos los Datos
                         </button>
                     </div>
@@ -491,12 +491,12 @@
                         </label>
                     </div>
                     
-                    <button 
-                        class="btn-danger" 
+                    <button
+                        class="btn-danger"
                         style="width: 100%; padding: 12px; margin-top: 10px;"
                         :disabled="!canDelete"
                         @click="confirmDeleteAllData"
-                        x-text="$store.i18n.t('modals.settings.dataManagement.deleteButton')">
+                        x-text="$store.i18n.t('modals.settings.deleteAllData')">
                         Eliminar Todos los Datos Localmente
                     </button>
                     

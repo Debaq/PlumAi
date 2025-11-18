@@ -44,7 +44,7 @@
                     Proyecto: <strong x-text="$store.project.projectInfo.title"></strong>
                 </p>
                 <p style="font-size: 13px; color: var(--text-secondary);">
-                    Formato: <strong>PLUMA con imágenes</strong>
+                    <span x-text="$store.i18n.t('modals.export.formatWithImages')">Formato: PLUMA con imágenes</span>
                 </p>
             </div>
 
@@ -52,7 +52,7 @@
             <div style="margin-top: 20px; padding: 16px; border: 1px solid var(--border); border-radius: 8px;">
                 <h3 style="font-size: 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
                     <i data-lucide="lock" width="16" height="16"></i>
-                    <span x-text="hasApiKeys ? 'Seguridad (Obligatoria)' : 'Seguridad (Opcional)'">Seguridad</span>
+                    <span x-text="hasApiKeys ? $store.i18n.t('modals.export.securityRequired') : $store.i18n.t('modals.export.securityOptional')">Seguridad</span>
                 </h3>
 
                 <!-- Advertencia de API keys -->
@@ -60,8 +60,8 @@
                     <div style="margin-bottom: 16px; padding: 12px; background: color-mix(in srgb, var(--warning) 15%, transparent); border: 1px solid var(--warning); border-radius: 6px;">
                         <div style="display: flex; align-items: start; gap: 10px;">
                             <i data-lucide="alert-triangle" width="16" height="16" style="color: var(--warning); flex-shrink: 0; margin-top: 2px;"></i>
-                            <p style="margin: 0; color: var(--text-primary); font-size: 13px; line-height: 1.4;">
-                                <strong>Este proyecto contiene API keys.</strong> Por seguridad, es obligatorio encriptarlas. Si olvidas la contraseña solo perderás las claves, no el proyecto.
+                            <p style="margin: 0; color: var(--text-primary); font-size: 13px; line-height: 1.4;" x-text="$store.i18n.t('modals.export.apiKeysWarning')">
+                                Este proyecto contiene API keys. Por seguridad, es obligatorio encriptarlas...
                             </p>
                         </div>
                     </div>
@@ -77,9 +77,9 @@
                                 :disabled="hasApiKeys"
                                 @change="_encryptApiKeys = $event.target.checked"
                             >
-                            <span>Encriptar API keys (obligatorio)</span>
+                            <span x-text="$store.i18n.t('modals.export.encryptApiKeysRequired')">Encriptar API keys (obligatorio)</span>
                         </label>
-                        <p class="hint" style="margin-left: 24px;">Las API keys detectadas serán encriptadas automáticamente</p>
+                        <p class="hint" style="margin-left: 24px;" x-text="$store.i18n.t('modals.export.apiKeysAutoEncrypt')">Las API keys detectadas serán encriptadas automáticamente</p>
                     </div>
                 </template>
 
@@ -90,32 +90,32 @@
                             x-model="encryptAll"
                             @change="if(encryptAll && !hasApiKeys) { _encryptApiKeys = false; }"
                         >
-                        <span>Encriptar proyecto completo</span>
+                        <span x-text="$store.i18n.t('modals.export.encryptAll')">Encriptar proyecto completo</span>
                     </label>
-                    <p class="hint" style="margin-left: 24px;">Máxima privacidad - encripta todo el contenido (incluye las API keys)</p>
+                    <p class="hint" style="margin-left: 24px;" x-text="$store.i18n.t('modals.export.encryptAllHint')">Máxima privacidad - encripta todo el contenido (incluye las API keys)</p>
                 </div>
 
                 <!-- Campos de contraseña -->
                 <template x-if="showPassword">
                     <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
                         <div class="form-group">
-                            <label>Contraseña de encriptación</label>
+                            <label x-text="$store.i18n.t('modals.export.password')">Contraseña de encriptación</label>
                             <input
                                 type="password"
                                 name="exportPassword"
-                                placeholder="Mínimo 12 caracteres"
+                                :placeholder="$store.i18n.t('modals.export.passwordPlaceholder')"
                                 style="width: 100%;"
                                 minlength="12"
                                 required
                             >
-                            <p class="hint">Usa una contraseña fuerte. Si la olvidas, no podrás recuperar los datos.</p>
+                            <p class="hint" x-text="$store.i18n.t('modals.export.passwordHint')">Usa una contraseña fuerte. Si la olvidas, no podrás recuperar los datos.</p>
                         </div>
                         <div class="form-group">
-                            <label>Confirmar contraseña</label>
+                            <label x-text="$store.i18n.t('modals.export.confirmPassword')">Confirmar contraseña</label>
                             <input
                                 type="password"
                                 name="exportPasswordConfirm"
-                                placeholder="Repite la contraseña"
+                                :placeholder="$store.i18n.t('modals.export.confirmPasswordPlaceholder')"
                                 style="width: 100%;"
                                 required
                             >
@@ -160,7 +160,7 @@
                     // Validar contraseña si se seleccionó encriptación
                     if (encryptApiKeys || encryptAll) {
                         if (!passwordField || !passwordField.value) {
-                            $store.ui.error('Error', 'Debes ingresar una contraseña');
+                            $store.ui.error('Error', $store.i18n.t('modals.export.errors.passwordRequired'));
                             return;
                         }
 
@@ -168,12 +168,12 @@
                         const passwordConfirm = passwordConfirmField?.value || '';
 
                         if (password.length < 12) {
-                            $store.ui.error('Error', 'La contraseña debe tener al menos 12 caracteres');
+                            $store.ui.error('Error', $store.i18n.t('modals.export.errors.passwordTooShort'));
                             return;
                         }
 
                         if (password !== passwordConfirm) {
-                            $store.ui.error('Error', 'Las contraseñas no coinciden');
+                            $store.ui.error('Error', $store.i18n.t('modals.export.errors.passwordMismatch'));
                             return;
                         }
                     }
@@ -191,14 +191,14 @@
                         );
 
                         if (success) {
-                            $store.ui.success('Proyecto exportado', 'Archivo descargado correctamente');
+                            $store.ui.success($store.i18n.t('modals.export.success'), $store.i18n.t('modals.export.successDetails'));
                             $store.ui.closeModal('export');
                         } else {
-                            $store.ui.error('Error', 'No se pudo exportar el proyecto');
+                            $store.ui.error('Error', $store.i18n.t('modals.export.errors.exportFailed'));
                         }
                     } catch (error) {
                         console.error('Error exportando:', error);
-                        $store.ui.error('Error', error.message || 'No se pudo exportar el proyecto');
+                        $store.ui.error('Error', error.message || $store.i18n.t('modals.export.errors.exportFailed'));
                     }
                 })();
             ">
