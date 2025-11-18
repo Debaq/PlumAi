@@ -58,9 +58,13 @@
                 let descriptionEditor = form.querySelector('[data-field=description]')?.__x?.$data;
                 let notesEditor = form.querySelector('[data-field=notes]')?.__x?.$data;
 
+                // Obtener el contenido del editor, preservando el valor existente si el editor no devuelve nada válido
+                let description = descriptionEditor?.getContent() ?? $store.ui.modalData?.description ?? '';
+                let notes = notesEditor?.getContent() ?? $store.ui.modalData?.notes ?? '';
+
                 let formData = {
                     event: form.querySelector('[name=event]').value,
-                    description: descriptionEditor?.getContent() || '',
+                    description: description,
                     dateMode: this.dateMode,
                     importance: this.importance,
                     participants: this.selectedParticipants,
@@ -68,7 +72,7 @@
                     sceneIds: this.selectedScenes,
                     chapterIds: this.selectedChapters,
                     tags: this.tags,
-                    notes: notesEditor?.getContent() || ''
+                    notes: notes
                 };
 
                 // Agregar campos específicos según el modo de fecha
