@@ -23,8 +23,15 @@ window.richEditorComponent = function(config = {}) {
         readOnly: config.readOnly || false,
         enableMentions: config.enableMentions !== false, // Default true
         enableCommands: config.enableCommands !== false, // Default true
+        enableAI: config.enableAI !== false, // Default true
         onSave: config.onSave || null,
         onChange: config.onChange || null,
+
+        // Estado de IA
+        showAIMenu: false,
+        isAIProcessing: false,
+        aiResponse: null,
+        showAIResponse: false,
 
         /**
          * Inicializar el editor
@@ -32,6 +39,9 @@ window.richEditorComponent = function(config = {}) {
         init() {
             this.$nextTick(() => {
                 this.createEditor();
+                if (this.enableAI) {
+                    this.injectAIToolbar();
+                }
             });
         },
 
@@ -278,6 +288,195 @@ window.richEditorComponent = function(config = {}) {
                 this.editor.destroy();
                 this.editor = null;
             }
+        },
+
+        // ============================================
+        // MÉTODOS DE IA
+        // ============================================
+
+        /**
+         * Inyectar toolbar de IA en el editor
+         */
+        async injectAIToolbar() {
+            const container = this.$refs.editorContainer;
+            if (!container) return;
+
+            try {
+                // Cargar template de AI toolbar
+                const response = await fetch('templates/components/ai-toolbar.html?v=' + Date.now());
+                const html = await response.text();
+
+                // Crear wrapper relativo para posicionar el botón
+                const wrapper = container.querySelector('.rich-editor-content');
+                if (wrapper) {
+                    wrapper.style.position = 'relative';
+                }
+
+                // Crear contenedor para el toolbar
+                const toolbarContainer = document.createElement('div');
+                toolbarContainer.innerHTML = html;
+
+                // Insertar en el container
+                container.appendChild(toolbarContainer);
+
+                // Reinitializar Alpine para el nuevo contenido
+                if (window.Alpine) {
+                    window.Alpine.initTree(toolbarContainer);
+                }
+
+                // Reinitializar iconos
+                setTimeout(() => {
+                    if (typeof lucide !== 'undefined') {
+                        lucide.createIcons();
+                    }
+                }, 100);
+
+            } catch (error) {
+                console.error('Error inyectando AI toolbar:', error);
+            }
+        },
+
+        /**
+         * Obtener texto seleccionado del editor
+         */
+        getSelectedText() {
+            if (!this.editor || !this.editor.editor) return '';
+
+            const selection = window.getSelection();
+            if (selection && selection.rangeCount > 0) {
+                return selection.toString();
+            }
+            return '';
+        },
+
+        /**
+         * Insertar texto en el cursor
+         */
+        insertTextAtCursor(text) {
+            if (!this.editor || !this.editor.editor) return;
+
+            this.editor.insertText(text);
+        },
+
+        /**
+         * Reemplazar texto seleccionado
+         */
+        replaceSelectedText(text) {
+            if (!this.editor || !this.editor.editor) return;
+
+            const selection = window.getSelection();
+            if (selection && selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                range.deleteContents();
+                range.insertNode(document.createTextNode(text));
+
+                // Actualizar contenido
+                if (this.onChange) {
+                    this.onChange(this.getContent());
+                }
+            }
+        },
+
+        /**
+         * Ejecutar acción de IA
+         */
+        async executeAIAction(mode, customPrompt = null) {
+            if (!window.aiService) {
+                alert('❌ El servicio de IA no está disponible');
+                return;
+            }
+
+            const selectedText = this.getSelectedText();
+            const fullContent = this.getContent();
+
+            // Construir prompt según el modo
+            let userPrompt = customPrompt;
+            if (!customPrompt) {
+                const prompts = {
+                    'continue': selectedText
+                        ? `Continúa este texto:\n\n${selectedText}`
+                        : 'Continúa el texto desde donde terminé',
+                    'improve': selectedText
+                        ? `Mejora este texto:\n\n${selectedText}`
+                        : 'Mejora el texto completo',
+                    'dialogue': selectedText
+                        ? `Mejora este diálogo:\n\n${selectedText}`
+                        : 'Mejora los diálogos en este texto',
+                    'suggest': '¿Qué ideas tienes para continuar desde aquí?',
+                    'analyze': selectedText
+                        ? `Analiza este texto:\n\n${selectedText}`
+                        : 'Analiza el texto completo'
+                };
+
+                userPrompt = prompts[mode] || prompts['continue'];
+            }
+
+            this.isAIProcessing = true;
+            this.showAIMenu = false;
+
+            try {
+                // Obtener capítulo activo si existe
+                const chapterId = this.$store.project?.activeChapterId || null;
+
+                // Enviar request a IA
+                const response = await window.aiService.sendRequest(
+                    mode,
+                    userPrompt,
+                    chapterId,
+                    selectedText
+                );
+
+                console.log('📥 AI Response:', response);
+
+                // Guardar respuesta
+                this.aiResponse = response;
+                this.showAIResponse = true;
+
+            } catch (error) {
+                console.error('❌ AI Error:', error);
+                alert(`Error de IA: ${error.message}`);
+            } finally {
+                this.isAIProcessing = false;
+            }
+        },
+
+        /**
+         * Insertar respuesta de IA en el editor
+         */
+        insertAIResponse() {
+            if (!this.aiResponse) return;
+
+            const text = this.aiResponse.content || this.aiResponse.prompt;
+
+            // Si hay texto seleccionado, reemplazarlo
+            if (this.getSelectedText()) {
+                this.replaceSelectedText('\n\n' + text);
+            } else {
+                // Sino, insertar al final
+                this.setContent(this.getContent() + '\n\n' + text);
+            }
+
+            this.closeAIResponse();
+        },
+
+        /**
+         * Copiar respuesta al portapapeles
+         */
+        copyAIResponse() {
+            if (!this.aiResponse) return;
+
+            const text = this.aiResponse.content || this.aiResponse.prompt;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ Respuesta copiada al portapapeles');
+            });
+        },
+
+        /**
+         * Cerrar modal de respuesta de IA
+         */
+        closeAIResponse() {
+            this.showAIResponse = false;
+            this.aiResponse = null;
         }
     };
 };

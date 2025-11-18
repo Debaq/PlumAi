@@ -1,0 +1,179 @@
+<!-- AI Toolbar Component - Para usar dentro de richEditorComponent -->
+<!-- Se muestra automáticamente cuando enableAI: true -->
+
+<!-- Botón flotante de IA -->
+<div x-show="enableAI" style="position: absolute; top: 8px; right: 8px; z-index: 10;">
+    <!-- Botón principal -->
+    <button
+        @click="showAIMenu = !showAIMenu"
+        class="btn-icon"
+        style="background: var(--primary-color); color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.15);"
+        title="Asistente IA"
+        :disabled="isAIProcessing">
+        <i :data-lucide="isAIProcessing ? 'loader' : 'sparkles'" width="16" height="16" :class="{'animate-spin': isAIProcessing}"></i>
+    </button>
+
+    <!-- Menú desplegable -->
+    <div
+        x-show="showAIMenu"
+        @click.away="showAIMenu = false"
+        x-transition
+        style="position: absolute; top: 100%; right: 0; margin-top: 8px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); min-width: 220px; overflow: hidden; z-index: 100;">
+
+        <!-- Header -->
+        <div style="padding: 12px; border-bottom: 1px solid var(--border-color); background: var(--bg-primary);">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="sparkles" width="16" height="16" style="color: var(--primary-color);"></i>
+                <strong style="font-size: 13px;">Asistente IA</strong>
+            </div>
+        </div>
+
+        <!-- Acciones -->
+        <div style="padding: 4px;">
+            <button
+                @click="executeAIAction('continue')"
+                class="ai-menu-item"
+                style="width: 100%; padding: 10px 12px; text-align: left; border: none; background: none; cursor: pointer; display: flex; align-items: center; gap: 8px; border-radius: 4px; transition: background 0.2s;"
+                onmouseover="this.style.background='var(--bg-tertiary)'"
+                onmouseout="this.style.background='transparent'">
+                <span>✍️</span>
+                <div style="flex: 1;">
+                    <div style="font-size: 13px; font-weight: 500;">Continuar</div>
+                    <div style="font-size: 11px; color: var(--text-secondary);">Continúa escribiendo</div>
+                </div>
+            </button>
+
+            <button
+                @click="executeAIAction('improve')"
+                class="ai-menu-item"
+                style="width: 100%; padding: 10px 12px; text-align: left; border: none; background: none; cursor: pointer; display: flex; align-items: center; gap: 8px; border-radius: 4px; transition: background 0.2s;"
+                onmouseover="this.style.background='var(--bg-tertiary)'"
+                onmouseout="this.style.background='transparent'">
+                <span>✨</span>
+                <div style="flex: 1;">
+                    <div style="font-size: 13px; font-weight: 500;">Mejorar</div>
+                    <div style="font-size: 11px; color: var(--text-secondary);">Mejora el texto</div>
+                </div>
+            </button>
+
+            <button
+                @click="executeAIAction('dialogue')"
+                class="ai-menu-item"
+                style="width: 100%; padding: 10px 12px; text-align: left; border: none; background: none; cursor: pointer; display: flex; align-items: center; gap: 8px; border-radius: 4px; transition: background 0.2s;"
+                onmouseover="this.style.background='var(--bg-tertiary)'"
+                onmouseout="this.style.background='transparent'">
+                <span>💬</span>
+                <div style="flex: 1;">
+                    <div style="font-size: 13px; font-weight: 500;">Diálogos</div>
+                    <div style="font-size: 11px; color: var(--text-secondary);">Mejora diálogos</div>
+                </div>
+            </button>
+
+            <button
+                @click="executeAIAction('suggest')"
+                class="ai-menu-item"
+                style="width: 100%; padding: 10px 12px; text-align: left; border: none; background: none; cursor: pointer; display: flex; align-items: center; gap: 8px; border-radius: 4px; transition: background 0.2s;"
+                onmouseover="this.style.background='var(--bg-tertiary)'"
+                onmouseout="this.style.background='transparent'">
+                <span>💡</span>
+                <div style="flex: 1;">
+                    <div style="font-size: 13px; font-weight: 500;">Sugerir</div>
+                    <div style="font-size: 11px; color: var(--text-secondary);">Genera ideas</div>
+                </div>
+            </button>
+
+            <button
+                @click="executeAIAction('analyze')"
+                class="ai-menu-item"
+                style="width: 100%; padding: 10px 12px; text-align: left; border: none; background: none; cursor: pointer; display: flex; align-items: center; gap: 8px; border-radius: 4px; transition: background 0.2s;"
+                onmouseover="this.style.background='var(--bg-tertiary)'"
+                onmouseout="this.style.background='transparent'">
+                <span>🔍</span>
+                <div style="flex: 1;">
+                    <div style="font-size: 13px; font-weight: 500;">Analizar</div>
+                    <div style="font-size: 11px; color: var(--text-secondary);">Analiza el texto</div>
+                </div>
+            </button>
+        </div>
+
+        <!-- Footer -->
+        <div style="padding: 8px 12px; border-top: 1px solid var(--border-color); background: var(--bg-primary);">
+            <p style="font-size: 11px; color: var(--text-secondary); margin: 0;">
+                💡 <span x-text="getSelectedText() ? 'Texto seleccionado' : 'Todo el contenido'"></span>
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de respuesta de IA -->
+<div x-show="showAIResponse"
+     @click.self="closeAIResponse()"
+     x-transition
+     style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+
+    <div style="background: var(--bg-primary); border-radius: 12px; max-width: 800px; width: 90%; max-height: 80vh; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
+
+        <!-- Header -->
+        <div style="padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <i data-lucide="sparkles" width="24" height="24" style="color: var(--primary-color);"></i>
+                <div>
+                    <h3 style="margin: 0; font-size: 18px;">Respuesta de IA</h3>
+                    <p style="margin: 0; font-size: 13px; color: var(--text-secondary);" x-show="aiResponse">
+                        <span x-text="aiResponse?.provider || 'IA'"></span> ·
+                        <span x-text="aiResponse?.model || ''"></span>
+                    </p>
+                </div>
+            </div>
+            <button @click="closeAIResponse()" class="btn-icon">
+                <i data-lucide="x" width="20" height="20"></i>
+            </button>
+        </div>
+
+        <!-- Contenido -->
+        <div style="padding: 20px; max-height: 50vh; overflow-y: auto;">
+            <template x-if="aiResponse?.type === 'manual'">
+                <div>
+                    <p style="color: var(--text-secondary); margin-bottom: 16px;">
+                        <strong>Modo Manual:</strong> Copia este prompt y pégalo en tu IA favorita
+                    </p>
+                    <pre style="background: var(--bg-tertiary); padding: 16px; border-radius: 8px; overflow-x: auto; white-space: pre-wrap; font-size: 13px; line-height: 1.6;" x-text="aiResponse?.prompt"></pre>
+                </div>
+            </template>
+
+            <template x-if="aiResponse?.type !== 'manual'">
+                <div style="white-space: pre-wrap; line-height: 1.8; font-size: 14px;" x-html="aiResponse?.content?.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>')"></div>
+            </template>
+        </div>
+
+        <!-- Footer con acciones -->
+        <div style="padding: 16px 20px; border-top: 1px solid var(--border-color); display: flex; gap: 12px; justify-content: flex-end;">
+            <button @click="copyAIResponse()" class="btn-secondary">
+                <i data-lucide="copy" width="16" height="16"></i>
+                Copiar
+            </button>
+            <button @click="insertAIResponse()" class="btn-primary" x-show="aiResponse?.type !== 'manual'">
+                <i data-lucide="file-plus" width="16" height="16"></i>
+                Insertar en editor
+            </button>
+            <button @click="closeAIResponse()" class="btn-secondary">
+                Cerrar
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+</style>

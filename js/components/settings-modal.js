@@ -9,6 +9,9 @@ window.settingsModalComponent = function() {
         connectionStatus: null,
         connectionMessage: '',
 
+        // Token Optimization
+        tokenLevel: 'normal',
+
         // Data Management
         deletionAllowed: false,
         deletionConfirmed: false,
@@ -23,6 +26,11 @@ window.settingsModalComponent = function() {
 
                 // Load API key if exists
                 this.loadApiKey();
+            }
+
+            // Initialize token optimization
+            if (window.tokenOptimizer) {
+                this.tokenLevel = window.tokenOptimizer.config.currentLevel;
             }
 
             // Initialize data management values
@@ -191,6 +199,17 @@ window.settingsModalComponent = function() {
                 console.error('Error testing connection:', error);
                 this.connectionStatus = 'error';
                 this.connectionMessage = `✗ Error: ${error.message}`;
+            }
+        },
+
+        // ============================================
+        // TOKEN OPTIMIZATION METHODS
+        // ============================================
+
+        saveTokenLevel() {
+            if (window.tokenOptimizer) {
+                window.tokenOptimizer.setLevel(this.tokenLevel);
+                console.log(`✅ Token level saved: ${this.tokenLevel}`);
             }
         },
 

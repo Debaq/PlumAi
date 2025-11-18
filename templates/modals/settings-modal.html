@@ -121,6 +121,77 @@
                 </div>
             </div>
 
+            <!-- Token Optimization Section -->
+            <div class="settings-section" style="margin-bottom: 30px; padding: 20px; border: 1px solid var(--border); border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0; color: var(--text-primary);">Optimización de Tokens</h3>
+                    <i data-lucide="zap" width="20" height="20" style="color: var(--text-secondary);"></i>
+                </div>
+
+                <p style="margin: 0 0 20px 0; color: var(--text-secondary); font-size: 14px;">
+                    Controla cuánto contexto se envía a la IA para ahorrar tokens y reducir costos
+                </p>
+
+                <!-- Token Level Selection -->
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="font-weight: 600; margin-bottom: 8px; display: block;">Nivel de Contexto</label>
+                    <select x-model="tokenLevel" @change="saveTokenLevel" style="width: 100%; padding: 10px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary);">
+                        <option value="minimal">⚡ Mínimo (~1,000 tokens) - Solo lo esencial</option>
+                        <option value="normal">⚖️ Normal (~3,000 tokens) - Balanceado (recomendado)</option>
+                        <option value="complete">📚 Completo (~8,000 tokens) - Todo el contexto</option>
+                        <option value="unlimited">🚀 Sin límite - Enviar todo</option>
+                    </select>
+                </div>
+
+                <!-- Level Description -->
+                <div style="background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 6px; padding: 15px; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: start; gap: 10px;">
+                        <i data-lucide="info" width="20" height="20" style="color: var(--accent); flex-shrink: 0; margin-top: 2px;"></i>
+                        <div>
+                            <template x-if="tokenLevel === 'minimal'">
+                                <div>
+                                    <p style="margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; font-size: 14px;">Nivel Mínimo</p>
+                                    <p style="margin: 0; color: var(--text-secondary); font-size: 13px;">
+                                        Solo incluye: Protagonista, antagonista, capítulo actual. Ideal para ahorrar tokens.
+                                    </p>
+                                </div>
+                            </template>
+                            <template x-if="tokenLevel === 'normal'">
+                                <div>
+                                    <p style="margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; font-size: 14px;">Nivel Normal (Recomendado)</p>
+                                    <p style="margin: 0; color: var(--text-secondary); font-size: 13px;">
+                                        Incluye: Personajes mencionados, lore relevante, locaciones citadas. Balance perfecto entre calidad y costo.
+                                    </p>
+                                </div>
+                            </template>
+                            <template x-if="tokenLevel === 'complete'">
+                                <div>
+                                    <p style="margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; font-size: 14px;">Nivel Completo</p>
+                                    <p style="margin: 0; color: var(--text-secondary); font-size: 13px;">
+                                        Incluye: Todos los personajes, todo el lore, todas las locaciones. Máxima calidad, mayor costo.
+                                    </p>
+                                </div>
+                            </template>
+                            <template x-if="tokenLevel === 'unlimited'">
+                                <div>
+                                    <p style="margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; font-size: 14px;">Sin Límite</p>
+                                    <p style="margin: 0; color: var(--text-secondary); font-size: 13px;">
+                                        ⚠️ Envía TODO sin restricciones. Puede consumir muchos tokens en proyectos grandes.
+                                    </p>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info about savings -->
+                <div style="background: var(--success-bg, #e8f5e9); border: 1px solid var(--success, #4caf50); border-radius: 6px; padding: 12px;">
+                    <p style="margin: 0; color: var(--success-text, #2e7d32); font-size: 13px;">
+                        <strong>💡 Ahorro inteligente:</strong> El sistema detecta automáticamente personajes y lore mencionados en tu texto para incluir solo lo relevante.
+                    </p>
+                </div>
+            </div>
+
             <!-- Data Management Section -->
             <div class="settings-section" style="margin-bottom: 30px; padding: 20px; border: 1px solid var(--border); border-radius: 8px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">

@@ -354,8 +354,27 @@ window.aiService = {
     async sendRequest(mode, userInput, chapterId = null, selectedText = null) {
         const provider = this.getCurrentProvider();
 
-        // Construir contexto
-        const context = this.buildContext(chapterId);
+        // Construir contexto completo
+        const fullContext = this.buildContext(chapterId);
+
+        // OPTIMIZAR CONTEXTO con token-optimizer
+        let context = fullContext;
+        let optimizationStats = null;
+
+        if (window.tokenOptimizer) {
+            const currentText = selectedText || (fullContext.currentChapter?.content || '');
+            const optimized = window.tokenOptimizer.optimizeContext(fullContext, currentText);
+            context = optimized.context;
+            optimizationStats = optimized.stats;
+
+            console.log('📊 Token Optimization:', optimizationStats);
+            console.log(`   ├─ Level: ${optimizationStats.level}`);
+            console.log(`   ├─ Est. Tokens: ${optimizationStats.estimatedTokens} / ${optimizationStats.limit}`);
+            console.log(`   ├─ Characters: ${optimizationStats.characters}`);
+            console.log(`   ├─ Locations: ${optimizationStats.locations}`);
+            console.log(`   ├─ Lore: ${optimizationStats.lore}`);
+            console.log(`   └─ Scenes: ${optimizationStats.scenes}`);
+        }
 
         // Construir prompt
         const prompt = this.buildPrompt(mode, userInput, context, selectedText);
@@ -365,7 +384,8 @@ window.aiService = {
             return {
                 type: 'manual',
                 prompt: prompt,
-                instructions: 'Copia este prompt y pégalo en ChatGPT, Claude, o cualquier IA de tu elección.'
+                instructions: 'Copia este prompt y pégalo en ChatGPT, Claude, o cualquier IA de tu elección.',
+                stats: optimizationStats
             };
         }
 
@@ -378,24 +398,39 @@ window.aiService = {
         }
 
         // Enviar según el tipo de proveedor
+        let response;
         switch (provider.id) {
             case 'anthropic':
-                return await this.sendAnthropicRequest(prompt);
+                response = await this.sendAnthropicRequest(prompt);
+                break;
             case 'openai':
-                return await this.sendOpenAIRequest(prompt);
+                response = await this.sendOpenAIRequest(prompt);
+                break;
             case 'google':
-                return await this.sendGoogleRequest(prompt);
+                response = await this.sendGoogleRequest(prompt);
+                break;
             case 'groq':
-                return await this.sendGroqRequest(prompt);
+                response = await this.sendGroqRequest(prompt);
+                break;
             case 'together':
-                return await this.sendTogetherRequest(prompt);
+                response = await this.sendTogetherRequest(prompt);
+                break;
             case 'ollama':
-                return await this.sendOllamaRequest(prompt);
+                response = await this.sendOllamaRequest(prompt);
+                break;
             case 'huggingface':
-                return await this.sendHuggingFaceRequest(prompt);
+                response = await this.sendHuggingFaceRequest(prompt);
+                break;
             default:
                 throw new Error(`Proveedor no soportado: ${provider.id}`);
         }
+
+        // Agregar estadísticas de optimización a la respuesta
+        if (optimizationStats) {
+            response.optimizationStats = optimizationStats;
+        }
+
+        return response;
     },
 
     // ============================================
