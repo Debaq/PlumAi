@@ -119,19 +119,19 @@ window.richEditorComponent = function(config = {}) {
                 <div style="padding: 8px 12px; border-bottom: 1px solid var(--border-color); margin-bottom: 4px;">
                     <strong style="font-size: 13px; color: var(--text-primary);">✨ Asistente IA</strong>
                 </div>
-                <button class="ai-menu-item" data-mode="continue" style="width: 100%; text-align: left; padding: 10px 12px; border: none; background: transparent; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-size: 13px;">
+                <button type="button" class="ai-menu-item" data-mode="continue" style="width: 100%; text-align: left; padding: 10px 12px; border: none; background: transparent; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-size: 13px;">
                     <span>✍️</span>
                     <span>Continuar escribiendo</span>
                 </button>
-                <button class="ai-menu-item" data-mode="improve" style="width: 100%; text-align: left; padding: 10px 12px; border: none; background: transparent; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-size: 13px;">
+                <button type="button" class="ai-menu-item" data-mode="improve" style="width: 100%; text-align: left; padding: 10px 12px; border: none; background: transparent; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-size: 13px;">
                     <span>✨</span>
                     <span>Mejorar texto</span>
                 </button>
-                <button class="ai-menu-item" data-mode="dialogue" style="width: 100%; text-align: left; padding: 10px 12px; border: none; background: transparent; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-size: 13px;">
+                <button type="button" class="ai-menu-item" data-mode="dialogue" style="width: 100%; text-align: left; padding: 10px 12px; border: none; background: transparent; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-size: 13px;">
                     <span>💬</span>
                     <span>Mejorar diálogos</span>
                 </button>
-                <button class="ai-menu-item" data-mode="analyze" style="width: 100%; text-align: left; padding: 10px 12px; border: none; background: transparent; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-size: 13px;">
+                <button type="button" class="ai-menu-item" data-mode="analyze" style="width: 100%; text-align: left; padding: 10px 12px; border: none; background: transparent; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-size: 13px;">
                     <span>🔍</span>
                     <span>Analizar texto</span>
                 </button>
@@ -147,6 +147,7 @@ window.richEditorComponent = function(config = {}) {
                     item.style.background = 'transparent';
                 };
                 item.onclick = (e) => {
+                    e.preventDefault(); // Prevenir que el botón envíe el formulario
                     const mode = e.currentTarget.dataset.mode;
                     this.executeAIAction(mode);
                     this.showAIMenu = false;
@@ -192,19 +193,14 @@ window.richEditorComponent = function(config = {}) {
          * Usa un modal global compartido por todas las instancias
          */
         injectAIResponseModal() {
-            console.log('🔧 Inicializando modal de respuesta de IA...');
-
             // Verificar si ya existe un modal global
             let modalOverlay = document.querySelector('.ai-response-modal-overlay');
 
             if (modalOverlay) {
-                console.log('♻️ Modal global ya existe, reutilizando y configurando watchers');
                 // Ya existe, solo configurar watchers para esta instancia
                 this.setupAIModalWatchers();
                 return;
             }
-
-            console.log('🆕 Creando nuevo modal global de respuesta de IA');
             // Crear overlay del modal (solo una vez globalmente)
             modalOverlay = document.createElement('div');
             modalOverlay.className = 'ai-response-modal-overlay';
@@ -310,14 +306,12 @@ window.richEditorComponent = function(config = {}) {
             // Ensamblar
             modalOverlay.appendChild(modal);
             document.body.appendChild(modalOverlay);
-            console.log('✅ Modal de respuesta de IA agregado al DOM');
 
             // Configurar listeners globales del modal (solo una vez)
             this.setupGlobalAIModalHandlers(modalOverlay);
 
             // Configurar watchers para esta instancia
             this.setupAIModalWatchers();
-            console.log('🎉 Modal de respuesta de IA completamente inicializado');
         },
 
         /**
@@ -398,7 +392,6 @@ window.richEditorComponent = function(config = {}) {
          * Configurar watchers para mostrar/ocultar el modal de esta instancia
          */
         setupAIModalWatchers() {
-            console.log('⚙️ Configurando watchers del modal de IA para esta instancia');
             const modalOverlay = document.querySelector('.ai-response-modal-overlay');
 
             if (!modalOverlay) {
@@ -413,12 +406,9 @@ window.richEditorComponent = function(config = {}) {
                 return;
             }
 
-            console.log('✅ Modal encontrado, configurando watcher de showAIResponse');
-
             // Watch para mostrar/ocultar el modal
             this.$watch('showAIResponse', (value) => {
                 if (value && this.aiResponse) {
-                    console.log('👁️ Mostrando modal de respuesta de IA');
                     // Establecer esta instancia como la activa
                     window.activeAIEditorInstance = this;
 
@@ -435,7 +425,6 @@ window.richEditorComponent = function(config = {}) {
 
                     // Mostrar modal
                     modalOverlay.style.display = 'block';
-                    console.log('✨ Modal de respuesta de IA visible en pantalla');
 
                     // Reinicializar iconos de Lucide
                     setTimeout(() => {
@@ -821,12 +810,9 @@ window.richEditorComponent = function(config = {}) {
                     );
                 }
 
-                console.log('📥 AI Response:', response);
-
                 // Guardar respuesta
                 this.aiResponse = response;
                 this.showAIResponse = true;
-                console.log('✅ Modal de respuesta de IA activado (showAIResponse = true)');
 
             } catch (error) {
                 console.error('❌ AI Error:', error);
