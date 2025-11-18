@@ -1,8 +1,8 @@
 <!-- AI Assistant View -->
 <div x-show="$store.ui.currentView === 'aiAssistant'" class="view" x-data="aiAssistantView()">
     <div class="view-header">
-        <h1 x-text="$store.i18n.t('ai.title')">Asistente IA</h1>
-        <p class="subtitle" x-text="$store.i18n.t('ai.subtitle')">Trabaja con inteligencia artificial para escribir tu historia</p>
+        <h1>💬 Asistente IA - Brainstorming</h1>
+        <p class="subtitle">Conversa con la IA sobre tu historia: genera ideas, analiza estructura, desarrolla personajes, expande worldbuilding. <strong>Para escribir capítulos directamente,</strong> usa el Editor con el toolbar de IA ☁️</p>
     </div>
 
     <div class="view-content" style="display: flex; flex-direction: column; gap: 16px; max-width: 1200px; margin: 0 auto;">
@@ -104,13 +104,19 @@
 
                 <!-- Empty State -->
                 <template x-if="messages.length === 0">
-                    <div class="empty-state" style="margin: auto;">
-                        <i data-lucide="sparkles" width="64" height="64"></i>
-                        <h3>¡Hola! Soy tu asistente de escritura</h3>
-                        <p style="max-width: 500px; margin: 0 auto; color: var(--text-secondary);">
-                            Puedo ayudarte a continuar tu historia, generar ideas, analizar texto, mejorar diálogos y mucho más.
-                            Escribe tu consulta abajo y selecciona el modo de asistencia que prefieras.
+                    <div class="empty-state" style="margin: auto; text-align: center;">
+                        <i data-lucide="message-circle" width="64" height="64"></i>
+                        <h3>💬 Asistente de Brainstorming Creativo</h3>
+                        <p style="max-width: 600px; margin: 0 auto 20px; color: var(--text-secondary); line-height: 1.6;">
+                            <strong>Tengo memoria conversacional:</strong> Recuerdo todo lo que hablamos en esta sesión.<br>
+                            Puedo ayudarte a generar ideas, analizar estructura narrativa, desarrollar personajes, expandir worldbuilding y dar feedback creativo.
                         </p>
+                        <div style="background: var(--bg-tertiary); padding: 15px; border-radius: 8px; max-width: 550px; margin: 0 auto; border-left: 4px solid var(--accent);">
+                            <p style="margin: 0; font-size: 13px; color: var(--text-secondary); text-align: left;">
+                                <strong>💡 Tip:</strong> Este espacio es para <strong>planificar y explorar ideas</strong>.<br>
+                                Para <strong>escribir capítulos directamente</strong>, ve al <strong>Editor</strong> y usa el <strong>toolbar de IA flotante ☁️</strong> que aparece al seleccionar texto.
+                            </p>
+                        </div>
                     </div>
                 </template>
 
@@ -222,20 +228,26 @@
         <div class="card" style="padding: 16px;">
             <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--text-secondary);">
                 <i data-lucide="zap" width="16" height="16" style="vertical-align: middle;"></i>
-                Acciones Rápidas
+                Consultas Rápidas de Brainstorming
             </h3>
             <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                <button @click="quickAction('continue')" class="btn-secondary" style="flex: 0 0 auto;">
-                    ✍️ Continuar capítulo actual
-                </button>
                 <button @click="quickAction('suggest')" class="btn-secondary" style="flex: 0 0 auto;">
-                    💡 Sugerir ideas
+                    💡 Ideas para la trama
                 </button>
-                <button @click="quickAction('dialogue')" class="btn-secondary" style="flex: 0 0 auto;">
-                    💬 Mejorar diálogos
+                <button @click="quickAction('analyze')" class="btn-secondary" style="flex: 0 0 auto;">
+                    🔍 Analizar estructura
                 </button>
                 <button @click="quickAction('worldbuild')" class="btn-secondary" style="flex: 0 0 auto;">
-                    🌍 Expandir worldbuilding
+                    🌍 Worldbuilding
+                </button>
+                <button @click="quickAction('characterize')" class="btn-secondary" style="flex: 0 0 auto;">
+                    🎭 Desarrollo de personajes
+                </button>
+                <button @click="quickAction('dialogue')" class="btn-secondary" style="flex: 0 0 auto;">
+                    💬 Consejos de diálogos
+                </button>
+                <button @click="quickAction('continue')" class="btn-secondary" style="flex: 0 0 auto;">
+                    📖 Próximas escenas
                 </button>
                 <button @click="clearChat()" class="btn-secondary" style="flex: 0 0 auto; margin-left: auto; color: var(--danger-color);">
                     <i data-lucide="trash-2" width="16" height="16"></i>

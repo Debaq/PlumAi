@@ -101,13 +101,32 @@ window.aiAssistantView = function() {
                 // Get current chapter ID if available
                 const chapterId = this.$store.project.activeChapterId;
 
-                // Send request
-                const response = await window.aiService.sendRequest(
-                    this.selectedMode,
-                    userMessage,
-                    chapterId,
-                    null // selectedText (could get from editor)
-                );
+                // Verificar si el modo agéntico está activado
+                const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
+                const useAgenticMode = settings.useAgenticContext !== false; // Por defecto activado
+
+                let response;
+
+                if (useAgenticMode && window.agenticContextService) {
+                    // MODO AGÉNTICO CONVERSACIONAL: Envía todo el historial
+                    console.log('🤖 Usando modo agéntico conversacional con historial de', this.messages.length, 'mensajes');
+
+                    response = await window.aiService.sendAgenticConversation(
+                        this.selectedMode,
+                        this.messages, // ✅ Envía todo el historial
+                        chapterId
+                    );
+                } else {
+                    // MODO TRADICIONAL: Solo último mensaje
+                    console.log('📦 Usando modo tradicional (sin historial)');
+
+                    response = await window.aiService.sendRequest(
+                        this.selectedMode,
+                        userMessage,
+                        chapterId,
+                        null
+                    );
+                }
 
                 console.log('📥 AI Response:', response);
 
@@ -159,10 +178,12 @@ window.aiAssistantView = function() {
             this.selectedMode = mode;
 
             const prompts = {
-                'continue': '¿Puedes continuar el capítulo actual manteniendo el estilo y la voz narrativa?',
-                'suggest': '¿Qué ideas tienes para continuar la historia desde este punto?',
-                'dialogue': '¿Puedes mejorar los diálogos del capítulo actual?',
-                'worldbuild': '¿Qué elementos del worldbuilding puedo expandir en mi historia?'
+                'suggest': '¿Qué ideas tienes para desarrollar la trama desde este punto? Dame varias opciones creativas.',
+                'analyze': 'Analiza la estructura narrativa de mi historia hasta ahora. ¿Qué funciona bien y qué podría mejorar?',
+                'worldbuild': '¿Qué aspectos del worldbuilding debería expandir o profundizar? Dame sugerencias específicas.',
+                'characterize': 'Ayúdame a desarrollar más profundidad en mis personajes. ¿Qué motivaciones o conflictos internos podría explorar?',
+                'dialogue': 'Dame consejos sobre cómo mejorar los diálogos en mi historia. ¿Qué técnicas puedo usar?',
+                'continue': 'Basándote en lo que he escrito, ¿qué escenas o momentos clave deberían venir a continuación?'
             };
 
             this.userInput = prompts[mode] || '';

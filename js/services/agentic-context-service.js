@@ -476,7 +476,163 @@ Analiza y responde:`;
     // ============================================
 
     /**
-     * Ejecuta el flujo agéntico completo de 2 pasos
+     * Ejecuta el flujo agéntico completo de 2 pasos (conversacional)
+     * Soporta historial de mensajes para mantener contexto de conversación
+     */
+    async sendAgenticConversation(mode, messages, chapterId = null) {
+        const overallStart = performance.now();
+
+        // LOG: Inicio del flujo agéntico conversacional
+        if (window.plumLogger) {
+            window.plumLogger.separator();
+            window.plumLogger.group('🤖 AGENTIC CONVERSATION', 'Sistema de Contexto Agéntico (Conversacional)', '#00BCD4');
+            window.plumLogger.info('Mensajes en historial', messages.length);
+            window.plumLogger.info('Modo', mode);
+        }
+
+        try {
+            // Construir prompt conversacional desde historial
+            let conversationPrompt = "## HISTORIAL DE CONVERSACIÓN\n\n";
+            messages.forEach(msg => {
+                const role = msg.role === 'user' ? 'Usuario' : 'Asistente';
+                conversationPrompt += `**${role}:** ${msg.content}\n\n`;
+            });
+
+            // Obtener el último mensaje del usuario
+            const lastUserMessage = messages.filter(m => m.role === 'user').pop();
+            const userInput = lastUserMessage ? lastUserMessage.content : '';
+
+            // PASO 1: Construir inventario y analizar necesidades
+            const inventory = this.buildContextInventory(chapterId);
+            const contextNeeds = await this.analyzeContextNeeds(mode, conversationPrompt, inventory, null);
+
+            // PASO 2: Construir contexto selectivo y ejecutar
+            const selectiveContext = this.buildSelectiveContext(contextNeeds, chapterId);
+
+            // Ejecutar con contexto selectivo y conversación
+            const response = await this.executeConversationWithContext(mode, conversationPrompt, selectiveContext);
+
+            // LOG: Resumen final
+            if (window.plumLogger) {
+                const totalTime = Math.round(performance.now() - overallStart);
+                window.plumLogger.separator();
+                window.plumLogger.success('FLUJO CONVERSACIONAL COMPLETO', `✓ Proceso agéntico completado en ${totalTime}ms`);
+                window.plumLogger.groupEnd(); // Cierra AGENTIC CONVERSATION
+                window.plumLogger.separator();
+            }
+
+            return response;
+
+        } catch (error) {
+            if (window.plumLogger) {
+                window.plumLogger.error('ERROR AGÉNTICO CONVERSACIONAL', error.message);
+                window.plumLogger.groupEnd();
+            }
+            throw error;
+        }
+    },
+
+    /**
+     * Ejecuta conversación con contexto optimizado
+     */
+    async executeConversationWithContext(mode, conversationPrompt, context) {
+        const startTime = performance.now();
+        const provider = window.aiService.getCurrentProvider();
+
+        // LOG: Inicio de Ejecución Conversacional
+        if (window.plumLogger) {
+            window.plumLogger.group('CONVERSATION STEP 2', '💬 Ejecución conversacional con contexto', '#4CAF50');
+            const contextSize = (context.characters?.length || 0) +
+                               (context.locations?.length || 0) +
+                               (context.lore?.length || 0) +
+                               (context.timeline?.length || 0);
+            window.plumLogger.info('Contexto selectivo', `${contextSize} elementos enviados`);
+        }
+
+        // Construir prompt conversacional con contexto
+        const modeConfig = window.aiService.assistantModes[mode];
+
+        let prompt = `# PROYECTO: ${context.project.title}\n`;
+        prompt += `**Género**: ${context.project.genre || 'No especificado'}\n\n`;
+
+        // Agregar contexto relevante
+        if (context.characters && context.characters.length > 0) {
+            prompt += `## PERSONAJES\n`;
+            context.characters.forEach(char => {
+                prompt += `\n### ${char.name} (${char.role})\n`;
+                if (char.description) prompt += `${char.description}\n`;
+                if (char.personality) prompt += `**Personalidad**: ${char.personality}\n`;
+            });
+            prompt += '\n';
+        }
+
+        if (context.lore && context.lore.length > 0) {
+            prompt += `## WORLDBUILDING\n`;
+            context.lore.forEach(lore => {
+                prompt += `- **${lore.title}**: ${lore.content.substring(0, 200)}...\n`;
+            });
+            prompt += '\n';
+        }
+
+        if (context.currentChapter) {
+            prompt += `## CAPÍTULO ACTUAL: ${context.currentChapter.title}\n`;
+            prompt += `${context.currentChapter.content}\n\n`;
+        }
+
+        // Agregar conversación
+        prompt += `---\n\n${conversationPrompt}\n\n`;
+
+        // Agregar instrucción del modo
+        prompt += `**Modo**: ${modeConfig.name}\n`;
+        prompt += `**Tarea**: ${modeConfig.systemPrompt}\n\n`;
+        prompt += `Responde al último mensaje del usuario manteniendo el contexto de toda la conversación.`;
+
+        // LOG: Prompt final
+        if (window.plumLogger) {
+            const estimatedTokens = Math.ceil(prompt.length / 4);
+            window.plumLogger.promptBuilt(prompt.length, estimatedTokens);
+        }
+
+        try {
+            let response;
+
+            switch (provider.id) {
+                case 'google':
+                    response = await window.aiService.sendGoogleRequest(prompt);
+                    break;
+                case 'groq':
+                    response = await window.aiService.sendGroqRequest(prompt);
+                    break;
+                case 'anthropic':
+                    response = await window.aiService.sendAnthropicRequest(prompt);
+                    break;
+                case 'ollama':
+                    response = await window.aiService.sendOllamaRequest(prompt);
+                    break;
+                default:
+                    throw new Error(`Proveedor ${provider.id} no soportado`);
+            }
+
+            // LOG: Completado
+            if (window.plumLogger) {
+                const totalTime = Math.round(performance.now() - startTime);
+                window.plumLogger.success('CONVERSATION COMPLETE', `⏱ Tiempo total: ${totalTime}ms`);
+                window.plumLogger.groupEnd();
+            }
+
+            return response;
+
+        } catch (error) {
+            if (window.plumLogger) {
+                window.plumLogger.error('ERROR', error.message);
+                window.plumLogger.groupEnd();
+            }
+            throw error;
+        }
+    },
+
+    /**
+     * Ejecuta el flujo agéntico completo de 2 pasos (mensaje único)
      */
     async sendAgenticRequest(mode, userInput, chapterId = null, selectedText = null) {
         const overallStart = performance.now();
