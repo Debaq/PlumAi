@@ -35,14 +35,14 @@ window.aiService = {
         google: {
             id: 'google',
             name: 'Google Gemini',
-            models: ['gemini-1.5-pro', 'gemini-1.5-flash'],
+            models: ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-2.0-flash-exp'],
             defaultModel: 'gemini-1.5-flash',
             requiresApiKey: true,
             endpoint: 'https://generativelanguage.googleapis.com/v1beta/models',
             freeTier: '15 req/min gratis',
             pricing: 'Free tier generoso',
             type: 'api',
-            enabled: false
+            enabled: true
         },
         groq: {
             id: 'groq',
@@ -352,10 +352,30 @@ window.aiService = {
     // ============================================
 
     async sendRequest(mode, userInput, chapterId = null, selectedText = null) {
+        const startTime = performance.now();
         const provider = this.getCurrentProvider();
+
+        // LOG: Inicio de request
+        if (window.plumLogger) {
+            window.plumLogger.aiRequest(mode, provider.name, userInput);
+        }
 
         // Construir contexto completo
         const fullContext = this.buildContext(chapterId);
+
+        // LOG: Contexto construido
+        if (window.plumLogger) {
+            const contextSize = (fullContext.characters?.length || 0) +
+                               (fullContext.locations?.length || 0) +
+                               (fullContext.lore?.length || 0) +
+                               (fullContext.timeline?.length || 0);
+            window.plumLogger.contextBuild(chapterId, contextSize);
+            window.plumLogger.contextData('Personajes', fullContext.characters);
+            window.plumLogger.contextData('Locaciones', fullContext.locations);
+            window.plumLogger.contextData('Lore', fullContext.lore);
+            window.plumLogger.contextData('Timeline', fullContext.timeline);
+            window.plumLogger.groupEnd();
+        }
 
         // OPTIMIZAR CONTEXTO con token-optimizer
         let context = fullContext;
@@ -367,20 +387,26 @@ window.aiService = {
             context = optimized.context;
             optimizationStats = optimized.stats;
 
-            console.log('📊 Token Optimization:', optimizationStats);
-            console.log(`   ├─ Level: ${optimizationStats.level}`);
-            console.log(`   ├─ Est. Tokens: ${optimizationStats.estimatedTokens} / ${optimizationStats.limit}`);
-            console.log(`   ├─ Characters: ${optimizationStats.characters}`);
-            console.log(`   ├─ Locations: ${optimizationStats.locations}`);
-            console.log(`   ├─ Lore: ${optimizationStats.lore}`);
-            console.log(`   └─ Scenes: ${optimizationStats.scenes}`);
+            // LOG: Optimización de tokens (los detalles los maneja token-optimizer.js)
         }
 
         // Construir prompt
         const prompt = this.buildPrompt(mode, userInput, context, selectedText);
 
+        // LOG: Prompt construido
+        if (window.plumLogger) {
+            const estimatedTokens = Math.ceil(prompt.length / 4);
+            window.plumLogger.promptBuilt(prompt.length, estimatedTokens);
+            window.plumLogger.promptPreview(prompt);
+        }
+
         // Si es modo manual, solo devolver el prompt
         if (provider.type === 'manual') {
+            if (window.plumLogger) {
+                window.plumLogger.success('MANUAL MODE', 'Prompt generado para copiar');
+                window.plumLogger.groupEnd();
+                window.plumLogger.groupEnd();
+            }
             return {
                 type: 'manual',
                 prompt: prompt,
@@ -399,38 +425,53 @@ window.aiService = {
 
         // Enviar según el tipo de proveedor
         let response;
-        switch (provider.id) {
-            case 'anthropic':
-                response = await this.sendAnthropicRequest(prompt);
-                break;
-            case 'openai':
-                response = await this.sendOpenAIRequest(prompt);
-                break;
-            case 'google':
-                response = await this.sendGoogleRequest(prompt);
-                break;
-            case 'groq':
-                response = await this.sendGroqRequest(prompt);
-                break;
-            case 'together':
-                response = await this.sendTogetherRequest(prompt);
-                break;
-            case 'ollama':
-                response = await this.sendOllamaRequest(prompt);
-                break;
-            case 'huggingface':
-                response = await this.sendHuggingFaceRequest(prompt);
-                break;
-            default:
-                throw new Error(`Proveedor no soportado: ${provider.id}`);
-        }
+        try {
+            switch (provider.id) {
+                case 'anthropic':
+                    response = await this.sendAnthropicRequest(prompt);
+                    break;
+                case 'openai':
+                    response = await this.sendOpenAIRequest(prompt);
+                    break;
+                case 'google':
+                    response = await this.sendGoogleRequest(prompt);
+                    break;
+                case 'groq':
+                    response = await this.sendGroqRequest(prompt);
+                    break;
+                case 'together':
+                    response = await this.sendTogetherRequest(prompt);
+                    break;
+                case 'ollama':
+                    response = await this.sendOllamaRequest(prompt);
+                    break;
+                case 'huggingface':
+                    response = await this.sendHuggingFaceRequest(prompt);
+                    break;
+                default:
+                    throw new Error(`Proveedor no soportado: ${provider.id}`);
+            }
 
-        // Agregar estadísticas de optimización a la respuesta
-        if (optimizationStats) {
-            response.optimizationStats = optimizationStats;
-        }
+            // Agregar estadísticas de optimización a la respuesta
+            if (optimizationStats) {
+                response.optimizationStats = optimizationStats;
+            }
 
-        return response;
+            // LOG: Request completado
+            if (window.plumLogger) {
+                const totalTime = Math.round(performance.now() - startTime);
+                window.plumLogger.aiComplete(totalTime, this.currentModel, response.usage?.total_tokens);
+            }
+
+            return response;
+
+        } catch (error) {
+            // LOG: Error en request
+            if (window.plumLogger) {
+                window.plumLogger.aiError(error);
+            }
+            throw error;
+        }
     },
 
     // ============================================
@@ -440,6 +481,11 @@ window.aiService = {
     async sendAnthropicRequest(prompt) {
         const apiKey = this.getApiKey('anthropic');
         const model = this.currentModel;
+
+        // LOG: API Request
+        if (window.plumLogger) {
+            window.plumLogger.apiRequest('Anthropic', 'https://api.anthropic.com/v1/messages', model);
+        }
 
         const response = await fetch('https://api.anthropic.com/v1/messages', {
             method: 'POST',
@@ -466,11 +512,21 @@ window.aiService = {
         }
 
         const data = await response.json();
+
+        // LOG: API Response
+        if (window.plumLogger) {
+            window.plumLogger.apiResponse(true, {
+                contentLength: data.content[0].text.length,
+                usage: data.usage
+            });
+        }
+
         return {
             type: 'api',
             content: data.content[0].text,
             model: model,
-            provider: 'anthropic'
+            provider: 'anthropic',
+            usage: data.usage
         };
     },
 
@@ -515,6 +571,11 @@ window.aiService = {
         const apiKey = this.getApiKey('google');
         const model = this.currentModel;
 
+        // LOG: API Request
+        if (window.plumLogger) {
+            window.plumLogger.apiRequest('Google Gemini', `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, model);
+        }
+
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: {
@@ -535,17 +596,32 @@ window.aiService = {
         }
 
         const data = await response.json();
+
+        // LOG: API Response
+        if (window.plumLogger) {
+            window.plumLogger.apiResponse(true, {
+                contentLength: data.candidates[0].content.parts[0].text.length,
+                usage: data.usageMetadata
+            });
+        }
+
         return {
             type: 'api',
             content: data.candidates[0].content.parts[0].text,
             model: model,
-            provider: 'google'
+            provider: 'google',
+            usage: data.usageMetadata
         };
     },
 
     async sendGroqRequest(prompt) {
         const apiKey = this.getApiKey('groq');
         const model = this.currentModel;
+
+        // LOG: API Request
+        if (window.plumLogger) {
+            window.plumLogger.apiRequest('Groq', 'https://api.groq.com/openai/v1/chat/completions', model);
+        }
 
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
@@ -572,11 +648,21 @@ window.aiService = {
         }
 
         const data = await response.json();
+
+        // LOG: API Response
+        if (window.plumLogger) {
+            window.plumLogger.apiResponse(true, {
+                contentLength: data.choices[0].message.content.length,
+                usage: data.usage
+            });
+        }
+
         return {
             type: 'api',
             content: data.choices[0].message.content,
             model: model,
-            provider: 'groq'
+            provider: 'groq',
+            usage: data.usage
         };
     },
 

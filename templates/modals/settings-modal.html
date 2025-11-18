@@ -192,6 +192,54 @@
                 </div>
             </div>
 
+            <!-- Debug Logs Section -->
+            <div class="settings-section" style="margin-bottom: 30px; padding: 20px; border: 1px solid var(--border); border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0; color: var(--text-primary);">Logs de Depuración</h3>
+                    <i data-lucide="terminal" width="20" height="20" style="color: var(--text-secondary);"></i>
+                </div>
+
+                <p style="margin: 0 0 20px 0; color: var(--text-secondary); font-size: 14px;">
+                    Activa logs detallados en la consola para ver el flujo de peticiones a la IA
+                </p>
+
+                <!-- Toggle Logs Switch -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i data-lucide="eye" width="20" height="20" style="color: var(--text-secondary);"></i>
+                        <div>
+                            <p style="margin: 0; color: var(--text-primary); font-weight: 500; font-size: 14px;">Mostrar Logs</p>
+                            <p style="margin: 4px 0 0 0; color: var(--text-secondary); font-size: 12px;">Ver información detallada del sistema de IA</p>
+                        </div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" x-model="enableLogs" @change="toggleLogs">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <!-- Info about logs -->
+                <div style="background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 6px; padding: 15px;">
+                    <div style="display: flex; align-items: start; gap: 10px;">
+                        <i data-lucide="info" width="20" height="20" style="color: var(--accent); flex-shrink: 0; margin-top: 2px;"></i>
+                        <div>
+                            <p style="margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; font-size: 14px;">¿Qué se registra?</p>
+                            <ul style="margin: 0; padding-left: 20px; color: var(--text-secondary); font-size: 13px;">
+                                <li>Modo y proveedor de IA seleccionado</li>
+                                <li>Construcción de contexto (personajes, lore, capítulos)</li>
+                                <li>Optimización de tokens (antes/después)</li>
+                                <li>Prompt final generado</li>
+                                <li>Peticiones y respuestas de la API</li>
+                                <li>Tiempos de respuesta y errores</li>
+                            </ul>
+                            <p style="margin: 12px 0 0 0; color: var(--text-secondary); font-size: 13px;">
+                                <strong>💡 Tip:</strong> Abre la consola del navegador (F12) para ver los logs en tiempo real.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Data Management Section -->
             <div class="settings-section" style="margin-bottom: 30px; padding: 20px; border: 1px solid var(--border); border-radius: 8px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
