@@ -160,14 +160,19 @@ window.uiStore = {
     },
 
     closeModal(modalName = null) {
+        console.log(`🚪 closeModal() llamado${modalName ? ` para: ${modalName}` : ' (cerrar todos)'}`, new Error().stack);
+
         if (modalName) {
             this.modals[modalName] = false;
+            console.log(`🔒 Modal cerrado: ${modalName}`);
         } else {
             // Cerrar todos los modales
+            console.log('🔒 Cerrando TODOS los modales');
             Object.keys(this.modals).forEach(key => {
                 this.modals[key] = false;
             });
         }
+        console.log('🗑️ Limpiando modalData (esto puede causar pérdida de contenido)');
         this.modalData = null;
 
         // Restaurar foco al editor si existe
