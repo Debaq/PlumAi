@@ -699,6 +699,230 @@ window.editorAlpineComponent = function() {
         },
 
         /**
+         * Continuar escribiendo (desde sidebar)
+         */
+        async aiContinueWriting() {
+            await this.aiContinue();
+        },
+
+        /**
+         * Sugerir mejoras con IA
+         */
+        async aiSuggestImprovements() {
+            if (!window.aiService) {
+                this.$store.ui.error(
+                    this.$store.i18n.t('ai.error') || 'Error de IA',
+                    'El servicio de IA no está disponible'
+                );
+                return;
+            }
+
+            if (!this.$store.ai.hasApiKey()) {
+                this.$store.ui.error(
+                    this.$store.i18n.t('ai.error') || 'Error de IA',
+                    'No hay clave API configurada. Ve a Configuración para agregar una.'
+                );
+                return;
+            }
+
+            try {
+                this.$store.ui.info(
+                    this.$store.i18n.t('ai.processing') || 'Procesando...',
+                    'La IA está analizando el texto...'
+                );
+
+                const selectedText = this.editor?.getSelectedText ? this.editor.getSelectedText() : '';
+                const chapterId = this.$store.ui.currentEditingChapterId;
+
+                const userPrompt = selectedText
+                    ? `Analiza este texto y sugiere mejoras específicas para mejorar la prosa, el ritmo, la claridad y el impacto:\n\n${selectedText}`
+                    : 'Analiza el capítulo completo y sugiere mejoras específicas para mejorar la prosa, el ritmo, la claridad y el impacto';
+
+                const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
+                const useAgenticMode = settings.useAgenticContext !== false;
+
+                let response;
+                if (useAgenticMode && window.agenticContextService) {
+                    response = await window.aiService.sendAgenticRequest(
+                        'improve',
+                        userPrompt,
+                        chapterId,
+                        selectedText
+                    );
+                } else {
+                    response = await window.aiService.sendRequest(
+                        'improve',
+                        userPrompt,
+                        chapterId,
+                        selectedText
+                    );
+                }
+
+                const modalOverlay = document.querySelector('.ai-response-modal-overlay');
+                if (modalOverlay) {
+                    this.showAIResponseInModal(response);
+                } else {
+                    this.$store.ui.success(
+                        this.$store.i18n.t('ai.success') || 'IA',
+                        response.content || response.prompt
+                    );
+                }
+
+            } catch (error) {
+                console.error('❌ AI Error:', error);
+                this.$store.ui.error(
+                    this.$store.i18n.t('ai.error') || 'Error de IA',
+                    error.message || 'Ocurrió un error al procesar la solicitud'
+                );
+            }
+        },
+
+        /**
+         * Generar contenido con IA
+         */
+        async aiGenerateContent() {
+            if (!window.aiService) {
+                this.$store.ui.error(
+                    this.$store.i18n.t('ai.error') || 'Error de IA',
+                    'El servicio de IA no está disponible'
+                );
+                return;
+            }
+
+            if (!this.$store.ai.hasApiKey()) {
+                this.$store.ui.error(
+                    this.$store.i18n.t('ai.error') || 'Error de IA',
+                    'No hay clave API configurada. Ve a Configuración para agregar una.'
+                );
+                return;
+            }
+
+            try {
+                this.$store.ui.info(
+                    this.$store.i18n.t('ai.processing') || 'Procesando...',
+                    'La IA está generando contenido...'
+                );
+
+                const selectedText = this.editor?.getSelectedText ? this.editor.getSelectedText() : '';
+                const chapterId = this.$store.ui.currentEditingChapterId;
+
+                const userPrompt = selectedText
+                    ? `Usando este fragmento como referencia, genera contenido adicional que continúe la historia de manera coherente:\n\n${selectedText}`
+                    : 'Genera contenido nuevo para este capítulo basándote en el contexto del proyecto y lo que ya está escrito';
+
+                const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
+                const useAgenticMode = settings.useAgenticContext !== false;
+
+                let response;
+                if (useAgenticMode && window.agenticContextService) {
+                    response = await window.aiService.sendAgenticRequest(
+                        'continue',
+                        userPrompt,
+                        chapterId,
+                        selectedText
+                    );
+                } else {
+                    response = await window.aiService.sendRequest(
+                        'continue',
+                        userPrompt,
+                        chapterId,
+                        selectedText
+                    );
+                }
+
+                const modalOverlay = document.querySelector('.ai-response-modal-overlay');
+                if (modalOverlay) {
+                    this.showAIResponseInModal(response);
+                } else {
+                    this.insertAITextAtCursor(response.content || response.prompt);
+                    this.$store.ui.success(
+                        this.$store.i18n.t('ai.success') || 'IA',
+                        'Contenido generado e insertado en el editor'
+                    );
+                }
+
+            } catch (error) {
+                console.error('❌ AI Error:', error);
+                this.$store.ui.error(
+                    this.$store.i18n.t('ai.error') || 'Error de IA',
+                    error.message || 'Ocurrió un error al procesar la solicitud'
+                );
+            }
+        },
+
+        /**
+         * Resumir capítulo con IA
+         */
+        async aiSummarizeChapter() {
+            if (!window.aiService) {
+                this.$store.ui.error(
+                    this.$store.i18n.t('ai.error') || 'Error de IA',
+                    'El servicio de IA no está disponible'
+                );
+                return;
+            }
+
+            if (!this.$store.ai.hasApiKey()) {
+                this.$store.ui.error(
+                    this.$store.i18n.t('ai.error') || 'Error de IA',
+                    'No hay clave API configurada. Ve a Configuración para agregar una.'
+                );
+                return;
+            }
+
+            try {
+                this.$store.ui.info(
+                    this.$store.i18n.t('ai.processing') || 'Procesando...',
+                    'La IA está resumiendo el capítulo...'
+                );
+
+                const chapterId = this.$store.ui.currentEditingChapterId;
+                const selectedText = this.editor?.getSelectedText ? this.editor.getSelectedText() : '';
+
+                const userPrompt = selectedText
+                    ? `Resume este fragmento de manera concisa, capturando los puntos clave de la trama, desarrollo de personajes y eventos importantes:\n\n${selectedText}`
+                    : 'Resume este capítulo de manera concisa, capturando los puntos clave de la trama, desarrollo de personajes y eventos importantes';
+
+                const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
+                const useAgenticMode = settings.useAgenticContext !== false;
+
+                let response;
+                if (useAgenticMode && window.agenticContextService) {
+                    response = await window.aiService.sendAgenticRequest(
+                        'analyze',
+                        userPrompt,
+                        chapterId,
+                        selectedText
+                    );
+                } else {
+                    response = await window.aiService.sendRequest(
+                        'analyze',
+                        userPrompt,
+                        chapterId,
+                        selectedText
+                    );
+                }
+
+                const modalOverlay = document.querySelector('.ai-response-modal-overlay');
+                if (modalOverlay) {
+                    this.showAIResponseInModal(response);
+                } else {
+                    this.$store.ui.success(
+                        this.$store.i18n.t('ai.success') || 'IA',
+                        response.content || response.prompt
+                    );
+                }
+
+            } catch (error) {
+                console.error('❌ AI Error:', error);
+                this.$store.ui.error(
+                    this.$store.i18n.t('ai.error') || 'Error de IA',
+                    error.message || 'Ocurrió un error al procesar la solicitud'
+                );
+            }
+        },
+
+        /**
          * Mostrar respuesta de IA en el modal global
          */
         showAIResponseInModal(response) {

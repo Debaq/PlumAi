@@ -66,24 +66,24 @@
                         <span x-text="$store.i18n.t('sidebar.aiAssistant')"></span>
                     </h3>
                     <div class="editor-ai-actions">
-                        <button class="editor-ai-btn" @click="$store.ui.info('IA', 'Funcionalidad en desarrollo')">
+                        <button type="button" class="editor-ai-btn" @click="aiContinueWriting()" :disabled="!$store.ai.hasApiKey()">
                             <i data-lucide="wand-2" width="16" height="16"></i>
                             <span>Continuar escribiendo</span>
                         </button>
-                        <button class="editor-ai-btn" @click="$store.ui.info('IA', 'Funcionalidad en desarrollo')">
+                        <button type="button" class="editor-ai-btn" @click="aiSuggestImprovements()" :disabled="!$store.ai.hasApiKey()">
                             <i data-lucide="lightbulb" width="16" height="16"></i>
                             <span>Sugerir mejoras</span>
                         </button>
-                        <button class="editor-ai-btn" @click="$store.ui.info('IA', 'Funcionalidad en desarrollo')">
+                        <button type="button" class="editor-ai-btn" @click="aiGenerateContent()" :disabled="!$store.ai.hasApiKey()">
                             <i data-lucide="sparkles" width="16" height="16"></i>
                             <span>Generar contenido</span>
                         </button>
-                        <button class="editor-ai-btn" @click="$store.ui.info('IA', 'Funcionalidad en desarrollo')">
+                        <button type="button" class="editor-ai-btn" @click="aiSummarizeChapter()" :disabled="!$store.ai.hasApiKey()">
                             <i data-lucide="book-open" width="16" height="16"></i>
                             <span>Resumir capítulo</span>
                         </button>
                     </div>
-                    <template x-if="!$store.ai.isActive">
+                    <template x-if="!$store.ai.hasApiKey()">
                         <p style="font-size: 12px; color: var(--text-tertiary); margin-top: 12px; text-align: center;">
                             <i data-lucide="alert-circle" width="14" height="14" style="display: inline;"></i>
                             <span x-text="$store.i18n.t('ai.settings.noApiKey')"></span>
