@@ -23,21 +23,26 @@ window.projectStore = {
     },
 
     // API Keys (guardadas con el proyecto)
+    // Nueva estructura: soporta múltiples keys por proveedor y separación texto/imagen
     apiKeys: {
-        // APIs pagadas
-        claude: '',      // Anthropic Claude
-        openai: '',      // OpenAI (ChatGPT)
-        google: '',      // Google Gemini
-        groq: '',        // Groq (FREE tier generoso)
-        together: '',    // Together AI
-        replicate: '',   // Replicate
-
-        // APIs gratuitas
-        huggingface: '', // HuggingFace
-
-        // Legacy (mantener compatibilidad)
-        kimi: '',
-        qwen: ''
+        text: {
+            claude: [],      // Anthropic Claude - [{ id, name, key, isDefault, lastUsed }]
+            openai: [],      // OpenAI (ChatGPT)
+            google: [],      // Google Gemini
+            groq: [],        // Groq (FREE tier generoso)
+            together: [],    // Together AI
+            replicate: [],   // Replicate
+            huggingface: [], // HuggingFace
+            kimi: [],        // Legacy
+            qwen: []         // Legacy
+        },
+        image: {
+            googleImagen: [],    // Google Imagen (Vertex AI)
+            dalle: [],           // DALL-E (OpenAI)
+            stabilityai: [],     // Stability AI (Stable Diffusion)
+            replicate: [],       // Replicate (múltiples modelos)
+            midjourney: []       // Midjourney (via API no oficial)
+        }
     },
 
     // Entidades
@@ -48,6 +53,220 @@ window.projectStore = {
     timeline: [],
     notes: [],
     loreEntries: [], // Nuevo: elementos de lore
+    aiConversations: [], // Nuevo: conversaciones con IA
+
+    // ============================================
+    // MÉTODOS PARA API KEYS
+    // ============================================
+
+    /**
+     * Migrar formato antiguo de API keys al nuevo formato
+     * Convierte { claude: 'key' } a { text: { claude: [{ id, name, key, isDefault }] } }
+     */
+    migrateApiKeys() {
+        // Si ya está en el nuevo formato (tiene 'text' e 'image'), no hacer nada
+        if (this.apiKeys.text && this.apiKeys.image) {
+            return;
+        }
+
+        console.log('🔄 Migrando API keys al nuevo formato...');
+
+        const oldKeys = { ...this.apiKeys };
+
+        // Resetear a nuevo formato
+        this.apiKeys = {
+            text: {
+                claude: [],
+                openai: [],
+                google: [],
+                groq: [],
+                together: [],
+                replicate: [],
+                huggingface: [],
+                kimi: [],
+                qwen: []
+            },
+            image: {
+                googleImagen: [],
+                dalle: [],
+                stabilityai: [],
+                replicate: [],
+                midjourney: []
+            }
+        };
+
+        // Migrar keys existentes
+        for (const [provider, key] of Object.entries(oldKeys)) {
+            if (key && typeof key === 'string' && key.trim().length > 0) {
+                // Determinar si es proveedor de texto
+                if (this.apiKeys.text[provider] !== undefined) {
+                    this.apiKeys.text[provider].push({
+                        id: window.uuid.generateUUID(),
+                        name: 'Primary',
+                        key: key.trim(),
+                        isDefault: true,
+                        lastUsed: new Date().toISOString()
+                    });
+                    console.log(`  ✅ Migrado: ${provider}`);
+                }
+            }
+        }
+
+        console.log('✅ Migración de API keys completada');
+        this.updateModified();
+    },
+
+    /**
+     * Agregar nueva API key
+     * @param {string} type - 'text' o 'image'
+     * @param {string} provider - Nombre del proveedor (claude, openai, etc.)
+     * @param {Object} keyData - { name, key }
+     */
+    addApiKey(type, provider, keyData) {
+        if (!this.apiKeys[type] || !this.apiKeys[type][provider]) {
+            throw new Error(`Proveedor inválido: ${type}.${provider}`);
+        }
+
+        if (!keyData.key || keyData.key.trim().length === 0) {
+            throw new Error('La API key no puede estar vacía');
+        }
+
+        const newKey = {
+            id: window.uuid.generateUUID(),
+            name: keyData.name || 'Key ' + (this.apiKeys[type][provider].length + 1),
+            key: keyData.key.trim(),
+            isDefault: this.apiKeys[type][provider].length === 0, // Primera key es default
+            lastUsed: null
+        };
+
+        this.apiKeys[type][provider].push(newKey);
+        this.updateModified();
+
+        return newKey;
+    },
+
+    /**
+     * Actualizar API key existente
+     */
+    updateApiKey(type, provider, keyId, updates) {
+        if (!this.apiKeys[type] || !this.apiKeys[type][provider]) {
+            throw new Error(`Proveedor inválido: ${type}.${provider}`);
+        }
+
+        const keyIndex = this.apiKeys[type][provider].findIndex(k => k.id === keyId);
+        if (keyIndex === -1) {
+            throw new Error('API key no encontrada');
+        }
+
+        // Actualizar campos permitidos
+        if (updates.name !== undefined) {
+            this.apiKeys[type][provider][keyIndex].name = updates.name;
+        }
+        if (updates.key !== undefined && updates.key.trim().length > 0) {
+            this.apiKeys[type][provider][keyIndex].key = updates.key.trim();
+        }
+        if (updates.isDefault !== undefined) {
+            // Si se marca como default, quitar default de las demás
+            if (updates.isDefault) {
+                this.apiKeys[type][provider].forEach(k => k.isDefault = false);
+            }
+            this.apiKeys[type][provider][keyIndex].isDefault = updates.isDefault;
+        }
+
+        this.updateModified();
+    },
+
+    /**
+     * Eliminar API key
+     */
+    deleteApiKey(type, provider, keyId) {
+        if (!this.apiKeys[type] || !this.apiKeys[type][provider]) {
+            throw new Error(`Proveedor inválido: ${type}.${provider}`);
+        }
+
+        const keyIndex = this.apiKeys[type][provider].findIndex(k => k.id === keyId);
+        if (keyIndex === -1) {
+            throw new Error('API key no encontrada');
+        }
+
+        const wasDefault = this.apiKeys[type][provider][keyIndex].isDefault;
+        this.apiKeys[type][provider].splice(keyIndex, 1);
+
+        // Si era default y quedan keys, marcar la primera como default
+        if (wasDefault && this.apiKeys[type][provider].length > 0) {
+            this.apiKeys[type][provider][0].isDefault = true;
+        }
+
+        this.updateModified();
+    },
+
+    /**
+     * Obtener API key por defecto para un proveedor
+     */
+    getDefaultApiKey(type, provider) {
+        if (!this.apiKeys[type] || !this.apiKeys[type][provider]) {
+            return null;
+        }
+
+        const defaultKey = this.apiKeys[type][provider].find(k => k.isDefault);
+        return defaultKey || (this.apiKeys[type][provider].length > 0 ? this.apiKeys[type][provider][0] : null);
+    },
+
+    /**
+     * Obtener todas las keys de un proveedor
+     */
+    getApiKeys(type, provider) {
+        if (!this.apiKeys[type] || !this.apiKeys[type][provider]) {
+            return [];
+        }
+
+        return this.apiKeys[type][provider];
+    },
+
+    /**
+     * Verificar si un proveedor tiene al menos una API key
+     */
+    hasApiKey(type, provider) {
+        if (!this.apiKeys[type] || !this.apiKeys[type][provider]) {
+            return false;
+        }
+
+        return this.apiKeys[type][provider].length > 0;
+    },
+
+    /**
+     * Marcar API key como usada (actualizar lastUsed)
+     */
+    markApiKeyAsUsed(type, provider, keyId) {
+        if (!this.apiKeys[type] || !this.apiKeys[type][provider]) {
+            return;
+        }
+
+        const key = this.apiKeys[type][provider].find(k => k.id === keyId);
+        if (key) {
+            key.lastUsed = new Date().toISOString();
+            this.updateModified();
+        }
+    },
+
+    /**
+     * Obtener siguiente key disponible (para fallback)
+     */
+    getNextApiKey(type, provider, currentKeyId) {
+        if (!this.apiKeys[type] || !this.apiKeys[type][provider]) {
+            return null;
+        }
+
+        const keys = this.apiKeys[type][provider];
+        const currentIndex = keys.findIndex(k => k.id === currentKeyId);
+
+        // Si no se encuentra la actual o es la última, retornar null
+        if (currentIndex === -1 || currentIndex >= keys.length - 1) {
+            return null;
+        }
+
+        return keys[currentIndex + 1];
+    },
 
     // Métodos para personajes
     addCharacter(character) {
@@ -1314,6 +1533,93 @@ window.projectStore = {
                 });
             }
         }, 2000);
+    },
+
+    // ============================================
+    // MÉTODOS PARA CONVERSACIONES DE IA
+    // ============================================
+
+    /**
+     * Agregar una nueva conversación de IA
+     */
+    addAIConversation(conversation) {
+        this.aiConversations.unshift(conversation); // Agregar al inicio (más recientes primero)
+        this.updateModified();
+    },
+
+    /**
+     * Obtener una conversación por ID
+     */
+    getAIConversation(conversationId) {
+        return this.aiConversations.find(c => c.id === conversationId);
+    },
+
+    /**
+     * Actualizar una conversación existente
+     */
+    updateAIConversation(conversationId, updates) {
+        const index = this.aiConversations.findIndex(c => c.id === conversationId);
+        if (index !== -1) {
+            this.aiConversations[index] = {
+                ...this.aiConversations[index],
+                ...updates,
+                updatedAt: new Date().toISOString()
+            };
+            this.updateModified();
+        }
+    },
+
+    /**
+     * Eliminar una conversación
+     */
+    deleteAIConversation(conversationId) {
+        this.aiConversations = this.aiConversations.filter(c => c.id !== conversationId);
+        this.updateModified();
+    },
+
+    /**
+     * Obtener conversaciones de un capítulo específico
+     */
+    getChapterConversations(chapterId) {
+        return this.aiConversations.filter(c => c.chapterId === chapterId);
+    },
+
+    /**
+     * Obtener conversaciones activas
+     */
+    getActiveConversations() {
+        return this.aiConversations.filter(c => c.status === 'active');
+    },
+
+    /**
+     * Obtener conversaciones completadas
+     */
+    getCompletedConversations() {
+        return this.aiConversations.filter(c => c.status === 'completed');
+    },
+
+    /**
+     * Obtener conversaciones usadas (contenido insertado)
+     */
+    getUsedConversations() {
+        return this.aiConversations.filter(c => c.metadata.wasUsed);
+    },
+
+    /**
+     * Obtener estadísticas de conversaciones
+     */
+    getAIConversationStats() {
+        return {
+            total: this.aiConversations.length,
+            active: this.aiConversations.filter(c => c.status === 'active').length,
+            completed: this.aiConversations.filter(c => c.status === 'completed').length,
+            archived: this.aiConversations.filter(c => c.status === 'archived').length,
+            used: this.aiConversations.filter(c => c.metadata.wasUsed).length,
+            byMode: this.aiConversations.reduce((acc, c) => {
+                acc[c.mode] = (acc[c.mode] || 0) + 1;
+                return acc;
+            }, {})
+        };
     },
 
 

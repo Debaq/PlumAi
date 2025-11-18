@@ -19,11 +19,39 @@
                     Configura las claves de API para usar la IA
                 </p>
 
-                <!-- Provider Selection -->
-                <div class="form-group" style="margin-bottom: 20px;">
+                <!-- Tabs: Texto vs Imágenes -->
+                <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 0;">
+                    <button
+                        @click="switchTab('text')"
+                        :style="`padding: 10px 20px; background: ${activeApiTab === 'text' ? 'var(--accent)' : 'transparent'}; color: ${activeApiTab === 'text' ? 'white' : 'var(--text-secondary)'}; border: none; border-bottom: 3px solid ${activeApiTab === 'text' ? 'var(--accent)' : 'transparent'}; cursor: pointer; font-weight: 600; transition: all 0.2s;`"
+                        type="button">
+                        <i data-lucide="type" width="16" height="16" style="vertical-align: text-bottom; margin-right: 5px;"></i>
+                        APIs de Texto
+                    </button>
+                    <button
+                        @click="switchTab('image')"
+                        :style="`padding: 10px 20px; background: ${activeApiTab === 'image' ? 'var(--accent)' : 'transparent'}; color: ${activeApiTab === 'image' ? 'white' : 'var(--text-secondary)'}; border: none; border-bottom: 3px solid ${activeApiTab === 'image' ? 'var(--accent)' : 'transparent'}; cursor: pointer; font-weight: 600; transition: all 0.2s;`"
+                        type="button">
+                        <i data-lucide="image" width="16" height="16" style="vertical-align: text-bottom; margin-right: 5px;"></i>
+                        APIs de Imágenes
+                    </button>
+                </div>
+
+                <!-- Provider Selection (Texto) -->
+                <div x-show="activeApiTab === 'text'" class="form-group" style="margin-bottom: 20px;">
                     <label x-text="$store.i18n.t('common.provider')" style="font-weight: 600; margin-bottom: 8px; display: block;">Proveedor</label>
                     <select x-model="selectedProvider" @change="onProviderChange" style="width: 100%; padding: 10px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary);">
                         <template x-for="provider in getAvailableProviders()" :key="provider.id">
+                            <option :value="provider.id" x-text="`${provider.name} - ${provider.freeTier}`"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <!-- Provider Selection (Imágenes) -->
+                <div x-show="activeApiTab === 'image'" class="form-group" style="margin-bottom: 20px;">
+                    <label style="font-weight: 600; margin-bottom: 8px; display: block;">Proveedor de Imágenes</label>
+                    <select x-model="selectedProvider" @change="onProviderChange" style="width: 100%; padding: 10px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary);">
+                        <template x-for="provider in getAvailableImageProviders()" :key="provider.id">
                             <option :value="provider.id" x-text="`${provider.name} - ${provider.freeTier}`"></option>
                         </template>
                     </select>
@@ -108,6 +136,87 @@
                 <!-- Connection Status -->
                 <div x-show="connectionStatus" :class="connectionStatus === 'success' ? 'success' : connectionStatus === 'error' ? 'error' : ''" style="margin-top: 15px; padding: 12px; border-radius: 6px; text-align: center;" :style="`background: color-mix(in srgb, var(--${connectionStatus === 'success' ? 'success' : 'error'}) 15%, transparent); border: 1px solid var(--${connectionStatus === 'success' ? 'success' : 'error'});`">
                     <span :style="`color: var(--${connectionStatus === 'success' ? 'success' : 'error'});`" x-text="connectionMessage"></span>
+                </div>
+
+                <!-- Saved API Keys List -->
+                <div x-show="savedKeys.length > 0" style="margin-top: 20px;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 14px; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="key" width="16" height="16"></i>
+                        Keys Guardadas (<span x-text="savedKeys.length"></span>)
+                    </h4>
+
+                    <div style="border: 1px solid var(--border); border-radius: 6px; overflow: hidden;">
+                        <template x-for="(key, index) in savedKeys" :key="key.id">
+                            <div :style="`padding: 12px; background: var(--bg-tertiary); ${index > 0 ? 'border-top: 1px solid var(--border);' : ''}`">
+                                <!-- Key Name (Editable) -->
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                    <div style="flex: 1; display: flex; align-items: center; gap: 8px;">
+                                        <!-- Badge Default -->
+                                        <span x-show="key.isDefault" style="background: var(--success); color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600;">DEFAULT</span>
+
+                                        <!-- Name (Editable) -->
+                                        <template x-if="editingKeyId === key.id">
+                                            <div style="display: flex; gap: 5px; align-items: center; flex: 1;">
+                                                <input
+                                                    type="text"
+                                                    x-model="editingKeyName"
+                                                    @keyup.enter="saveKeyName(key.id)"
+                                                    @keyup.escape="cancelEditingKey()"
+                                                    style="flex: 1; padding: 4px 8px; background: var(--bg-primary); border: 1px solid var(--accent); border-radius: 4px; color: var(--text-primary); font-size: 13px;">
+                                                <button @click="saveKeyName(key.id)" style="padding: 4px 8px; background: var(--success); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                                    <i data-lucide="check" width="14" height="14"></i>
+                                                </button>
+                                                <button @click="cancelEditingKey()" style="padding: 4px 8px; background: var(--error); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                                    <i data-lucide="x" width="14" height="14"></i>
+                                                </button>
+                                            </div>
+                                        </template>
+                                        <template x-if="editingKeyId !== key.id">
+                                            <span style="font-weight: 600; color: var(--text-primary); font-size: 13px;" x-text="key.name"></span>
+                                        </template>
+                                    </div>
+
+                                    <!-- Actions -->
+                                    <div x-show="editingKeyId !== key.id" style="display: flex; gap: 5px;">
+                                        <!-- Edit Name -->
+                                        <button @click="startEditingKey(key)" title="Editar nombre" style="padding: 4px 8px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; color: var(--text-secondary);">
+                                            <i data-lucide="edit-2" width="14" height="14"></i>
+                                        </button>
+
+                                        <!-- Set Default -->
+                                        <button x-show="!key.isDefault" @click="setDefaultKey(key.id)" title="Marcar como default" style="padding: 4px 8px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; color: var(--text-secondary);">
+                                            <i data-lucide="star" width="14" height="14"></i>
+                                        </button>
+
+                                        <!-- Delete -->
+                                        <button @click="if(confirm('¿Eliminar esta API key?')) deleteKey(key.id)" title="Eliminar" style="padding: 4px 8px; background: var(--bg-primary); border: 1px solid var(--error); border-radius: 4px; cursor: pointer; color: var(--error);">
+                                            <i data-lucide="trash-2" width="14" height="14"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Key Value (Masked) -->
+                                <div style="display: flex; align-items: center; gap: 8px; font-family: monospace; font-size: 12px; color: var(--text-secondary);">
+                                    <i data-lucide="key" width="12" height="12" style="opacity: 0.5;"></i>
+                                    <span x-text="getKeyMasked(key.key)"></span>
+                                </div>
+
+                                <!-- Last Used -->
+                                <div x-show="key.lastUsed" style="margin-top: 4px; font-size: 11px; color: var(--text-tertiary); display: flex; align-items: center; gap: 5px;">
+                                    <i data-lucide="clock" width="10" height="10"></i>
+                                    <span>Último uso: <span x-text="new Date(key.lastUsed).toLocaleString('es-ES')"></span></span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Info about multiple keys -->
+                    <div style="margin-top: 10px; padding: 10px; background: linear-gradient(135deg, rgba(74, 144, 226, 0.1) 0%, rgba(124, 179, 255, 0.05) 100%); border: 1px solid var(--accent); border-radius: 6px;">
+                        <p style="margin: 0; color: var(--text-secondary); font-size: 12px;">
+                            <i data-lucide="info" width="12" height="12" style="vertical-align: text-bottom; margin-right: 4px;"></i>
+                            <strong>Fallback automático:</strong> Si una key falla, el sistema intentará automáticamente con la siguiente disponible.
+                        </p>
+                    </div>
                 </div>
 
                 <!-- Security Warning -->

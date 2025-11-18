@@ -1229,9 +1229,28 @@ body {
     border-color: var(--accent);
 }
 
+.editor-ai-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--bg-secondary);
+    border-color: var(--border);
+}
+
+.editor-ai-btn:disabled:hover {
+    background: var(--bg-secondary);
+    border-color: var(--border);
+}
+
 .editor-ai-btn svg {
     color: var(--accent);
     flex-shrink: 0;
+}
+
+/* AI Conversation Items */
+.ai-conversation-item:hover {
+    background: var(--bg-hover);
+    border-color: var(--accent);
+    transform: translateX(2px);
 }
 
 .editor-save-indicator {

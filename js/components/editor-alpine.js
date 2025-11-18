@@ -699,6 +699,406 @@ window.editorAlpineComponent = function() {
         },
 
         /**
+         * Continuar escribiendo (desde sidebar) - Inserta al FINAL del contenido
+         * CON SISTEMA DE CONVERSACIONES: Guarda todo el proceso
+         */
+        async aiContinueWriting() {
+            if (!window.aiService) {
+                this.$store.ui.error(
+                    this.$store.i18n.t('ai.error') || 'Error de IA',
+                    'El servicio de IA no está disponible'
+                );
+                return;
+            }
+
+            if (!this.$store.ai.hasApiKey()) {
+                this.$store.ui.error(
+                    this.$store.i18n.t('ai.error') || 'Error de IA',
+                    'No hay clave API configurada. Ve a Configuración para agregar una.'
+                );
+                return;
+            }
+
+            try {
+                this.$store.ui.info(
+                    this.$store.i18n.t('ai.processing') || 'Procesando...',
+                    'La IA está continuando tu historia...'
+                );
+
+                const chapterId = this.$store.ui.currentEditingChapterId;
+                const userPrompt = 'Continúa el texto desde donde terminé, manteniendo el estilo y tono establecidos';
+
+                // CREAR CONVERSACIÓN
+                const conversation = await window.aiConversationsService.createConversation({
+                    mode: 'continue',
+                    userPrompt: userPrompt,
+                    chapterId: chapterId,
+                    selectedText: null
+                });
+
+                // Agregar mensaje del usuario
+                window.aiConversationsService.addUserMessage(conversation, userPrompt);
+
+                // Guardar conversación en el proyecto
+                this.$store.project.addAIConversation(conversation);
+
+                // Enviar request a IA
+                const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
+                const useAgenticMode = settings.useAgenticContext !== false;
+
+                let response;
+                if (useAgenticMode && window.agenticContextService) {
+                    response = await window.aiService.sendAgenticRequest(
+                        'continue',
+                        userPrompt,
+                        chapterId,
+                        null
+                    );
+                } else {
+                    response = await window.aiService.sendRequest(
+                        'continue',
+                        userPrompt,
+                        chapterId,
+                        null
+                    );
+                }
+
+                // Agregar respuesta de IA a la conversación
+                window.aiConversationsService.addAIMessage(conversation, response);
+
+                // Generar nombre de conversación en segundo plano (no bloquea)
+                window.aiConversationsService.generateConversationName(conversation).then(name => {
+                    this.$store.project.updateAIConversation(conversation.id, { name: name });
+                });
+
+                // INSERTAR al final del contenido
+                this.insertAtEnd(response.content || response.prompt);
+
+                // Marcar conversación como usada
+                window.aiConversationsService.markAsUsed(conversation, 'end');
+                window.aiConversationsService.completeConversation(conversation);
+                this.$store.project.updateAIConversation(conversation.id, conversation);
+
+                this.$store.ui.success(
+                    this.$store.i18n.t('ai.success') || 'IA',
+                    'Texto continuado e insertado al final del capítulo'
+                );
+
+            } catch (error) {
+                console.error('❌ AI Error:', error);
+                this.$store.ui.error(
+                    this.$store.i18n.t('ai.error') || 'Error de IA',
+                    error.message || 'Ocurrió un error al procesar la solicitud'
+                );
+            }
+        },
+
+        /**
+         * Sugerir mejoras con IA - SIEMPRE muestra en modal (de texto seleccionado o todo el capítulo)
+         * CON SISTEMA DE CONVERSACIONES: Guarda todo el proceso
+         */
+        async aiSuggestImprovements() {
+            if (!window.aiService) {
+                this.$store.ui.error(
+                    this.$store.i18n.t('ai.error') || 'Error de IA',
+                    'El servicio de IA no está disponible'
+                );
+                return;
+            }
+
+            if (!this.$store.ai.hasApiKey()) {
+                this.$store.ui.error(
+                    this.$store.i18n.t('ai.error') || 'Error de IA',
+                    'No hay clave API configurada. Ve a Configuración para agregar una.'
+                );
+                return;
+            }
+
+            try {
+                // Obtener texto seleccionado (si hay)
+                const selectedText = this.editor?.getSelectedText ? this.editor.getSelectedText() : '';
+
+                this.$store.ui.info(
+                    this.$store.i18n.t('ai.processing') || 'Procesando...',
+                    selectedText
+                        ? 'La IA está analizando el texto seleccionado...'
+                        : 'La IA está analizando el capítulo completo...'
+                );
+
+                const chapterId = this.$store.ui.currentEditingChapterId;
+
+                const userPrompt = selectedText
+                    ? `Analiza este texto y sugiere mejoras específicas para mejorar la prosa, el ritmo, la claridad y el impacto. Proporciona sugerencias concretas y accionables:\n\n${selectedText}`
+                    : 'Analiza el capítulo completo y sugiere mejoras específicas para mejorar la prosa, el ritmo, la claridad y el impacto. Proporciona sugerencias concretas y accionables.';
+
+                // CREAR CONVERSACIÓN
+                const conversation = await window.aiConversationsService.createConversation({
+                    mode: 'improve',
+                    userPrompt: userPrompt,
+                    chapterId: chapterId,
+                    selectedText: selectedText
+                });
+
+                // Agregar mensaje del usuario
+                window.aiConversationsService.addUserMessage(conversation, userPrompt);
+
+                // Guardar conversación en el proyecto
+                this.$store.project.addAIConversation(conversation);
+
+                // Enviar request a IA
+                const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
+                const useAgenticMode = settings.useAgenticContext !== false;
+
+                let response;
+                if (useAgenticMode && window.agenticContextService) {
+                    response = await window.aiService.sendAgenticRequest(
+                        'improve',
+                        userPrompt,
+                        chapterId,
+                        selectedText
+                    );
+                } else {
+                    response = await window.aiService.sendRequest(
+                        'improve',
+                        userPrompt,
+                        chapterId,
+                        selectedText
+                    );
+                }
+
+                // Agregar respuesta de IA a la conversación
+                window.aiConversationsService.addAIMessage(conversation, response);
+
+                // Generar nombre de conversación en segundo plano
+                window.aiConversationsService.generateConversationName(conversation).then(name => {
+                    this.$store.project.updateAIConversation(conversation.id, { name: name });
+                });
+
+                // Marcar como completada (no se insertó)
+                window.aiConversationsService.completeConversation(conversation);
+                this.$store.project.updateAIConversation(conversation.id, conversation);
+
+                // SIEMPRE mostrar en modal (nunca insertar directamente)
+                const modalOverlay = document.querySelector('.ai-response-modal-overlay');
+                if (modalOverlay) {
+                    this.showAIResponseInModal(response);
+                } else {
+                    // Fallback si no hay modal
+                    alert(response.content || response.prompt);
+                }
+
+            } catch (error) {
+                console.error('❌ AI Error:', error);
+                this.$store.ui.error(
+                    this.$store.i18n.t('ai.error') || 'Error de IA',
+                    error.message || 'Ocurrió un error al procesar la solicitud'
+                );
+            }
+        },
+
+        /**
+         * Generar contenido con IA - Inserta en la posición del CURSOR
+         * CON SISTEMA DE CONVERSACIONES: Guarda todo el proceso
+         */
+        async aiGenerateContent() {
+            if (!window.aiService) {
+                this.$store.ui.error(
+                    this.$store.i18n.t('ai.error') || 'Error de IA',
+                    'El servicio de IA no está disponible'
+                );
+                return;
+            }
+
+            if (!this.$store.ai.hasApiKey()) {
+                this.$store.ui.error(
+                    this.$store.i18n.t('ai.error') || 'Error de IA',
+                    'No hay clave API configurada. Ve a Configuración para agregar una.'
+                );
+                return;
+            }
+
+            try {
+                this.$store.ui.info(
+                    this.$store.i18n.t('ai.processing') || 'Procesando...',
+                    'La IA está generando contenido...'
+                );
+
+                const selectedText = this.editor?.getSelectedText ? this.editor.getSelectedText() : '';
+                const chapterId = this.$store.ui.currentEditingChapterId;
+
+                const userPrompt = selectedText
+                    ? `Usando este fragmento como referencia, genera contenido adicional que continúe la historia de manera coherente:\n\n${selectedText}`
+                    : 'Genera contenido nuevo para insertar en esta posición, considerando el contexto anterior y posterior';
+
+                // CREAR CONVERSACIÓN
+                const conversation = await window.aiConversationsService.createConversation({
+                    mode: 'continue',
+                    userPrompt: userPrompt,
+                    chapterId: chapterId,
+                    selectedText: selectedText
+                });
+
+                // Agregar mensaje del usuario
+                window.aiConversationsService.addUserMessage(conversation, userPrompt);
+
+                // Guardar conversación en el proyecto
+                this.$store.project.addAIConversation(conversation);
+
+                // Enviar request a IA
+                const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
+                const useAgenticMode = settings.useAgenticContext !== false;
+
+                let response;
+                if (useAgenticMode && window.agenticContextService) {
+                    response = await window.aiService.sendAgenticRequest(
+                        'continue',
+                        userPrompt,
+                        chapterId,
+                        selectedText
+                    );
+                } else {
+                    response = await window.aiService.sendRequest(
+                        'continue',
+                        userPrompt,
+                        chapterId,
+                        selectedText
+                    );
+                }
+
+                // Agregar respuesta de IA a la conversación
+                window.aiConversationsService.addAIMessage(conversation, response);
+
+                // Generar nombre de conversación en segundo plano
+                window.aiConversationsService.generateConversationName(conversation).then(name => {
+                    this.$store.project.updateAIConversation(conversation.id, { name: name });
+                });
+
+                // INSERTAR en la posición del cursor
+                this.insertAtCursor(response.content || response.prompt);
+
+                // Marcar conversación como usada
+                window.aiConversationsService.markAsUsed(conversation, 'cursor');
+                window.aiConversationsService.completeConversation(conversation);
+                this.$store.project.updateAIConversation(conversation.id, conversation);
+
+                this.$store.ui.success(
+                    this.$store.i18n.t('ai.success') || 'IA',
+                    'Contenido generado e insertado en el cursor'
+                );
+
+            } catch (error) {
+                console.error('❌ AI Error:', error);
+                this.$store.ui.error(
+                    this.$store.i18n.t('ai.error') || 'Error de IA',
+                    error.message || 'Ocurrió un error al procesar la solicitud'
+                );
+            }
+        },
+
+        /**
+         * Resumir capítulo con IA - SIEMPRE muestra en modal (resumen de texto seleccionado o capítulo completo)
+         * CON SISTEMA DE CONVERSACIONES: Guarda todo el proceso
+         */
+        async aiSummarizeChapter() {
+            if (!window.aiService) {
+                this.$store.ui.error(
+                    this.$store.i18n.t('ai.error') || 'Error de IA',
+                    'El servicio de IA no está disponible'
+                );
+                return;
+            }
+
+            if (!this.$store.ai.hasApiKey()) {
+                this.$store.ui.error(
+                    this.$store.i18n.t('ai.error') || 'Error de IA',
+                    'No hay clave API configurada. Ve a Configuración para agregar una.'
+                );
+                return;
+            }
+
+            try {
+                // Obtener texto seleccionado (si hay)
+                const selectedText = this.editor?.getSelectedText ? this.editor.getSelectedText() : '';
+
+                this.$store.ui.info(
+                    this.$store.i18n.t('ai.processing') || 'Procesando...',
+                    selectedText
+                        ? 'La IA está resumiendo el texto seleccionado...'
+                        : 'La IA está resumiendo el capítulo completo...'
+                );
+
+                const chapterId = this.$store.ui.currentEditingChapterId;
+
+                const userPrompt = selectedText
+                    ? `Resume este fragmento de manera concisa y clara, capturando:\n- Puntos clave de la trama\n- Desarrollo de personajes\n- Eventos importantes\n- Temas principales\n\nTexto:\n${selectedText}`
+                    : 'Resume este capítulo de manera concisa y clara, capturando:\n- Puntos clave de la trama\n- Desarrollo de personajes\n- Eventos importantes\n- Temas principales';
+
+                // CREAR CONVERSACIÓN
+                const conversation = await window.aiConversationsService.createConversation({
+                    mode: 'analyze',
+                    userPrompt: userPrompt,
+                    chapterId: chapterId,
+                    selectedText: selectedText
+                });
+
+                // Agregar mensaje del usuario
+                window.aiConversationsService.addUserMessage(conversation, userPrompt);
+
+                // Guardar conversación en el proyecto
+                this.$store.project.addAIConversation(conversation);
+
+                // Enviar request a IA
+                const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
+                const useAgenticMode = settings.useAgenticContext !== false;
+
+                let response;
+                if (useAgenticMode && window.agenticContextService) {
+                    response = await window.aiService.sendAgenticRequest(
+                        'analyze',
+                        userPrompt,
+                        chapterId,
+                        selectedText
+                    );
+                } else {
+                    response = await window.aiService.sendRequest(
+                        'analyze',
+                        userPrompt,
+                        chapterId,
+                        selectedText
+                    );
+                }
+
+                // Agregar respuesta de IA a la conversación
+                window.aiConversationsService.addAIMessage(conversation, response);
+
+                // Generar nombre de conversación en segundo plano
+                window.aiConversationsService.generateConversationName(conversation).then(name => {
+                    this.$store.project.updateAIConversation(conversation.id, { name: name });
+                });
+
+                // Marcar como completada (no se insertó)
+                window.aiConversationsService.completeConversation(conversation);
+                this.$store.project.updateAIConversation(conversation.id, conversation);
+
+                // SIEMPRE mostrar en modal (nunca insertar)
+                const modalOverlay = document.querySelector('.ai-response-modal-overlay');
+                if (modalOverlay) {
+                    this.showAIResponseInModal(response);
+                } else {
+                    // Fallback si no hay modal
+                    alert(response.content || response.prompt);
+                }
+
+            } catch (error) {
+                console.error('❌ AI Error:', error);
+                this.$store.ui.error(
+                    this.$store.i18n.t('ai.error') || 'Error de IA',
+                    error.message || 'Ocurrió un error al procesar la solicitud'
+                );
+            }
+        },
+
+        /**
          * Mostrar respuesta de IA en el modal global
          */
         showAIResponseInModal(response) {
@@ -731,11 +1131,11 @@ window.editorAlpineComponent = function() {
                 newInsertBtn.onclick = () => {
                     if (window.activeChapterEditorInstance) {
                         const text = modal.querySelector('.ai-response-text').textContent;
-                        window.activeChapterEditorInstance.insertAITextAtCursor(text);
+                        window.activeChapterEditorInstance.insertAtCursor(text);
                         modalOverlay.style.display = 'none';
                         window.activeChapterEditorInstance.$store.ui.success(
                             'IA',
-                            'Respuesta insertada en el editor'
+                            'Respuesta insertada en el cursor del editor'
                         );
                     }
                 };
@@ -753,24 +1153,68 @@ window.editorAlpineComponent = function() {
         },
 
         /**
-         * Insertar texto de IA en la posición del cursor
+         * Insertar texto al final del contenido del editor
          */
-        insertAITextAtCursor(text) {
+        insertAtEnd(text) {
             if (!this.editor || !text) return;
 
-            // Obtener selección actual
-            const sel = window.getSelection();
-            if (!sel.rangeCount) {
-                // Si no hay selección, agregar al final
+            // Obtener contenido actual
+            const currentContent = this.editor.getContent();
+
+            // Agregar texto al final con saltos de línea
+            const newContent = currentContent + '\n\n' + text;
+
+            // Actualizar contenido del editor
+            this.editor.setContent(newContent);
+
+            // Hacer scroll al final
+            if (this.editor.editor) {
+                this.editor.editor.scrollTop = this.editor.editor.scrollHeight;
                 this.editor.editor.focus();
-                const range = document.createRange();
-                range.selectNodeContents(this.editor.editor);
+            }
+
+            // Trigger content change para que se guarde
+            if (this.editor.onContentChange) {
+                this.editor.onContentChange(newContent);
+            }
+        },
+
+        /**
+         * Insertar texto de IA en la posición del cursor DENTRO DEL EDITOR
+         */
+        insertAtCursor(text) {
+            if (!this.editor || !text) return;
+
+            const editorElement = this.editor.editor;
+            if (!editorElement) return;
+
+            // Focus en el editor primero
+            editorElement.focus();
+
+            // Obtener selección
+            const sel = window.getSelection();
+            let range;
+
+            // Verificar si la selección está dentro del editor
+            if (sel.rangeCount > 0) {
+                range = sel.getRangeAt(0);
+                // Verificar si el range está dentro del editor
+                if (!editorElement.contains(range.commonAncestorContainer)) {
+                    // Si no está dentro del editor, crear un range al final
+                    range = document.createRange();
+                    range.selectNodeContents(editorElement);
+                    range.collapse(false);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                }
+            } else {
+                // No hay selección, crear una al final del editor
+                range = document.createRange();
+                range.selectNodeContents(editorElement);
                 range.collapse(false);
                 sel.removeAllRanges();
                 sel.addRange(range);
             }
-
-            const range = sel.getRangeAt(0);
 
             // Si hay texto seleccionado, eliminarlo
             if (!sel.isCollapsed) {
@@ -793,7 +1237,18 @@ window.editorAlpineComponent = function() {
             }
 
             // Focus en el editor
-            this.editor.editor.focus();
+            editorElement.focus();
+        },
+
+        /**
+         * Abrir una conversación de IA en un modal
+         */
+        openConversation(conversationId) {
+            const conversation = this.$store.project.getAIConversation(conversationId);
+            if (!conversation) return;
+
+            // Abrir modal con información de la conversación
+            this.$store.ui.openModal('viewConversation', conversation);
         },
 
         /**
