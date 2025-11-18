@@ -40,9 +40,145 @@ window.richEditorComponent = function(config = {}) {
             this.$nextTick(() => {
                 this.createEditor();
                 if (this.enableAI) {
-                    this.injectAIToolbar();
+                    this.injectAIButton();
                 }
             });
+        },
+
+        /**
+         * Inyectar botón fijo de IA en la esquina del editor
+         */
+        injectAIButton() {
+            const container = this.$refs.editorContainer;
+            if (!container) return;
+
+            // Crear wrapper para botón y menú
+            const aiWrapper = document.createElement('div');
+            aiWrapper.className = 'ai-button-wrapper';
+            aiWrapper.style.cssText = `
+                position: absolute;
+                bottom: 12px;
+                right: 12px;
+                z-index: 100;
+            `;
+
+            // Crear botón flotante fijo
+            const aiButton = document.createElement('button');
+            aiButton.className = 'ai-fixed-button';
+            aiButton.innerHTML = `<i data-lucide="sparkles" width="20" height="20"></i>`;
+            aiButton.title = 'Asistente IA';
+            aiButton.style.cssText = `
+                width: 44px;
+                height: 44px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                border: 2px solid var(--border-color);
+                color: white;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                transition: all 0.2s ease;
+            `;
+
+            // Hover effect
+            aiButton.onmouseenter = () => {
+                aiButton.style.transform = 'scale(1.1)';
+                aiButton.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.4)';
+            };
+            aiButton.onmouseleave = () => {
+                aiButton.style.transform = 'scale(1)';
+                aiButton.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+            };
+
+            // Crear menú flotante
+            const aiMenu = document.createElement('div');
+            aiMenu.className = 'ai-floating-menu';
+            aiMenu.style.cssText = `
+                display: none;
+                position: absolute;
+                bottom: 60px;
+                right: 0;
+                background: var(--bg-secondary);
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+                padding: 8px;
+                min-width: 220px;
+                z-index: 1000;
+            `;
+
+            aiMenu.innerHTML = `
+                <div style="padding: 8px 12px; border-bottom: 1px solid var(--border-color); margin-bottom: 4px;">
+                    <strong style="font-size: 13px; color: var(--text-primary);">✨ Asistente IA</strong>
+                </div>
+                <button class="ai-menu-item" data-mode="continue" style="width: 100%; text-align: left; padding: 10px 12px; border: none; background: transparent; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-size: 13px;">
+                    <span>✍️</span>
+                    <span>Continuar escribiendo</span>
+                </button>
+                <button class="ai-menu-item" data-mode="improve" style="width: 100%; text-align: left; padding: 10px 12px; border: none; background: transparent; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-size: 13px;">
+                    <span>✨</span>
+                    <span>Mejorar texto</span>
+                </button>
+                <button class="ai-menu-item" data-mode="dialogue" style="width: 100%; text-align: left; padding: 10px 12px; border: none; background: transparent; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-size: 13px;">
+                    <span>💬</span>
+                    <span>Mejorar diálogos</span>
+                </button>
+                <button class="ai-menu-item" data-mode="analyze" style="width: 100%; text-align: left; padding: 10px 12px; border: none; background: transparent; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-size: 13px;">
+                    <span>🔍</span>
+                    <span>Analizar texto</span>
+                </button>
+            `;
+
+            // Hover effect para items del menú
+            const menuItems = aiMenu.querySelectorAll('.ai-menu-item');
+            menuItems.forEach(item => {
+                item.onmouseenter = () => {
+                    item.style.background = 'var(--bg-tertiary)';
+                };
+                item.onmouseleave = () => {
+                    item.style.background = 'transparent';
+                };
+                item.onclick = (e) => {
+                    const mode = e.currentTarget.dataset.mode;
+                    this.executeAIAction(mode);
+                    this.showAIMenu = false;
+                    aiMenu.style.display = 'none';
+                };
+            });
+
+            // Click handler del botón
+            aiButton.onclick = (e) => {
+                e.preventDefault();
+                this.showAIMenu = !this.showAIMenu;
+                aiMenu.style.display = this.showAIMenu ? 'block' : 'none';
+            };
+
+            // Cerrar menú al hacer clic fuera
+            document.addEventListener('click', (e) => {
+                if (!aiWrapper.contains(e.target)) {
+                    this.showAIMenu = false;
+                    aiMenu.style.display = 'none';
+                }
+            });
+
+            // Ensamblar
+            aiWrapper.appendChild(aiButton);
+            aiWrapper.appendChild(aiMenu);
+
+            // Asegurar que el container sea relativo
+            container.style.position = 'relative';
+
+            // Insertar wrapper
+            container.appendChild(aiWrapper);
+
+            // Inicializar iconos
+            setTimeout(() => {
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }, 100);
         },
 
         /**
@@ -295,45 +431,10 @@ window.richEditorComponent = function(config = {}) {
         // ============================================
 
         /**
-         * Inyectar toolbar de IA en el editor
+         * Toggle del menú de IA
          */
-        async injectAIToolbar() {
-            const container = this.$refs.editorContainer;
-            if (!container) return;
-
-            try {
-                // Cargar template de AI toolbar
-                const response = await fetch('templates/components/ai-toolbar.html?v=' + Date.now());
-                const html = await response.text();
-
-                // Crear wrapper relativo para posicionar el botón
-                const wrapper = container.querySelector('.rich-editor-content');
-                if (wrapper) {
-                    wrapper.style.position = 'relative';
-                }
-
-                // Crear contenedor para el toolbar
-                const toolbarContainer = document.createElement('div');
-                toolbarContainer.innerHTML = html;
-
-                // Insertar en el container
-                container.appendChild(toolbarContainer);
-
-                // Reinitializar Alpine para el nuevo contenido
-                if (window.Alpine) {
-                    window.Alpine.initTree(toolbarContainer);
-                }
-
-                // Reinitializar iconos
-                setTimeout(() => {
-                    if (typeof lucide !== 'undefined') {
-                        lucide.createIcons();
-                    }
-                }, 100);
-
-            } catch (error) {
-                console.error('Error inyectando AI toolbar:', error);
-            }
+        toggleAIMenu() {
+            this.showAIMenu = !this.showAIMenu;
         },
 
         /**
