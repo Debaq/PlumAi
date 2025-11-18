@@ -398,6 +398,7 @@ window.richEditorComponent = function(config = {}) {
             // Watch para mostrar/ocultar el modal
             this.$watch('showAIResponse', (value) => {
                 if (value && this.aiResponse) {
+                    console.log('👁️ Mostrando modal de respuesta de IA');
                     // Establecer esta instancia como la activa
                     window.activeAIEditorInstance = this;
 
@@ -414,6 +415,7 @@ window.richEditorComponent = function(config = {}) {
 
                     // Mostrar modal
                     modalOverlay.style.display = 'block';
+                    console.log('✨ Modal de respuesta de IA visible en pantalla');
 
                     // Reinicializar iconos de Lucide
                     setTimeout(() => {
@@ -424,6 +426,7 @@ window.richEditorComponent = function(config = {}) {
                 } else {
                     // Solo ocultar si esta es la instancia activa
                     if (window.activeAIEditorInstance === this) {
+                        console.log('🙈 Ocultando modal de respuesta de IA');
                         modalOverlay.style.display = 'none';
                         window.activeAIEditorInstance = null;
                     }
@@ -800,6 +803,7 @@ window.richEditorComponent = function(config = {}) {
                 // Guardar respuesta
                 this.aiResponse = response;
                 this.showAIResponse = true;
+                console.log('✅ Modal de respuesta de IA activado (showAIResponse = true)');
 
             } catch (error) {
                 console.error('❌ AI Error:', error);
@@ -848,6 +852,7 @@ window.richEditorComponent = function(config = {}) {
          * El contenido solo se limpia cuando se ejecuta una nueva acción de IA
          */
         closeAIResponse() {
+            console.log('🔒 Cerrando modal de respuesta de IA (contenido preservado)');
             this.showAIResponse = false;
             // NO limpiar this.aiResponse aquí - preservar contenido para reabrir
         }
