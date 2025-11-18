@@ -48,6 +48,7 @@ window.projectStore = {
     timeline: [],
     notes: [],
     loreEntries: [], // Nuevo: elementos de lore
+    aiConversations: [], // Nuevo: conversaciones con IA
 
     // Métodos para personajes
     addCharacter(character) {
@@ -1314,6 +1315,93 @@ window.projectStore = {
                 });
             }
         }, 2000);
+    },
+
+    // ============================================
+    // MÉTODOS PARA CONVERSACIONES DE IA
+    // ============================================
+
+    /**
+     * Agregar una nueva conversación de IA
+     */
+    addAIConversation(conversation) {
+        this.aiConversations.unshift(conversation); // Agregar al inicio (más recientes primero)
+        this.updateModified();
+    },
+
+    /**
+     * Obtener una conversación por ID
+     */
+    getAIConversation(conversationId) {
+        return this.aiConversations.find(c => c.id === conversationId);
+    },
+
+    /**
+     * Actualizar una conversación existente
+     */
+    updateAIConversation(conversationId, updates) {
+        const index = this.aiConversations.findIndex(c => c.id === conversationId);
+        if (index !== -1) {
+            this.aiConversations[index] = {
+                ...this.aiConversations[index],
+                ...updates,
+                updatedAt: new Date().toISOString()
+            };
+            this.updateModified();
+        }
+    },
+
+    /**
+     * Eliminar una conversación
+     */
+    deleteAIConversation(conversationId) {
+        this.aiConversations = this.aiConversations.filter(c => c.id !== conversationId);
+        this.updateModified();
+    },
+
+    /**
+     * Obtener conversaciones de un capítulo específico
+     */
+    getChapterConversations(chapterId) {
+        return this.aiConversations.filter(c => c.chapterId === chapterId);
+    },
+
+    /**
+     * Obtener conversaciones activas
+     */
+    getActiveConversations() {
+        return this.aiConversations.filter(c => c.status === 'active');
+    },
+
+    /**
+     * Obtener conversaciones completadas
+     */
+    getCompletedConversations() {
+        return this.aiConversations.filter(c => c.status === 'completed');
+    },
+
+    /**
+     * Obtener conversaciones usadas (contenido insertado)
+     */
+    getUsedConversations() {
+        return this.aiConversations.filter(c => c.metadata.wasUsed);
+    },
+
+    /**
+     * Obtener estadísticas de conversaciones
+     */
+    getAIConversationStats() {
+        return {
+            total: this.aiConversations.length,
+            active: this.aiConversations.filter(c => c.status === 'active').length,
+            completed: this.aiConversations.filter(c => c.status === 'completed').length,
+            archived: this.aiConversations.filter(c => c.status === 'archived').length,
+            used: this.aiConversations.filter(c => c.metadata.wasUsed).length,
+            byMode: this.aiConversations.reduce((acc, c) => {
+                acc[c.mode] = (acc[c.mode] || 0) + 1;
+                return acc;
+            }, {})
+        };
     },
 
 
