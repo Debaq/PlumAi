@@ -61,6 +61,7 @@ window.translations_es = {
         scenes: 'Escenas',
         locations: 'Ubicaciones',
         lore: 'Lore',
+        images: 'Imágenes',
         relations: 'Relaciones',
         timeline: 'Eventos',
         versionControl: 'Control de Versiones',
@@ -750,6 +751,7 @@ window.translations_es = {
                 exportErrorTitle: 'Error al exportar',
                 exportErrorMessage: 'Ocurrió un error al intentar exportar los datos',
                 confirmationLabel: 'Para confirmar la eliminación, escribe "ELIMINAR DATOS" en el campo siguiente:',
+                confirmationPlaceholder: 'ELIMINAR DATOS',
                 understandCheckbox: 'Entiendo que esta acción no se puede deshacer y que perderé todos los datos almacenados localmente',
                 deleteButton: 'Eliminar Todos los Datos Localmente',
                 deletionConfirmed: 'Datos eliminados correctamente. La aplicación se recargará en unos segundos.',
@@ -901,11 +903,16 @@ window.translations_es = {
             tokenOptimizationDesc: 'Controla cuánto contexto se envía a la IA para ahorrar tokens y reducir costos',
             tokenLevels: {
                 minimal: '⚡ Mínimo (~1,000 tokens) - Solo lo esencial',
+                normal: '⚖️ Normal (~3,000 tokens) - Balanceado (recomendado)',
+                complete: '📚 Completo (~8,000 tokens) - Todo el contexto',
                 unlimited: '🚀 Sin límite - Enviar todo'
             },
+            contextLevel: 'Nivel de Contexto',
             minimalLevel: 'Nivel Mínimo',
             minimalLevelDesc: 'Solo incluye: Protagonista, antagonista, capítulo actual. Ideal para ahorrar tokens.',
+            normalLevel: 'Nivel Normal (Recomendado)',
             smartLevelDesc: 'Incluye: Personajes mencionados, lore relevante, locaciones citadas. Balance perfecto entre calidad y costo.',
+            completeLevel: 'Nivel Completo',
             fullLevelDesc: 'Incluye: Todos los personajes, todo el lore, todas las locaciones. Máxima calidad, mayor costo.',
             unlimitedLevel: 'Sin Límite',
             unlimitedLevelWarning: '⚠️ Envía TODO sin restricciones. Puede consumir muchos tokens en proyectos grandes.',
@@ -914,8 +921,43 @@ window.translations_es = {
             agenticSystemDesc: 'La IA analiza tu tarea y decide qué contexto necesita, enviando solo lo relevante',
             agenticMode: 'Modo Agéntico',
             agenticModeDesc: 'La IA decide qué contexto necesita (recomendado)',
+            twoStepFlow: {
+                title: '¿Cómo funciona el flujo de 2 pasos?',
+                step1: '<strong>Paso 1:</strong> La IA recibe tu tarea y un inventario de contexto disponible (solo nombres, sin contenido)',
+                step2: '<strong>Paso 2:</strong> La IA decide qué personajes, lore, locaciones necesita y el sistema envía SOLO eso'
+            },
+            agenticBenefits: {
+                title: 'Ventajas del modo agéntico',
+                tokenSaving: '<strong>Ahorro masivo de tokens:</strong> Solo envía lo que realmente necesita',
+                relevantContext: '<strong>Contexto más relevante:</strong> La IA selecciona lo específico para tu tarea',
+                fullTraceability: '<strong>Trazabilidad total:</strong> Los logs muestran exactamente qué decidió incluir',
+                smartOptimization: '<strong>Optimización inteligente:</strong> La IA decide, no reglas predefinidas',
+                tip: '<strong>💡 Tip:</strong> Activa los logs de depuración para ver el flujo de 2 pasos en acción.'
+            },
+            debugLogs: {
+                title: 'Logs de Depuración',
+                description: 'Activa logs detallados en la consola para ver el flujo de peticiones a la IA'
+            },
+            apiKeys: {
+                editName: 'Editar nombre',
+                markDefault: 'Marcar como default',
+                delete: 'Eliminar',
+                confirmDelete: '¿Eliminar esta API key?'
+            },
             showLogs: 'Mostrar Logs',
             showLogsDesc: 'Ver información detallada del sistema de IA',
+            logsInfo: {
+                title: '¿Qué se registra?',
+                items: {
+                    modeAndProvider: 'Modo y proveedor de IA seleccionado',
+                    contextBuilding: 'Construcción de contexto (personajes, lore, capítulos)',
+                    tokenOptimization: 'Optimización de tokens (antes/después)',
+                    finalPrompt: 'Prompt final generado',
+                    apiRequests: 'Peticiones y respuestas de la API',
+                    responseTimes: 'Tiempos de respuesta y errores'
+                },
+                tip: '💡 Tip: Abre la consola del navegador (F12) para ver los logs en tiempo real.'
+            },
             localDataDesc: 'Gestiona los datos almacenados localmente en este navegador (Proyectos PLUMA)',
             exportCurrentProject: 'Exportar Proyecto Actual',
             exportProject: 'Exportar Proyecto',

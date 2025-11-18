@@ -179,17 +179,17 @@
                                     <!-- Actions -->
                                     <div x-show="editingKeyId !== key.id" style="display: flex; gap: 5px;">
                                         <!-- Edit Name -->
-                                        <button @click="startEditingKey(key)" title="Editar nombre" style="padding: 4px 8px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; color: var(--text-secondary);">
+                                        <button @click="startEditingKey(key)" :title="$store.i18n.t('modals.settings.apiKeys.editName')" style="padding: 4px 8px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; color: var(--text-secondary);">
                                             <i data-lucide="edit-2" width="14" height="14"></i>
                                         </button>
 
                                         <!-- Set Default -->
-                                        <button x-show="!key.isDefault" @click="setDefaultKey(key.id)" title="Marcar como default" style="padding: 4px 8px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; color: var(--text-secondary);">
+                                        <button x-show="!key.isDefault" @click="setDefaultKey(key.id)" :title="$store.i18n.t('modals.settings.apiKeys.markDefault')" style="padding: 4px 8px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; color: var(--text-secondary);">
                                             <i data-lucide="star" width="14" height="14"></i>
                                         </button>
 
                                         <!-- Delete -->
-                                        <button @click="if(confirm('¿Eliminar esta API key?')) deleteKey(key.id)" title="Eliminar" style="padding: 4px 8px; background: var(--bg-primary); border: 1px solid var(--error); border-radius: 4px; cursor: pointer; color: var(--error);">
+                                        <button @click="if(confirm($store.i18n.t('modals.settings.apiKeys.confirmDelete'))) deleteKey(key.id)" :title="$store.i18n.t('modals.settings.apiKeys.delete')" style="padding: 4px 8px; background: var(--bg-primary); border: 1px solid var(--error); border-radius: 4px; cursor: pointer; color: var(--error);">
                                             <i data-lucide="trash-2" width="14" height="14"></i>
                                         </button>
                                     </div>
@@ -243,11 +243,11 @@
 
                 <!-- Token Level Selection -->
                 <div class="form-group" style="margin-bottom: 20px;">
-                    <label style="font-weight: 600; margin-bottom: 8px; display: block;">Nivel de Contexto</label>
+                    <label style="font-weight: 600; margin-bottom: 8px; display: block;" x-text="$store.i18n.t('modals.settings.contextLevel')">Nivel de Contexto</label>
                     <select x-model="tokenLevel" @change="saveTokenLevel" style="width: 100%; padding: 10px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary);">
                         <option value="minimal" x-text="$store.i18n.t('modals.settings.tokenLevels.minimal')">⚡ Mínimo (~1,000 tokens) - Solo lo esencial</option>
-                        <option value="normal">⚖️ Normal (~3,000 tokens) - Balanceado (recomendado)</option>
-                        <option value="complete">📚 Completo (~8,000 tokens) - Todo el contexto</option>
+                        <option value="normal" x-text="$store.i18n.t('modals.settings.tokenLevels.normal')">⚖️ Normal (~3,000 tokens) - Balanceado (recomendado)</option>
+                        <option value="complete" x-text="$store.i18n.t('modals.settings.tokenLevels.complete')">📚 Completo (~8,000 tokens) - Todo el contexto</option>
                         <option value="unlimited" x-text="$store.i18n.t('modals.settings.tokenLevels.unlimited')">🚀 Sin límite - Enviar todo</option>
                     </select>
                 </div>
@@ -267,7 +267,7 @@
                             </template>
                             <template x-if="tokenLevel === 'normal'">
                                 <div>
-                                    <p style="margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; font-size: 14px;">Nivel Normal (Recomendado)</p>
+                                    <p style="margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; font-size: 14px;" x-text="$store.i18n.t('modals.settings.normalLevel')">Nivel Normal (Recomendado)</p>
                                     <p style="margin: 0; color: var(--text-secondary); font-size: 13px;" x-text="$store.i18n.t('modals.settings.smartLevelDesc')">
                                         Incluye: Personajes mencionados, lore relevante, locaciones citadas. Balance perfecto entre calidad y costo.
                                     </p>
@@ -275,7 +275,7 @@
                             </template>
                             <template x-if="tokenLevel === 'complete'">
                                 <div>
-                                    <p style="margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; font-size: 14px;">Nivel Completo</p>
+                                    <p style="margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; font-size: 14px;" x-text="$store.i18n.t('modals.settings.completeLevel')">Nivel Completo</p>
                                     <p style="margin: 0; color: var(--text-secondary); font-size: 13px;" x-text="$store.i18n.t('modals.settings.fullLevelDesc')">
                                         Incluye: Todos los personajes, todo el lore, todas las locaciones. Máxima calidad, mayor costo.
                                     </p>
@@ -332,10 +332,10 @@
                     <div style="display: flex; align-items: start; gap: 10px;">
                         <i data-lucide="workflow" width="20" height="20" style="color: var(--accent); flex-shrink: 0; margin-top: 2px;"></i>
                         <div>
-                            <p style="margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; font-size: 14px;">¿Cómo funciona el flujo de 2 pasos?</p>
+                            <p style="margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; font-size: 14px;" x-text="$store.i18n.t('modals.settings.twoStepFlow.title')">¿Cómo funciona el flujo de 2 pasos?</p>
                             <ol style="margin: 0; padding-left: 20px; color: var(--text-secondary); font-size: 13px; line-height: 1.6;">
-                                <li><strong>Paso 1:</strong> La IA recibe tu tarea y un inventario de contexto disponible (solo nombres, sin contenido)</li>
-                                <li><strong>Paso 2:</strong> La IA decide qué personajes, lore, locaciones necesita y el sistema envía SOLO eso</li>
+                                <li x-html="$store.i18n.t('modals.settings.twoStepFlow.step1')"><strong>Paso 1:</strong> La IA recibe tu tarea y un inventario de contexto disponible (solo nombres, sin contenido)</li>
+                                <li x-html="$store.i18n.t('modals.settings.twoStepFlow.step2')"><strong>Paso 2:</strong> La IA decide qué personajes, lore, locaciones necesita y el sistema envía SOLO eso</li>
                             </ol>
                         </div>
                     </div>
@@ -346,14 +346,14 @@
                     <div style="display: flex; align-items: start; gap: 10px;">
                         <i data-lucide="zap" width="20" height="20" style="color: var(--accent); flex-shrink: 0; margin-top: 2px;"></i>
                         <div>
-                            <p style="margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; font-size: 14px;">Ventajas del modo agéntico</p>
+                            <p style="margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; font-size: 14px;" x-text="$store.i18n.t('modals.settings.agenticBenefits.title')">Ventajas del modo agéntico</p>
                             <ul style="margin: 0; padding-left: 20px; color: var(--text-secondary); font-size: 13px; line-height: 1.6;">
-                                <li><strong>Ahorro masivo de tokens:</strong> Solo envía lo que realmente necesita</li>
-                                <li><strong>Contexto más relevante:</strong> La IA selecciona lo específico para tu tarea</li>
-                                <li><strong>Trazabilidad total:</strong> Los logs muestran exactamente qué decidió incluir</li>
-                                <li><strong>Optimización inteligente:</strong> La IA decide, no reglas predefinidas</li>
+                                <li x-html="$store.i18n.t('modals.settings.agenticBenefits.tokenSaving')"><strong>Ahorro masivo de tokens:</strong> Solo envía lo que realmente necesita</li>
+                                <li x-html="$store.i18n.t('modals.settings.agenticBenefits.relevantContext')"><strong>Contexto más relevante:</strong> La IA selecciona lo específico para tu tarea</li>
+                                <li x-html="$store.i18n.t('modals.settings.agenticBenefits.fullTraceability')"><strong>Trazabilidad total:</strong> Los logs muestran exactamente qué decidió incluir</li>
+                                <li x-html="$store.i18n.t('modals.settings.agenticBenefits.smartOptimization')"><strong>Optimización inteligente:</strong> La IA decide, no reglas predefinidas</li>
                             </ul>
-                            <p style="margin: 12px 0 0 0; color: var(--text-secondary); font-size: 13px;">
+                            <p style="margin: 12px 0 0 0; color: var(--text-secondary); font-size: 13px;" x-html="$store.i18n.t('modals.settings.agenticBenefits.tip')">
                                 <strong>💡 Tip:</strong> Activa los logs de depuración para ver el flujo de 2 pasos en acción.
                             </p>
                         </div>
@@ -364,11 +364,11 @@
             <!-- Debug Logs Section -->
             <div class="settings-section" style="margin-bottom: 30px; padding: 20px; border: 1px solid var(--border); border-radius: 8px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h3 style="margin: 0; color: var(--text-primary);">Logs de Depuración</h3>
+                    <h3 style="margin: 0; color: var(--text-primary);" x-text="$store.i18n.t('modals.settings.debugLogs.title')">Logs de Depuración</h3>
                     <i data-lucide="terminal" width="20" height="20" style="color: var(--text-secondary);"></i>
                 </div>
 
-                <p style="margin: 0 0 20px 0; color: var(--text-secondary); font-size: 14px;">
+                <p style="margin: 0 0 20px 0; color: var(--text-secondary); font-size: 14px;" x-text="$store.i18n.t('modals.settings.debugLogs.description')">
                     Activa logs detallados en la consola para ver el flujo de peticiones a la IA
                 </p>
 
@@ -392,16 +392,16 @@
                     <div style="display: flex; align-items: start; gap: 10px;">
                         <i data-lucide="info" width="20" height="20" style="color: var(--accent); flex-shrink: 0; margin-top: 2px;"></i>
                         <div>
-                            <p style="margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; font-size: 14px;">¿Qué se registra?</p>
+                            <p style="margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; font-size: 14px;" x-text="$store.i18n.t('modals.settings.logsInfo.title')">¿Qué se registra?</p>
                             <ul style="margin: 0; padding-left: 20px; color: var(--text-secondary); font-size: 13px;">
-                                <li>Modo y proveedor de IA seleccionado</li>
-                                <li>Construcción de contexto (personajes, lore, capítulos)</li>
-                                <li>Optimización de tokens (antes/después)</li>
-                                <li>Prompt final generado</li>
-                                <li>Peticiones y respuestas de la API</li>
-                                <li>Tiempos de respuesta y errores</li>
+                                <li x-text="$store.i18n.t('modals.settings.logsInfo.items.modeAndProvider')">Modo y proveedor de IA seleccionado</li>
+                                <li x-text="$store.i18n.t('modals.settings.logsInfo.items.contextBuilding')">Construcción de contexto (personajes, lore, capítulos)</li>
+                                <li x-text="$store.i18n.t('modals.settings.logsInfo.items.tokenOptimization')">Optimización de tokens (antes/después)</li>
+                                <li x-text="$store.i18n.t('modals.settings.logsInfo.items.finalPrompt')">Prompt final generado</li>
+                                <li x-text="$store.i18n.t('modals.settings.logsInfo.items.apiRequests')">Peticiones y respuestas de la API</li>
+                                <li x-text="$store.i18n.t('modals.settings.logsInfo.items.responseTimes')">Tiempos de respuesta y errores</li>
                             </ul>
-                            <p style="margin: 12px 0 0 0; color: var(--text-secondary); font-size: 13px;">
+                            <p style="margin: 12px 0 0 0; color: var(--text-secondary); font-size: 13px;" x-text="$store.i18n.t('modals.settings.logsInfo.tip')">
                                 <strong>💡 Tip:</strong> Abre la consola del navegador (F12) para ver los logs en tiempo real.
                             </p>
                         </div>
@@ -470,10 +470,10 @@
                         <label style="color: var(--error); font-weight: 600; margin-bottom: 8px; display: block;" x-text="$store.i18n.t('modals.settings.dataManagement.confirmationLabel')">
                             Para confirmar la eliminación, escribe "ELIMINAR DATOS" en el campo siguiente:
                         </label>
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             id="confirm-delete-input"
-                            placeholder="ELIMINAR DATOS"
+                            :placeholder="$store.i18n.t('modals.settings.dataManagement.confirmationPlaceholder')"
                             style="width: 100%; padding: 10px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary);"
                             :disabled="deletionConfirmed"
                             @input="checkDeletionConfirmation">

@@ -61,6 +61,7 @@ window.translations_en = {
         scenes: 'Scenes',
         locations: 'Locations',
         lore: 'Lore',
+        images: 'Images',
         relations: 'Relations',
         timeline: 'Events',
         versionControl: 'Version Control',
@@ -749,6 +750,7 @@ window.translations_en = {
                 exportErrorTitle: 'Error exporting',
                 exportErrorMessage: 'An error occurred while trying to export the data',
                 confirmationLabel: 'To confirm deletion, type "DELETE DATA" in the field below:',
+                confirmationPlaceholder: 'DELETE DATA',
                 understandCheckbox: 'I understand this action cannot be undone and that I will lose all data stored locally',
                 deleteButton: 'Delete All Data Locally',
                 deletionConfirmed: 'Data deleted successfully. The application will reload in a few seconds.',
@@ -900,11 +902,16 @@ window.translations_en = {
             tokenOptimizationDesc: 'Control how much context is sent to the AI to save tokens and reduce costs',
             tokenLevels: {
                 minimal: '⚡ Minimal (~1,000 tokens) - Only essentials',
+                normal: '⚖️ Normal (~3,000 tokens) - Balanced (recommended)',
+                complete: '📚 Complete (~8,000 tokens) - Full context',
                 unlimited: '🚀 Unlimited - Send everything'
             },
+            contextLevel: 'Context Level',
             minimalLevel: 'Minimal Level',
             minimalLevelDesc: 'Only includes: Protagonist, antagonist, current chapter. Ideal for saving tokens.',
+            normalLevel: 'Normal Level (Recommended)',
             smartLevelDesc: 'Includes: Mentioned characters, relevant lore, cited locations. Perfect balance between quality and cost.',
+            completeLevel: 'Complete Level',
             fullLevelDesc: 'Includes: All characters, all lore, all locations. Maximum quality, higher cost.',
             unlimitedLevel: 'Unlimited',
             unlimitedLevelWarning: '⚠️ Sends EVERYTHING without restrictions. May consume many tokens on large projects.',
@@ -913,8 +920,43 @@ window.translations_en = {
             agenticSystemDesc: 'AI analyzes your task and decides what context it needs, sending only what is relevant',
             agenticMode: 'Agentic Mode',
             agenticModeDesc: 'AI decides what context it needs (recommended)',
+            twoStepFlow: {
+                title: 'How does the 2-step flow work?',
+                step1: '<strong>Step 1:</strong> AI receives your task and an inventory of available context (names only, no content)',
+                step2: '<strong>Step 2:</strong> AI decides which characters, lore, locations it needs and the system sends ONLY that'
+            },
+            agenticBenefits: {
+                title: 'Benefits of agentic mode',
+                tokenSaving: '<strong>Massive token savings:</strong> Only sends what it really needs',
+                relevantContext: '<strong>More relevant context:</strong> AI selects what is specific to your task',
+                fullTraceability: '<strong>Full traceability:</strong> Logs show exactly what it decided to include',
+                smartOptimization: '<strong>Smart optimization:</strong> AI decides, not predefined rules',
+                tip: '<strong>💡 Tip:</strong> Enable debug logs to see the 2-step flow in action.'
+            },
+            debugLogs: {
+                title: 'Debug Logs',
+                description: 'Enable detailed console logs to see the AI request flow'
+            },
+            apiKeys: {
+                editName: 'Edit name',
+                markDefault: 'Mark as default',
+                delete: 'Delete',
+                confirmDelete: 'Delete this API key?'
+            },
             showLogs: 'Show Logs',
             showLogsDesc: 'View detailed AI system information',
+            logsInfo: {
+                title: 'What is logged?',
+                items: {
+                    modeAndProvider: 'Selected AI mode and provider',
+                    contextBuilding: 'Context building (characters, lore, chapters)',
+                    tokenOptimization: 'Token optimization (before/after)',
+                    finalPrompt: 'Final prompt generated',
+                    apiRequests: 'API requests and responses',
+                    responseTimes: 'Response times and errors'
+                },
+                tip: '💡 Tip: Open the browser console (F12) to see logs in real time.'
+            },
             localDataDesc: 'Manage data stored locally in this browser (PLUMA Projects)',
             exportCurrentProject: 'Export Current Project',
             exportProject: 'Export Project',
