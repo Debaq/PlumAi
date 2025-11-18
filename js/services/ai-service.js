@@ -351,6 +351,43 @@ window.aiService = {
     // ENVÍO DE REQUESTS
     // ============================================
 
+    /**
+     * Método agéntico conversacional: La IA decide qué contexto necesita (2 pasos)
+     * Soporta historial de mensajes para conversaciones
+     */
+    async sendAgenticConversation(mode, messages, chapterId = null) {
+        if (!window.agenticContextService) {
+            throw new Error('Servicio agéntico no disponible');
+        }
+
+        return await window.agenticContextService.sendAgenticConversation(
+            mode,
+            messages,
+            chapterId
+        );
+    },
+
+    /**
+     * Método agéntico: La IA decide qué contexto necesita (2 pasos)
+     * PASO 1: IA analiza tarea y solicita contexto específico
+     * PASO 2: Sistema envía solo el contexto solicitado
+     */
+    async sendAgenticRequest(mode, userInput, chapterId = null, selectedText = null) {
+        if (!window.agenticContextService) {
+            throw new Error('Servicio agéntico no disponible');
+        }
+
+        return await window.agenticContextService.sendAgenticRequest(
+            mode,
+            userInput,
+            chapterId,
+            selectedText
+        );
+    },
+
+    /**
+     * Método tradicional: Envía todo el contexto con optimización
+     */
     async sendRequest(mode, userInput, chapterId = null, selectedText = null) {
         const startTime = performance.now();
         const provider = this.getCurrentProvider();

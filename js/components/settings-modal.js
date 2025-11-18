@@ -12,6 +12,9 @@ window.settingsModalComponent = function() {
         // Token Optimization
         tokenLevel: 'normal',
 
+        // Agentic Context
+        useAgenticContext: true,
+
         // Debug Logs
         enableLogs: true,
 
@@ -34,6 +37,14 @@ window.settingsModalComponent = function() {
             // Initialize token optimization
             if (window.tokenOptimizer) {
                 this.tokenLevel = window.tokenOptimizer.config.currentLevel;
+            }
+
+            // Initialize agentic context mode
+            try {
+                const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
+                this.useAgenticContext = settings.useAgenticContext !== false; // Por defecto activado
+            } catch (e) {
+                this.useAgenticContext = true;
             }
 
             // Initialize debug logs
@@ -248,6 +259,22 @@ window.settingsModalComponent = function() {
                 console.log('🔍 Logs de depuración activados');
             } else {
                 console.log('🔇 Logs de depuración desactivados');
+            }
+        },
+
+        // ============================================
+        // AGENTIC CONTEXT METHODS
+        // ============================================
+
+        toggleAgenticMode() {
+            const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
+            settings.useAgenticContext = this.useAgenticContext;
+            localStorage.setItem('plum_settings', JSON.stringify(settings));
+
+            if (this.useAgenticContext) {
+                console.log('🤖 Modo agéntico activado: La IA decidirá qué contexto necesita');
+            } else {
+                console.log('📦 Modo tradicional activado: Se enviará todo el contexto con optimización');
             }
         },
 
