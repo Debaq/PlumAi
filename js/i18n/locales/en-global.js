@@ -30,18 +30,15 @@ window.translations_en = {
         select: 'Select',
         remove: 'Remove',
         title: 'Title:',
-        author: 'Author:'
-    },
-
-    // Avatars
-    avatars: {
-        selectAvatar: 'Select Avatar',
-        change: 'Change Avatar',
-        select: 'Select',
-        upload: 'Upload',
-        preview: 'Preview',
-        seedPlaceholder: 'Name to generate',
-        hint: 'Avatars are generated using your name as a seed. Change the preview name to see different variations.'
+        author: 'Author:',
+        change: 'Change',
+        saveChanges: 'Save Changes',
+        noDescription: 'No description',
+        dateUnknown: 'Date unknown',
+        untitled: 'Untitled',
+        words: 'words',
+        list: 'List',
+        automatic: 'Automatic'
     },
 
     // Header
@@ -64,6 +61,7 @@ window.translations_en = {
         scenes: 'Scenes',
         locations: 'Locations',
         lore: 'Lore',
+        images: 'Images',
         relations: 'Relations',
         timeline: 'Events',
         versionControl: 'Version Control',
@@ -72,7 +70,9 @@ window.translations_en = {
         notes: 'Notes',
         settings: 'Settings',
         collapse: 'Collapse',
-        expand: 'Expand'
+        expand: 'Expand',
+        hide: 'Hide menu',
+        show: 'Show menu'
     },
 
     // Dashboard
@@ -109,6 +109,10 @@ window.translations_en = {
         edit: 'Edit Character',
         empty: 'No characters created',
         emptyHint: 'Create your first character to get started',
+        unknownCharacter: 'Unknown character',
+        defaultName: 'Character',
+        mainCharacter: 'Main Character',
+        otherCharacter: 'Other Character',
         form: {
             avatar: 'Avatar',
             name: 'Name',
@@ -158,7 +162,10 @@ window.translations_en = {
                 crush: 'Crush',
                 rivalLove: 'Rival Love'
             },
-            relationshipsHint: 'Click the plus sign to add a relationship with another character'
+            relationshipsHint: 'Click the plus sign to add a relationship with another character',
+            relationGroups: {
+                fiction: 'Fiction Relationships'
+            }
         },
         delete: {
             title: 'Delete Character',
@@ -175,7 +182,9 @@ window.translations_en = {
         edit: 'Edit Scene',
         empty: 'No scenes created',
         emptyHint: 'Create your first scene',
+        imageGenerated: 'Image generated',
         form: {
+            image: 'Scene image (optional)',
             title: 'Title',
             titlePlaceholder: 'E.g: Meeting at the cafe',
             chapter: 'Chapter',
@@ -202,6 +211,9 @@ window.translations_en = {
         copyAIPrompt: 'Copy AI Prompt',
         aiPromptCopied: 'Prompt copied to clipboard',
         aiPromptCopiedDesc: 'Now you can paste it into your favorite AI image generator (DALL-E, Midjourney, Stable Diffusion, etc.)',
+        imageGenerated: 'Image generated',
+        imageGeneratedSuccessfully: 'Image generated successfully',
+        generateImage: 'Generate Image',
         form: {
             name: 'Name',
             namePlaceholder: 'E.g: Central Café',
@@ -232,7 +244,11 @@ window.translations_en = {
         empty: 'No chapters created',
         emptyHint: 'Create your first chapter to start writing',
         chapter: 'Chapter',
+        chapterNumber: 'Chapter',
+        defaultName: 'chapter',
+        imageGenerated: 'Image generated',
         form: {
+            image: 'Chapter image (optional)',
             number: 'Number',
             title: 'Title',
             titlePlaceholder: 'Chapter title',
@@ -277,6 +293,8 @@ window.translations_en = {
         filterRelative: 'Only relative',
         filterEra: 'Only eras',
         dragHint: 'Drag events to reorder them',
+        noSpecificEvent: 'No specific event',
+        eventUnknown: 'Unknown event',
         dateMode: {
             absolute: 'Absolute',
             relative: 'Relative',
@@ -416,7 +434,18 @@ window.translations_en = {
             maxTokens: 'Max Tokens',
             noApiKey: 'No API key configured',
             configure: 'Configure'
-        }
+        },
+        noProvidersConfigured: 'No providers with API key configured. Go to AI Settings to add one.',
+        projectContext: 'Project Context',
+        project: 'Project:',
+        characters: 'Characters:',
+        chapters: 'Chapters:',
+        inputPlaceholder: 'Type your query here... (e.g., \'Continue the current chapter\', \'Give me ideas for the next scene\', \'Analyze this dialogue\')',
+        configRequired: 'Configuration required: Please configure an API key in Settings → AI Configuration to use the assistant.',
+        confirmClearChat: 'Are you sure you want to clear the chat? This action cannot be undone.',
+        openChapterFirst: '⚠️ Please open a chapter first',
+        textInserted: '✅ Text inserted into current chapter',
+        serviceUnavailable: '❌ The AI service is unavailable'
     },
 
     // Notes
@@ -453,7 +482,9 @@ window.translations_en = {
         saved: 'Saved',
         zenMode: 'Zen mode',
         exitZenMode: 'Exit zen mode',
-        placeholder: 'Start writing your story...'
+        placeholder: 'Start writing your story...',
+        unsaved: 'Unsaved',
+        confirmLeaveUnsaved: 'You have unsaved changes. Are you sure you want to leave?'
     },
 
     // Publishing
@@ -494,6 +525,16 @@ window.translations_en = {
             copyrightPlaceholder: '© 2025 Your Name. All rights reserved.'
         },
 
+        kdp: {
+            professionalFormat: 'Professional format'
+        },
+
+        paperType: {
+            label: 'Paper Type',
+            cream: 'Cream Paper (recommended for fiction)',
+            white: 'White Paper (for color images)'
+        },
+
         chapters: {
             title: 'Chapter Selection',
             selectAll: 'Select All',
@@ -506,7 +547,81 @@ window.translations_en = {
             orderByDate: 'Date',
             includeInExport: 'Include in export',
             noChapters: 'No chapters to export',
-            createChapter: 'Create first chapter'
+            createChapter: 'Create first chapter',
+            filterByStatus: 'Filter by status',
+            statusAll: 'All statuses',
+            statusFinal: 'Final only',
+            statusReview: 'In review',
+            statusDraft: 'Drafts',
+            showDrafts: 'Show drafts',
+            showReview: 'Show in review',
+            onlyFinal: 'Only final chapters',
+            available: 'available chapters',
+            words: 'words',
+            abbreviation: 'Ch.'
+        },
+
+        platform: {
+            title: 'Publishing Platform',
+            kdp: 'Amazon KDP',
+            kdpDesc: 'Amazon Kindle Direct Publishing standard format',
+            ingramspark: 'IngramSpark',
+            ingramDesc: 'Professional distribution to bookstores',
+            lulu: 'Lulu',
+            luluDesc: 'Flexible self-publishing',
+            custom: 'Custom',
+            customDesc: 'Full manual configuration'
+        },
+
+        bookSize: {
+            title: 'Book Size',
+            kdp6x9: '6" x 9" (15.24 x 22.86 cm)',
+            kdp6x9Desc: 'Standard size for novels - KDP',
+            kdp5x8: '5" x 8" (12.7 x 20.32 cm)',
+            kdp5x8Desc: 'Compact - KDP',
+            kdp55x85: '5.5" x 8.5" (13.97 x 21.59 cm)',
+            kdp55x85Desc: 'US Standard - KDP',
+            a4: 'A4 (21 x 29.7 cm)',
+            a5: 'A5 (14.8 x 21 cm)',
+            letter: 'Letter (21.6 x 27.9 cm)'
+        },
+
+        images: {
+            title: 'Book Images',
+            addImage: 'Add Image',
+            fullPage: 'Full page',
+            position: 'Position in book',
+            positionLabel: 'Position in book:',
+            afterChapter: 'After chapter',
+            beforeChapter: 'Before chapter',
+            atBeginning: 'At beginning of book',
+            atEnd: 'At end of book',
+            reorder: 'Reorder',
+            remove: 'Remove',
+            noImages: 'No images added',
+            insertHelp: 'You can insert images INSIDE chapters using markers',
+            howToInsert: 'How to insert images inside chapters:',
+            useMarkers: 'Use these markers in your chapter text:',
+            fullPageDescription: 'Full page image (inserts a page)',
+            inlineDescription: 'Inline image (flows with text)',
+            numberHelp: 'The number corresponds to the # that appears on each image below.',
+            fullPageNote: 'The image will appear on a full page',
+            useMarkerNote: 'Use [IMG:X] or [INLINE-IMG:X] in the chapter text',
+            positionInChapter: 'Inside chapter (use markers [IMG:X] or [INLINE-IMG:X])',
+            positionFrontMatter: 'At beginning of book (Front Matter)',
+            positionAfterChapter: 'After Chapter {chapter}: {title}',
+            positionBackMatter: 'At end of book (Back Matter)',
+            confirmDelete: 'Delete image from {name}?',
+            deleted: 'Image deleted',
+            sortByName: 'Name A-Z',
+            generated: 'Image generated',
+            updated: 'Image updated',
+            viewImage: 'View: View image',
+            delete: 'Delete Image',
+            seedHint: '- If empty, it will be generated automatically',
+            generate: 'Generate Image',
+            generatedImage: 'Generated image:',
+            generatedSuccessfully: 'Image generated successfully:'
         },
 
         format: {
@@ -564,6 +679,39 @@ window.translations_en = {
             noChapters: 'No chapters selected',
             warnings: 'Warnings',
             ready: 'Ready to export'
+        },
+
+        frontMatter: {
+            title: 'Front Matter Structure',
+            description: 'Content that appears before chapters (optional)',
+            otherBooks: 'Other books by the author',
+            otherBooksPlaceholder: 'List of your other books (one per line)...',
+            otherBooksHelp: 'Will appear on the back of the half-title page',
+            dedication: 'Dedication',
+            dedicationPlaceholder: 'To whom you dedicate this book...',
+            dedicationHelp: 'Will appear on an ODD page after copyright',
+            prologue: 'Prologue',
+            prologuePlaceholder: 'Book prologue (context, introduction)...',
+            prologueHelp: 'Will be professionally formatted with indentation and justification'
+        },
+
+        backMatter: {
+            title: 'Back Matter Structure',
+            description: 'Content that appears after chapters',
+            epilogue: 'Epilogue (optional)',
+            epiloguePlaceholder: 'Book epilogue (conclusion, closure)...',
+            acknowledgments: 'Acknowledgments (optional)',
+            acknowledgmentsPlaceholder: 'Thank editors, beta readers, family, friends...',
+            aboutAuthor: 'About the Author (recommended)',
+            aboutAuthorPlaceholder: '[Author Name] was born in [City, Country] in [Year]. \n\nTheir passion for [topic/genre] began at an early age, when [brief anecdote].\n\n[Achievements, relevant experiences, other works]\n\n[Name] currently lives in [City] with [family/pets]. This is their [number] published novel.',
+            authorPhoto: 'Author Photo (optional)',
+            uploadPhoto: 'Upload photo',
+            photoHelp: 'Recommended: square, minimum 300x300px',
+            contactInfo: 'Contact Information (optional)',
+            websitePlaceholder: 'Website: www.yourauthor.com',
+            socialPlaceholder: 'Social media: @yourauthor on Twitter/Instagram',
+            newsletterPlaceholder: 'Newsletter: Subscribe at www.yourauthor.com/newsletter',
+            contactInfoHelp: 'Will appear at the end of "About the Author"'
         }
     },
 
@@ -602,6 +750,7 @@ window.translations_en = {
                 exportErrorTitle: 'Error exporting',
                 exportErrorMessage: 'An error occurred while trying to export the data',
                 confirmationLabel: 'To confirm deletion, type "DELETE DATA" in the field below:',
+                confirmationPlaceholder: 'DELETE DATA',
                 understandCheckbox: 'I understand this action cannot be undone and that I will lose all data stored locally',
                 deleteButton: 'Delete All Data Locally',
                 deletionConfirmed: 'Data deleted successfully. The application will reload in a few seconds.',
@@ -678,14 +827,141 @@ window.translations_en = {
             description: 'Download your project as a PLUMA file (*.pluma)',
             includeApiKeys: 'Include API keys',
             filename: 'Filename',
-            download: 'Download'
+            download: 'Download',
+            formatWithImages: 'Format: PLUMA with images',
+            securityRequired: 'Security (Required)',
+            securityOptional: 'Security (Optional)',
+            apiKeysWarning: 'This project contains API keys. For security, it is mandatory to encrypt them. If you forget the password, you will only lose the keys, not the project.',
+            encryptApiKeysRequired: 'Encrypt API keys (required)',
+            apiKeysAutoEncrypt: 'Detected API keys will be automatically encrypted',
+            encryptAll: 'Encrypt entire project',
+            encryptAllHint: 'Maximum privacy - encrypts all content (includes API keys)',
+            password: 'Encryption password',
+            passwordPlaceholder: 'Minimum 12 characters',
+            passwordHint: 'Use a strong password. If you forget it, you cannot recover the data.',
+            confirmPassword: 'Confirm password',
+            confirmPasswordPlaceholder: 'Repeat the password',
+            success: 'Project exported',
+            successDetails: 'File downloaded successfully',
+            errors: {
+                passwordRequired: 'You must enter a password',
+                passwordTooShort: 'Password must be at least 12 characters',
+                passwordMismatch: 'Passwords do not match',
+                exportFailed: 'Could not export project'
+            }
         },
         import: {
             title: 'Import Project',
             description: 'Load a project from a PLUMA file (*.pluma)',
             selectFile: 'Select file',
             selected: 'File selected: {filename}',
-            warning: 'This will replace the current project'
+            warning: 'This will replace the current project',
+            success: 'Project imported',
+            encryptedFile: 'Encrypted File'
+        },
+        password: {
+            title: 'Password Required',
+            password: 'Password',
+            passwordPlaceholder: 'Enter your password',
+            encryptAll: 'Encrypt entire project'
+        },
+        manageImage: {
+            title: 'Manage Image'
+        },
+        avatarSelector: {
+            automaticProvider: 'Automatic (use first available)',
+            seedHint: '- If empty, it will be generated automatically',
+            generateImage: 'Generate Image',
+            generatedSuccessfully: 'Image generated successfully',
+            customImageLoaded: 'Custom image loaded'
+        },
+        projectsList: {
+            title: 'My Projects'
+        },
+        editRelationship: {
+            title: 'Relationship and its History'
+        },
+        vitalStatus: {
+            title: 'Vital Status of {name}'
+        },
+        newRelationship: {
+            title: 'New Relationship'
+        },
+        settings: {
+            title: 'Settings',
+            textAPIs: 'Text APIs',
+            imageAPIs: 'Image APIs',
+            imageProvider: 'Image Provider',
+            requiresLocalInstall: 'Requires local installation: See instructions',
+            manualPromptCopy: 'Copy the generated prompt and paste it into any web AI (ChatGPT, Claude, etc.)',
+            savedKeys: 'Saved Keys',
+            lastUsed: 'Last used:',
+            autoFallbackHint: 'Automatic fallback: If a key fails, the system will automatically try the next available one.',
+            keysPrivacy: 'Keys are stored on your device and not sent to any server',
+            tokenOptimization: 'Token Optimization',
+            tokenOptimizationDesc: 'Control how much context is sent to the AI to save tokens and reduce costs',
+            tokenLevels: {
+                minimal: '⚡ Minimal (~1,000 tokens) - Only essentials',
+                normal: '⚖️ Normal (~3,000 tokens) - Balanced (recommended)',
+                complete: '📚 Complete (~8,000 tokens) - Full context',
+                unlimited: '🚀 Unlimited - Send everything'
+            },
+            contextLevel: 'Context Level',
+            minimalLevel: 'Minimal Level',
+            minimalLevelDesc: 'Only includes: Protagonist, antagonist, current chapter. Ideal for saving tokens.',
+            normalLevel: 'Normal Level (Recommended)',
+            smartLevelDesc: 'Includes: Mentioned characters, relevant lore, cited locations. Perfect balance between quality and cost.',
+            completeLevel: 'Complete Level',
+            fullLevelDesc: 'Includes: All characters, all lore, all locations. Maximum quality, higher cost.',
+            unlimitedLevel: 'Unlimited',
+            unlimitedLevelWarning: '⚠️ Sends EVERYTHING without restrictions. May consume many tokens on large projects.',
+            smartSavingTip: '💡 Smart saving: The system automatically detects characters and lore mentioned in your text to include only what is relevant.',
+            agenticSystem: '🤖 Agentic AI System',
+            agenticSystemDesc: 'AI analyzes your task and decides what context it needs, sending only what is relevant',
+            agenticMode: 'Agentic Mode',
+            agenticModeDesc: 'AI decides what context it needs (recommended)',
+            twoStepFlow: {
+                title: 'How does the 2-step flow work?',
+                step1: '<strong>Step 1:</strong> AI receives your task and an inventory of available context (names only, no content)',
+                step2: '<strong>Step 2:</strong> AI decides which characters, lore, locations it needs and the system sends ONLY that'
+            },
+            agenticBenefits: {
+                title: 'Benefits of agentic mode',
+                tokenSaving: '<strong>Massive token savings:</strong> Only sends what it really needs',
+                relevantContext: '<strong>More relevant context:</strong> AI selects what is specific to your task',
+                fullTraceability: '<strong>Full traceability:</strong> Logs show exactly what it decided to include',
+                smartOptimization: '<strong>Smart optimization:</strong> AI decides, not predefined rules',
+                tip: '<strong>💡 Tip:</strong> Enable debug logs to see the 2-step flow in action.'
+            },
+            debugLogs: {
+                title: 'Debug Logs',
+                description: 'Enable detailed console logs to see the AI request flow'
+            },
+            apiKeys: {
+                editName: 'Edit name',
+                markDefault: 'Mark as default',
+                delete: 'Delete',
+                confirmDelete: 'Delete this API key?'
+            },
+            showLogs: 'Show Logs',
+            showLogsDesc: 'View detailed AI system information',
+            logsInfo: {
+                title: 'What is logged?',
+                items: {
+                    modeAndProvider: 'Selected AI mode and provider',
+                    contextBuilding: 'Context building (characters, lore, chapters)',
+                    tokenOptimization: 'Token optimization (before/after)',
+                    finalPrompt: 'Final prompt generated',
+                    apiRequests: 'API requests and responses',
+                    responseTimes: 'Response times and errors'
+                },
+                tip: '💡 Tip: Open the browser console (F12) to see logs in real time.'
+            },
+            localDataDesc: 'Manage data stored locally in this browser (PLUMA Projects)',
+            exportCurrentProject: 'Export Current Project',
+            exportProject: 'Export Project',
+            exportAllData: 'Export All Data',
+            deleteAllData: 'Delete All Data Locally'
         }
     },
 
@@ -776,7 +1052,134 @@ window.translations_en = {
         maxLength: 'Maximum {max} characters',
         invalid: 'Invalid value'
     },
-    
+
+    // Character Relationships
+    relationships: {
+        title: 'Relationships',
+        currentState: 'Current Relationship State',
+        currentStateLabel: 'Current State',
+        type: 'Type',
+        status: 'Status',
+        history: 'Relationship History',
+        addChange: 'Add Change',
+        newChange: 'New Change in Relationship',
+        editingHistoryEntry: 'Editing History Entry',
+        deleteRelationship: 'Delete Relationship',
+        addToHistory: 'Add to History',
+        addNew: 'Add new relationship',
+        create: 'Create Relationship',
+        statuses: {
+            active: '✅ Active',
+            strained: '😰 Strained',
+            improving: '📈 Improving',
+            deteriorating: '📉 Deteriorating',
+            ended: '💔 Ended',
+            complicated: '🤔 Complicated'
+        },
+        form: {
+            selectOtherCharacter: 'Select the other character',
+            relatedCharacter: 'Related Character *',
+            selectCharacterPlaceholder: 'Select a character',
+            type: 'Relationship Type *',
+            newType: 'New Relationship Type *',
+            description: 'Description',
+            descriptionPlaceholder: 'Describe the nature of this relationship',
+            descriptionHint: 'How did they meet? What unites or separates them?',
+            currentStatus: 'Current Status',
+            newStatus: 'New Status',
+            statusHint: 'You can change this later by associating it with events',
+            whatHappened: 'What happened? *',
+            whatHappenedPlaceholder: 'Describe what event or situation caused this change in the relationship',
+            associatedEvent: 'Associated Event (Optional)',
+            startEvent: 'Starting Event (Optional)',
+            startEventHint: 'What event in the story started this relationship?',
+            additionalNotes: 'Additional Notes',
+            additionalNotesPlaceholder: 'Additional details about the relationship...'
+        },
+        errors: {
+            notFound: 'Relationship not found',
+            mustSelectCharacter: 'You must select a character',
+            alreadyExists: 'A relationship with this character already exists',
+            cannotDeleteLastEntry: 'You cannot delete the only history entry. Delete the entire relationship if you want to remove it.'
+        },
+        success: {
+            created: 'Relationship created',
+            historyAdded: 'Change added to history',
+            historyUpdated: 'History entry updated',
+            historyDeleted: 'Entry deleted from history',
+            deleted: 'Relationship deleted'
+        },
+        confirm: {
+            deleteHistoryEntry: 'Are you sure you want to delete this history entry?',
+            deleteRelationship: 'Are you sure you want to delete this relationship and all its history?'
+        }
+    },
+
+    // Vital Status
+    vitalStatus: {
+        title: 'Vital Status',
+        currentState: 'Current State',
+        history: 'Vital Status History',
+        changeStatus: 'Change Status',
+        changeStatusTitle: 'Change Vital Status',
+        editingEntry: 'Editing Entry',
+        saveChange: 'Save Change',
+        statuses: {
+            alive: 'Alive',
+            healthy: 'Healthy',
+            wounded: 'Wounded',
+            sick: 'Sick',
+            recovering: 'Recovering',
+            imprisoned: 'Imprisoned',
+            born: 'Born',
+            created: 'Created',
+            appeared: 'Appeared',
+            awakened: 'Awakened',
+            reborn: 'Reborn',
+            dead: 'Dead',
+            murdered: 'Murdered',
+            executed: 'Executed',
+            sacrificed: 'Sacrificed',
+            naturalDeath: 'Natural Death',
+            battleDeath: 'Death in Battle',
+            missing: 'Missing',
+            lost: 'Lost',
+            kidnapped: 'Kidnapped',
+            exiled: 'Exiled',
+            vanished: 'Vanished',
+            escaped: 'Escaped',
+            transformed: 'Transformed',
+            cursed: 'Cursed',
+            possessed: 'Possessed',
+            corrupted: 'Corrupted',
+            ascended: 'Ascended',
+            unknown: 'Unknown',
+            presumedDead: 'Presumed Dead',
+            presumedAlive: 'Presumed Alive'
+        },
+        form: {
+            newStatus: 'New Status *',
+            status: 'Status *',
+            whatHappened: 'What happened? *',
+            whatHappenedPlaceholder: 'Describe what event or situation caused this status change',
+            associatedEvent: 'Associated Event (Optional)',
+            additionalNotes: 'Additional Notes',
+            additionalNotesPlaceholder: 'Additional details...',
+            description: 'Description *'
+        },
+        errors: {
+            cannotDeleteLastEntry: 'You cannot delete the only vital history entry'
+        },
+        success: {
+            updated: 'Vital status updated',
+            entryUpdated: 'Entry updated',
+            entryDeleted: 'Entry deleted'
+        },
+        confirm: {
+            deleteEntry: 'Are you sure you want to delete this entry?'
+        }
+    },
+
     // Version Control
     versionControl: {
         title: 'Version Control',
@@ -824,7 +1227,37 @@ window.translations_en = {
         outlineTree: 'Outline Tree',
         treeDescription: 'Description',
         treeDescriptionPlaceholder: 'Brief description of the structure...',
-        createFromCurrent: 'Create from current project'
+        createFromCurrent: 'Create from current project',
+        noChanges: 'No changes detected in this section',
+        noChangesTitle: 'No changes',
+        noChangesToCommit: 'No changes to commit',
+        branchName: 'Branch name',
+        modifiedFiles: 'Modified files:'
+    },
+
+    // Projects
+    project: {
+        untitled: 'Untitled',
+        confirmDelete: 'Delete project {name}?',
+        deleted: 'Project deleted',
+        createNew: 'Create New Project',
+        new: 'New Project'
+    },
+
+    // Loading Messages
+    loading: {
+        messages: {
+            creative: 'Loading your creative space...',
+            stories: 'Preparing your stories...',
+            pen: 'Tuning the pen...',
+            muses: 'Invoking the muses...',
+            organizing: 'Organizing your characters...',
+            ai: 'Setting up AI...',
+            inspiration: 'Awakening inspiration...',
+            stage: 'Preparing the stage...',
+            worlds: 'Loading imaginary worlds...',
+            ready: 'Ready to write great stories...'
+        }
     },
 
     // Avatars

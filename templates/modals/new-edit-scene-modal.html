@@ -44,13 +44,13 @@
 
             async generateImageWithAI(formElement) {
                 if (!window.aiService) {
-                    $store.ui.error('Error', 'Servicio de IA no disponible');
+                    $store.ui.error($store.i18n.t('common.error'), $store.i18n.t('errors.aiServiceNotAvailable'));
                     return;
                 }
 
                 const providers = this.availableAIProviders;
                 if (providers.length === 0) {
-                    $store.ui.error('Error', 'No hay proveedores de IA configurados. Configura una API key en Ajustes.');
+                    $store.ui.error($store.i18n.t('common.error'), $store.i18n.t('errors.noAIProvidersConfigured'));
                     return;
                 }
 
@@ -58,7 +58,7 @@
 
                 try {
                     const sceneData = {
-                        name: formElement.querySelector('[name=title]')?.value || 'escena',
+                        name: formElement.querySelector('[name=title]')?.value || $store.i18n.t('scenes.defaultName'),
                         description: this.aiPrompt || ''
                     };
 
@@ -68,10 +68,10 @@
                     this.imagePreview = result.url;
                     this.imageType = 'ai';
 
-                    $store.ui.success('Imagen generada', `Generada con ${result.provider}`);
+                    $store.ui.success($store.i18n.t('scenes.imageGenerated'), `${$store.i18n.t('common.generatedWith')} ${result.provider}`);
                 } catch (error) {
                     console.error('Error generando imagen:', error);
-                    $store.ui.error('Error generando imagen', error.message);
+                    $store.ui.error($store.i18n.t('errors.imageGenerationFailed'), error.message);
                 } finally {
                     this.generatingImage = false;
                 }
@@ -108,7 +108,7 @@
             <form @submit.prevent="submitForm($el)">
                 <!-- Image Section -->
                 <div class="form-group">
-                    <label>Imagen de la escena (opcional)</label>
+                    <label x-text="$store.i18n.t('scenes.form.image')"></label>
 
                     <!-- Image Preview -->
                     <div class="image-preview-container" style="margin-bottom: 12px;">
@@ -121,7 +121,7 @@
                         <div x-show="!imagePreview" class="empty-image-preview" style="width: 100%; height: 150px; border: 2px dashed var(--border-color); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">
                             <div style="text-align: center;">
                                 <i data-lucide="image" width="32" height="32" style="opacity: 0.5;"></i>
-                                <p style="font-size: 12px;">Sin imagen</p>
+                                <p style="font-size: 12px;" x-text="$store.i18n.t('common.noImage')"></p>
                             </div>
                         </div>
                     </div>
@@ -130,15 +130,15 @@
                     <div class="tabs" style="display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap;">
                         <button type="button" class="btn-secondary" :class="{ 'btn-primary': imageType === 'upload' }" @click="imageType = 'upload'" style="padding: 6px 12px; font-size: 13px;">
                             <i data-lucide="upload" width="14" height="14"></i>
-                            <span>Subir</span>
+                            <span x-text="$store.i18n.t('common.upload')"></span>
                         </button>
                         <button type="button" class="btn-secondary" :class="{ 'btn-primary': imageType === 'url' }" @click="imageType = 'url'" style="padding: 6px 12px; font-size: 13px;">
                             <i data-lucide="link" width="14" height="14"></i>
-                            <span>URL</span>
+                            <span x-text="$store.i18n.t('common.url')"></span>
                         </button>
                         <button type="button" class="btn-secondary" :class="{ 'btn-primary': imageType === 'ai' }" @click="imageType = 'ai'" style="padding: 6px 12px; font-size: 13px;">
                             <i data-lucide="sparkles" width="14" height="14"></i>
-                            <span>Generar con IA</span>
+                            <span x-text="$store.i18n.t('common.generateWithAI')"></span>
                         </button>
                     </div>
 
@@ -155,10 +155,10 @@
                     <!-- AI Generation Panel -->
                     <div x-show="imageType === 'ai'" style="padding: 12px; background: var(--bg-tertiary); border-radius: 8px;">
                         <div style="margin-bottom: 10px;">
-                            <label style="display: block; margin-bottom: 4px; color: var(--text-secondary); font-size: 12px;">Prompt (opcional)</label>
+                            <label style="display: block; margin-bottom: 4px; color: var(--text-secondary); font-size: 12px;" x-text="$store.i18n.t('common.promptOptional')"></label>
                             <textarea
                                 x-model="aiPrompt"
-                                placeholder="Describe la imagen..."
+                                :placeholder="$store.i18n.t('common.describeImage')"
                                 style="width: 100%; min-height: 50px; padding: 6px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); resize: vertical; font-family: inherit; font-size: 13px;">
                             </textarea>
                         </div>
@@ -169,15 +169,15 @@
                             :disabled="generatingImage || availableAIProviders.length === 0"
                             style="width: 100%; padding: 8px; font-size: 13px;">
                             <template x-if="!generatingImage">
-                                <span><i data-lucide="wand-2" width="14" height="14" style="vertical-align: middle;"></i> Generar</span>
+                                <span><i data-lucide="wand-2" width="14" height="14" style="vertical-align: middle;"></i> <span x-text="$store.i18n.t('common.generate')"></span></span>
                             </template>
                             <template x-if="generatingImage">
-                                <span><div class="spinner" style="width: 14px; height: 14px; display: inline-block;"></div> Generando...</span>
+                                <span><div class="spinner" style="width: 14px; height: 14px; display: inline-block;"></div> <span x-text="$store.i18n.t('common.generating')"></span></span>
                             </template>
                         </button>
                         <template x-if="availableAIProviders.length === 0">
                             <div style="margin-top: 8px; padding: 8px; background: rgba(255,160,0,0.1); border-radius: 4px; font-size: 11px; color: var(--text-secondary);">
-                                <i data-lucide="alert-circle" width="12" height="12"></i> Configura una API key en Ajustes
+                                <i data-lucide="alert-circle" width="12" height="12"></i> <span x-text="$store.i18n.t('errors.configureAPIKey')"></span>
                             </div>
                         </template>
                     </div>

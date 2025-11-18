@@ -1,8 +1,8 @@
 <!-- AI Assistant View -->
 <div x-show="$store.ui.currentView === 'aiAssistant'" class="view" x-data="aiAssistantView()">
     <div class="view-header">
-        <h1>💬 Asistente IA - Brainstorming</h1>
-        <p class="subtitle">Conversa con la IA sobre tu historia: genera ideas, analiza estructura, desarrolla personajes, expande worldbuilding. <strong>Para escribir capítulos directamente,</strong> usa el Editor con el toolbar de IA ☁️</p>
+        <h1 x-text="$store.i18n.t('ai.title')">💬 Asistente IA - Brainstorming</h1>
+        <p class="subtitle" x-text="$store.i18n.t('ai.subtitle')">Conversa con la IA sobre tu historia: genera ideas, analiza estructura, desarrolla personajes, expande worldbuilding. <strong>Para escribir capítulos directamente,</strong> usa el Editor con el toolbar de IA ☁️</p>
     </div>
 
     <div class="view-content" style="display: flex; flex-direction: column; gap: 16px; max-width: 1200px; margin: 0 auto;">
@@ -15,7 +15,7 @@
                 <div style="flex: 1; min-width: 200px;">
                     <label class="form-label" style="margin-bottom: 8px; display: block;">
                         <i data-lucide="cpu" width="16" height="16" style="vertical-align: middle;"></i>
-                        Proveedor de IA
+                        <span x-text="$store.i18n.t('ai.provider')">Proveedor de IA</span>
                     </label>
                     <template x-if="providersWithApiKey.length > 0">
                         <select x-model="selectedProvider" @change="onProviderChange()" class="p-md bg-primary border rounded-lg" style="width: 100%;">
@@ -27,7 +27,7 @@
                     <template x-if="providersWithApiKey.length === 0">
                         <div style="padding: 12px; background: var(--warning-color); color: var(--warning-text); border-radius: 6px; font-size: 13px;">
                             <i data-lucide="alert-circle" width="16" height="16" style="vertical-align: middle;"></i>
-                            No hay proveedores con API key configurada. Ve a <strong>Configuración IA</strong> para agregar una.
+                            <span x-text="$store.i18n.t('ai.noProvidersConfigured')">No hay proveedores con API key configurada. Ve a <strong>Configuración IA</strong> para agregar una.</span>
                         </div>
                     </template>
                     <p class="form-hint" style="margin-top: 4px; font-size: 12px; color: var(--text-secondary);" x-show="providersWithApiKey.length > 0">
@@ -42,7 +42,7 @@
                 <div style="flex: 1; min-width: 200px;">
                     <label class="form-label" style="margin-bottom: 8px; display: block;">
                         <i data-lucide="brain" width="16" height="16" style="vertical-align: middle;"></i>
-                        Modelo
+                        <span x-text="$store.i18n.t('ai.model')">Modelo</span>
                     </label>
                     <select x-model="selectedModel" class="p-md bg-primary border rounded-lg" style="width: 100%;">
                         <template x-for="model in availableModels" :key="model">
@@ -55,7 +55,7 @@
                 <div style="flex: 1; min-width: 200px;">
                     <label class="form-label" style="margin-bottom: 8px; display: block;">
                         <i data-lucide="wand-2" width="16" height="16" style="vertical-align: middle;"></i>
-                        Modo de Asistencia
+                        <span x-text="$store.i18n.t('ai.assistanceMode')">Modo de Asistencia</span>
                     </label>
                     <select x-model="selectedMode" class="p-md bg-primary border rounded-lg" style="width: 100%;">
                         <template x-for="mode in assistantModes" :key="mode.id">
@@ -72,7 +72,7 @@
                 <button @click="showContext = !showContext" class="btn-secondary" style="width: 100%; display: flex; align-items: center; justify-content: space-between;">
                     <span style="display: flex; align-items: center; gap: 8px;">
                         <i data-lucide="database" width="16" height="16"></i>
-                        Contexto del Proyecto
+                        <span x-text="$store.i18n.t('ai.projectContext')">Contexto del Proyecto</span>
                     </span>
                     <i :data-lucide="showContext ? 'chevron-up' : 'chevron-down'" width="16" height="16"></i>
                 </button>
@@ -80,25 +80,25 @@
                 <div x-show="showContext" x-collapse style="margin-top: 12px; padding: 12px; background: var(--bg-tertiary); border-radius: 8px; font-size: 13px;">
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
                         <div>
-                            <strong>📖 Proyecto:</strong> <span x-text="contextInfo.projectTitle"></span><br>
-                            <strong>📚 Género:</strong> <span x-text="contextInfo.genre || 'No especificado'"></span>
+                            <strong x-text="$store.i18n.t('ai.project') + ':'">📖 Proyecto:</strong> <span x-text="contextInfo.projectTitle"></span><br>
+                            <strong x-text="$store.i18n.t('ai.genre') + ':'">📚 Género:</strong> <span x-text="contextInfo.genre || $store.i18n.t('ai.notSpecified')"></span>
                         </div>
                         <div>
-                            <strong>👥 Personajes:</strong> <span x-text="contextInfo.charactersCount"></span><br>
-                            <strong>📍 Locaciones:</strong> <span x-text="contextInfo.locationsCount"></span>
+                            <strong x-text="$store.i18n.t('ai.characters') + ':'">👥 Personajes:</strong> <span x-text="contextInfo.charactersCount"></span><br>
+                            <strong x-text="$store.i18n.t('ai.locations') + ':'">📍 Locaciones:</strong> <span x-text="contextInfo.locationsCount"></span>
                         </div>
                         <div>
-                            <strong>🎬 Escenas:</strong> <span x-text="contextInfo.scenesCount"></span><br>
-                            <strong>📜 Lore:</strong> <span x-text="contextInfo.loreCount"></span>
+                            <strong x-text="$store.i18n.t('ai.scenes') + ':'">🎬 Escenas:</strong> <span x-text="contextInfo.scenesCount"></span><br>
+                            <strong x-text="$store.i18n.t('ai.lore') + ':'">📜 Lore:</strong> <span x-text="contextInfo.loreCount"></span>
                         </div>
                         <div>
-                            <strong>📖 Capítulos:</strong> <span x-text="contextInfo.chaptersCount"></span><br>
-                            <strong>📝 Palabras:</strong> <span x-text="contextInfo.totalWords"></span>
+                            <strong x-text="$store.i18n.t('ai.chapters') + ':'">📖 Capítulos:</strong> <span x-text="contextInfo.chaptersCount"></span><br>
+                            <strong x-text="$store.i18n.t('ai.words') + ':'">📝 Palabras:</strong> <span x-text="contextInfo.totalWords"></span>
                         </div>
                     </div>
                     <p style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); color: var(--text-secondary);">
                         <i data-lucide="info" width="14" height="14" style="vertical-align: middle;"></i>
-                        Este contexto se envía automáticamente con cada consulta para que la IA entienda tu historia.
+                        <span x-text="$store.i18n.t('ai.contextInfo')">Este contexto se envía automáticamente con cada consulta para que la IA entienda tu historia.</span>
                     </p>
                 </div>
             </div>
@@ -114,13 +114,13 @@
                 <template x-if="messages.length === 0">
                     <div class="empty-state" style="margin: auto; text-align: center;">
                         <i data-lucide="message-circle" width="64" height="64"></i>
-                        <h3>💬 Asistente de Brainstorming Creativo</h3>
-                        <p style="max-width: 600px; margin: 0 auto 20px; color: var(--text-secondary); line-height: 1.6;">
+                        <h3 x-text="$store.i18n.t('ai.emptyState.title')">💬 Asistente de Brainstorming Creativo</h3>
+                        <p style="max-width: 600px; margin: 0 auto 20px; color: var(--text-secondary); line-height: 1.6;" x-html="$store.i18n.t('ai.emptyState.description')">
                             <strong>Tengo memoria conversacional:</strong> Recuerdo todo lo que hablamos en esta sesión.<br>
                             Puedo ayudarte a generar ideas, analizar estructura narrativa, desarrollar personajes, expandir worldbuilding y dar feedback creativo.
                         </p>
                         <div style="background: var(--bg-tertiary); padding: 15px; border-radius: 8px; max-width: 550px; margin: 0 auto; border-left: 4px solid var(--accent);">
-                            <p style="margin: 0; font-size: 13px; color: var(--text-secondary); text-align: left;">
+                            <p style="margin: 0; font-size: 13px; color: var(--text-secondary); text-align: left;" x-html="$store.i18n.t('ai.emptyState.tip')">
                                 <strong>💡 Tip:</strong> Este espacio es para <strong>planificar y explorar ideas</strong>.<br>
                                 Para <strong>escribir capítulos directamente</strong>, ve al <strong>Editor</strong> y usa el <strong>toolbar de IA flotante ☁️</strong> que aparece al seleccionar texto.
                             </p>
@@ -163,10 +163,10 @@
 
                                     <!-- Action Buttons -->
                                     <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); display: flex; gap: 8px;">
-                                        <button @click="copyToClipboard(message.content)" class="btn-icon" title="Copiar respuesta">
+                                        <button @click="copyToClipboard(message.content)" class="btn-icon" :title="$store.i18n.t('ai.copyResponse')">
                                             <i data-lucide="copy" width="16" height="16"></i>
                                         </button>
-                                        <button @click="insertIntoEditor(message.content)" class="btn-icon" title="Insertar en el editor" x-show="$store.project.activeChapterId">
+                                        <button @click="insertIntoEditor(message.content)" class="btn-icon" :title="$store.i18n.t('ai.insertInEditor')" x-show="$store.project.activeChapterId">
                                             <i data-lucide="file-plus" width="16" height="16"></i>
                                         </button>
                                     </div>
@@ -203,13 +203,13 @@
                     <div style="flex: 1;">
                         <textarea
                             x-model="userInput"
-                            placeholder="Escribe tu consulta aquí... (Ej: 'Continúa el capítulo actual', 'Dame ideas para la próxima escena', 'Analiza este diálogo')"
+                            :placeholder="$store.i18n.t('ai.inputPlaceholder')"
                             rows="3"
                             style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary); resize: vertical; font-family: inherit;"
                             @keydown.ctrl.enter="sendMessage()"
                             :disabled="isProcessing"
                         ></textarea>
-                        <p class="form-hint" style="margin-top: 4px; font-size: 11px; color: var(--text-secondary);">
+                        <p class="form-hint" style="margin-top: 4px; font-size: 11px; color: var(--text-secondary);" x-text="$store.i18n.t('ai.pressCtrlEnter')">
                             Presiona Ctrl+Enter para enviar
                         </p>
                     </div>
@@ -219,14 +219,14 @@
                         :disabled="!userInput.trim() || isProcessing || !isConfigured"
                         style="padding: 12px 24px; height: fit-content;">
                         <i data-lucide="send" width="16" height="16"></i>
-                        <span x-text="isProcessing ? 'Procesando...' : 'Enviar'"></span>
+                        <span x-text="isProcessing ? $store.i18n.t('ai.processing') : $store.i18n.t('ai.send')"></span>
                     </button>
                 </form>
 
                 <!-- Warning if not configured -->
                 <div x-show="!isConfigured" style="margin-top: 12px; padding: 12px; background: var(--warning-color); color: var(--warning-text); border-radius: 8px; font-size: 13px;">
                     <i data-lucide="alert-triangle" width="16" height="16" style="vertical-align: middle;"></i>
-                    <strong>Configuración requerida:</strong> Por favor configura una API key en Ajustes → Configuración IA para poder usar el asistente.
+                    <span x-html="$store.i18n.t('ai.configRequired')"><strong>Configuración requerida:</strong> Por favor configura una API key en Ajustes → Configuración IA para poder usar el asistente.</span>
                 </div>
             </div>
 
@@ -236,30 +236,30 @@
         <div class="card" style="padding: 16px;">
             <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: var(--text-secondary);">
                 <i data-lucide="zap" width="16" height="16" style="vertical-align: middle;"></i>
-                Consultas Rápidas de Brainstorming
+                <span x-text="$store.i18n.t('ai.quickActions.title')">Consultas Rápidas de Brainstorming</span>
             </h3>
             <div style="display: flex; flex-wrap: wrap; gap: 8px;">
                 <button @click="quickAction('suggest')" class="btn-secondary" style="flex: 0 0 auto;">
-                    💡 Ideas para la trama
+                    <span x-text="$store.i18n.t('ai.quickActions.plotIdeas')">💡 Ideas para la trama</span>
                 </button>
                 <button @click="quickAction('analyze')" class="btn-secondary" style="flex: 0 0 auto;">
-                    🔍 Analizar estructura
+                    <span x-text="$store.i18n.t('ai.quickActions.analyzeStructure')">🔍 Analizar estructura</span>
                 </button>
                 <button @click="quickAction('worldbuild')" class="btn-secondary" style="flex: 0 0 auto;">
-                    🌍 Worldbuilding
+                    <span x-text="$store.i18n.t('ai.quickActions.worldbuilding')">🌍 Worldbuilding</span>
                 </button>
                 <button @click="quickAction('characterize')" class="btn-secondary" style="flex: 0 0 auto;">
-                    🎭 Desarrollo de personajes
+                    <span x-text="$store.i18n.t('ai.quickActions.characterDevelopment')">🎭 Desarrollo de personajes</span>
                 </button>
                 <button @click="quickAction('dialogue')" class="btn-secondary" style="flex: 0 0 auto;">
-                    💬 Consejos de diálogos
+                    <span x-text="$store.i18n.t('ai.quickActions.dialogueTips')">💬 Consejos de diálogos</span>
                 </button>
                 <button @click="quickAction('continue')" class="btn-secondary" style="flex: 0 0 auto;">
-                    📖 Próximas escenas
+                    <span x-text="$store.i18n.t('ai.quickActions.nextScenes')">📖 Próximas escenas</span>
                 </button>
                 <button @click="clearChat()" class="btn-secondary" style="flex: 0 0 auto; margin-left: auto; color: var(--danger-color);">
                     <i data-lucide="trash-2" width="16" height="16"></i>
-                    Limpiar chat
+                    <span x-text="$store.i18n.t('ai.clearChat')">Limpiar chat</span>
                 </button>
             </div>
         </div>

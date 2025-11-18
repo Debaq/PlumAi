@@ -32,7 +32,7 @@
                     const fileInput = document.getElementById('import-file-input');
                     const file = fileInput.files[0];
                     if (!file) {
-                        $store.ui.error('Error', 'Selecciona un archivo');
+                        $store.ui.error('Error', $store.i18n.t('modals.import.errors.noFile'));
                         return;
                     }
 
@@ -41,7 +41,7 @@
                         try {
                             const projectData = await window.storageManager.importProject(file, password);
                             $store.project.loadProject(projectData);
-                            $store.ui.success('Proyecto importado', '');
+                            $store.ui.success($store.i18n.t('modals.import.success'), '');
                             $store.ui.closeModal('import');
                             fileInput.value = '';
                         } catch (error) {
@@ -55,9 +55,9 @@
                             if (isEncryptionError && !password) {
                                 // Mostrar modal de contraseña
                                 $store.ui.modalData = {
-                                    title: 'Archivo Encriptado',
+                                    title: $store.i18n.t('modals.import.encryptedFile'),
                                     message: errorMsg,
-                                    submitText: 'Importar',
+                                    submitText: $store.i18n.t('common.import'),
                                     onSubmit: (enteredPassword) => {
                                         tryImport(enteredPassword);
                                     },
@@ -68,7 +68,7 @@
                                 $store.ui.openModal('password');
                             } else {
                                 // Otro error o contraseña incorrecta
-                                $store.ui.error('Error al importar', errorMsg);
+                                $store.ui.error($store.i18n.t('modals.import.errors.failed'), errorMsg);
                             }
                         }
                     }

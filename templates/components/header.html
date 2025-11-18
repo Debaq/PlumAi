@@ -5,7 +5,7 @@
             <i data-lucide="pen-line" width="20" height="20"></i>
             <span x-text="$store.i18n.t('header.title')">PlumaAI</span>
         </div>
-        <div class="project-title" x-show="$store.project.projectInfo.id !== null" x-text="$store.project.projectInfo.title || 'Sin título'"></div>
+        <div class="project-title" x-show="$store.project.projectInfo.id !== null" x-text="$store.project.projectInfo.title || $store.i18n.t('common.untitled')"></div>
     </div>
 
     <!-- Contextual Area - Changes based on current view -->
@@ -62,7 +62,7 @@
                             :title="$store.i18n.t('common.back')">
                         <i data-lucide="arrow-left" width="20" height="20"></i>
                     </button>
-                    <div class="header-editor-title" x-text="'Capítulo ' + currentChapter.number + ': ' + (currentChapter.title || 'Sin título')"></div>
+                    <div class="header-editor-title" x-text="$store.i18n.t('editor.chapterTitle', { number: currentChapter.number, title: currentChapter.title || $store.i18n.t('common.untitled') })"></div>
                     <button class="btn-icon btn-icon-sm"
                             @click="$store.ui.openModal('editChapter', currentChapter)"
                             :title="$store.i18n.t('common.edit') || 'Editar capítulo'">
@@ -76,7 +76,7 @@
                             <span x-text="$store.i18n.t('editor.saved')">Guardado</span>
                         </template>
                         <template x-if="$store.ui.editorSaveStatus === 'unsaved'">
-                            <span style="color: var(--warning, #f59e0b)">Sin guardar</span>
+                            <span style="color: var(--warning, #f59e0b)" x-text="$store.i18n.t('editor.unsaved')">Sin guardar</span>
                         </template>
                     </div>
                     <button class="btn-icon btn-icon-sm"

@@ -10,28 +10,28 @@
             </h2>
             <p style="margin: 0; color: var(--text-secondary); font-size: var(--font-size-sm);">
                 <span x-text="stats.totalCommits">0</span> commits •
-                <span x-text="stats.totalBranches">0</span> ramas •
+                <span x-text="stats.totalBranches">0</span> <span x-text="$store.i18n.t('versionControl.branches')">ramas</span> •
                 <span x-show="hasUncommittedChanges" style="color: var(--warning);">
                     <i data-lucide="alert-circle" width="14" height="14" style="vertical-align: middle;"></i>
-                    Cambios sin guardar
+                    <span x-text="$store.i18n.t('versionControl.unsavedChanges')">Cambios sin guardar</span>
                 </span>
                 <span x-show="!hasUncommittedChanges" style="color: var(--success);">
                     <i data-lucide="check-circle" width="14" height="14" style="vertical-align: middle;"></i>
-                    Todo guardado
+                    <span x-text="$store.i18n.t('versionControl.allSaved')">Todo guardado</span>
                 </span>
             </p>
         </div>
         <div style="display: flex; gap: var(--spacing-sm);">
-            <button class="btn-icon" @click="async () => { await loadLastCommitState(); await detectChanges(); }" title="Refrescar cambios">
+            <button class="btn-icon" @click="async () => { await loadLastCommitState(); await detectChanges(); }" :title="$store.i18n.t('versionControl.refreshChanges')">
                 <i data-lucide="refresh-cw" width="16" height="16"></i>
             </button>
             <button class="btn-secondary" @click="showBranchModal = true">
                 <i data-lucide="git-branch" width="14" height="14"></i>
-                <span>Nueva Rama</span>
+                <span x-text="$store.i18n.t('versionControl.newBranch')">Nueva Rama</span>
             </button>
             <button class="btn-primary" @click="console.log('Abriendo modal commit'); showCommitModal = true; console.log('showCommitModal =', showCommitModal)" :disabled="!hasUncommittedChanges">
                 <i data-lucide="git-commit" width="14" height="14"></i>
-                <span>Crear Commit</span>
+                <span x-text="$store.i18n.t('versionControl.createCommit')">Crear Commit</span>
             </button>
         </div>
     </div>
@@ -43,7 +43,7 @@
         <div class="card" style="display: flex; flex-direction: column; overflow: hidden;">
             <h3 style="margin: 0 0 var(--spacing-md) 0; font-size: var(--font-size-md); display: flex; align-items: center; gap: var(--spacing-xs);">
                 <i data-lucide="file-diff" width="16" height="16"></i>
-                <span>Cambios Pendientes</span>
+                <span x-text="$store.i18n.t('versionControl.pendingChanges')">Cambios Pendientes</span>
                 <span x-show="changedFiles.length > 0" class="badge" style="background: var(--warning); color: white; padding: 2px 8px; border-radius: 12px; font-size: var(--font-size-xs);" x-text="changedFiles.length"></span>
             </h3>
 
@@ -51,7 +51,7 @@
             <div style="flex: 1; overflow-y: auto; margin-bottom: var(--spacing-md);">
                 <div x-show="changedFiles.length === 0" class="empty-state" style="padding: var(--spacing-lg); text-align: center;">
                     <i data-lucide="check-circle" width="32" height="32" style="color: var(--success); margin-bottom: var(--spacing-sm);"></i>
-                    <p style="margin: 0; color: var(--text-secondary);">No hay cambios sin guardar</p>
+                    <p style="margin: 0; color: var(--text-secondary);" x-text="$store.i18n.t('versionControl.noUnsavedChanges')">No hay cambios sin guardar</p>
                 </div>
 
                 <template x-for="file in changedFiles" :key="file.path">
@@ -71,13 +71,13 @@
             <div x-show="selectedFile" style="border-top: 1px solid var(--border); padding-top: var(--spacing-md); max-height: 300px; overflow-y: auto;">
                 <div style="font-size: var(--font-size-xs); color: var(--text-secondary); margin-bottom: var(--spacing-xs); font-weight: 500;">
                     <i data-lucide="info" width="12" height="12" style="vertical-align: middle;"></i>
-                    <span>Vista previa de cambios:</span>
+                    <span x-text="$store.i18n.t('versionControl.changesPreview')">Vista previa de cambios:</span>
                 </div>
                 <div style="font-family: monospace; font-size: var(--font-size-xs); background: var(--bg-primary); padding: var(--spacing-sm); border-radius: 4px; line-height: 1.5;">
                     <template x-for="(line, index) in (selectedFileDiff || '').split('\n')" :key="index">
                         <div :style="line.startsWith('+') ? 'color: var(--success);' : (line.startsWith('-') ? 'color: var(--error);' : (line.startsWith('✏️') ? 'color: var(--warning);' : 'color: var(--text-primary);'))" x-text="line"></div>
                     </template>
-                    <div x-show="!selectedFileDiff || selectedFileDiff === ''" style="color: var(--text-secondary); font-style: italic;">
+                    <div x-show="!selectedFileDiff || selectedFileDiff === ''" style="color: var(--text-secondary); font-style: italic;" x-text="$store.i18n.t('versionControl.selectFileToView')">
                         Selecciona un archivo para ver los cambios
                     </div>
                 </div>
@@ -134,7 +134,7 @@
                                 <code style="font-size: var(--font-size-xs); background: var(--bg-primary); padding: 2px 6px; border-radius: 3px; color: var(--accent);" x-text="commit.id.substring(0, 7)"></code>
                                 <button class="btn-icon btn-sm"
                                         @click.stop="restoreCommit(commit)"
-                                        title="Restaurar a este commit"
+                                        :title="$store.i18n.t('versionControl.restoreCommit')"
                                         style="padding: 4px 6px;">
                                     <i data-lucide="corner-down-left" width="12" height="12"></i>
                                 </button>
@@ -166,7 +166,7 @@
             <div class="modal-header" style="padding: var(--spacing-lg); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
                 <h3 style="margin: 0; font-size: var(--font-size-lg); display: flex; align-items: center; gap: var(--spacing-sm);">
                     <i data-lucide="git-commit" width="20" height="20"></i>
-                    <span>Crear Commit</span>
+                    <span x-text="$store.i18n.t('versionControl.createCommit')">Crear Commit</span>
                 </h3>
                 <button class="btn-icon" @click="showCommitModal = false">
                     <i data-lucide="x" width="20" height="20"></i>
@@ -174,23 +174,23 @@
             </div>
             <div class="modal-body" style="padding: var(--spacing-lg);">
                 <div class="form-group" style="margin-bottom: var(--spacing-md);">
-                    <label style="display: block; margin-bottom: var(--spacing-xs); font-weight: 500; font-size: var(--font-size-sm);">Mensaje del commit</label>
+                    <label style="display: block; margin-bottom: var(--spacing-xs); font-weight: 500; font-size: var(--font-size-sm);" x-text="$store.i18n.t('versionControl.commitMessage')">Mensaje del commit</label>
                     <textarea x-model="commitMessage"
                               :placeholder="$store.i18n.t('versionControl.commitMessagePlaceholder')"
                               rows="3"
                               style="width: 100%; padding: 8px 12px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 4px; color: var(--text-primary); font-size: var(--font-size-sm); resize: vertical; font-family: inherit;"></textarea>
                 </div>
                 <div class="form-group" style="margin-bottom: var(--spacing-md);">
-                    <label style="display: block; margin-bottom: var(--spacing-xs); font-weight: 500; font-size: var(--font-size-sm);">Autor</label>
+                    <label style="display: block; margin-bottom: var(--spacing-xs); font-weight: 500; font-size: var(--font-size-sm);" x-text="$store.i18n.t('versionControl.author')">Autor</label>
                     <input type="text"
                            x-model="authorName"
                            :placeholder="$store.i18n.t('versionControl.authorPlaceholder')"
                            style="width: 100%; padding: 8px 12px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 4px; color: var(--text-primary); font-size: var(--font-size-sm);">
                 </div>
                 <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: 4px; border: 1px solid var(--border);">
-                    <div style="font-size: var(--font-size-xs); color: var(--text-secondary); margin-bottom: var(--spacing-xs); font-weight: 500;">Archivos modificados:</div>
+                    <div style="font-size: var(--font-size-xs); color: var(--text-secondary); margin-bottom: var(--spacing-xs); font-weight: 500;" x-text="$store.i18n.t('versionControl.modifiedFiles') + ':'">Archivos modificados:</div>
                     <div style="font-size: var(--font-size-sm); color: var(--text-primary);">
-                        <span x-text="changedFiles.length"></span> archivo(s)
+                        <span x-text="changedFiles.length"></span> <span x-text="$store.i18n.t('versionControl.files')">archivo(s)</span>
                         <div style="margin-top: var(--spacing-xs); font-size: var(--font-size-xs); color: var(--text-secondary);">
                             <template x-for="file in changedFiles" :key="file.path">
                                 <div style="padding: 2px 0;">• <span x-text="file.path"></span></div>
@@ -200,10 +200,10 @@
                 </div>
             </div>
             <div class="modal-footer" style="padding: var(--spacing-lg); border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: var(--spacing-sm);">
-                <button class="btn-secondary" @click="showCommitModal = false">Cancelar</button>
+                <button class="btn-secondary" @click="showCommitModal = false" x-text="$store.i18n.t('common.cancel')">Cancelar</button>
                 <button class="btn-primary" @click="createCommit(); showCommitModal = false" :disabled="!commitMessage.trim()">
                     <i data-lucide="check" width="14" height="14"></i>
-                    <span>Crear Commit</span>
+                    <span x-text="$store.i18n.t('versionControl.createCommit')">Crear Commit</span>
                 </button>
             </div>
         </div>
@@ -228,7 +228,7 @@
             <div class="modal-header" style="padding: var(--spacing-lg); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
                 <h3 style="margin: 0; font-size: var(--font-size-lg); display: flex; align-items: center; gap: var(--spacing-sm);">
                     <i data-lucide="git-branch" width="20" height="20"></i>
-                    <span>Crear Nueva Rama</span>
+                    <span x-text="$store.i18n.t('versionControl.createNewBranch')">Crear Nueva Rama</span>
                 </h3>
                 <button class="btn-icon" @click="showBranchModal = false">
                     <i data-lucide="x" width="20" height="20"></i>
@@ -236,22 +236,22 @@
             </div>
             <div class="modal-body" style="padding: var(--spacing-lg);">
                 <div class="form-group" style="margin-bottom: var(--spacing-md);">
-                    <label style="display: block; margin-bottom: var(--spacing-xs); font-weight: 500; font-size: var(--font-size-sm);">Nombre de la rama</label>
+                    <label style="display: block; margin-bottom: var(--spacing-xs); font-weight: 500; font-size: var(--font-size-sm);" x-text="$store.i18n.t('versionControl.branchName')">Nombre de la rama</label>
                     <input type="text"
                            x-model="newBranchName"
-                           placeholder="feature/nueva-funcionalidad"
+                           :placeholder="$store.i18n.t('versionControl.branchNamePlaceholder')"
                            style="width: 100%; padding: 8px 12px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 4px; color: var(--text-primary); font-size: var(--font-size-sm);">
                 </div>
                 <div style="background: var(--bg-primary); padding: var(--spacing-md); border-radius: 4px; border: 1px solid var(--border); font-size: var(--font-size-sm); color: var(--text-secondary);">
                     <i data-lucide="info" width="14" height="14" style="vertical-align: middle;"></i>
-                    La nueva rama se creará desde el commit actual de <code x-text="stats.currentBranch" style="background: var(--bg-tertiary); padding: 2px 4px; border-radius: 3px; color: var(--accent);"></code>
+                    <span x-text="$store.i18n.t('versionControl.branchWillBeCreated') + ' '"></span><code x-text="stats.currentBranch" style="background: var(--bg-tertiary); padding: 2px 4px; border-radius: 3px; color: var(--accent);"></code>
                 </div>
             </div>
             <div class="modal-footer" style="padding: var(--spacing-lg); border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: var(--spacing-sm);">
-                <button class="btn-secondary" @click="showBranchModal = false">Cancelar</button>
+                <button class="btn-secondary" @click="showBranchModal = false" x-text="$store.i18n.t('common.cancel')">Cancelar</button>
                 <button class="btn-primary" @click="createBranch(); showBranchModal = false" :disabled="!newBranchName.trim()">
                     <i data-lucide="git-branch" width="14" height="14"></i>
-                    <span>Crear Rama</span>
+                    <span x-text="$store.i18n.t('versionControl.createBranch')">Crear Rama</span>
                 </button>
             </div>
         </div>
@@ -359,13 +359,13 @@ function versionControlView() {
             if (days > 7) {
                 return date.toLocaleDateString();
             } else if (days > 0) {
-                return `hace ${days} día${days > 1 ? 's' : ''}`;
+                return this.$store.i18n.t('versionControl.daysAgo', { count: days });
             } else if (hours > 0) {
-                return `hace ${hours} hora${hours > 1 ? 's' : ''}`;
+                return this.$store.i18n.t('versionControl.hoursAgo', { count: hours });
             } else if (minutes > 0) {
-                return `hace ${minutes} minuto${minutes > 1 ? 's' : ''}`;
+                return this.$store.i18n.t('versionControl.minutesAgo', { count: minutes });
             } else {
-                return 'hace un momento';
+                return this.$store.i18n.t('versionControl.justNow');
             }
         }
     };

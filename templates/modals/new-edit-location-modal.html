@@ -44,13 +44,13 @@
 
             async generateImageWithAI(formElement) {
                 if (!window.aiService) {
-                    $store.ui.error('Error', 'Servicio de IA no disponible');
+                    $store.ui.error($store.i18n.t('common.error'), $store.i18n.t('errors.aiServiceNotAvailable'));
                     return;
                 }
 
                 const providers = this.availableAIProviders;
                 if (providers.length === 0) {
-                    $store.ui.error('Error', 'No hay proveedores de IA configurados. Configura una API key en Ajustes.');
+                    $store.ui.error($store.i18n.t('common.error'), $store.i18n.t('errors.noAIProvidersConfigured'));
                     return;
                 }
 
@@ -59,8 +59,8 @@
                 try {
                     // Construir prompt automático si está vacío
                     const locationData = {
-                        name: formElement.querySelector('[name=name]')?.value || 'lugar',
-                        type: formElement.querySelector('[name=type]')?.value || 'ubicación',
+                        name: formElement.querySelector('[name=name]')?.value || $store.i18n.t('locations.defaultName'),
+                        type: formElement.querySelector('[name=type]')?.value || $store.i18n.t('locations.defaultType'),
                         description: this.aiPrompt || ''
                     };
 
@@ -79,13 +79,13 @@
                     console.log('Imagen generada exitosamente');
 
                     $store.ui.success(
-                        'Imagen generada',
-                        `Generada con ${result.provider}`
+                        $store.i18n.t('locations.imageGenerated'),
+                        `${$store.i18n.t('common.generatedWith')} ${result.provider}`
                     );
 
                 } catch (error) {
                     console.error('Error generando imagen:', error);
-                    $store.ui.error('Error generando imagen', error.message);
+                    $store.ui.error($store.i18n.t('errors.imageGenerationFailed'), error.message);
                 } finally {
                     this.generatingImage = false;
                 }
@@ -138,7 +138,7 @@
                     );
                 }).catch(err => {
                     console.error('Error copiando al portapapeles:', err);
-                    $store.ui.error('Error', 'No se pudo copiar al portapapeles');
+                    $store.ui.error($store.i18n.t('common.error'), $store.i18n.t('errors.clipboardCopyFailed'));
                 });
             },
 
@@ -231,9 +231,9 @@
                         <!-- Selector de proveedor -->
                         <template x-if="availableAIProviders.length > 1">
                             <div style="margin-bottom: 12px;">
-                                <label style="display: block; margin-bottom: 6px; color: var(--text-secondary); font-size: 13px;">Proveedor de IA</label>
+                                <label style="display: block; margin-bottom: 6px; color: var(--text-secondary); font-size: 13px;" x-text="$store.i18n.t('modals.avatarSelector.aiProvider')"></label>
                                 <select x-model="selectedAIProvider" style="width: 100%; padding: 8px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary);">
-                                    <option :value="null">Automático (usar primero disponible)</option>
+                                    <option :value="null" x-text="$store.i18n.t('modals.avatarSelector.automaticProvider')"></option>
                                     <template x-for="provider in availableAIProviders" :key="provider.id">
                                         <option :value="provider.id" x-text="provider.name"></option>
                                     </template>
@@ -244,12 +244,12 @@
                         <!-- Prompt personalizado (opcional) -->
                         <div style="margin-bottom: 12px;">
                             <label style="display: block; margin-bottom: 6px; color: var(--text-secondary); font-size: 13px;">
-                                Prompt personalizado (opcional)
-                                <span style="color: var(--text-tertiary); font-size: 11px;">- Si está vacío, se generará automáticamente</span>
+                                <span x-text="$store.i18n.t('modals.avatarSelector.customPrompt')"></span>
+                                <span style="color: var(--text-tertiary); font-size: 11px;" x-text="$store.i18n.t('modals.avatarSelector.seedHint')"></span>
                             </label>
                             <textarea
                                 x-model="aiPrompt"
-                                :placeholder="`Describe la imagen que quieres generar...`"
+                                :placeholder="$store.i18n.t('modals.avatarSelector.promptPlaceholder')"
                                 style="width: 100%; min-height: 60px; padding: 8px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); resize: vertical; font-family: inherit;">
                             </textarea>
                         </div>
@@ -264,13 +264,13 @@
                             <template x-if="!generatingImage">
                                 <span>
                                     <i data-lucide="wand-2" width="16" height="16" style="vertical-align: middle;"></i>
-                                    Generar Imagen
+                                    <span x-text="$store.i18n.t('locations.generateImage')"></span>
                                 </span>
                             </template>
                             <template x-if="generatingImage">
                                 <span>
                                     <div class="spinner" style="width: 16px; height: 16px; display: inline-block; vertical-align: middle;"></div>
-                                    Generando...
+                                    <span x-text="$store.i18n.t('common.generating')"></span>
                                 </span>
                             </template>
                         </button>
@@ -279,7 +279,7 @@
                         <template x-if="availableAIProviders.length === 0">
                             <div style="margin-top: 12px; padding: 10px; background: rgba(255,160,0,0.1); border: 1px solid rgba(255,160,0,0.3); border-radius: 6px; color: var(--text-secondary); font-size: 12px;">
                                 <i data-lucide="alert-circle" width="14" height="14" style="vertical-align: middle;"></i>
-                                No hay proveedores de IA configurados. Ve a Ajustes → APIs de Imágenes para configurar una API key.
+                                <span x-text="$store.i18n.t('errors.noAIProvidersConfiguredDetailed')"></span>
                             </div>
                         </template>
                     </div>

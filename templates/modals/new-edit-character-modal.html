@@ -198,7 +198,7 @@
                                     <div class="flex-1">
                                         <div class="font-semibold" style="color: var(--text-primary);" x-text="(() => {
                                             const relatedChar = $store.project.getCharacter(relation.characterId);
-                                            return relatedChar ? relatedChar.name : 'Personaje desconocido';
+                                            return relatedChar ? relatedChar.name : $store.i18n.t('characters.unknownCharacter');
                                         })()"></div>
                                         <div class="text-xs" style="color: var(--accent);" x-text="$store.i18n.t('characters.form.relationTypes.' + (relation.currentType || relation.type))"></div>
                                     </div>
@@ -216,14 +216,14 @@
                             <div class="flex gap-md mt-lg">
                                 <select x-model="newRelationship.characterId" class="flex-1 p-md bg-primary border rounded-lg" x-bind:disabled="!availableCharacters || availableCharacters.length === 0">
                                     <template x-if="!availableCharacters || availableCharacters.length === 0">
-                                        <option value="">No hay personajes disponibles</option>
+                                        <option value="" x-text="$store.i18n.t('characters.form.noCharactersAvailable')"></option>
                                     </template>
                                     <template x-for="char in availableCharacters" :key="char.id">
                                         <option :value="char.id" x-text="char.name"></option>
                                     </template>
                                 </select>
                                 <select x-model="newRelationship.type" class="p-md bg-primary border rounded-lg">
-                                    <optgroup label="Relaciones Personales">
+                                    <optgroup :label="$store.i18n.t('characters.form.relationGroups.personal')">
                                         <option value="friend" x-text="$store.i18n.t('characters.form.relationTypes.friend')">Amigo</option>
                                         <option value="love" x-text="$store.i18n.t('characters.form.relationTypes.love')">Romántico</option>
                                         <option value="acquaintance" x-text="$store.i18n.t('characters.form.relationTypes.acquaintance')">Conocido</option>
@@ -233,12 +233,12 @@
                                         <option value="ex" x-text="$store.i18n.t('characters.form.relationTypes.ex')">Ex</option>
                                         <option value="crush" x-text="$store.i18n.t('characters.form.relationTypes.crush')">Crush</option>
                                     </optgroup>
-                                    <optgroup label="Relaciones Familiares">
+                                    <optgroup :label="$store.i18n.t('characters.form.relationGroups.family')">
                                         <option value="family" x-text="$store.i18n.t('characters.form.relationTypes.family')">Familia</option>
                                         <option value="guardian" x-text="$store.i18n.t('characters.form.relationTypes.guardian')">Guardián</option>
                                         <option value="ward" x-text="$store.i18n.t('characters.form.relationTypes.ward')">Tutelado</option>
                                     </optgroup>
-                                    <optgroup label="Relaciones Profesionales">
+                                    <optgroup :label="$store.i18n.t('characters.form.relationGroups.professional')">
                                         <option value="colleague" x-text="$store.i18n.t('characters.form.relationTypes.colleague')">Colega</option>
                                         <option value="collaborator" x-text="$store.i18n.t('characters.form.relationTypes.collaborator')">Colaborador</option>
                                         <option value="mentor" x-text="$store.i18n.t('characters.form.relationTypes.mentor')">Mentor</option>
@@ -249,14 +249,14 @@
                                         <option value="businessPartner" x-text="$store.i18n.t('characters.form.relationTypes.businessPartner')">Socio de Negocios</option>
                                         <option value="partner" x-text="$store.i18n.t('characters.form.relationTypes.partner')">Socio</option>
                                     </optgroup>
-                                    <optgroup label="Relaciones de Ficción">
+                                    <optgroup :label="$store.i18n.t('characters.form.relationGroups.fiction')">
                                         <option value="hero" x-text="$store.i18n.t('characters.form.relationTypes.hero')">Héroe</option>
                                         <option value="villain" x-text="$store.i18n.t('characters.form.relationTypes.villain')">Villano</option>
                                         <option value="sidekick" x-text="$store.i18n.t('characters.form.relationTypes.sidekick')">Compañero</option>
                                         <option value="archenemy" x-text="$store.i18n.t('characters.form.relationTypes.archenemy')">Arquienemigo</option>
                                         <option value="rivalLove" x-text="$store.i18n.t('characters.form.relationTypes.rivalLove')">Rival Amoroso</option>
                                     </optgroup>
-                                    <optgroup label="Relaciones de Conflicto">
+                                    <optgroup :label="$store.i18n.t('characters.form.relationGroups.conflict')">
                                         <option value="enemy" x-text="$store.i18n.t('characters.form.relationTypes.enemy')">Enemigo</option>
                                     </optgroup>
                                 </select>

@@ -264,43 +264,60 @@
 
     <!-- Loading Messages Script -->
     <script>
-        // Frases motivadoras para el loading
-        const loadingMessagesES = [
-            'Cargando tu espacio creativo...',
-            'Preparando tus historias...',
-            'Afinando la pluma...',
-            'Invocando las musas...',
-            'Organizando tus personajes...',
-            'Configurando la IA...',
-            'Despertando la inspiración...',
-            'Preparando el escenario...',
-            'Cargando mundos imaginarios...',
-            'Listo para escribir grandes historias...',
-        ];
+        // Function to get loading messages from i18n store
+        function getLoadingMessages() {
+            // Wait for Alpine and i18n store to be ready
+            if (window.Alpine && window.Alpine.store && window.Alpine.store('i18n')) {
+                const i18n = window.Alpine.store('i18n');
+                return [
+                    i18n.t('loading.messages.creative'),
+                    i18n.t('loading.messages.stories'),
+                    i18n.t('loading.messages.pen'),
+                    i18n.t('loading.messages.muses'),
+                    i18n.t('loading.messages.organizing'),
+                    i18n.t('loading.messages.ai'),
+                    i18n.t('loading.messages.inspiration'),
+                    i18n.t('loading.messages.stage'),
+                    i18n.t('loading.messages.worlds'),
+                    i18n.t('loading.messages.ready'),
+                ];
+            }
+            // Fallback messages if i18n is not ready
+            const browserLang = navigator.language.split('-')[0];
+            return browserLang === 'es' ? [
+                'Cargando tu espacio creativo...',
+                'Preparando tus historias...',
+                'Afinando la pluma...',
+                'Invocando las musas...',
+                'Organizando tus personajes...',
+                'Configurando la IA...',
+                'Despertando la inspiración...',
+                'Preparando el escenario...',
+                'Cargando mundos imaginarios...',
+                'Listo para escribir grandes historias...',
+            ] : [
+                'Loading your creative space...',
+                'Preparing your stories...',
+                'Sharpening the quill...',
+                'Invoking the muses...',
+                'Organizing your characters...',
+                'Setting up AI...',
+                'Awakening inspiration...',
+                'Preparing the stage...',
+                'Loading imaginary worlds...',
+                'Ready to write great stories...',
+            ];
+        }
 
-        const loadingMessagesEN = [
-            'Loading your creative space...',
-            'Preparing your stories...',
-            'Sharpening the quill...',
-            'Invoking the muses...',
-            'Organizing your characters...',
-            'Setting up AI...',
-            'Awakening inspiration...',
-            'Preparing the stage...',
-            'Loading imaginary worlds...',
-            'Ready to write great stories...',
-        ];
-
-        // Detectar idioma del navegador
-        const browserLang = navigator.language.split('-')[0];
-        const loadingMessages = browserLang === 'es' ? loadingMessagesES : loadingMessagesEN;
-
+        let loadingMessages = getLoadingMessages();
         let messageIndex = 0;
         const messageElement = document.getElementById('loader-message');
         messageElement.textContent = loadingMessages[0];
 
         // Cambiar mensaje cada 2 segundos
         const messageInterval = setInterval(() => {
+            // Try to update with translated messages if i18n is now available
+            loadingMessages = getLoadingMessages();
             messageIndex = (messageIndex + 1) % loadingMessages.length;
             messageElement.textContent = loadingMessages[messageIndex];
         }, 2000);

@@ -30,18 +30,15 @@ window.translations_es = {
         select: 'Seleccionar',
         remove: 'Quitar',
         title: 'Título:',
-        author: 'Autor:'
-    },
-
-    // Avatares
-    avatars: {
-        selectAvatar: 'Seleccionar Avatar',
-        change: 'Cambiar Avatar',
-        select: 'Seleccionar',
-        upload: 'Subir',
-        preview: 'Vista Previa',
-        seedPlaceholder: 'Nombre para generar',
-        hint: 'Los avatares se generan usando tu nombre como semilla. Cambia el nombre de vista previa para ver diferentes variaciones.'
+        author: 'Autor:',
+        change: 'Cambiar',
+        saveChanges: 'Guardar Cambios',
+        noDescription: 'Sin descripción',
+        dateUnknown: 'Fecha desconocida',
+        untitled: 'Sin título',
+        words: 'palabras',
+        list: 'Lista',
+        automatic: 'Automático'
     },
 
     // Header
@@ -64,6 +61,7 @@ window.translations_es = {
         scenes: 'Escenas',
         locations: 'Ubicaciones',
         lore: 'Lore',
+        images: 'Imágenes',
         relations: 'Relaciones',
         timeline: 'Eventos',
         versionControl: 'Control de Versiones',
@@ -72,7 +70,9 @@ window.translations_es = {
         notes: 'Notas',
         settings: 'Configuración',
         collapse: 'Contraer',
-        expand: 'Expandir'
+        expand: 'Expandir',
+        hide: 'Ocultar menú',
+        show: 'Mostrar menú'
     },
 
     // Dashboard
@@ -109,6 +109,10 @@ window.translations_es = {
         edit: 'Editar Personaje',
         empty: 'No hay personajes creados',
         emptyHint: 'Crea tu primer personaje para comenzar',
+        unknownCharacter: 'Personaje desconocido',
+        defaultName: 'Personaje',
+        mainCharacter: 'Personaje Principal',
+        otherCharacter: 'Otro Personaje',
         form: {
             avatar: 'Avatar',
             name: 'Nombre',
@@ -158,7 +162,10 @@ window.translations_es = {
                 crush: 'Crush',
                 rivalLove: 'Rival Amoroso'
             },
-            relationshipsHint: 'Haz clic en el signo más para añadir una relación con otro personaje'
+            relationshipsHint: 'Haz clic en el signo más para añadir una relación con otro personaje',
+            relationGroups: {
+                fiction: 'Relaciones de Ficción'
+            }
         },
         delete: {
             title: 'Eliminar Personaje',
@@ -175,7 +182,9 @@ window.translations_es = {
         edit: 'Editar Escena',
         empty: 'No hay escenas creadas',
         emptyHint: 'Crea tu primera escena',
+        imageGenerated: 'Imagen generada',
         form: {
+            image: 'Imagen de la escena (opcional)',
             title: 'Título',
             titlePlaceholder: 'Ej: Encuentro en el café',
             chapter: 'Capítulo',
@@ -202,7 +211,11 @@ window.translations_es = {
         copyAIPrompt: 'Copiar Prompt IA',
         aiPromptCopied: 'Prompt copiado al portapapeles',
         aiPromptCopiedDesc: 'Ahora puedes pegarlo en tu generador de imágenes IA favorito (DALL-E, Midjourney, Stable Diffusion, etc.)',
+        imageGenerated: 'Imagen generada',
+        imageGeneratedSuccessfully: 'Imagen generada exitosamente',
+        generateImage: 'Generar Imagen',
         form: {
+            image: 'Imagen',
             name: 'Nombre',
             namePlaceholder: 'Ej: Café Central',
             type: 'Tipo',
@@ -232,7 +245,11 @@ window.translations_es = {
         empty: 'No hay capítulos creados',
         emptyHint: 'Crea tu primer capítulo para comenzar a escribir',
         chapter: 'Capítulo',
+        chapterNumber: 'Capítulo',
+        defaultName: 'capítulo',
+        imageGenerated: 'Imagen generada',
         form: {
+            image: 'Imagen del capítulo (opcional)',
             number: 'Número',
             title: 'Título',
             titlePlaceholder: 'Título del capítulo',
@@ -277,6 +294,8 @@ window.translations_es = {
         filterRelative: 'Solo relativos',
         filterEra: 'Solo eras',
         dragHint: 'Arrastra los eventos para reordenarlos',
+        noSpecificEvent: 'Sin evento específico',
+        eventUnknown: 'Evento desconocido',
         dateMode: {
             absolute: 'Absoluto',
             relative: 'Relativo',
@@ -416,7 +435,18 @@ window.translations_es = {
             maxTokens: 'Tokens Máximos',
             noApiKey: 'No hay clave API configurada',
             configure: 'Configurar'
-        }
+        },
+        noProvidersConfigured: 'No hay proveedores con API key configurada. Ve a Configuración IA para agregar una.',
+        projectContext: 'Contexto del Proyecto',
+        project: 'Proyecto:',
+        characters: 'Personajes:',
+        chapters: 'Capítulos:',
+        inputPlaceholder: 'Escribe tu consulta aquí... (Ej: \'Continúa el capítulo actual\', \'Dame ideas para la próxima escena\', \'Analiza este diálogo\')',
+        configRequired: 'Configuración requerida: Por favor configura una API key en Ajustes → Configuración IA para poder usar el asistente.',
+        confirmClearChat: '¿Estás seguro de que quieres limpiar el chat? Esta acción no se puede deshacer.',
+        openChapterFirst: '⚠️ Por favor abre un capítulo primero',
+        textInserted: '✅ Texto insertado en el capítulo actual',
+        serviceUnavailable: '❌ El servicio de IA no está disponible'
     },
 
     // Notas
@@ -453,7 +483,9 @@ window.translations_es = {
         saved: 'Guardado',
         zenMode: 'Modo sin distracciones',
         exitZenMode: 'Salir del modo zen',
-        placeholder: 'Comienza a escribir tu historia...'
+        placeholder: 'Comienza a escribir tu historia...',
+        unsaved: 'Sin guardar',
+        confirmLeaveUnsaved: 'Tienes cambios sin guardar. ¿Estás seguro de que quieres salir?'
     },
 
     // Publicación
@@ -494,6 +526,16 @@ window.translations_es = {
             copyrightPlaceholder: '© 2025 Tu Nombre. Todos los derechos reservados.'
         },
 
+        kdp: {
+            professionalFormat: 'Formato profesional'
+        },
+
+        paperType: {
+            label: 'Tipo de Papel',
+            cream: 'Papel Crema (recomendado para ficción)',
+            white: 'Papel Blanco (para imágenes a color)'
+        },
+
         chapters: {
             title: 'Selección de Capítulos',
             selectAll: 'Seleccionar Todos',
@@ -514,7 +556,10 @@ window.translations_es = {
             statusDraft: 'Borradores',
             showDrafts: 'Mostrar borradores',
             showReview: 'Mostrar en revisión',
-            onlyFinal: 'Solo capítulos finales'
+            onlyFinal: 'Solo capítulos finales',
+            available: 'capítulos disponibles',
+            words: 'palabras',
+            abbreviation: 'Cap.'
         },
 
         platform: {
@@ -547,13 +592,37 @@ window.translations_es = {
             addImage: 'Agregar Imagen',
             fullPage: 'Página completa',
             position: 'Posición en el libro',
+            positionLabel: 'Posición en el libro:',
             afterChapter: 'Después del capítulo',
             beforeChapter: 'Antes del capítulo',
             atBeginning: 'Al inicio del libro',
             atEnd: 'Al final del libro',
             reorder: 'Reordenar',
             remove: 'Quitar',
-            noImages: 'Sin imágenes agregadas'
+            noImages: 'Sin imágenes agregadas',
+            insertHelp: 'Puedes insertar imágenes DENTRO de los capítulos usando marcadores',
+            howToInsert: 'Cómo insertar imágenes dentro de los capítulos:',
+            useMarkers: 'Usa estos marcadores en el texto de tus capítulos:',
+            fullPageDescription: 'Imagen de página completa (inserta una página)',
+            inlineDescription: 'Imagen en línea (fluye con el texto)',
+            numberHelp: 'El número corresponde al # que aparece en cada imagen abajo.',
+            fullPageNote: 'La imagen aparecerá en una página completa',
+            useMarkerNote: 'Usa [IMG:X] o [INLINE-IMG:X] en el texto del capítulo',
+            positionInChapter: 'Dentro de capítulo (usa marcadores [IMG:X] o [INLINE-IMG:X])',
+            positionFrontMatter: 'Al inicio del libro (Front Matter)',
+            positionAfterChapter: 'Después de Capítulo {chapter}: {title}',
+            positionBackMatter: 'Al final del libro (Back Matter)',
+            confirmDelete: 'Eliminar imagen de {name}?',
+            deleted: 'Imagen eliminada',
+            sortByName: 'Nombre A-Z',
+            generated: 'Imagen generada',
+            updated: 'Imagen actualizada',
+            viewImage: 'Vista: Ver imagen',
+            delete: 'Eliminar Imagen',
+            seedHint: '- Si está vacío, se generará automáticamente',
+            generate: 'Generar Imagen',
+            generatedImage: 'Imagen generada:',
+            generatedSuccessfully: 'Imagen generada exitosamente:'
         },
 
         format: {
@@ -611,6 +680,39 @@ window.translations_es = {
             noChapters: 'No hay capítulos seleccionados',
             warnings: 'Advertencias',
             ready: 'Listo para exportar'
+        },
+
+        frontMatter: {
+            title: 'Estructura Preliminar (Front Matter)',
+            description: 'Contenido que aparece antes de los capítulos (opcional)',
+            otherBooks: 'Otros libros del autor',
+            otherBooksPlaceholder: 'Lista de tus otros libros (uno por línea)...',
+            otherBooksHelp: 'Aparecerá en el reverso de la portadilla',
+            dedication: 'Dedicatoria',
+            dedicationPlaceholder: 'A quien dedicas este libro...',
+            dedicationHelp: 'Aparecerá en página IMPAR después del copyright',
+            prologue: 'Prólogo',
+            prologuePlaceholder: 'Prólogo del libro (contexto, introducción)...',
+            prologueHelp: 'Se formateará profesionalmente con sangría y justificación'
+        },
+
+        backMatter: {
+            title: 'Estructura Final (Back Matter)',
+            description: 'Contenido que aparece después de los capítulos',
+            epilogue: 'Epílogo (opcional)',
+            epiloguePlaceholder: 'Epílogo del libro (conclusión, cierre)...',
+            acknowledgments: 'Agradecimientos (opcional)',
+            acknowledgmentsPlaceholder: 'Agradece a editores, beta readers, familia, amigos...',
+            aboutAuthor: 'Sobre el Autor (recomendado)',
+            aboutAuthorPlaceholder: '[Nombre del Autor] nació en [Ciudad, País] en [Año]. \n\nSu pasión por [tema/género] comenzó desde temprana edad, cuando [anécdota breve].\n\n[Logros, experiencias relevantes, otros trabajos]\n\n[Nombre] vive actualmente en [Ciudad] con [familia/mascotas]. Este es su [número] novela publicada.',
+            authorPhoto: 'Foto del Autor (opcional)',
+            uploadPhoto: 'Subir foto',
+            photoHelp: 'Recomendado: cuadrada, mínimo 300x300px',
+            contactInfo: 'Información de Contacto (opcional)',
+            websitePlaceholder: 'Sitio web: www.tuautor.com',
+            socialPlaceholder: 'Redes sociales: @tuautor en Twitter/Instagram',
+            newsletterPlaceholder: 'Newsletter: Suscríbete en www.tuautor.com/newsletter',
+            contactInfoHelp: 'Aparecerá al final de "Sobre el Autor"'
         }
     },
 
@@ -649,6 +751,7 @@ window.translations_es = {
                 exportErrorTitle: 'Error al exportar',
                 exportErrorMessage: 'Ocurrió un error al intentar exportar los datos',
                 confirmationLabel: 'Para confirmar la eliminación, escribe "ELIMINAR DATOS" en el campo siguiente:',
+                confirmationPlaceholder: 'ELIMINAR DATOS',
                 understandCheckbox: 'Entiendo que esta acción no se puede deshacer y que perderé todos los datos almacenados localmente',
                 deleteButton: 'Eliminar Todos los Datos Localmente',
                 deletionConfirmed: 'Datos eliminados correctamente. La aplicación se recargará en unos segundos.',
@@ -725,14 +828,141 @@ window.translations_es = {
             description: 'Descarga tu proyecto como archivo PLUMA (*.pluma)',
             includeApiKeys: 'Incluir claves API',
             filename: 'Nombre del archivo',
-            download: 'Descargar'
+            download: 'Descargar',
+            formatWithImages: 'Formato: PLUMA con imágenes',
+            securityRequired: 'Seguridad (Obligatoria)',
+            securityOptional: 'Seguridad (Opcional)',
+            apiKeysWarning: 'Este proyecto contiene API keys. Por seguridad, es obligatorio encriptarlas. Si olvidas la contraseña solo perderás las claves, no el proyecto.',
+            encryptApiKeysRequired: 'Encriptar API keys (obligatorio)',
+            apiKeysAutoEncrypt: 'Las API keys detectadas serán encriptadas automáticamente',
+            encryptAll: 'Encriptar proyecto completo',
+            encryptAllHint: 'Máxima privacidad - encripta todo el contenido (incluye las API keys)',
+            password: 'Contraseña de encriptación',
+            passwordPlaceholder: 'Mínimo 12 caracteres',
+            passwordHint: 'Usa una contraseña fuerte. Si la olvidas, no podrás recuperar los datos.',
+            confirmPassword: 'Confirmar contraseña',
+            confirmPasswordPlaceholder: 'Repite la contraseña',
+            success: 'Proyecto exportado',
+            successDetails: 'Archivo descargado correctamente',
+            errors: {
+                passwordRequired: 'Debes ingresar una contraseña',
+                passwordTooShort: 'La contraseña debe tener al menos 12 caracteres',
+                passwordMismatch: 'Las contraseñas no coinciden',
+                exportFailed: 'No se pudo exportar el proyecto'
+            }
         },
         import: {
             title: 'Importar Proyecto',
             description: 'Carga un proyecto desde archivo PLUMA (*.pluma)',
             selectFile: 'Seleccionar archivo',
             selected: 'Archivo seleccionado: {filename}',
-            warning: 'Esto reemplazará el proyecto actual'
+            warning: 'Esto reemplazará el proyecto actual',
+            success: 'Proyecto importado',
+            encryptedFile: 'Archivo Encriptado'
+        },
+        password: {
+            title: 'Contraseña Requerida',
+            password: 'Contraseña',
+            passwordPlaceholder: 'Ingresa tu contraseña',
+            encryptAll: 'Encriptar todo el proyecto'
+        },
+        manageImage: {
+            title: 'Gestionar Imagen'
+        },
+        avatarSelector: {
+            automaticProvider: 'Automático (usar primero disponible)',
+            seedHint: '- Si está vacío, se generará automáticamente',
+            generateImage: 'Generar Imagen',
+            generatedSuccessfully: 'Imagen generada exitosamente',
+            customImageLoaded: 'Imagen personalizada cargada'
+        },
+        projectsList: {
+            title: 'Mis Proyectos'
+        },
+        editRelationship: {
+            title: 'Relación y su Historia'
+        },
+        vitalStatus: {
+            title: 'Estado Vital de {name}'
+        },
+        newRelationship: {
+            title: 'Nueva Relación'
+        },
+        settings: {
+            title: 'Configuración',
+            textAPIs: 'APIs de Texto',
+            imageAPIs: 'APIs de Imágenes',
+            imageProvider: 'Proveedor de Imágenes',
+            requiresLocalInstall: 'Requiere instalación local: Ver instrucciones',
+            manualPromptCopy: 'Copia el prompt generado y pégalo en cualquier IA web (ChatGPT, Claude, etc.)',
+            savedKeys: 'Keys Guardadas',
+            lastUsed: 'Último uso:',
+            autoFallbackHint: 'Fallback automático: Si una key falla, el sistema intentará automáticamente con la siguiente disponible.',
+            keysPrivacy: 'Las claves se guardan en tu dispositivo y no se envían a ningún servidor',
+            tokenOptimization: 'Optimización de Tokens',
+            tokenOptimizationDesc: 'Controla cuánto contexto se envía a la IA para ahorrar tokens y reducir costos',
+            tokenLevels: {
+                minimal: '⚡ Mínimo (~1,000 tokens) - Solo lo esencial',
+                normal: '⚖️ Normal (~3,000 tokens) - Balanceado (recomendado)',
+                complete: '📚 Completo (~8,000 tokens) - Todo el contexto',
+                unlimited: '🚀 Sin límite - Enviar todo'
+            },
+            contextLevel: 'Nivel de Contexto',
+            minimalLevel: 'Nivel Mínimo',
+            minimalLevelDesc: 'Solo incluye: Protagonista, antagonista, capítulo actual. Ideal para ahorrar tokens.',
+            normalLevel: 'Nivel Normal (Recomendado)',
+            smartLevelDesc: 'Incluye: Personajes mencionados, lore relevante, locaciones citadas. Balance perfecto entre calidad y costo.',
+            completeLevel: 'Nivel Completo',
+            fullLevelDesc: 'Incluye: Todos los personajes, todo el lore, todas las locaciones. Máxima calidad, mayor costo.',
+            unlimitedLevel: 'Sin Límite',
+            unlimitedLevelWarning: '⚠️ Envía TODO sin restricciones. Puede consumir muchos tokens en proyectos grandes.',
+            smartSavingTip: '💡 Ahorro inteligente: El sistema detecta automáticamente personajes y lore mencionados en tu texto para incluir solo lo relevante.',
+            agenticSystem: '🤖 Sistema de IA Agéntica',
+            agenticSystemDesc: 'La IA analiza tu tarea y decide qué contexto necesita, enviando solo lo relevante',
+            agenticMode: 'Modo Agéntico',
+            agenticModeDesc: 'La IA decide qué contexto necesita (recomendado)',
+            twoStepFlow: {
+                title: '¿Cómo funciona el flujo de 2 pasos?',
+                step1: '<strong>Paso 1:</strong> La IA recibe tu tarea y un inventario de contexto disponible (solo nombres, sin contenido)',
+                step2: '<strong>Paso 2:</strong> La IA decide qué personajes, lore, locaciones necesita y el sistema envía SOLO eso'
+            },
+            agenticBenefits: {
+                title: 'Ventajas del modo agéntico',
+                tokenSaving: '<strong>Ahorro masivo de tokens:</strong> Solo envía lo que realmente necesita',
+                relevantContext: '<strong>Contexto más relevante:</strong> La IA selecciona lo específico para tu tarea',
+                fullTraceability: '<strong>Trazabilidad total:</strong> Los logs muestran exactamente qué decidió incluir',
+                smartOptimization: '<strong>Optimización inteligente:</strong> La IA decide, no reglas predefinidas',
+                tip: '<strong>💡 Tip:</strong> Activa los logs de depuración para ver el flujo de 2 pasos en acción.'
+            },
+            debugLogs: {
+                title: 'Logs de Depuración',
+                description: 'Activa logs detallados en la consola para ver el flujo de peticiones a la IA'
+            },
+            apiKeys: {
+                editName: 'Editar nombre',
+                markDefault: 'Marcar como default',
+                delete: 'Eliminar',
+                confirmDelete: '¿Eliminar esta API key?'
+            },
+            showLogs: 'Mostrar Logs',
+            showLogsDesc: 'Ver información detallada del sistema de IA',
+            logsInfo: {
+                title: '¿Qué se registra?',
+                items: {
+                    modeAndProvider: 'Modo y proveedor de IA seleccionado',
+                    contextBuilding: 'Construcción de contexto (personajes, lore, capítulos)',
+                    tokenOptimization: 'Optimización de tokens (antes/después)',
+                    finalPrompt: 'Prompt final generado',
+                    apiRequests: 'Peticiones y respuestas de la API',
+                    responseTimes: 'Tiempos de respuesta y errores'
+                },
+                tip: '💡 Tip: Abre la consola del navegador (F12) para ver los logs en tiempo real.'
+            },
+            localDataDesc: 'Gestiona los datos almacenados localmente en este navegador (Proyectos PLUMA)',
+            exportCurrentProject: 'Exportar Proyecto Actual',
+            exportProject: 'Exportar Proyecto',
+            exportAllData: 'Exportar Todos los Datos',
+            deleteAllData: 'Eliminar Todos los Datos Localmente'
         }
     },
 
@@ -823,7 +1053,134 @@ window.translations_es = {
         maxLength: 'Máximo {max} caracteres',
         invalid: 'Valor inválido'
     },
-    
+
+    // Relaciones entre personajes
+    relationships: {
+        title: 'Relaciones',
+        currentState: 'Estado Actual de la Relación',
+        currentStateLabel: 'Estado Actual',
+        type: 'Tipo',
+        status: 'Estado',
+        history: 'Historial de la Relación',
+        addChange: 'Agregar Cambio',
+        newChange: 'Nuevo Cambio en la Relación',
+        editingHistoryEntry: 'Editando Entrada del Historial',
+        deleteRelationship: 'Eliminar Relación',
+        addToHistory: 'Agregar al Historial',
+        addNew: 'Agregar nueva relación',
+        create: 'Crear Relación',
+        statuses: {
+            active: '✅ Activa',
+            strained: '😰 Tensa',
+            improving: '📈 Mejorando',
+            deteriorating: '📉 Deteriorándose',
+            ended: '💔 Terminada',
+            complicated: '🤔 Complicada'
+        },
+        form: {
+            selectOtherCharacter: 'Selecciona el otro personaje',
+            relatedCharacter: 'Personaje Relacionado *',
+            selectCharacterPlaceholder: 'Selecciona un personaje',
+            type: 'Tipo de Relación *',
+            newType: 'Nuevo Tipo de Relación *',
+            description: 'Descripción',
+            descriptionPlaceholder: 'Describe la naturaleza de esta relación',
+            descriptionHint: '¿Cómo se conocieron? ¿Qué los une o separa?',
+            currentStatus: 'Estado Actual',
+            newStatus: 'Nuevo Estado',
+            statusHint: 'Podrás cambiar esto más adelante asociándolo a eventos',
+            whatHappened: '¿Qué pasó? *',
+            whatHappenedPlaceholder: 'Describe qué evento o situación causó este cambio en la relación',
+            associatedEvent: 'Evento Asociado (Opcional)',
+            startEvent: 'Evento de Inicio (Opcional)',
+            startEventHint: '¿En qué evento de la historia comenzó esta relación?',
+            additionalNotes: 'Notas Adicionales',
+            additionalNotesPlaceholder: 'Detalles adicionales sobre la relación...'
+        },
+        errors: {
+            notFound: 'No se encontró la relación',
+            mustSelectCharacter: 'Debes seleccionar un personaje',
+            alreadyExists: 'Ya existe una relación con este personaje',
+            cannotDeleteLastEntry: 'No puedes eliminar la única entrada del historial. Elimina toda la relación si quieres borrarla.'
+        },
+        success: {
+            created: 'Relación creada',
+            historyAdded: 'Cambio agregado al historial',
+            historyUpdated: 'Entrada del historial actualizada',
+            historyDeleted: 'Entrada eliminada del historial',
+            deleted: 'Relación eliminada'
+        },
+        confirm: {
+            deleteHistoryEntry: '¿Estás seguro de que quieres eliminar esta entrada del historial?',
+            deleteRelationship: '¿Estás seguro de que quieres eliminar esta relación y todo su historial?'
+        }
+    },
+
+    // Estado vital de personajes
+    vitalStatus: {
+        title: 'Estado Vital',
+        currentState: 'Estado Actual',
+        history: 'Historial de Estados Vitales',
+        changeStatus: 'Cambiar Estado',
+        changeStatusTitle: 'Cambiar Estado Vital',
+        editingEntry: 'Editando Entrada',
+        saveChange: 'Guardar Cambio',
+        statuses: {
+            alive: 'Vivo',
+            healthy: 'Saludable',
+            wounded: 'Herido',
+            sick: 'Enfermo',
+            recovering: 'Recuperándose',
+            imprisoned: 'Encarcelado',
+            born: 'Nació',
+            created: 'Creado',
+            appeared: 'Apareció',
+            awakened: 'Despertó',
+            reborn: 'Renacido',
+            dead: 'Muerto',
+            murdered: 'Asesinado',
+            executed: 'Ejecutado',
+            sacrificed: 'Sacrificado',
+            naturalDeath: 'Muerte Natural',
+            battleDeath: 'Muerte en Batalla',
+            missing: 'Desaparecido',
+            lost: 'Perdido',
+            kidnapped: 'Secuestrado',
+            exiled: 'Exiliado',
+            vanished: 'Desvanecido',
+            escaped: 'Escapó',
+            transformed: 'Transformado',
+            cursed: 'Maldito',
+            possessed: 'Poseído',
+            corrupted: 'Corrompido',
+            ascended: 'Ascendido',
+            unknown: 'Desconocido',
+            presumedDead: 'Presuntamente Muerto',
+            presumedAlive: 'Presuntamente Vivo'
+        },
+        form: {
+            newStatus: 'Nuevo Estado *',
+            status: 'Estado *',
+            whatHappened: '¿Qué pasó? *',
+            whatHappenedPlaceholder: 'Describe qué evento o situación causó este cambio de estado',
+            associatedEvent: 'Evento Asociado (Opcional)',
+            additionalNotes: 'Notas Adicionales',
+            additionalNotesPlaceholder: 'Detalles adicionales...',
+            description: 'Descripción *'
+        },
+        errors: {
+            cannotDeleteLastEntry: 'No puedes eliminar la única entrada del historial vital'
+        },
+        success: {
+            updated: 'Estado vital actualizado',
+            entryUpdated: 'Entrada actualizada',
+            entryDeleted: 'Entrada eliminada'
+        },
+        confirm: {
+            deleteEntry: '¿Estás seguro de que quieres eliminar esta entrada?'
+        }
+    },
+
     // Control de Versiones
     versionControl: {
         title: 'Control de Versiones',
@@ -871,7 +1228,37 @@ window.translations_es = {
         outlineTree: 'Árbol de Esquema',
         treeDescription: 'Descripción',
         treeDescriptionPlaceholder: 'Breve descripción de la estructura...',
-        createFromCurrent: 'Crear a partir del proyecto actual'
+        createFromCurrent: 'Crear a partir del proyecto actual',
+        noChanges: 'Sin cambios detectados en esta sección',
+        noChangesTitle: 'Sin cambios',
+        noChangesToCommit: 'No hay cambios para commitear',
+        branchName: 'Nombre de la rama',
+        modifiedFiles: 'Archivos modificados:'
+    },
+
+    // Proyectos
+    project: {
+        untitled: 'Sin título',
+        confirmDelete: '¿Eliminar el proyecto {name}?',
+        deleted: 'Proyecto eliminado',
+        createNew: 'Crear Nuevo Proyecto',
+        new: 'Nuevo Proyecto'
+    },
+
+    // Mensajes de carga
+    loading: {
+        messages: {
+            creative: 'Cargando tu espacio creativo...',
+            stories: 'Preparando tus historias...',
+            pen: 'Afinando la pluma...',
+            muses: 'Invocando las musas...',
+            organizing: 'Organizando tus personajes...',
+            ai: 'Configurando la IA...',
+            inspiration: 'Despertando la inspiración...',
+            stage: 'Preparando el escenario...',
+            worlds: 'Cargando mundos imaginarios...',
+            ready: 'Listo para escribir grandes historias...'
+        }
     },
 
     // Avatares
