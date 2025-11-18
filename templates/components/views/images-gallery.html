@@ -1,0 +1,260 @@
+<!-- Images Gallery View -->
+<div x-show="$store.ui.currentView === 'images'" class="view" x-data="{
+    filterType: 'all',
+    sortBy: 'modified',
+    viewMode: 'grid',
+    searchQuery: '',
+
+    get filteredImages() {
+        if (!window.imagesGalleryService) return [];
+        let images = window.imagesGalleryService.getImagesFlat(this.sortBy, this.filterType);
+
+        // Filtrar por búsqueda
+        if (this.searchQuery.trim()) {
+            const query = this.searchQuery.toLowerCase();
+            images = images.filter(img =>
+                img.entityName.toLowerCase().includes(query)
+            );
+        }
+
+        return images;
+    },
+
+    get imageCounts() {
+        if (!window.imagesGalleryService) return { characters: 0, locations: 0, chapters: 0, scenes: 0 };
+        return window.imagesGalleryService.getImagesCounts();
+    },
+
+    handleDeleteImage(type, id, entityName) {
+        if (confirm(`¿Eliminar imagen de \"${entityName}\"?`)) {
+            if (window.imagesGalleryService.removeImage(type, id)) {
+                $store.ui.success('Imagen eliminada', '');
+                // Forzar actualización
+                this.$nextTick(() => {
+                    lucide.createIcons();
+                });
+            }
+        }
+    },
+
+    handleEditEntity(type, id) {
+        window.imagesGalleryService.editEntity(type, id);
+    },
+
+    openImageManagement(image) {
+        $store.ui.openModal('manageImage', image);
+    }
+}">
+    <!-- Header con filtros -->
+    <div style="padding: 20px; background: var(--bg-secondary); border-bottom: 1px solid var(--border);">
+        <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+            <!-- Búsqueda -->
+            <div style="flex: 1; min-width: 250px;">
+                <input
+                    type="text"
+                    x-model="searchQuery"
+                    placeholder="Buscar por nombre..."
+                    class="input"
+                    style="width: 100%;">
+            </div>
+
+            <!-- Filtro por tipo -->
+            <div style="display: flex; gap: 8px;">
+                <button
+                    class="btn-secondary"
+                    :class="{ 'btn-primary': filterType === 'all' }"
+                    @click="filterType = 'all'"
+                    style="padding: 8px 12px;">
+                    <span>Todas (<span x-text="Object.values(imageCounts).reduce((a,b) => a + b, 0)"></span>)</span>
+                </button>
+                <button
+                    class="btn-secondary"
+                    :class="{ 'btn-primary': filterType === 'character' }"
+                    @click="filterType = 'character'"
+                    style="padding: 8px 12px;">
+                    <i data-lucide="user" width="14" height="14"></i>
+                    <span>Personajes (<span x-text="imageCounts.characters"></span>)</span>
+                </button>
+                <button
+                    class="btn-secondary"
+                    :class="{ 'btn-primary': filterType === 'location' }"
+                    @click="filterType = 'location'"
+                    style="padding: 8px 12px;">
+                    <i data-lucide="map-pin" width="14" height="14"></i>
+                    <span>Lugares (<span x-text="imageCounts.locations"></span>)</span>
+                </button>
+                <button
+                    class="btn-secondary"
+                    :class="{ 'btn-primary': filterType === 'chapter' }"
+                    @click="filterType = 'chapter'"
+                    style="padding: 8px 12px;">
+                    <i data-lucide="book-open" width="14" height="14"></i>
+                    <span>Capítulos (<span x-text="imageCounts.chapters"></span>)</span>
+                </button>
+                <button
+                    class="btn-secondary"
+                    :class="{ 'btn-primary': filterType === 'scene' }"
+                    @click="filterType = 'scene'"
+                    style="padding: 8px 12px;">
+                    <i data-lucide="film" width="14" height="14"></i>
+                    <span>Escenas (<span x-text="imageCounts.scenes"></span>)</span>
+                </button>
+            </div>
+
+            <!-- Ordenamiento -->
+            <select x-model="sortBy" class="input" style="padding: 8px 12px;">
+                <option value="modified">Más reciente</option>
+                <option value="created">Fecha de creación</option>
+                <option value="name">Nombre A-Z</option>
+                <option value="type">Tipo</option>
+            </select>
+
+            <!-- Vista -->
+            <div style="display: flex; gap: 4px;">
+                <button
+                    class="btn-icon"
+                    :class="{ 'btn-primary': viewMode === 'grid' }"
+                    @click="viewMode = 'grid'"
+                    title="Vista de cuadrícula">
+                    <i data-lucide="grid-3x3" width="18" height="18"></i>
+                </button>
+                <button
+                    class="btn-icon"
+                    :class="{ 'btn-primary': viewMode === 'list' }"
+                    @click="viewMode = 'list'"
+                    title="Vista de lista">
+                    <i data-lucide="list" width="18" height="18"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div x-show="filteredImages.length === 0" class="empty-state">
+        <i data-lucide="image" width="64" height="64"></i>
+        <p>No hay imágenes</p>
+        <span class="hint">Las imágenes que generes o subas aparecerán aquí</span>
+    </div>
+
+    <!-- Grid View -->
+    <div x-show="filteredImages.length > 0 && viewMode === 'grid'" class="content-grid" style="padding: 20px; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));">
+        <template x-for="image in filteredImages" :key="image.type + '-' + image.id">
+            <div class="card" style="overflow: hidden; position: relative;">
+                <!-- Imagen -->
+                <div style="position: relative; width: 100%; height: 200px; background: var(--bg-tertiary); overflow: hidden;">
+                    <img
+                        :src="image.url"
+                        :alt="image.entityName"
+                        style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;"
+                        @click="openImageManagement(image)">
+
+                    <!-- Badge de tipo -->
+                    <div style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; display: flex; align-items: center; gap: 4px;">
+                        <i :data-lucide="window.imagesGalleryService.getTypeIcon(image.type)" width="12" height="12"></i>
+                        <span x-text="window.imagesGalleryService.getTypeLabel(image.type)"></span>
+                    </div>
+
+                    <!-- Badge de origen (AI/Upload/URL) -->
+                    <div x-show="image.imageType || image.source" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px;">
+                        <template x-if="image.imageType === 'ai' || image.source === 'ai'">
+                            <span>🤖 IA</span>
+                        </template>
+                        <template x-if="image.imageType === 'upload'">
+                            <span>📤 Upload</span>
+                        </template>
+                        <template x-if="image.imageType === 'url'">
+                            <span>🔗 URL</span>
+                        </template>
+                        <template x-if="image.source === 'dicebear'">
+                            <span>🎨 DiceBear</span>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Info -->
+                <div style="padding: 12px;">
+                    <h4 style="margin: 0 0 4px 0; font-size: 14px; font-weight: 600;" x-text="image.entityName"></h4>
+                    <p style="margin: 0 0 12px 0; font-size: 12px; color: var(--text-secondary);" x-text="'Modificado: ' + new Date(image.modified).toLocaleDateString()"></p>
+
+                    <!-- Acciones -->
+                    <div style="display: flex; gap: 6px;">
+                        <button
+                            class="btn-secondary"
+                            @click="handleEditEntity(image.type, image.id)"
+                            style="flex: 1; padding: 6px 10px; font-size: 12px;">
+                            <i data-lucide="edit-2" width="14" height="14"></i>
+                            <span>Editar</span>
+                        </button>
+                        <button
+                            class="btn-secondary"
+                            @click="openImageManagement(image)"
+                            style="flex: 1; padding: 6px 10px; font-size: 12px;">
+                            <i data-lucide="settings" width="14" height="14"></i>
+                            <span>Gestionar</span>
+                        </button>
+                        <button
+                            class="btn-icon"
+                            @click="handleDeleteImage(image.type, image.id, image.entityName)"
+                            title="Eliminar imagen"
+                            style="padding: 6px;">
+                            <i data-lucide="trash-2" width="14" height="14"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <!-- List View -->
+    <div x-show="filteredImages.length > 0 && viewMode === 'list'" style="padding: 20px;">
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <template x-for="image in filteredImages" :key="image.type + '-' + image.id">
+                <div class="card" style="display: flex; gap: 16px; align-items: center; padding: 12px;">
+                    <!-- Thumbnail -->
+                    <div style="width: 80px; height: 80px; flex-shrink: 0; background: var(--bg-tertiary); border-radius: 6px; overflow: hidden;">
+                        <img
+                            :src="image.url"
+                            :alt="image.entityName"
+                            style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;"
+                            @click="openImageManagement(image)">
+                    </div>
+
+                    <!-- Info -->
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            <i :data-lucide="window.imagesGalleryService.getTypeIcon(image.type)" width="16" height="16" style="color: var(--text-secondary);"></i>
+                            <h4 style="margin: 0; font-size: 15px; font-weight: 600;" x-text="image.entityName"></h4>
+                            <span style="font-size: 12px; color: var(--text-tertiary); padding: 2px 6px; background: var(--bg-tertiary); border-radius: 3px;" x-text="window.imagesGalleryService.getTypeLabel(image.type)"></span>
+                        </div>
+                        <p style="margin: 0; font-size: 12px; color: var(--text-secondary);" x-text="'Modificado: ' + new Date(image.modified).toLocaleString()"></p>
+                    </div>
+
+                    <!-- Acciones -->
+                    <div style="display: flex; gap: 6px; flex-shrink: 0;">
+                        <button
+                            class="btn-secondary"
+                            @click="handleEditEntity(image.type, image.id)"
+                            style="padding: 6px 10px; font-size: 12px;">
+                            <i data-lucide="edit-2" width="14" height="14"></i>
+                            <span>Editar</span>
+                        </button>
+                        <button
+                            class="btn-secondary"
+                            @click="openImageManagement(image)"
+                            style="padding: 6px 10px; font-size: 12px;">
+                            <i data-lucide="settings" width="14" height="14"></i>
+                            <span>Gestionar</span>
+                        </button>
+                        <button
+                            class="btn-icon"
+                            @click="handleDeleteImage(image.type, image.id, image.entityName)"
+                            title="Eliminar imagen"
+                            style="padding: 6px;">
+                            <i data-lucide="trash-2" width="14" height="14"></i>
+                        </button>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+</div>

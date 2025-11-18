@@ -18,6 +18,12 @@
             <span class="badge" x-text="$store.project.scenes.length"></span>
         </a>
 
+        <a href="#" class="nav-item" :class="{ 'active': $store.ui.currentView === 'images' }" @click.prevent="$store.ui.setView('images')">
+            <i data-lucide="image" width="20" height="20"></i>
+            <span x-text="$store.i18n.t('sidebar.images') || 'Imágenes'">Imágenes</span>
+            <span class="badge" x-text="window.imagesGalleryService?.getTotalImagesCount() || 0"></span>
+        </a>
+
         <div class="nav-divider"></div>
 
         <a href="#" class="nav-item" :class="{ 'active': $store.ui.currentView === 'versionControl' }" @click.prevent="$store.ui.setView('versionControl')">
