@@ -65,6 +65,7 @@ window.richEditorComponent = function(config = {}) {
 
             // Crear botón flotante fijo (estilo marca de agua, discreto)
             const aiButton = document.createElement('button');
+            aiButton.type = 'button'; // CRÍTICO: Prevenir submit de formulario
             aiButton.className = 'ai-fixed-button';
             aiButton.innerHTML = `<i data-lucide="sparkles" width="14" height="14"></i>`;
             aiButton.title = 'Asistente IA';
@@ -119,19 +120,19 @@ window.richEditorComponent = function(config = {}) {
                 <div style="padding: 8px 12px; border-bottom: 1px solid var(--border-color); margin-bottom: 4px;">
                     <strong style="font-size: 13px; color: var(--text-primary);">✨ Asistente IA</strong>
                 </div>
-                <button class="ai-menu-item" data-mode="continue" style="width: 100%; text-align: left; padding: 10px 12px; border: none; background: transparent; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-size: 13px;">
+                <button type="button" class="ai-menu-item" data-mode="continue" style="width: 100%; text-align: left; padding: 10px 12px; border: none; background: transparent; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-size: 13px;">
                     <span>✍️</span>
                     <span>Continuar escribiendo</span>
                 </button>
-                <button class="ai-menu-item" data-mode="improve" style="width: 100%; text-align: left; padding: 10px 12px; border: none; background: transparent; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-size: 13px;">
+                <button type="button" class="ai-menu-item" data-mode="improve" style="width: 100%; text-align: left; padding: 10px 12px; border: none; background: transparent; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-size: 13px;">
                     <span>✨</span>
                     <span>Mejorar texto</span>
                 </button>
-                <button class="ai-menu-item" data-mode="dialogue" style="width: 100%; text-align: left; padding: 10px 12px; border: none; background: transparent; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-size: 13px;">
+                <button type="button" class="ai-menu-item" data-mode="dialogue" style="width: 100%; text-align: left; padding: 10px 12px; border: none; background: transparent; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-size: 13px;">
                     <span>💬</span>
                     <span>Mejorar diálogos</span>
                 </button>
-                <button class="ai-menu-item" data-mode="analyze" style="width: 100%; text-align: left; padding: 10px 12px; border: none; background: transparent; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-size: 13px;">
+                <button type="button" class="ai-menu-item" data-mode="analyze" style="width: 100%; text-align: left; padding: 10px 12px; border: none; background: transparent; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; color: var(--text-primary); font-size: 13px;">
                     <span>🔍</span>
                     <span>Analizar texto</span>
                 </button>
@@ -147,6 +148,11 @@ window.richEditorComponent = function(config = {}) {
                     item.style.background = 'transparent';
                 };
                 item.onclick = (e) => {
+                    // CRÍTICO: Prevenir submit de formulario padre
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('🎯 Click en opción de IA (submit prevenido)');
+
                     const mode = e.currentTarget.dataset.mode;
                     this.executeAIAction(mode);
                     this.showAIMenu = false;
@@ -156,7 +162,11 @@ window.richEditorComponent = function(config = {}) {
 
             // Click handler del botón
             aiButton.onclick = (e) => {
+                // CRÍTICO: Prevenir submit de formulario padre
                 e.preventDefault();
+                e.stopPropagation();
+                console.log('🎯 Click en botón de IA (submit prevenido)');
+
                 this.showAIMenu = !this.showAIMenu;
                 aiMenu.style.display = this.showAIMenu ? 'block' : 'none';
             };
