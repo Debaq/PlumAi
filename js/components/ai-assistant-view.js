@@ -129,13 +129,14 @@ window.aiAssistantView = function() {
                 // Get current chapter ID if available
                 const chapterId = this.$store.project.activeChapterId;
 
-                // Verificar si el modo agéntico está activado
+                // Verificar si el modo agéntico está activado y es compatible
                 const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
                 const useAgenticMode = settings.useAgenticContext !== false; // Por defecto activado
+                const providerSupportsAgentic = window.aiService.supportsAgenticMode();
 
                 let response;
 
-                if (useAgenticMode && window.agenticContextService) {
+                if (useAgenticMode && providerSupportsAgentic && window.agenticContextService) {
                     // MODO AGÉNTICO CONVERSACIONAL: Envía todo el historial
                     console.log('🤖 Usando modo agéntico conversacional con historial de', this.messages.length, 'mensajes');
 
@@ -146,7 +147,11 @@ window.aiAssistantView = function() {
                     );
                 } else {
                     // MODO TRADICIONAL: Solo último mensaje
-                    console.log('📦 Usando modo tradicional (sin historial)');
+                    if (useAgenticMode && !providerSupportsAgentic) {
+                        console.log('⚠️ Proveedor actual no soporta modo agéntico, usando modo tradicional');
+                    } else {
+                        console.log('📦 Usando modo tradicional (sin historial)');
+                    }
 
                     response = await window.aiService.sendRequest(
                         this.selectedMode,

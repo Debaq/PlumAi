@@ -320,6 +320,20 @@ window.aiService = {
         return this.providers[this.currentProvider];
     },
 
+    /**
+     * Verifica si el proveedor actual soporta el modo agéntico
+     * El modo agéntico requiere proveedores que puedan hacer múltiples requests
+     */
+    supportsAgenticMode() {
+        const provider = this.getCurrentProvider();
+        if (!provider) return false;
+
+        // Solo proveedores de API real soportan modo agéntico
+        // El modo "manual" (copiar prompt) no puede hacer múltiples requests
+        const supportedProviders = ['google', 'groq', 'anthropic', 'ollama', 'openai', 'together'];
+        return supportedProviders.includes(provider.id);
+    },
+
     // ============================================
     // CONSTRUCCIÓN DE CONTEXTO
     // ============================================
