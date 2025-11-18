@@ -786,13 +786,14 @@ window.richEditorComponent = function(config = {}) {
                 // Obtener capítulo activo si existe
                 const chapterId = this.$store.project?.activeChapterId || null;
 
-                // Verificar si el modo agéntico está activado
+                // Verificar si el modo agéntico está activado y es compatible
                 const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
                 const useAgenticMode = settings.useAgenticContext !== false; // Por defecto activado
+                const providerSupportsAgentic = window.aiService.supportsAgenticMode();
 
                 // Enviar request a IA (agéntico o tradicional)
                 let response;
-                if (useAgenticMode && window.agenticContextService) {
+                if (useAgenticMode && providerSupportsAgentic && window.agenticContextService) {
                     console.log('🤖 Usando modo agéntico: IA decide qué contexto necesita');
                     response = await window.aiService.sendAgenticRequest(
                         mode,
@@ -801,7 +802,11 @@ window.richEditorComponent = function(config = {}) {
                         selectedText
                     );
                 } else {
-                    console.log('📦 Usando modo tradicional: Enviando todo el contexto');
+                    if (useAgenticMode && !providerSupportsAgentic) {
+                        console.log('⚠️ Proveedor actual no soporta modo agéntico, usando modo tradicional');
+                    } else {
+                        console.log('📦 Usando modo tradicional: Enviando todo el contexto');
+                    }
                     response = await window.aiService.sendRequest(
                         mode,
                         userPrompt,
@@ -816,7 +821,19 @@ window.richEditorComponent = function(config = {}) {
 
             } catch (error) {
                 console.error('❌ AI Error:', error);
-                alert(`Error de IA: ${error.message}`);
+
+                // Mostrar error detallado si está disponible
+                if (error.detailedError) {
+                    const details = error.detailedError;
+                    let message = `❌ ${details.title}\n\n${details.message}\n\n`;
+                    message += '💡 Sugerencias:\n';
+                    details.suggestions.forEach((suggestion, i) => {
+                        message += `${i + 1}. ${suggestion}\n`;
+                    });
+                    alert(message);
+                } else {
+                    alert(`Error de IA: ${error.message}`);
+                }
             } finally {
                 this.isAIProcessing = false;
             }

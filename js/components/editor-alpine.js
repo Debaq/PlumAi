@@ -653,13 +653,14 @@ window.editorAlpineComponent = function() {
                 // Obtener capítulo activo
                 const chapterId = this.$store.ui.currentEditingChapterId;
 
-                // Verificar si el modo agéntico está activado
+                // Verificar si el modo agéntico está activado y es compatible
                 const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
                 const useAgenticMode = settings.useAgenticContext !== false;
+                const providerSupportsAgentic = window.aiService.supportsAgenticMode();
 
                 // Enviar request a IA
                 let response;
-                if (useAgenticMode && window.agenticContextService) {
+                if (useAgenticMode && providerSupportsAgentic && window.agenticContextService) {
                     response = await window.aiService.sendAgenticRequest(
                         'continue',
                         userPrompt,
@@ -745,9 +746,10 @@ window.editorAlpineComponent = function() {
                 // Enviar request a IA
                 const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
                 const useAgenticMode = settings.useAgenticContext !== false;
+                const providerSupportsAgentic = window.aiService.supportsAgenticMode();
 
                 let response;
-                if (useAgenticMode && window.agenticContextService) {
+                if (useAgenticMode && providerSupportsAgentic && window.agenticContextService) {
                     response = await window.aiService.sendAgenticRequest(
                         'continue',
                         userPrompt,
@@ -848,9 +850,10 @@ window.editorAlpineComponent = function() {
                 // Enviar request a IA
                 const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
                 const useAgenticMode = settings.useAgenticContext !== false;
+                const providerSupportsAgentic = window.aiService.supportsAgenticMode();
 
                 let response;
-                if (useAgenticMode && window.agenticContextService) {
+                if (useAgenticMode && providerSupportsAgentic && window.agenticContextService) {
                     response = await window.aiService.sendAgenticRequest(
                         'improve',
                         userPrompt,
@@ -947,9 +950,10 @@ window.editorAlpineComponent = function() {
                 // Enviar request a IA
                 const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
                 const useAgenticMode = settings.useAgenticContext !== false;
+                const providerSupportsAgentic = window.aiService.supportsAgenticMode();
 
                 let response;
-                if (useAgenticMode && window.agenticContextService) {
+                if (useAgenticMode && providerSupportsAgentic && window.agenticContextService) {
                     response = await window.aiService.sendAgenticRequest(
                         'continue',
                         userPrompt,
@@ -1050,9 +1054,10 @@ window.editorAlpineComponent = function() {
                 // Enviar request a IA
                 const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
                 const useAgenticMode = settings.useAgenticContext !== false;
+                const providerSupportsAgentic = window.aiService.supportsAgenticMode();
 
                 let response;
-                if (useAgenticMode && window.agenticContextService) {
+                if (useAgenticMode && providerSupportsAgentic && window.agenticContextService) {
                     response = await window.aiService.sendAgenticRequest(
                         'analyze',
                         userPrompt,
