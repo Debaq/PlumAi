@@ -418,13 +418,29 @@ window.richEditorComponent = function(config = {}) {
                 // Obtener capítulo activo si existe
                 const chapterId = this.$store.project?.activeChapterId || null;
 
-                // Enviar request a IA
-                const response = await window.aiService.sendRequest(
-                    mode,
-                    userPrompt,
-                    chapterId,
-                    selectedText
-                );
+                // Verificar si el modo agéntico está activado
+                const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
+                const useAgenticMode = settings.useAgenticContext !== false; // Por defecto activado
+
+                // Enviar request a IA (agéntico o tradicional)
+                let response;
+                if (useAgenticMode && window.agenticContextService) {
+                    console.log('🤖 Usando modo agéntico: IA decide qué contexto necesita');
+                    response = await window.aiService.sendAgenticRequest(
+                        mode,
+                        userPrompt,
+                        chapterId,
+                        selectedText
+                    );
+                } else {
+                    console.log('📦 Usando modo tradicional: Enviando todo el contexto');
+                    response = await window.aiService.sendRequest(
+                        mode,
+                        userPrompt,
+                        chapterId,
+                        selectedText
+                    );
+                }
 
                 console.log('📥 AI Response:', response);
 

@@ -192,6 +192,66 @@
                 </div>
             </div>
 
+            <!-- Agentic AI Context Section -->
+            <div class="settings-section" style="margin-bottom: 30px; padding: 20px; border: 1px solid var(--border); border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0; color: var(--text-primary);">🤖 Sistema de IA Agéntica</h3>
+                    <i data-lucide="brain" width="20" height="20" style="color: var(--text-secondary);"></i>
+                </div>
+
+                <p style="margin: 0 0 20px 0; color: var(--text-secondary); font-size: 14px;">
+                    La IA analiza tu tarea y decide qué contexto necesita, enviando solo lo relevante
+                </p>
+
+                <!-- Toggle Agentic Mode Switch -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i data-lucide="sparkles" width="20" height="20" style="color: var(--accent);"></i>
+                        <div>
+                            <p style="margin: 0; color: var(--text-primary); font-weight: 500; font-size: 14px;">Modo Agéntico</p>
+                            <p style="margin: 4px 0 0 0; color: var(--text-secondary); font-size: 12px;">La IA decide qué contexto necesita (recomendado)</p>
+                        </div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" x-model="useAgenticContext" @change="toggleAgenticMode">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <!-- How it works -->
+                <div style="background: var(--bg-tertiary); border: 1px solid var(--border); border-radius: 6px; padding: 15px; margin-bottom: 15px;">
+                    <div style="display: flex; align-items: start; gap: 10px;">
+                        <i data-lucide="workflow" width="20" height="20" style="color: var(--accent); flex-shrink: 0; margin-top: 2px;"></i>
+                        <div>
+                            <p style="margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; font-size: 14px;">¿Cómo funciona el flujo de 2 pasos?</p>
+                            <ol style="margin: 0; padding-left: 20px; color: var(--text-secondary); font-size: 13px; line-height: 1.6;">
+                                <li><strong>Paso 1:</strong> La IA recibe tu tarea y un inventario de contexto disponible (solo nombres, sin contenido)</li>
+                                <li><strong>Paso 2:</strong> La IA decide qué personajes, lore, locaciones necesita y el sistema envía SOLO eso</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Benefits -->
+                <div style="background: linear-gradient(135deg, rgba(74, 144, 226, 0.1) 0%, rgba(124, 179, 255, 0.05) 100%); border: 1px solid var(--accent); border-radius: 6px; padding: 15px;">
+                    <div style="display: flex; align-items: start; gap: 10px;">
+                        <i data-lucide="zap" width="20" height="20" style="color: var(--accent); flex-shrink: 0; margin-top: 2px;"></i>
+                        <div>
+                            <p style="margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; font-size: 14px;">Ventajas del modo agéntico</p>
+                            <ul style="margin: 0; padding-left: 20px; color: var(--text-secondary); font-size: 13px; line-height: 1.6;">
+                                <li><strong>Ahorro masivo de tokens:</strong> Solo envía lo que realmente necesita</li>
+                                <li><strong>Contexto más relevante:</strong> La IA selecciona lo específico para tu tarea</li>
+                                <li><strong>Trazabilidad total:</strong> Los logs muestran exactamente qué decidió incluir</li>
+                                <li><strong>Optimización inteligente:</strong> La IA decide, no reglas predefinidas</li>
+                            </ul>
+                            <p style="margin: 12px 0 0 0; color: var(--text-secondary); font-size: 13px;">
+                                <strong>💡 Tip:</strong> Activa los logs de depuración para ver el flujo de 2 pasos en acción.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Debug Logs Section -->
             <div class="settings-section" style="margin-bottom: 30px; padding: 20px; border: 1px solid var(--border); border-radius: 8px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
