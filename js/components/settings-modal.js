@@ -12,6 +12,9 @@ window.settingsModalComponent = function() {
         // Token Optimization
         tokenLevel: 'normal',
 
+        // Debug Logs
+        enableLogs: true,
+
         // Data Management
         deletionAllowed: false,
         deletionConfirmed: false,
@@ -31,6 +34,19 @@ window.settingsModalComponent = function() {
             // Initialize token optimization
             if (window.tokenOptimizer) {
                 this.tokenLevel = window.tokenOptimizer.config.currentLevel;
+            }
+
+            // Initialize debug logs
+            if (window.plumLogger) {
+                this.enableLogs = window.plumLogger.enabled;
+            } else {
+                // Si no existe el logger, cargar desde localStorage
+                try {
+                    const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
+                    this.enableLogs = settings.enableLogs !== false;
+                } catch (e) {
+                    this.enableLogs = true;
+                }
             }
 
             // Initialize data management values
@@ -210,6 +226,28 @@ window.settingsModalComponent = function() {
             if (window.tokenOptimizer) {
                 window.tokenOptimizer.setLevel(this.tokenLevel);
                 console.log(`✅ Token level saved: ${this.tokenLevel}`);
+            }
+        },
+
+        // ============================================
+        // DEBUG LOGS METHODS
+        // ============================================
+
+        toggleLogs() {
+            this.enableLogs = !this.enableLogs;
+            if (window.plumLogger) {
+                window.plumLogger.setEnabled(this.enableLogs);
+            } else {
+                // Si no existe el logger, guardar en localStorage
+                const settings = JSON.parse(localStorage.getItem('plum_settings') || '{}');
+                settings.enableLogs = this.enableLogs;
+                localStorage.setItem('plum_settings', JSON.stringify(settings));
+            }
+
+            if (this.enableLogs) {
+                console.log('🔍 Logs de depuración activados');
+            } else {
+                console.log('🔇 Logs de depuración desactivados');
             }
         },
 

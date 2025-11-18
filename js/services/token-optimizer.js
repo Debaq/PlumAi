@@ -159,6 +159,9 @@ window.tokenOptimizer = {
         const targetLevel = level || this.config.currentLevel;
         const limit = this.config.limits[targetLevel];
 
+        // Calcular tokens antes de optimizar
+        const tokensBefore = this.countObjectTokens(fullContext);
+
         let optimized = {
             project: fullContext.project,
             characters: [],
@@ -180,7 +183,9 @@ window.tokenOptimizer = {
                     target.push(item);
                     currentTokens += itemTokens;
                 } else {
-                    console.log(`⚠️ Omitiendo ${itemName} por límite de tokens`);
+                    if (window.plumLogger) {
+                        window.plumLogger.warning('Token Limit', `Omitiendo ${itemName} por límite de tokens`);
+                    }
                     break;
                 }
             }
@@ -228,11 +233,23 @@ window.tokenOptimizer = {
                 break;
         }
 
+        const tokensAfter = this.countObjectTokens(optimized);
+
+        // LOG: Optimización completa
+        if (window.plumLogger) {
+            window.plumLogger.tokenOptimization(tokensBefore, tokensAfter, targetLevel);
+            window.plumLogger.tokenDetail('Personajes', optimized.characters.length, optimized.characters.map(c => c.name));
+            window.plumLogger.tokenDetail('Locaciones', optimized.locations.length, optimized.locations.map(l => l.name));
+            window.plumLogger.tokenDetail('Lore', optimized.lore.length, optimized.lore.map(l => l.title));
+            window.plumLogger.tokenDetail('Escenas', optimized.scenes.length, optimized.scenes.map(s => s.name));
+            window.plumLogger.groupEnd();
+        }
+
         return {
             context: optimized,
             stats: {
                 level: targetLevel,
-                estimatedTokens: this.countObjectTokens(optimized),
+                estimatedTokens: tokensAfter,
                 limit: limit,
                 characters: optimized.characters.length,
                 locations: optimized.locations.length,
