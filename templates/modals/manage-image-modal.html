@@ -106,7 +106,7 @@
             },
 
             deleteImage() {
-                if (confirm(`¿Eliminar imagen de \"${this.image.entityName}\"?`)) {
+                if (confirm(`¿Eliminar imagen de "${this.image.entityName}"?`)) {
                     const success = window.imagesGalleryService.removeImage(this.image.type, this.image.id);
                     if (success) {
                         $store.ui.success('Imagen eliminada', '');
