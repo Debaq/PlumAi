@@ -91,14 +91,19 @@
                 let significanceEditor = form.querySelector('[data-field=significance]')?.__x?.$data;
                 let notesEditor = form.querySelector('[data-field=notes]')?.__x?.$data;
 
+                // Obtener el contenido del editor, preservando el valor existente si el editor no devuelve nada válido
+                let description = descriptionEditor?.getContent() ?? $store.ui.modalData?.description ?? '';
+                let significance = significanceEditor?.getContent() ?? $store.ui.modalData?.significance ?? '';
+                let notes = notesEditor?.getContent() ?? $store.ui.modalData?.notes ?? '';
+
                 let formData = {
                     name: form.querySelector('[name=name]').value,
                     type: form.querySelector('[name=type]').value,
                     image: this.imagePreview,
                     imageType: this.imageType,
-                    description: descriptionEditor?.getContent() || '',
-                    significance: significanceEditor?.getContent() || '',
-                    notes: notesEditor?.getContent() || ''
+                    description: description,
+                    significance: significance,
+                    notes: notes
                 };
 
                 if ($store.ui.modalData?.id) {

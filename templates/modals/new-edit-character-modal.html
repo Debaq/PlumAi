@@ -24,10 +24,11 @@
             let backEditor = form.querySelector('[data-field=background]')?.__x?.$data;
             let noteEditor = form.querySelector('[data-field=notes]')?.__x?.$data;
 
-            description = descEditor?.getContent() || '';
-            personality = persEditor?.getContent() || '';
-            background = backEditor?.getContent() || '';
-            notes = noteEditor?.getContent() || '';
+            // Obtener el contenido del editor, preservando el valor existente si el editor no devuelve nada válido
+            description = descEditor?.getContent() ?? $store.ui.modalData?.description ?? '';
+            personality = persEditor?.getContent() ?? $store.ui.modalData?.personality ?? '';
+            background = backEditor?.getContent() ?? $store.ui.modalData?.background ?? '';
+            notes = noteEditor?.getContent() ?? $store.ui.modalData?.notes ?? '';
 
             let formData = {
                 name: form.querySelector('[name=name]').value,

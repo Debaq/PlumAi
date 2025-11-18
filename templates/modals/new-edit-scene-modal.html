@@ -13,10 +13,14 @@
             let descriptionEditor = form.querySelector('[data-field=description]')?.__x?.$data;
             let notesEditor = form.querySelector('[data-field=notes]')?.__x?.$data;
 
+            // Obtener el contenido del editor, preservando el valor existente si el editor no devuelve nada válido
+            let description = descriptionEditor?.getContent() ?? $store.ui.modalData?.description ?? '';
+            let notes = notesEditor?.getContent() ?? $store.ui.modalData?.notes ?? '';
+
             let formData = {
                 title: form.querySelector('[name=title]').value,
-                description: descriptionEditor?.getContent() || '',
-                notes: notesEditor?.getContent() || ''
+                description: description,
+                notes: notes
             };
             if ($store.ui.modalData?.id) {
                 $store.project.updateScene($store.ui.modalData.id, formData);

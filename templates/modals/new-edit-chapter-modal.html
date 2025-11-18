@@ -13,10 +13,14 @@
             let summaryEditor = form.querySelector('[data-field=summary]')?.__x?.$data;
             let contentEditor = form.querySelector('[data-field=content]')?.__x?.$data;
 
+            // Obtener el contenido del editor, preservando el valor existente si el editor no devuelve nada válido
+            let summary = summaryEditor?.getContent() ?? $store.ui.modalData?.summary ?? '';
+            let content = contentEditor?.getContent() ?? $store.ui.modalData?.content ?? '';
+
             let formData = {
                 title: form.querySelector('[name=title]').value,
-                summary: summaryEditor?.getContent() || '',
-                content: contentEditor?.getContent() || ''
+                summary: summary,
+                content: content
             };
             if ($store.ui.modalData?.id) {
                 $store.project.updateChapter($store.ui.modalData.id, formData);
