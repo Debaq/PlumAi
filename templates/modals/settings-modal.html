@@ -64,10 +64,10 @@
                         <div>
                             <p style="margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; font-size: 14px;" x-text="getProviderName()"></p>
                             <p style="margin: 0 0 8px 0; color: var(--text-secondary); font-size: 13px;">
-                                <strong>Tier gratuito:</strong> <span x-text="getProviderInfo()?.freeTier || 'No disponible'"></span>
+                                <strong x-text="$store.i18n.t('modals.settings.providerInfo.freeTier')">Tier gratuito:</strong> <span x-text="getProviderInfo()?.freeTier || $store.i18n.t('modals.settings.providerInfo.notAvailable')"></span>
                             </p>
                             <p style="margin: 0; color: var(--text-secondary); font-size: 13px;">
-                                <strong>Precio:</strong> <span x-text="getProviderInfo()?.pricing || 'Consultar sitio web'"></span>
+                                <strong x-text="$store.i18n.t('modals.settings.providerInfo.pricing')">Precio:</strong> <span x-text="getProviderInfo()?.pricing || $store.i18n.t('modals.settings.providerInfo.checkWebsite')"></span>
                             </p>
                             <template x-if="getProviderInfo()?.type === 'local'">
                                 <p style="margin: 8px 0 0 0; color: var(--warning); font-size: 13px;">
@@ -427,7 +427,7 @@
                             <i data-lucide="download" width="16" height="16" style="vertical-align: text-bottom;"></i>
                             <span x-text="$store.i18n.t('modals.settings.exportCurrentProject')">Exportar Proyecto Actual</span>
                         </h4>
-                        <p style="margin: 0 0 12px 0; color: var(--text-secondary); font-size: 13px;">
+                        <p style="margin: 0 0 12px 0; color: var(--text-secondary); font-size: 13px;" x-text="$store.i18n.t('modals.settings.dataManagement.exportProjectDescription')">
                             Descarga el proyecto actual como archivo .pluma con imágenes y encriptación opcional
                         </p>
                         <button

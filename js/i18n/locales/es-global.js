@@ -1,4 +1,5 @@
 // Traducciones en Español
+console.log('📚 Cargando traducciones ES...');
 window.translations_es = {
     // Común
     common: {
@@ -728,40 +729,6 @@ window.translations_es = {
             justLook: 'Solo Mirar',
             getStarted: 'Comenzar'
         },
-        settings: {
-            title: 'Configuración',
-            theme: {
-                title: 'Apariencia',
-                label: 'Tema',
-                dark: 'Oscuro',
-                dracula: 'Drácula',
-                light: 'Claro Pastel'
-            },
-            dataManagement: {
-                title: 'Gestión de Datos',
-                description: 'Gestiona los datos almacenados localmente en este navegador',
-                warningTitle: '¡Advertencia Importante!',
-                warningDescription: 'Esta acción eliminará permanentemente todos los proyectos, personajes, capítulos y configuraciones almacenados localmente en este navegador. Esta acción no se puede deshacer.',
-                exportBeforeDeleteLabel: 'Recomendamos exportar tus datos antes de eliminarlos:',
-                exportAllButton: 'Exportar Todos los Datos',
-                noDataTitle: 'No hay datos',
-                noDataMessage: 'No hay proyectos para exportar',
-                exportSuccessTitle: 'Datos exportados',
-                exportSuccessMessage: 'Todos los datos han sido exportados correctamente',
-                exportErrorTitle: 'Error al exportar',
-                exportErrorMessage: 'Ocurrió un error al intentar exportar los datos',
-                confirmationLabel: 'Para confirmar la eliminación, escribe "ELIMINAR DATOS" en el campo siguiente:',
-                confirmationPlaceholder: 'ELIMINAR DATOS',
-                understandCheckbox: 'Entiendo que esta acción no se puede deshacer y que perderé todos los datos almacenados localmente',
-                deleteButton: 'Eliminar Todos los Datos Localmente',
-                deletionConfirmed: 'Datos eliminados correctamente. La aplicación se recargará en unos segundos.',
-                confirmDeletion: '¿Estás completamente seguro? Esta acción eliminará todos tus datos locales y no se puede deshacer.',
-                deletionSuccessTitle: 'Datos eliminados',
-                deletionSuccessMessage: 'Todos los datos locales han sido eliminados correctamente.',
-                deletionErrorTitle: 'Error al eliminar datos',
-                deletionErrorMessage: 'Ocurrió un error al intentar eliminar los datos.'
-            }
-        },
         newProject: {
             title: 'Nuevo Proyecto',
             form: {
@@ -890,6 +857,38 @@ window.translations_es = {
         },
         settings: {
             title: 'Configuración',
+            theme: {
+                title: 'Apariencia',
+                label: 'Tema',
+                dark: 'Oscuro',
+                dracula: 'Drácula',
+                light: 'Claro Pastel'
+            },
+            dataManagement: {
+                title: 'Gestión de Datos',
+                description: 'Gestiona los datos almacenados localmente en este navegador',
+                exportProjectDescription: 'Descarga el proyecto actual como archivo .pluma con imágenes y encriptación opcional',
+                warningTitle: '¡Advertencia Importante!',
+                warningDescription: 'Esta acción eliminará permanentemente todos los proyectos, personajes, capítulos y configuraciones almacenados localmente en este navegador. Esta acción no se puede deshacer.',
+                exportBeforeDeleteLabel: 'Recomendamos exportar tus datos antes de eliminarlos:',
+                exportAllButton: 'Exportar Todos los Datos',
+                noDataTitle: 'No hay datos',
+                noDataMessage: 'No hay proyectos para exportar',
+                exportSuccessTitle: 'Datos exportados',
+                exportSuccessMessage: 'Todos los datos han sido exportados correctamente',
+                exportErrorTitle: 'Error al exportar',
+                exportErrorMessage: 'Ocurrió un error al intentar exportar los datos',
+                confirmationLabel: 'Para confirmar la eliminación, escribe "ELIMINAR DATOS" en el campo siguiente:',
+                confirmationPlaceholder: 'ELIMINAR DATOS',
+                understandCheckbox: 'Entiendo que esta acción no se puede deshacer y que perderé todos los datos almacenados localmente',
+                deleteButton: 'Eliminar Todos los Datos Localmente',
+                deletionConfirmed: 'Datos eliminados correctamente. La aplicación se recargará en unos segundos.',
+                confirmDeletion: '¿Estás completamente seguro? Esta acción eliminará todos tus datos locales y no se puede deshacer.',
+                deletionSuccessTitle: 'Datos eliminados',
+                deletionSuccessMessage: 'Todos los datos locales han sido eliminados correctamente.',
+                deletionErrorTitle: 'Error al eliminar datos',
+                deletionErrorMessage: 'Ocurrió un error al intentar eliminar los datos.'
+            },
             textAPIs: 'APIs de Texto',
             imageAPIs: 'APIs de Imágenes',
             imageProvider: 'Proveedor de Imágenes',
@@ -962,7 +961,28 @@ window.translations_es = {
             exportCurrentProject: 'Exportar Proyecto Actual',
             exportProject: 'Exportar Proyecto',
             exportAllData: 'Exportar Todos los Datos',
-            deleteAllData: 'Eliminar Todos los Datos Localmente'
+            deleteAllData: 'Eliminar Todos los Datos Localmente',
+            providerInfo: {
+                freeTier: 'Tier gratuito:',
+                pricing: 'Precio:',
+                notAvailable: 'No disponible',
+                checkWebsite: 'Consultar sitio web'
+            },
+            messages: {
+                apiKeyExists: 'Esta API key ya está guardada',
+                apiKeySaved: 'API key guardada como "{name}"',
+                errorSavingKey: 'Error al guardar la API key',
+                testingConnection: 'Probando conexión...',
+                connectionSuccess: '✓ Conexión exitosa',
+                apiKeyDeleted: 'API key eliminada',
+                defaultKeyUpdated: 'Key por defecto actualizada',
+                unnamed: 'Sin nombre',
+                logsEnabled: '🔍 Logs de depuración activados',
+                logsDisabled: '🔇 Logs de depuración desactivados',
+                agenticModeEnabled: '🤖 Modo agéntico activado: La IA decidirá qué contexto necesita',
+                traditionalModeEnabled: '📦 Modo tradicional activado: Se enviará todo el contexto con optimización',
+                deleteDataText: 'ELIMINAR DATOS'
+            }
         }
     },
 
@@ -1281,3 +1301,4 @@ window.translations_es = {
         errorTooLarge: 'El archivo es muy grande'
     }
 };
+console.log('✅ Traducciones ES cargadas:', Object.keys(window.translations_es).length, 'secciones principales');

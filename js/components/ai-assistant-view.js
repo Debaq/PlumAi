@@ -30,11 +30,12 @@ window.aiAssistantView = function() {
         },
 
         get assistantModes() {
-            return Object.values(window.aiService.assistantModes);
+            return Object.values(window.aiService.getTranslatedAssistantModes());
         },
 
         get currentModeDescription() {
-            const mode = window.aiService.assistantModes[this.selectedMode];
+            const translatedModes = window.aiService.getTranslatedAssistantModes();
+            const mode = translatedModes[this.selectedMode];
             return mode ? mode.systemPrompt : '';
         },
 
@@ -279,12 +280,14 @@ window.aiAssistantView = function() {
         },
 
         getModeIcon(mode) {
-            const modeObj = window.aiService.assistantModes[mode];
+            const translatedModes = window.aiService.getTranslatedAssistantModes();
+            const modeObj = translatedModes[mode];
             return modeObj ? modeObj.icon : '🤖';
         },
 
         getModeName(mode) {
-            const modeObj = window.aiService.assistantModes[mode];
+            const translatedModes = window.aiService.getTranslatedAssistantModes();
+            const modeObj = translatedModes[mode];
             return modeObj ? modeObj.name : mode;
         },
 

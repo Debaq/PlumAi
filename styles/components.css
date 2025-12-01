@@ -961,3 +961,65 @@ input:disabled + .slider {
     opacity: 0.5;
     cursor: not-allowed;
 }
+
+/* Language Selector in Welcome Modal */
+.language-selector {
+    margin-top: 20px;
+}
+
+.language-selector label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 500;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+}
+
+.language-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.language-btn {
+    padding: 8px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-secondary);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+}
+
+.language-btn .flag {
+    font-size: 18px;
+}
+
+.language-btn .lang-name {
+    font-size: var(--font-size-xs);
+}
+
+.language-btn:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--accent);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.language-btn.selected {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    font-weight: 500;
+}
+
+.language-btn.selected:hover {
+    background: var(--accent-hover, var(--accent));
+    transform: translateY(-1px);
+}

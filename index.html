@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="styles/themes.css">
     <link rel="stylesheet" href="styles/components.css">
     <link rel="stylesheet" href="styles/rich-editor.css">
+    <link rel="stylesheet" href="styles/track-changes.css">
 
     <!-- Lucide Icons (CDN) -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -133,7 +134,7 @@
         }
     </style>
 </head>
-<body x-data="app" x-cloak>
+<body x-data="{}" x-cloak>
     <!-- Loading Screen -->
     <div id="app-loader">
         <div class="loader-content">
@@ -179,12 +180,12 @@
     <!-- Modal Container -->
     <div id="modal-container" x-data="modalContainerComponent()"></div>
 
-    <!-- Cargar traducciones primero (formato tradicional) -->
-    <script src="js/i18n/locales/es-global.js?v=2"></script>
-    <script src="js/i18n/locales/en-global.js?v=2"></script>
+    <!-- Sistema de traducciones modular (carga dinámica) -->
+    <!-- Los archivos antiguos es-global.js y en-global.js ya NO se usan -->
+    <!-- Las traducciones ahora se cargan modularmente desde /js/i18n/locales/{lang}/{module}.js -->
 
     <!-- Cargar stores (formato tradicional) -->
-    <script src="js/stores/i18n-global.js?v=2"></script>
+    <script type="module" src="js/stores/i18n-global.js?v=7"></script>
     <script src="js/stores/project-global.js?v=2"></script>
     <script src="js/stores/ui-global.js?v=2"></script>
     <script src="js/stores/ai-global.js?v=2"></script>
@@ -237,6 +238,8 @@
     <script src="js/services/agentic-context-service.js?v=2"></script>
     <script src="js/services/ai-service.js?v=2"></script>
     <script src="js/services/ai-conversations-service.js?v=1"></script>
+    <script src="js/services/track-changes-service.js?v=1"></script>
+    <script src="js/services/git-integration.js?v=1"></script>
 
     <!-- RichEditor Library -->
     <script src="js/lib/RichEditor.js"></script>
@@ -251,16 +254,17 @@
     <script src="js/components/relations-diagram.js?v=2"></script>
     <script src="js/components/modal-container.js?v=3"></script>
     <script src="js/components/welcome-modal.js?v=2"></script>
-    <script src="js/components/settings-modal.js?v=2"></script>
+    <script src="js/components/settings-modal.js?v=3"></script>
     <script src="js/components/version-control.js?v=2"></script>
     <script src="js/components/publishing.js?v=2"></script>
     <script src="js/components/character-info-modal.js?v=2"></script>
     <script src="js/components/editor-alpine.js?v=2"></script>
     <script src="js/components/rich-editor-component.js?v=2"></script>
+    <script src="js/components/track-changes-ui.js?v=1"></script>
     <script src="js/components/ai-assistant-view.js?v=2"></script>
 
     <script src="js/utils/uuid.js?v=2"></script>
-    <script src="js/app.js?v=2"></script>
+    <script src="js/app.js?v=3"></script>
 
     <!-- Loading Messages Script -->
     <script>
@@ -336,8 +340,62 @@
 
     <!-- Alpine.js 3.x - Cargar al final -->
     <!-- Alpine Collapse Plugin - DEBE cargarse ANTES de Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- NOTA: Los scripts de Alpine.js se cargan manualmente después de que las traducciones estén listas -->
+    <script id="alpine-collapse-script" data-src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script id="alpine-script" data-src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        // Inicializar traducciones y luego cargar Alpine.js
+        (async function() {
+            console.log('🚀 Iniciando carga de PlumaAI...');
+
+            const loadAlpine = () => {
+                console.log('📦 Cargando Alpine.js...');
+                // Cargar Alpine Collapse primero
+                const collapseScript = document.createElement('script');
+                collapseScript.src = document.getElementById('alpine-collapse-script').getAttribute('data-src');
+                collapseScript.onload = () => {
+                    // Luego cargar Alpine.js
+                    const alpineScript = document.createElement('script');
+                    alpineScript.src = document.getElementById('alpine-script').getAttribute('data-src');
+                    document.body.appendChild(alpineScript);
+                };
+                document.body.appendChild(collapseScript);
+            };
+
+            // Esperar a que window.i18nStore esté disponible
+            const waitForI18nStore = () => {
+                return new Promise((resolve) => {
+                    if (window.i18nStore) {
+                        resolve();
+                    } else {
+                        const checkInterval = setInterval(() => {
+                            if (window.i18nStore) {
+                                clearInterval(checkInterval);
+                                resolve();
+                            }
+                        }, 50);
+                    }
+                });
+            };
+
+            try {
+                // Esperar a que el store i18n esté disponible
+                await waitForI18nStore();
+                console.log('📚 Store i18n disponible, inicializando traducciones...');
+
+                // Inicializar traducciones
+                await window.i18nStore.init();
+                console.log('✅ Traducciones listas, cargando Alpine.js...');
+
+                // Cargar Alpine.js
+                loadAlpine();
+            } catch (error) {
+                console.error('❌ Error inicializando traducciones:', error);
+                console.warn('⚠️ Cargando Alpine.js sin traducciones...');
+                loadAlpine();
+            }
+        })();
+    </script>
 
     <!-- Initialize Lucide Icons -->
     <script>

@@ -297,6 +297,30 @@ window.aiService = {
     },
 
     // ============================================
+    // OBTENER MODOS TRADUCIDOS
+    // ============================================
+
+    getTranslatedAssistantModes() {
+        // Obtener el store de i18n si está disponible
+        const i18n = window.Alpine?.store?.('i18n');
+        if (!i18n) {
+            // Fallback a los valores hardcodeados si no hay i18n
+            return this.assistantModes;
+        }
+
+        // Construir objeto con traducciones
+        const translatedModes = {};
+        for (const [key, mode] of Object.entries(this.assistantModes)) {
+            translatedModes[key] = {
+                ...mode,
+                name: i18n.t(`ai.assistantModes.${key}`) || mode.name,
+                systemPrompt: i18n.t(`ai.systemPrompts.${key}`) || mode.systemPrompt
+            };
+        }
+        return translatedModes;
+    },
+
+    // ============================================
     // GESTIÓN DE PROVEEDORES
     // ============================================
 
@@ -534,7 +558,8 @@ window.aiService = {
     // ============================================
 
     buildPrompt(mode, userInput, context, selectedText = null) {
-        const modeConfig = this.assistantModes[mode];
+        const translatedModes = this.getTranslatedAssistantModes();
+        const modeConfig = translatedModes[mode];
         if (!modeConfig) {
             throw new Error(`Modo no encontrado: ${mode}`);
         }

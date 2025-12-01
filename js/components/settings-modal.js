@@ -183,7 +183,7 @@ window.settingsModalComponent = function() {
 
                 if (isDuplicate) {
                     this.connectionStatus = 'error';
-                    this.connectionMessage = 'Esta API key ya está guardada';
+                    this.connectionMessage = Alpine.store('i18n').t('modals.settings.messages.apiKeyExists');
                     return;
                 }
 
@@ -204,7 +204,7 @@ window.settingsModalComponent = function() {
                 }
 
                 this.connectionStatus = 'success';
-                this.connectionMessage = `API key guardada como "${newKey.name}"`;
+                this.connectionMessage = Alpine.store('i18n').t('modals.settings.messages.apiKeySaved').replace('{name}', newKey.name);
 
                 // Limpiar input
                 this.apiKeyInput = '';
@@ -223,7 +223,7 @@ window.settingsModalComponent = function() {
             } catch (error) {
                 console.error('Error saving API key:', error);
                 this.connectionStatus = 'error';
-                this.connectionMessage = error.message || 'Error al guardar la API key';
+                this.connectionMessage = error.message || Alpine.store('i18n').t('modals.settings.messages.errorSavingKey');
             }
         },
 
@@ -231,7 +231,7 @@ window.settingsModalComponent = function() {
             if (!this.hasApiKey()) return;
 
             this.connectionStatus = null;
-            this.connectionMessage = 'Probando conexión...';
+            this.connectionMessage = Alpine.store('i18n').t('modals.settings.messages.testingConnection');
 
             try {
                 if (!window.aiService) {
@@ -243,7 +243,7 @@ window.settingsModalComponent = function() {
 
                 if (result.success) {
                     this.connectionStatus = 'success';
-                    this.connectionMessage = '✓ Conexión exitosa';
+                    this.connectionMessage = Alpine.store('i18n').t('modals.settings.messages.connectionSuccess');
                 } else {
                     this.connectionStatus = 'error';
                     this.connectionMessage = `✗ ${result.message}`;
@@ -349,7 +349,7 @@ window.settingsModalComponent = function() {
 
                 this.loadSavedKeys();
                 this.connectionStatus = 'success';
-                this.connectionMessage = 'API key eliminada';
+                this.connectionMessage = Alpine.store('i18n').t('modals.settings.messages.apiKeyDeleted');
 
                 setTimeout(() => {
                     this.connectionStatus = null;
@@ -393,7 +393,7 @@ window.settingsModalComponent = function() {
 
                 this.loadSavedKeys();
                 this.connectionStatus = 'success';
-                this.connectionMessage = 'Key por defecto actualizada';
+                this.connectionMessage = Alpine.store('i18n').t('modals.settings.messages.defaultKeyUpdated');
 
                 setTimeout(() => {
                     this.connectionStatus = null;
@@ -439,7 +439,7 @@ window.settingsModalComponent = function() {
 
             try {
                 projectStore.updateApiKey(this.activeApiTab, keyName, keyId, {
-                    name: this.editingKeyName.trim() || 'Unnamed'
+                    name: this.editingKeyName.trim() || Alpine.store('i18n').t('modals.settings.messages.unnamed')
                 });
 
                 // Guardar proyecto
@@ -489,9 +489,9 @@ window.settingsModalComponent = function() {
             }
 
             if (this.enableLogs) {
-                console.log('🔍 Logs de depuración activados');
+                console.log(Alpine.store('i18n').t('modals.settings.messages.logsEnabled'));
             } else {
-                console.log('🔇 Logs de depuración desactivados');
+                console.log(Alpine.store('i18n').t('modals.settings.messages.logsDisabled'));
             }
         },
 
@@ -505,9 +505,9 @@ window.settingsModalComponent = function() {
             localStorage.setItem('plum_settings', JSON.stringify(settings));
 
             if (this.useAgenticContext) {
-                console.log('🤖 Modo agéntico activado: La IA decidirá qué contexto necesita');
+                console.log(Alpine.store('i18n').t('modals.settings.messages.agenticModeEnabled'));
             } else {
-                console.log('📦 Modo tradicional activado: Se enviará todo el contexto con optimización');
+                console.log(Alpine.store('i18n').t('modals.settings.messages.traditionalModeEnabled'));
             }
         },
 
@@ -519,7 +519,7 @@ window.settingsModalComponent = function() {
             const input = document.getElementById('confirm-delete-input');
             if (input) {
                 this.confirmationText = input.value;
-                this.deletionAllowed = this.confirmationText.toUpperCase() === 'ELIMINAR DATOS';
+                this.deletionAllowed = this.confirmationText.toUpperCase() === Alpine.store('i18n').t('modals.settings.messages.deleteDataText');
             }
         },
         

@@ -8,6 +8,77 @@
         <div class="editor-container">
             <!-- Editor Main Area -->
             <div class="editor-main">
+                <!-- Track Changes Controls -->
+                <div x-data="trackChangesUI()" class="track-changes-controls" x-show="true">
+                    <!-- Toggle Modo Edición -->
+                    <button
+                        type="button"
+                        class="track-changes-toggle"
+                        :class="{ 'active': editMode }"
+                        @click="toggleEditMode()"
+                        :title="editMode ? 'Desactivar modo edición (readonly)' : 'Activar modo edición'"
+                    >
+                        <i :data-lucide="editMode ? 'edit-3' : 'lock'" width="16" height="16"></i>
+                    </button>
+
+                    <!-- Toggle Mostrar/Ocultar Colores -->
+                    <button
+                        type="button"
+                        class="track-changes-toggle"
+                        :class="{ 'active': showColors }"
+                        @click="toggleColors()"
+                        :title="showColors ? 'Ocultar colores (temporal)' : 'Mostrar colores'"
+                    >
+                        <i :data-lucide="showColors ? 'eye' : 'eye-off'" width="16" height="16"></i>
+                    </button>
+
+                    <!-- Separador -->
+                    <div style="width: 1px; height: 24px; background: var(--border); margin: 0 4px;"></div>
+
+                    <!-- Aceptar Todos (Normalizar + Commit) -->
+                    <button
+                        type="button"
+                        class="accept-all-changes-btn"
+                        @click="acceptAllAndCommit()"
+                        :disabled="pendingCount === 0"
+                        title="Aceptar todos los cambios y crear commit"
+                    >
+                        <i data-lucide="check-circle" width="16" height="16"></i>
+                    </button>
+
+                    <!-- Rechazar Todos -->
+                    <button
+                        type="button"
+                        class="reject-all-changes-btn"
+                        @click="rejectAllChanges()"
+                        :disabled="pendingCount === 0"
+                        title="Rechazar todos los cambios"
+                    >
+                        <i data-lucide="x-circle" width="16" height="16"></i>
+                    </button>
+
+                    <!-- Separador -->
+                    <div style="width: 1px; height: 24px; background: var(--border); margin: 0 4px;"></div>
+
+                    <!-- Contador de Cambios -->
+                    <div class="changes-count" title="Cambios pendientes">
+                        <i data-lucide="list" width="14" height="14"></i>
+                        <span class="changes-count-number" x-text="pendingCount"></span>
+                    </div>
+
+                    <!-- Leyenda de Colores -->
+                    <div style="display: flex; align-items: center; gap: 12px; margin-left: auto; font-size: 11px;">
+                        <div style="display: flex; align-items: center; gap: 4px;" title="Texto generado por la IA">
+                            <div style="width: 12px; height: 12px; background: #a78bfa; border-radius: 2px;"></div>
+                            <span style="color: var(--text-secondary);">IA</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 4px;" title="Texto reemplazado por la IA">
+                            <div style="width: 12px; height: 12px; background: #ef4444; border-radius: 2px; text-decoration: line-through;"></div>
+                            <span style="color: var(--text-secondary);">Tachado</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Writing Area -->
                 <div class="editor-writing-area" style="position: relative;">
                     <!-- RichEditor Container -->

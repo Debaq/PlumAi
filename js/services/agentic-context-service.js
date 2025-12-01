@@ -78,7 +78,8 @@ window.agenticContextService = {
      * Prompt para que la IA analice qué contexto necesita
      */
     buildContextAnalysisPrompt(mode, userInput, inventory, selectedText = null) {
-        const modeConfig = window.aiService.assistantModes[mode];
+        const translatedModes = window.aiService.getTranslatedAssistantModes();
+        const modeConfig = translatedModes[mode];
 
         let prompt = `# ANÁLISIS DE CONTEXTO NECESARIO
 
@@ -550,7 +551,8 @@ Analiza y responde:`;
         }
 
         // Construir prompt conversacional con contexto
-        const modeConfig = window.aiService.assistantModes[mode];
+        const translatedModes = window.aiService.getTranslatedAssistantModes();
+        const modeConfig = translatedModes[mode];
 
         let prompt = `# PROYECTO: ${context.project.title}\n`;
         prompt += `**Género**: ${context.project.genre || 'No especificado'}\n\n`;

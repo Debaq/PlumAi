@@ -3,7 +3,10 @@
 
 // Asumimos que los stores y storageManager están disponibles globalmente (cargados en index.html)
 
-document.addEventListener('alpine:init', () => {
+document.addEventListener('alpine:init', async () => {
+    // NOTA: Las traducciones ya fueron cargadas en index.html antes de cargar Alpine.js
+    console.log('🔄 Inicializando Alpine.js stores...');
+
     // Hacer los objetos profundamente reactivos primero
     const reactiveI18n = Alpine.reactive(window.i18nStore);
     const reactiveProject = Alpine.reactive(window.projectStore);
@@ -26,7 +29,7 @@ document.addEventListener('alpine:init', () => {
     window.storageManager.init();
 
     // Inicializar stores que lo requieran (después de los servicios)
-    Alpine.store('i18n').init();
+    // NO llamar i18n.init() de nuevo porque ya se hizo arriba con await
     Alpine.store('ui').init();
     Alpine.store('ai').init();
     Alpine.store('versionControl').init();

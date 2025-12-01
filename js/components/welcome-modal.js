@@ -2,8 +2,12 @@
 window.welcomeModalComponent = function() {
     return {
         lastProject: null,
-        
+        selectedLanguage: null,
+
         async init() {
+            // Initialize selected language from current locale
+            this.selectedLanguage = Alpine.store('i18n').currentLocale;
+
             // Cargar la lista de proyectos para ver si hay alguno reciente
             try {
                 if (window.storageManager) {
@@ -19,6 +23,12 @@ window.welcomeModalComponent = function() {
                 console.error('Error loading projects list in welcome modal:', error);
                 // No hacer nada, simplemente no mostrar el botón de proyecto reciente
             }
+        },
+
+        async selectLanguage(lang) {
+            this.selectedLanguage = lang;
+            // Change the application language without reloading
+            await Alpine.store('i18n').changeLocale(lang);
         },
         
         async loadLastProject() {
@@ -55,8 +65,8 @@ window.welcomeModalComponent = function() {
                 // Mostrar loading
                 Alpine.store('ui').startLoading('global');
 
-                // URL del archivo de ejemplo (ruta relativa)
-                const demoUrl = 'demo/ejemplo.pluma';
+                // URL del archivo de ejemplo (ruta relativa) based on selected language
+                const demoUrl = this.selectedLanguage === 'en' ? 'demo/example.pluma' : 'demo/ejemplo.pluma';
 
                 // Cargar el archivo de ejemplo
                 const response = await fetch(demoUrl);
@@ -84,14 +94,14 @@ window.welcomeModalComponent = function() {
 
                 // Mostrar mensaje de éxito
                 Alpine.store('ui').success(
-                    'Proyecto de demostración cargado',
-                    'Puedes explorar las funciones de PlumaAI con datos de ejemplo'
+                    Alpine.store('i18n').t('notifications.success.demoLoaded') || 'Proyecto de demostración cargado',
+                    Alpine.store('i18n').t('notifications.success.demoLoadedDesc') || 'Puedes explorar las funciones de PlumaAI con datos de ejemplo'
                 );
             } catch (error) {
                 console.error('Error loading demo project:', error);
                 Alpine.store('ui').error(
-                    'Error al cargar proyecto de demostración',
-                    `No se pudo descargar el archivo de ejemplo. ${error.message}`
+                    Alpine.store('i18n').t('notifications.error.demoLoadFailed') || 'Error al cargar proyecto de demostración',
+                    Alpine.store('i18n').t('notifications.error.demoLoadFailedDesc', { message: error.message }) || `No se pudo descargar el archivo de ejemplo. ${error.message}`
                 );
                 // Si falla, volver a abrir el modal de bienvenida
                 Alpine.store('ui').openModal('welcome');

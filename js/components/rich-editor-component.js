@@ -847,12 +847,37 @@ window.richEditorComponent = function(config = {}) {
 
             const text = this.aiResponse.content || this.aiResponse.prompt;
 
-            // Si hay texto seleccionado, reemplazarlo
-            if (this.getSelectedText()) {
-                this.replaceSelectedText('\n\n' + text);
+            // Preparar metadata de la respuesta de IA
+            const metadata = {
+                provider: this.aiResponse.provider,
+                model: this.aiResponse.model,
+                type: this.aiResponse.type
+            };
+
+            // Verificar si hay trackChangesService disponible
+            if (window.trackChangesService && this.editor && this.editor.editor) {
+                const editorElement = this.editor.editor;
+
+                // Si hay texto seleccionado, reemplazarlo con tracking
+                const selectedText = this.getSelectedText();
+                if (selectedText) {
+                    window.trackChangesService.replaceSelectedText(editorElement, text, metadata);
+                } else {
+                    // Sino, insertar con tracking
+                    window.trackChangesService.insertAIText(editorElement, text, metadata);
+                }
+
+                // Trigger content change para guardar
+                if (this.onChange) {
+                    this.onChange(this.getContent());
+                }
             } else {
-                // Sino, insertar al final
-                this.setContent(this.getContent() + '\n\n' + text);
+                // Fallback: inserción tradicional sin tracking
+                if (this.getSelectedText()) {
+                    this.replaceSelectedText('\n\n' + text);
+                } else {
+                    this.setContent(this.getContent() + '\n\n' + text);
+                }
             }
 
             // Cerrar y limpiar después de insertar (ya que se aplicó)
