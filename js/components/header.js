@@ -3,7 +3,8 @@ window.headerComponent = function() {
     return {
         async init() {
             try {
-                const response = await fetch('templates/components/header.html');
+                const templatePath = window.PathResolver.resolve('templates/components/header.html');
+                const response = await fetch(templatePath);
                 const html = await response.text();
                 // Replace the entire element with the header HTML content
                 this.$el.outerHTML = html;

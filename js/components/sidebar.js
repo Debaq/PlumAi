@@ -3,7 +3,8 @@ window.sidebarComponent = function() {
     return {
         async init() {
             try {
-                const response = await fetch('templates/components/sidebar.html');
+                const templatePath = window.PathResolver.resolve('templates/components/sidebar.html');
+                const response = await fetch(templatePath);
                 const html = await response.text();
                 // Replace the entire element with the sidebar HTML content
                 this.$el.outerHTML = html;

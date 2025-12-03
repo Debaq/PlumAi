@@ -10,6 +10,7 @@ export default {
     currentStateLabel: 'Estado Actual',
     type: 'Tipo',
     status: 'Estado',
+    editingRelation: 'Editando relación',
     history: 'Historial de la Relación',
     addChange: 'Agregar Cambio',
     newChange: 'Nuevo Cambio en la Relación',

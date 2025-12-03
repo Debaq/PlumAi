@@ -5,6 +5,7 @@ export default {
     currentStateLabel: 'Current State',
     type: 'Type',
     status: 'Status',
+    editingRelation: 'Editing relationship',
     history: 'Relationship History',
     addChange: 'Add Change',
     newChange: 'New Change in Relationship',

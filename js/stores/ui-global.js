@@ -11,7 +11,7 @@ window.uiStore = {
 
     // Modales
     modals: {
-        welcome: true,
+        welcome: false,
         newProject: false,
         loadProject: false,
         projectsList: false,

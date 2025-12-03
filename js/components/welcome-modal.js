@@ -67,9 +67,10 @@ window.welcomeModalComponent = function() {
 
                 // URL del archivo de ejemplo (ruta relativa) based on selected language
                 const demoUrl = this.selectedLanguage === 'en' ? 'demo/example.pluma' : 'demo/ejemplo.pluma';
+                const resolvedDemoUrl = window.PathResolver.resolve(demoUrl);
 
                 // Cargar el archivo de ejemplo
-                const response = await fetch(demoUrl);
+                const response = await fetch(resolvedDemoUrl);
 
                 if (!response.ok) {
                     throw new Error(`Error al descargar el archivo: ${response.status} ${response.statusText}`);
@@ -91,6 +92,9 @@ window.welcomeModalComponent = function() {
 
                 // Cargar el proyecto en la aplicación
                 Alpine.store('project').loadProject(projectData);
+
+                // Guardar el proyecto en IndexedDB para que persista entre recargas
+                await window.storageManager.save(projectData);
 
                 // Mostrar mensaje de éxito
                 Alpine.store('ui').success(

@@ -73,7 +73,8 @@ window.i18nStore = {
         // Cargar cada módulo
         for (const module of this.translationModules) {
             try {
-                const modulePath = `/js/i18n/locales/${this.currentLocale}/${module}.js`;
+                // Ruta relativa desde js/stores/ hacia js/i18n/locales/
+                const modulePath = `../i18n/locales/${this.currentLocale}/${module}.js`;
 
                 // Importar dinámicamente el módulo
                 const imported = await import(modulePath);

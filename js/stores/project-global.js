@@ -482,6 +482,15 @@ window.projectStore = {
         const originCharacter = this.getCharacter(originCharacterId);
         if (!originCharacter) return;
 
+        // Obtener el tipo de relación inversa
+        const inverseType = this.getInverseRelationshipType(relationship.currentType);
+
+        // Si no hay tipo inverso (es null), no crear relación automática
+        // Esto permite relaciones unilaterales como "crush" o "love" no correspondido
+        if (inverseType === null) {
+            return;
+        }
+
         // Verificar si ya existe una relación inversa
         const existingRelation = targetCharacter.relationships?.find(
             r => r.characterId === originCharacterId
@@ -490,7 +499,7 @@ window.projectStore = {
         if (existingRelation) {
             // Actualizar la relación existente
             this.updateRelationshipHistory(relationship.characterId, existingRelation.id, {
-                type: this.getInverseRelationshipType(relationship.currentType),
+                type: inverseType,
                 status: relationship.currentStatus,
                 description: relationship.currentDescription || `${originCharacter.name} es ${this.getRelationshipLabelForType(relationship.currentType)}`,
                 eventId: relationship.history[relationship.history.length - 1].eventId
@@ -504,7 +513,7 @@ window.projectStore = {
                 history: [
                     {
                         eventId: relationship.history[0].eventId,
-                        type: this.getInverseRelationshipType(relationship.currentType),
+                        type: inverseType,
                         status: relationship.currentStatus,
                         description: relationship.currentDescription || `${originCharacter.name} es ${this.getRelationshipLabelForType(relationship.currentType)}`,
                         notes: '',
@@ -512,7 +521,7 @@ window.projectStore = {
                     }
                 ],
 
-                currentType: this.getInverseRelationshipType(relationship.currentType),
+                currentType: inverseType,
                 currentStatus: relationship.currentStatus,
                 currentDescription: relationship.currentDescription || `${originCharacter.name} es ${this.getRelationshipLabelForType(relationship.currentType)}`,
 
@@ -637,13 +646,18 @@ window.projectStore = {
         const targetCharacter = this.getCharacter(relationship.characterId);
         if (!targetCharacter) return;
 
+        const inverseType = this.getInverseRelationshipType(changeData.type);
+
+        // Si no hay tipo inverso (es null), no actualizar relación automática
+        if (inverseType === null) {
+            return;
+        }
+
         const inverseRelation = targetCharacter.relationships?.find(
             r => r.characterId === originCharacterId
         );
 
         if (inverseRelation) {
-            const inverseType = this.getInverseRelationshipType(changeData.type);
-
             const newHistoryEntry = {
                 eventId: changeData.eventId || null,
                 type: inverseType,
@@ -797,11 +811,91 @@ window.projectStore = {
         });
     },
 
+    // Método para determinar si una relación debe ser automáticamente bidireccional
+    isBidirectionalRelationType(type) {
+        // Mapeo para mantener compatibilidad con datos antiguos
+        const spanishToEnglishMap = {
+            'amigo': 'friend',
+            'familia': 'family',
+            'amor': 'love',
+            'enemigo': 'enemy',
+            'mentor': 'mentor',
+            'conocido': 'acquaintance',
+            'colaborador': 'collaborator'
+        };
+
+        const actualType = spanishToEnglishMap[type] || type;
+
+        // Relaciones que son simétricas (A->B implica B->A con el mismo tipo)
+        const symmetricRelations = [
+            'friend',           // amigo
+            'family',           // familia
+            'acquaintance',     // conocido
+            'colleague',        // colega
+            'collaborator',     // colaborador
+            'ally',             // aliado
+            'rival',            // rival
+            'neighbor',         // vecino
+            'partner',          // socio/pareja
+            'businessPartner',  // socio de negocios
+            'ex'                // ex pareja
+        ];
+
+        return symmetricRelations.includes(actualType);
+    },
+
     // Método para determinar la relación inversa
     getInverseRelationshipType(type) {
-        // Para la mayoría de los tipos, la relación es simétrica
-        // En el futuro se podrían tener relaciones asimétricas
-        return type;
+        // Mapeo para mantener compatibilidad con datos antiguos
+        const spanishToEnglishMap = {
+            'amigo': 'friend',
+            'familia': 'family',
+            'amor': 'love',
+            'enemigo': 'enemy',
+            'mentor': 'mentor',
+            'conocido': 'acquaintance',
+            'colaborador': 'collaborator'
+        };
+
+        const actualType = spanishToEnglishMap[type] || type;
+
+        // Relaciones asimétricas con inversa específica
+        const asymmetricRelations = {
+            // Relaciones jerárquicas
+            'mentor': 'student',
+            'student': 'mentor',
+            'teacher': 'student',
+            'boss': 'subordinate',
+            'subordinate': 'boss',
+            'guardian': 'ward',
+            'ward': 'guardian',
+
+            // Relaciones de rol
+            'hero': 'villain',
+            'villain': 'hero',
+            'sidekick': 'hero',
+
+            // Relaciones unilaterales que NO deben ser automáticamente bidireccionales
+            // Estas devuelven null para indicar que no deben crear relación inversa automática
+            'crush': null,          // enamoramiento unilateral
+            'rivalLove': null,      // amor no correspondido
+            'archenemy': null,      // némesis (puede ser unilateral)
+            'love': null,           // amor puede ser no correspondido
+            'enemy': null           // enemistad puede ser unilateral
+        };
+
+        // Si es asimétrica, devolver su inversa
+        if (asymmetricRelations.hasOwnProperty(actualType)) {
+            return asymmetricRelations[actualType];
+        }
+
+        // Si es simétrica (bidireccional), devolver el mismo tipo
+        if (this.isBidirectionalRelationType(actualType)) {
+            return actualType;
+        }
+
+        // Para el resto, no crear relación inversa automática (devolver null)
+        return null;
     },
 
     // Método para obtener la etiqueta de la relación

@@ -137,8 +137,9 @@ window.modalContainerComponent = function() {
             // Load each modal template into its respective container
             for (const modal of modalTemplates) {
                 try {
-                    // Agregar timestamp para evitar caché
-                    const url = `${modal.templatePath}?v=${Date.now()}`;
+                    // Resolver ruta correcta para subdirectorios y agregar timestamp para evitar caché
+                    const resolvedPath = window.PathResolver.resolve(modal.templatePath);
+                    const url = `${resolvedPath}?v=${Date.now()}`;
                     const response = await fetch(url, { cache: 'no-store' });
                     const html = await response.text();
 

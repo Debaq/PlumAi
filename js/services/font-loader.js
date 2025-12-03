@@ -26,11 +26,13 @@ class FontLoader {
      * Cargar una fuente desde un archivo
      * @param {string} fontName
      * @param {string} fontStyle
-     * @param {string} fontPath
+     * @param {string} fontPath - Ruta relativa a la fuente
      */
     async loadFontFromFile(fontName, fontStyle, fontPath) {
         try {
-            const response = await fetch(fontPath);
+            // Resolver ruta correcta para subdirectorios
+            const resolvedPath = window.PathResolver ? window.PathResolver.resolve(fontPath) : fontPath;
+            const response = await fetch(resolvedPath);
             const blob = await response.blob();
             const base64 = await this.blobToBase64(blob);
             this.registerFont(fontName, fontStyle, base64);

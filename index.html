@@ -184,8 +184,11 @@
     <!-- Los archivos antiguos es-global.js y en-global.js ya NO se usan -->
     <!-- Las traducciones ahora se cargan modularmente desde /js/i18n/locales/{lang}/{module}.js -->
 
+    <!-- Path Resolver - DEBE cargarse primero para resolver rutas en subdirectorios -->
+    <script src="js/services/path-resolver.js?v=1"></script>
+
     <!-- Cargar stores (formato tradicional) -->
-    <script type="module" src="js/stores/i18n-global.js?v=7"></script>
+    <script type="module" src="js/stores/i18n-global.js?v=8"></script>
     <script src="js/stores/project-global.js?v=2"></script>
     <script src="js/stores/ui-global.js?v=2"></script>
     <script src="js/stores/ai-global.js?v=2"></script>
@@ -251,7 +254,7 @@
     <script src="js/components/header.js?v=2"></script>
     <script src="js/components/sidebar.js?v=2"></script>
     <script src="js/components/main-content.js?v=2"></script>
-    <script src="js/components/relations-diagram.js?v=2"></script>
+    <script src="js/components/relations-diagram.js?v=4"></script>
     <script src="js/components/modal-container.js?v=3"></script>
     <script src="js/components/welcome-modal.js?v=2"></script>
     <script src="js/components/settings-modal.js?v=3"></script>

@@ -152,6 +152,7 @@
                     <div class="bg-tertiary rounded-lg p-lg">
                         <div x-data="{
                             newRelationship: { characterId: '', type: 'friend', description: '' },
+                            editingIndex: null,
                             get availableCharacters() {
                                 return $store.project.characters.filter(c =>
                                     c.id !== $store.ui.modalData?.id &&
@@ -163,6 +164,13 @@
                                 if ($store.ui.modalData && !$store.ui.modalData.relationships) {
                                     $store.ui.modalData.relationships = [];
                                 }
+                                // Inicializar el characterId con el primer personaje disponible
+                                this.$nextTick(() => {
+                                    const chars = this.availableCharacters;
+                                    if (chars.length > 0 && !this.newRelationship.characterId) {
+                                        this.newRelationship.characterId = chars[0].id;
+                                    }
+                                });
                                 // Actualizar characterId cuando cambien los disponibles
                                 this.$watch('availableCharacters', (chars) => {
                                     if (!this.newRelationship.characterId && chars.length > 0) {
@@ -171,51 +179,128 @@
                                 });
                             }
                         }">
-                            <template x-for="relation in $store.ui.modalData?.relationships || []" :key="relation.characterId">
-                                <div class="relationship-item flex items-center gap-md p-md bg-secondary rounded-lg mb-md"
-                                     :class="{
-                                         'border-l-4 border-green-500': ['friend', 'ally', 'love'].includes(relation.currentType || relation.type),
-                                         'border-l-4 border-red-500': ['enemy', 'rival', 'archenemy'].includes(relation.currentType || relation.type),
-                                         'border-l-4 border-blue-500': ['family', 'guardian', 'ward'].includes(relation.currentType || relation.type),
-                                         'border-l-4 border-yellow-500': ['colleague', 'mentor', 'teacher'].includes(relation.currentType || relation.type)
-                                     }" style="position: relative; padding-left: 16px;">
-                                    <!-- Icono del tipo de relación -->
-                                    <div class="text-2xl" style="width: 32px; text-align: center;" x-text="(() => {
-                                        const icons = {
-                                            friend: '🤝', ally: '🛡️', love: '❤️', crush: '💕', ex: '💔',
-                                            family: '👨‍👩‍👧', guardian: '👤', ward: '🧒',
-                                            enemy: '⚔️', rival: '🥊', archenemy: '💀',
-                                            mentor: '🎓', teacher: '📚', student: '📝',
-                                            colleague: '💼', boss: '👔', subordinate: '📋',
-                                            acquaintance: '👋', neighbor: '🏘️',
-                                            hero: '🦸', villain: '🦹', sidekick: '🦸‍♂️',
-                                            collaborator: '🤝', businessPartner: '💰', partner: '🤝',
-                                            rivalLove: '💘'
-                                        };
-                                        return icons[relation.currentType || relation.type] || '👤';
-                                    })()"></div>
-
-                                    <div class="flex-1">
-                                        <div class="font-semibold" style="color: var(--text-primary);" x-text="(() => {
-                                            const relatedChar = $store.project.getCharacter(relation.characterId);
-                                            return relatedChar ? relatedChar.name : $store.i18n.t('characters.unknownCharacter');
+                            <template x-for="(relation, relIndex) in $store.ui.modalData?.relationships || []" :key="relation.characterId">
+                                <div class="relationship-item mb-md">
+                                    <!-- Vista normal (no editando) -->
+                                    <div x-show="editingIndex !== relIndex"
+                                         class="flex items-center gap-md p-md bg-secondary rounded-lg"
+                                         :class="{
+                                             'border-l-4 border-green-500': ['friend', 'ally', 'love'].includes(relation.currentType || relation.type),
+                                             'border-l-4 border-red-500': ['enemy', 'rival', 'archenemy'].includes(relation.currentType || relation.type),
+                                             'border-l-4 border-blue-500': ['family', 'guardian', 'ward'].includes(relation.currentType || relation.type),
+                                             'border-l-4 border-yellow-500': ['colleague', 'mentor', 'teacher'].includes(relation.currentType || relation.type)
+                                         }" style="position: relative; padding-left: 16px;">
+                                        <!-- Icono del tipo de relación -->
+                                        <div class="text-2xl" style="width: 32px; text-align: center;" x-text="(() => {
+                                            const icons = {
+                                                friend: '🤝', ally: '🛡️', love: '❤️', crush: '💕', ex: '💔',
+                                                family: '👨‍👩‍👧', guardian: '👤', ward: '🧒',
+                                                enemy: '⚔️', rival: '🥊', archenemy: '💀',
+                                                mentor: '🎓', teacher: '📚', student: '📝',
+                                                colleague: '💼', boss: '👔', subordinate: '📋',
+                                                acquaintance: '👋', neighbor: '🏘️',
+                                                hero: '🦸', villain: '🦹', sidekick: '🦸‍♂️',
+                                                collaborator: '🤝', businessPartner: '💰', partner: '🤝',
+                                                rivalLove: '💘'
+                                            };
+                                            return icons[relation.currentType || relation.type] || '👤';
                                         })()"></div>
-                                        <div class="text-xs" style="color: var(--accent);" x-text="$store.i18n.t('characters.form.relationTypes.' + (relation.currentType || relation.type))"></div>
+
+                                        <div class="flex-1">
+                                            <div class="font-semibold" style="color: var(--text-primary);" x-text="(() => {
+                                                const relatedChar = $store.project.getCharacter(relation.characterId);
+                                                return relatedChar ? relatedChar.name : $store.i18n.t('characters.unknownCharacter');
+                                            })()"></div>
+                                            <div class="text-xs" style="color: var(--accent);" x-text="$store.i18n.t('characters.form.relationTypes.' + (relation.currentType || relation.type))"></div>
+                                        </div>
+
+                                        <button type="button" class="btn-icon" @click="editingIndex = relIndex" :title="$store.i18n.t('common.edit')">
+                                            <i data-lucide="edit-2" width="16" height="16"></i>
+                                        </button>
+                                        <button type="button" class="btn-icon" @click="() => {
+                                            if ($store.ui.modalData && $store.ui.modalData.relationships) {
+                                                $store.ui.modalData.relationships = $store.ui.modalData.relationships.filter(r => r.characterId !== relation.characterId);
+                                            }
+                                        }" :title="$store.i18n.t('common.delete')">
+                                            <i data-lucide="x" width="16" height="16"></i>
+                                        </button>
                                     </div>
 
-                                    <button type="button" class="btn-icon" @click="() => {
-                                        if ($store.ui.modalData && $store.ui.modalData.relationships) {
-                                            $store.ui.modalData.relationships = $store.ui.modalData.relationships.filter(r => r.characterId !== relation.characterId);
-                                        }
-                                    }">
-                                        <i data-lucide="x" width="16" height="16"></i>
-                                    </button>
+                                    <!-- Vista de edición -->
+                                    <div x-show="editingIndex === relIndex"
+                                         x-transition
+                                         class="p-md bg-secondary rounded-lg"
+                                         style="border: 2px solid var(--accent);">
+                                        <div style="margin-bottom: 12px;">
+                                            <div class="font-semibold" style="color: var(--text-primary); margin-bottom: 4px;" x-text="(() => {
+                                                const relatedChar = $store.project.getCharacter(relation.characterId);
+                                                return relatedChar ? relatedChar.name : $store.i18n.t('characters.unknownCharacter');
+                                            })()"></div>
+                                            <small class="text-tertiary" x-text="$store.i18n.t('relationships.editingRelation')">Editando relación</small>
+                                        </div>
+                                        <div class="form-group" style="margin-bottom: 12px;">
+                                            <label style="font-size: 12px;" x-text="$store.i18n.t('relationships.form.type')">Tipo de relación</label>
+                                            <select x-model="relation.type" class="w-full p-sm bg-primary border rounded-lg" style="font-size: 13px;">
+                                                <optgroup :label="$store.i18n.t('characters.form.relationGroups.personal')">
+                                                    <option value="friend" x-text="$store.i18n.t('characters.form.relationTypes.friend')">Amigo</option>
+                                                    <option value="love" x-text="$store.i18n.t('characters.form.relationTypes.love')">Romántico</option>
+                                                    <option value="acquaintance" x-text="$store.i18n.t('characters.form.relationTypes.acquaintance')">Conocido</option>
+                                                    <option value="neighbor" x-text="$store.i18n.t('characters.form.relationTypes.neighbor')">Vecino</option>
+                                                    <option value="ally" x-text="$store.i18n.t('characters.form.relationTypes.ally')">Aliado</option>
+                                                    <option value="rival" x-text="$store.i18n.t('characters.form.relationTypes.rival')">Rival</option>
+                                                    <option value="ex" x-text="$store.i18n.t('characters.form.relationTypes.ex')">Ex</option>
+                                                    <option value="crush" x-text="$store.i18n.t('characters.form.relationTypes.crush')">Crush</option>
+                                                </optgroup>
+                                                <optgroup :label="$store.i18n.t('characters.form.relationGroups.family')">
+                                                    <option value="family" x-text="$store.i18n.t('characters.form.relationTypes.family')">Familia</option>
+                                                    <option value="guardian" x-text="$store.i18n.t('characters.form.relationTypes.guardian')">Guardián</option>
+                                                    <option value="ward" x-text="$store.i18n.t('characters.form.relationTypes.ward')">Tutelado</option>
+                                                </optgroup>
+                                                <optgroup :label="$store.i18n.t('characters.form.relationGroups.professional')">
+                                                    <option value="colleague" x-text="$store.i18n.t('characters.form.relationTypes.colleague')">Colega</option>
+                                                    <option value="collaborator" x-text="$store.i18n.t('characters.form.relationTypes.collaborator')">Colaborador</option>
+                                                    <option value="mentor" x-text="$store.i18n.t('characters.form.relationTypes.mentor')">Mentor</option>
+                                                    <option value="teacher" x-text="$store.i18n.t('characters.form.relationTypes.teacher')">Profesor</option>
+                                                    <option value="student" x-text="$store.i18n.t('characters.form.relationTypes.student')">Estudiante</option>
+                                                    <option value="boss" x-text="$store.i18n.t('characters.form.relationTypes.boss')">Jefe</option>
+                                                    <option value="subordinate" x-text="$store.i18n.t('characters.form.relationTypes.subordinate')">Subordinado</option>
+                                                    <option value="businessPartner" x-text="$store.i18n.t('characters.form.relationTypes.businessPartner')">Socio de Negocios</option>
+                                                    <option value="partner" x-text="$store.i18n.t('characters.form.relationTypes.partner')">Socio</option>
+                                                </optgroup>
+                                                <optgroup :label="$store.i18n.t('characters.form.relationGroups.fiction')">
+                                                    <option value="hero" x-text="$store.i18n.t('characters.form.relationTypes.hero')">Héroe</option>
+                                                    <option value="villain" x-text="$store.i18n.t('characters.form.relationTypes.villain')">Villano</option>
+                                                    <option value="sidekick" x-text="$store.i18n.t('characters.form.relationTypes.sidekick')">Compañero</option>
+                                                    <option value="archenemy" x-text="$store.i18n.t('characters.form.relationTypes.archenemy')">Arquienemigo</option>
+                                                    <option value="rivalLove" x-text="$store.i18n.t('characters.form.relationTypes.rivalLove')">Rival Amoroso</option>
+                                                </optgroup>
+                                                <optgroup :label="$store.i18n.t('characters.form.relationGroups.conflict')">
+                                                    <option value="enemy" x-text="$store.i18n.t('characters.form.relationTypes.enemy')">Enemigo</option>
+                                                </optgroup>
+                                            </select>
+                                        </div>
+                                        <div class="flex gap-sm">
+                                            <button type="button" class="btn-secondary flex-1" style="font-size: 12px; padding: 6px 12px;" @click="editingIndex = null">
+                                                <span x-text="$store.i18n.t('common.cancel')">Cancelar</span>
+                                            </button>
+                                            <button type="button" class="btn-primary flex-1" style="font-size: 12px; padding: 6px 12px;" @click="() => {
+                                                // Actualizar currentType si existe
+                                                if (relation.currentType !== undefined) {
+                                                    relation.currentType = relation.type;
+                                                }
+                                                editingIndex = null;
+                                                lucide.createIcons();
+                                            }">
+                                                <span x-text="$store.i18n.t('common.save')">Guardar</span>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </template>
 
                             <div class="flex gap-md mt-lg">
-                                <select x-model="newRelationship.characterId" class="flex-1 p-md bg-primary border rounded-lg" x-bind:disabled="!availableCharacters || availableCharacters.length === 0">
-                                    <template x-if="!availableCharacters || availableCharacters.length === 0">
+                                <select x-model="newRelationship.characterId" class="flex-1 p-md bg-primary border rounded-lg" :disabled="availableCharacters.length === 0">
+                                    <template x-if="availableCharacters.length === 0">
                                         <option value="" x-text="$store.i18n.t('characters.form.noCharactersAvailable')"></option>
                                     </template>
                                     <template x-for="char in availableCharacters" :key="char.id">
@@ -265,12 +350,19 @@
                                     if (newRelationship.characterId && !($store.ui.modalData.relationships || []).some(r => r.characterId === newRelationship.characterId)) {
                                         $store.ui.modalData.relationships = [...($store.ui.modalData.relationships || []), { ...newRelationship }];
                                         // Reset y seleccionar siguiente disponible
-                                        const nextAvailable = availableCharacters.find(c => c.id !== newRelationship.characterId);
-                                        newRelationship.characterId = nextAvailable?.id || '';
+                                        $nextTick(() => {
+                                            const chars = availableCharacters;
+                                            if (chars.length > 0) {
+                                                newRelationship.characterId = chars[0].id;
+                                            } else {
+                                                newRelationship.characterId = '';
+                                            }
+                                        });
                                         newRelationship.type = 'friend';
                                         newRelationship.description = '';
+                                        lucide.createIcons();
                                     }
-                                }" x-bind:disabled="!newRelationship.characterId || availableCharacters.length === 0">
+                                }" :disabled="!newRelationship.characterId || availableCharacters.length === 0">
                                     <i data-lucide="plus" width="16" height="16"></i>
                                 </button>
                             </div>

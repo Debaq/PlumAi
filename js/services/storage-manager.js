@@ -175,9 +175,12 @@ window.storageManager = {
         }
 
         // TODO: Implementar cuando haya backend
+        // NOTA: Si el backend está en el mismo dominio/subdirectorio,
+        // usar window.PathResolver.resolve('/api/projects/save') para la ruta
         /*
         try {
-            const response = await fetch('/api/projects/save', {
+            const apiUrl = window.PathResolver.resolve('api/projects/save');
+            const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
