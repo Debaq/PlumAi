@@ -85,6 +85,10 @@
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
 
+  --success: #88c999;
+  --warning: #f4a88c;
+  --error: #e88a8a;
+
   --sidebar: #f5f2ed;
   --sidebar-foreground: #3a3632;
   --sidebar-primary: #a89bd5;
@@ -136,6 +140,10 @@
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
+
+  --success: #4ec9b0;
+  --warning: #dcdcaa;
+  --error: #f48771;
 
   --sidebar: #252526;
   --sidebar-foreground: #cccccc;

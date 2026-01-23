@@ -2,12 +2,11 @@ import React from 'react';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useUIStore } from '@/stores/useUIStore';
 import {
-  Book,
-  Users,
+  BookOpen,
+  Film,
   GitBranch,
   Activity,
   BarChart,
-  FileText,
   Image as ImageIcon,
   BookMarked,
   Sparkles,
@@ -20,7 +19,7 @@ export const Sidebar = () => {
 
   if (!isSidebarOpen) {
      return (
-        <aside className="w-[48px] bg-sidebar border-r border-sidebar-border flex flex-col items-center py-4 transition-all duration-300">
+        <aside className="w-[48px] bg-sidebar border-r border-sidebar-border flex flex-col items-center py-4 transition-all duration-300 fixed top-[48px] left-0 bottom-[22px] z-40">
            <button onClick={toggleSidebar} className="p-2 text-muted-foreground hover:text-sidebar-foreground">
               <ChevronLeft className="w-4 h-4 rotate-180" />
            </button>
@@ -30,7 +29,7 @@ export const Sidebar = () => {
 
   if (!activeProject) {
     return (
-      <aside className="w-[220px] bg-sidebar border-r border-sidebar-border p-4 transition-all duration-300 mt-[48px] h-[calc(100vh-48px-22px)]">
+      <aside className="w-[220px] bg-sidebar border-r border-sidebar-border p-4 transition-all duration-300 mt-[48px] h-[calc(100vh-48px-22px)] fixed top-0 left-0 bottom-0 z-40">
         <p className="text-muted-foreground text-sm">No project loaded.</p>
         <p className="text-xs text-muted-foreground/70 mt-2">Create or load a project to start.</p>
       </aside>
@@ -52,7 +51,7 @@ export const Sidebar = () => {
       <Icon className="w-4 h-4 mr-3 shrink-0" />
       <span className="truncate flex-1 text-left">{label}</span>
       {count !== undefined && (
-        <span className="ml-auto bg-sidebar-accent text-sidebar-accent-foreground text-[10px] font-medium px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+        <span className="ml-auto bg-sidebar-accent text-sidebar-accent-foreground text-[11px] font-medium px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
           {count}
         </span>
       )}
@@ -66,11 +65,10 @@ export const Sidebar = () => {
 
         {/* Main Navigation */}
         <div>
-          {/* <h2 className="px-4 text-[11px] font-semibold text-muted-foreground/70 uppercase mb-2 tracking-wider">Modules</h2> */}
           <nav className="space-y-0.5 pr-2">
-            <NavItem view="lore" icon={Book} label="Lore" count={activeProject.characters.length + activeProject.locations.length + activeProject.loreItems.length} />
-            <NavItem view="chapters" icon={Book} label="Chapters" count={activeProject.chapters.length} />
-            <NavItem view="scenes" icon={FileText} label="Scenes" count={activeProject.chapters.reduce((acc, ch) => acc + ch.scenes.length, 0)} />
+            <NavItem view="lore" icon={BookOpen} label="Lore" count={activeProject.characters.length + activeProject.locations.length + activeProject.loreItems.length} />
+            <NavItem view="chapters" icon={BookOpen} label="Chapters" count={activeProject.chapters.length} />
+            <NavItem view="scenes" icon={Film} label="Scenes" count={activeProject.chapters.reduce((acc, ch) => acc + ch.scenes.length, 0)} />
             <NavItem view="images" icon={ImageIcon} label="Images" />
 
             <div className="h-px bg-sidebar-border my-2 mx-3" />
@@ -85,12 +83,6 @@ export const Sidebar = () => {
             <NavItem view="aiAssistant" icon={Sparkles} label="AI Assistant" />
           </nav>
         </div>
-
-        {/* Chapters Tree (Legacy had this?)
-            Legacy sidebar.html just had links to views.
-            The expanded chapters list was probably inside the 'Chapters' view or a specific mode.
-            I will comment this out for now to strictly follow the legacy sidebar structure which seems flat in the HTML I read.
-        */}
       </div>
 
       <button

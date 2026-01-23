@@ -11,6 +11,7 @@ import { EntityList } from '@/components/world/EntityList';
 import { RelationsDiagram } from '@/components/visualization/RelationsDiagram';
 import { TimelineView } from '@/components/visualization/TimelineView';
 import { StatsDashboard } from '@/components/visualization/StatsDashboard';
+import { LoadingScreen } from '@/components/ui/LoadingScreen';
 
 // Mock data for demonstration if no project is loaded
 import { Project } from '@/types/domain';
@@ -91,6 +92,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground overflow-hidden">
+      <LoadingScreen />
       <Header />
       <Sidebar />
 
