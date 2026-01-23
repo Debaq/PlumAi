@@ -2,6 +2,8 @@
 
 import React, { useEffect } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
+import { Header } from '@/components/layout/Header';
+import { StatusBar } from '@/components/layout/StatusBar';
 import { useUIStore } from '@/stores/useUIStore';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { Editor } from '@/components/editor/editor';
@@ -42,7 +44,7 @@ const MOCK_PROJECT: Project = {
     { id: 'ch2', name: 'Born', role: 'secondary', relationships: [] },
   ],
   locations: [
-    { id: 'l1', name: 'Greenleaf', type: 'village', description: 'A small village.', significance: 'Home of Aria' },
+    { id: 'l1', name: 'Greenleaf', type: 'other', description: 'A small village.', significance: 'Home of Aria' },
   ],
   loreItems: [
       { id: 'lo1', name: 'The Artifact', category: 'magic', content: 'A powerful ancient artifact.' }
@@ -54,7 +56,7 @@ const MOCK_PROJECT: Project = {
 };
 
 export default function Home() {
-  const { activeView } = useUIStore();
+  const { activeView, isSidebarOpen } = useUIStore();
   const { activeProject, setActiveProject } = useProjectStore();
 
   // Load mock project for demo purposes if none exists
@@ -67,7 +69,7 @@ export default function Home() {
   const renderContent = () => {
     switch (activeView) {
       case 'editor':
-        return <div className="p-8 max-w-4xl mx-auto"><Editor /></div>;
+        return <div className="h-full overflow-hidden"><Editor /></div>;
       case 'entities':
         return <EntityList />;
       case 'relations':
@@ -77,16 +79,31 @@ export default function Home() {
       case 'stats':
         return <StatsDashboard />;
       default:
-        return <div>Select a module</div>;
+        // Default fallbacks for views not yet implemented fully or placeholders
+        return (
+          <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+             <div className="text-lg font-medium mb-2">View: {activeView}</div>
+             <p className="text-sm">This module is under construction.</p>
+          </div>
+        );
     }
   };
 
   return (
-    <div className="flex min-h-screen bg-white dark:bg-black text-black dark:text-white">
+    <div className="flex flex-col min-h-screen bg-background text-foreground overflow-hidden">
+      <Header />
       <Sidebar />
-      <main className="flex-1 overflow-hidden h-screen bg-white dark:bg-gray-950">
+
+      <main
+        className={`
+          flex-1 overflow-hidden mt-[48px] mb-[22px] transition-all duration-300 bg-background
+          ${isSidebarOpen ? 'ml-[220px]' : 'ml-[48px]'}
+        `}
+      >
         {renderContent()}
       </main>
+
+      <StatusBar />
     </div>
   );
 }
