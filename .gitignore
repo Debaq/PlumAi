@@ -40,3 +40,15 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 *.swp
+fonts/Amazon Endure font EN/_MACOSX/_AmazonEndure-Book.otf
+fonts/Amazon Endure font EN/_MACOSX/_AmazonEndure-BookItalic.otf
+fonts/Amazon Endure font EN/_MACOSX/_AmazonEndure-Light.otf
+fonts/Amazon Endure font EN/_MACOSX/_AmazonEndure-LightItalic.otf
+fonts/Amazon Endure font EN/_MACOSX/_AmazonEndure-SemiBold.otf
+fonts/Amazon Endure font EN/_MACOSX/_AmazonEndure-SemiBoldItalic.otf
+fonts/Amazon Endure font EN/AmazonEndure-Book.otf
+fonts/Amazon Endure font EN/AmazonEndure-BookItalic.otf
+fonts/Amazon Endure font EN/AmazonEndure-Light.otf
+fonts/Amazon Endure font EN/AmazonEndure-LightItalic.otf
+fonts/Amazon Endure font EN/AmazonEndure-SemiBold.otf
+fonts/Amazon Endure font EN/AmazonEndure-SemiBoldItalic.otf
