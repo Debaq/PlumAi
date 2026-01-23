@@ -9,15 +9,45 @@ import {
   Sun,
   Palette,
   Globe,
-  Monitor
+  Monitor,
+  FileDown,
+  Upload
 } from 'lucide-react';
+import { PublishingEngine } from '@/lib/publishing/PublishingEngine';
+import { LegacyImporter } from '@/lib/importers/LegacyImporter';
 
 export const Header = () => {
-  const { activeProject } = useProjectStore();
+  const { activeProject, setActiveProject } = useProjectStore();
   const { theme, setTheme } = useUIStore();
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
+
+  const handleExport = (type: 'pdf' | 'docx') => {
+      if (!activeProject) return;
+      if (type === 'pdf') PublishingEngine.exportToPdf(activeProject);
+      if (type === 'docx') PublishingEngine.exportToDocx(activeProject);
+  };
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      try {
+          const text = await file.text();
+          const json = JSON.parse(text);
+          const project = LegacyImporter.importLegacyProject(json);
+
+          setActiveProject(project);
+          // In a real app we might want to save it to storage immediately
+          alert('Project imported successfully!');
+      } catch (err) {
+          console.error(err);
+          alert('Failed to import project');
+      }
+      // Reset input
+      e.target.value = '';
   };
 
   // Helper function to apply theme to document
@@ -78,6 +108,39 @@ export const Header = () => {
         >
           <Settings size={16} />
         </button>
+
+        {/* Export/Import */}
+        <div className="flex items-center gap-1 mx-1 border-l border-r border-border px-1">
+            <input
+                type="file"
+                id="import-upload"
+                className="hidden"
+                accept=".json"
+                onChange={handleImport}
+            />
+            <button
+                onClick={() => document.getElementById('import-upload')?.click()}
+                className="p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground flex items-center gap-1"
+                title="Import Legacy Project"
+            >
+                <Upload size={14} /> <span className="text-[10px]">Import</span>
+            </button>
+            <div className="w-px h-4 bg-border mx-1"></div>
+            <button
+                onClick={() => handleExport('pdf')}
+                className="p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground flex items-center gap-1"
+                title="Export as PDF"
+            >
+                <FileDown size={14} /> <span className="text-[10px]">PDF</span>
+            </button>
+            <button
+                onClick={() => handleExport('docx')}
+                className="p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground flex items-center gap-1"
+                title="Export as DOCX"
+            >
+                <FileDown size={14} /> <span className="text-[10px]">DOCX</span>
+            </button>
+        </div>
 
         {/* Save */}
         <button

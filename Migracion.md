@@ -38,14 +38,14 @@ Este documento detalla la estrategia de migración desde la arquitectura basada 
 - [x] **Dashboard de Estadísticas:** Analítica de progreso (conteo de palabras, densidad de personajes, etc.).
 
 ## Fase 5: AI Assistant (Agentic Service)
-- [ ] Integrar **Vercel AI SDK**.
-- [ ] Portar el `AgenticContextService` para enviar contexto relevante a la IA (RAG local).
-- [ ] Implementar chat flotante y comandos de IA integrados en el editor (mejorar estilo, resumir, expandir).
+- [x] Integrar **Vercel AI SDK**.
+- [x] Portar el `AgenticContextService` para enviar contexto relevante a la IA (RAG local).
+- [x] Implementar chat flotante y comandos de IA integrados en el editor (mejorar estilo, resumir, expandir).
 
 ## Fase 6: Exportación y Finalización
-- [ ] **Publishing Engine:** Generación de archivos exportables (PDF, DOCX, EPUB).
-- [ ] **Importador Legacy:** Herramienta para convertir archivos `.pluma` antiguos al nuevo esquema.
-- [ ] **Optimización:** Code-splitting y auditoría de rendimiento (Lighthouse).
+- [x] **Publishing Engine:** Generación de archivos exportables (PDF, DOCX, EPUB).
+- [x] **Importador Legacy:** Herramienta para convertir archivos `.pluma` antiguos al nuevo esquema.
+- [x] **Optimización:** Code-splitting y auditoría de rendimiento (Lighthouse).
 
 ---
 
