@@ -3,15 +3,13 @@ import { useProjectStore } from '@/stores/useProjectStore';
 import { useUIStore } from '@/stores/useUIStore';
 import {
   Book,
-  Users,
-  GitBranch,
-  Activity,
-  BarChart,
-  FileText,
+  Film,
   Image as ImageIcon,
+  GitBranch,
   BookMarked,
   Sparkles,
-  ChevronLeft
+  ChevronLeft,
+  BarChart
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -20,7 +18,7 @@ export const Sidebar = () => {
 
   if (!isSidebarOpen) {
      return (
-        <aside className="w-[48px] bg-sidebar border-r border-sidebar-border flex flex-col items-center py-4 transition-all duration-300">
+        <aside className="w-[48px] bg-sidebar border-r border-sidebar-border flex flex-col items-center py-4 transition-all duration-300 fixed top-[48px] bottom-[22px] left-0 z-40">
            <button onClick={toggleSidebar} className="p-2 text-muted-foreground hover:text-sidebar-foreground">
               <ChevronLeft className="w-4 h-4 rotate-180" />
            </button>
@@ -30,7 +28,7 @@ export const Sidebar = () => {
 
   if (!activeProject) {
     return (
-      <aside className="w-[220px] bg-sidebar border-r border-sidebar-border p-4 transition-all duration-300 mt-[48px] h-[calc(100vh-48px-22px)]">
+      <aside className="w-[220px] bg-sidebar border-r border-sidebar-border p-4 transition-all duration-300 mt-[48px] h-[calc(100vh-48px-22px)] fixed top-0 left-0 bottom-0 z-40">
         <p className="text-muted-foreground text-sm">No project loaded.</p>
         <p className="text-xs text-muted-foreground/70 mt-2">Create or load a project to start.</p>
       </aside>
@@ -66,31 +64,20 @@ export const Sidebar = () => {
 
         {/* Main Navigation */}
         <div>
-          {/* <h2 className="px-4 text-[11px] font-semibold text-muted-foreground/70 uppercase mb-2 tracking-wider">Modules</h2> */}
           <nav className="space-y-0.5 pr-2">
             <NavItem view="lore" icon={Book} label="Lore" count={activeProject.characters.length + activeProject.locations.length + activeProject.loreItems.length} />
             <NavItem view="chapters" icon={Book} label="Chapters" count={activeProject.chapters.length} />
-            <NavItem view="scenes" icon={FileText} label="Scenes" count={activeProject.chapters.reduce((acc, ch) => acc + ch.scenes.length, 0)} />
+            <NavItem view="scenes" icon={Film} label="Scenes" count={activeProject.chapters.reduce((acc, ch) => acc + ch.scenes.length, 0)} />
             <NavItem view="images" icon={ImageIcon} label="Images" />
 
             <div className="h-px bg-sidebar-border my-2 mx-3" />
 
-            <NavItem view="relations" icon={GitBranch} label="Relations" />
-            <NavItem view="timeline" icon={Activity} label="Timeline" />
-            <NavItem view="stats" icon={BarChart} label="Stats" />
-
-            <div className="h-px bg-sidebar-border my-2 mx-3" />
-
+            <NavItem view="versionControl" icon={GitBranch} label="Version Control" />
             <NavItem view="publishing" icon={BookMarked} label="Publishing" />
+            <NavItem view="stats" icon={BarChart} label="Stats" />
             <NavItem view="aiAssistant" icon={Sparkles} label="AI Assistant" />
           </nav>
         </div>
-
-        {/* Chapters Tree (Legacy had this?)
-            Legacy sidebar.html just had links to views.
-            The expanded chapters list was probably inside the 'Chapters' view or a specific mode.
-            I will comment this out for now to strictly follow the legacy sidebar structure which seems flat in the HTML I read.
-        */}
       </div>
 
       <button
