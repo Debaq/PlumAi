@@ -27,15 +27,15 @@ Este documento detalla la estrategia de migración desde la arquitectura basada 
 - [x] **Autoguardado:** Lógica de sincronización periódica con Dexie.js.
 
 ## Fase 3: Módulos de Escritura y Mundo
-- [ ] **Sidebar de Navegación:** Gestión de estructura de capítulos y escenas.
-- [ ] **Fichas de Entidades:** Vistas para creación y edición de Personajes, Lugares y Lore.
-- [ ] **Relaciones:** Sistema interactivo para definir vínculos entre entidades (basado en el documento de relaciones bidireccionales).
-- [ ] **Media Manager:** Gestión de imágenes de perfil y referencias visuales.
+- [x] **Sidebar de Navegación:** Gestión de estructura de capítulos y escenas.
+- [x] **Fichas de Entidades:** Vistas para creación y edición de Personajes, Lugares y Lore.
+- [x] **Relaciones:** Sistema interactivo para definir vínculos entre entidades (basado en el documento de relaciones bidireccionales).
+- [x] **Media Manager:** Gestión de imágenes de perfil y referencias visuales.
 
 ## Fase 4: Visualización Avanzada
-- [ ] **Relations Diagram:** Reimplementar el grafo de relaciones usando **React Flow**.
-- [ ] **Interactive Timeline:** Vista cronológica de eventos de la historia.
-- [ ] **Dashboard de Estadísticas:** Analítica de progreso (conteo de palabras, densidad de personajes, etc.).
+- [x] **Relations Diagram:** Reimplementar el grafo de relaciones usando **React Flow**.
+- [x] **Interactive Timeline:** Vista cronológica de eventos de la historia.
+- [x] **Dashboard de Estadísticas:** Analítica de progreso (conteo de palabras, densidad de personajes, etc.).
 
 ## Fase 5: AI Assistant (Agentic Service)
 - [ ] Integrar **Vercel AI SDK**.
