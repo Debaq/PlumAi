@@ -19,12 +19,12 @@ Este documento detalla la estrategia de migración desde la arquitectura basada 
 - [x] **I18n:** Migrar diccionarios de `js/i18n/locales` a un formato estructurado para `next-intl`.
 
 ## Fase 2: El Editor de Texto (Motor Principal)
-- [ ] Configurar **Tiptap** como componente central de edición.
-- [ ] **Extensiones:**
+- [x] Configurar **Tiptap** como componente central de edición.
+- [x] **Extensiones:**
     - Portar `mention.js` para autocompletado de personajes/lore.
     - Portar `commandMenu.js` (Slash commands).
-- [ ] **Track Changes:** Implementar sistema de sugerencias y control de cambios basado en marcas de ProseMirror.
-- [ ] **Autoguardado:** Lógica de sincronización periódica con Dexie.js.
+- [x] **Track Changes:** Implementar sistema de sugerencias y control de cambios basado en marcas de ProseMirror.
+- [x] **Autoguardado:** Lógica de sincronización periódica con Dexie.js.
 
 ## Fase 3: Módulos de Escritura y Mundo
 - [ ] **Sidebar de Navegación:** Gestión de estructura de capítulos y escenas.
