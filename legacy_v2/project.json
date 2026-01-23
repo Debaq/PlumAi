@@ -1,0 +1,13 @@
+{
+    "title": "PlumAi",
+    "description": "",
+    "type": "project",
+    "category": "tool",
+    "author": "Nicolás Baier Quezada",
+    "github": "https://github.com/debaq/plumai",
+    "favicon": "PlumAi/icon.png",
+    "status_percentage": 90,
+    "status_state": "beta",
+    "collections": [],
+    "hide_readme": false
+}

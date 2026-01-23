@@ -1,0 +1,514 @@
+<div class="view" x-show="$store.ui.currentView === 'publishing'" x-data="publishingComponent" x-cloak>
+    <div class="view-header">
+        <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+            <button @click="$store.ui.sidebarVisible = !$store.ui.sidebarVisible"
+                    class="btn-icon"
+                    style="background: var(--bg-secondary); border: 1px solid var(--border);"
+                    :title="$store.ui.sidebarVisible ? $store.i18n.t('sidebar.hide') : $store.i18n.t('sidebar.show')">
+                <i data-lucide="sidebar" width="20" height="20"></i>
+            </button>
+            <div>
+                <h1 x-text="$store.i18n.t('publishing.title')">Publicación</h1>
+                <p class="subtitle" x-text="$store.i18n.t('publishing.subtitle')">Prepara tu libro para publicar</p>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-xl);">
+        <!-- COLUMNA IZQUIERDA -->
+        <div style="display: flex; flex-direction: column; gap: var(--spacing-xl);">
+
+            <!-- CONFIGURACIÓN KDP -->
+            <div class="card">
+                <div class="card-header" @click="toggleSection('kdpConfig')" style="cursor: pointer;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+                            <i data-lucide="book-open" width="20" height="20" style="color: var(--accent);"></i>
+                            <div>
+                                <h2 class="card-title">Amazon KDP</h2>
+                                <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);" x-text="$store.i18n.t('publishing.kdp.professionalFormat')">
+                                    Formato profesional
+                                </p>
+                            </div>
+                        </div>
+                        <i data-lucide="chevron-down" width="20" height="20"
+                           :style="sectionsOpen.kdpConfig ? 'transform: rotate(180deg);' : ''"
+                           style="transition: transform 0.2s; color: var(--text-secondary);"></i>
+                    </div>
+                </div>
+                <div x-show="sectionsOpen.kdpConfig" x-collapse>
+
+                <!-- TAMAÑO DEL LIBRO -->
+                <div style="margin-bottom: var(--spacing-lg);">
+                    <label style="display: block; font-weight: 600; margin-bottom: var(--spacing-sm);" x-text="$store.i18n.t('publishing.bookSize.title')">Tamaño del Libro</label>
+                    <select x-model="publishingBookSize"
+                            style="width: 100%; padding: var(--spacing-md); background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); font-size: var(--font-size-sm);">
+                        <option value="kdp5x8" x-text="$store.i18n.t('publishing.bookSize.options.kdp5x8')">5" × 8" (12.7 × 20.32 cm) - Compacto</option>
+                        <option value="kdp5.06x7.81" x-text="$store.i18n.t('publishing.bookSize.options.kdp5_06x7_81')">5.06" × 7.81" (12.9 × 19.8 cm) - A Format</option>
+                        <option value="kdp5.25x8" x-text="$store.i18n.t('publishing.bookSize.options.kdp5_25x8')">5.25" × 8" (13.3 × 20.3 cm) - Digest</option>
+                        <option value="kdp5.5x8.5" x-text="$store.i18n.t('publishing.bookSize.options.kdp5_5x8_5')">5.5" × 8.5" (13.97 × 21.59 cm) - US Trade</option>
+                        <option value="kdp6x9" x-text="$store.i18n.t('publishing.bookSize.options.kdp6x9')">6" × 9" (15.24 × 22.86 cm) - Estándar ⭐</option>
+                        <option value="kdp6.14x9.21" x-text="$store.i18n.t('publishing.bookSize.options.kdp6_14x9_21')">6.14" × 9.21" (15.6 × 23.4 cm) - Royal</option>
+                        <option value="kdp6.69x9.61" x-text="$store.i18n.t('publishing.bookSize.options.kdp6_69x9_61')">6.69" × 9.61" (17 × 24.4 cm) - Crown Quarto</option>
+                        <option value="kdp7x10" x-text="$store.i18n.t('publishing.bookSize.options.kdp7x10')">7" × 10" (17.78 × 25.4 cm) - Grande</option>
+                        <option value="kdp7.44x9.69" x-text="$store.i18n.t('publishing.bookSize.options.kdp7_44x9_69')">7.44" × 9.69" (18.9 × 24.6 cm) - Demy</option>
+                        <option value="kdp7.5x9.25" x-text="$store.i18n.t('publishing.bookSize.options.kdp7_5x9_25')">7.5" × 9.25" (19.1 × 23.5 cm) - Royal</option>
+                        <option value="kdp8x10" x-text="$store.i18n.t('publishing.bookSize.options.kdp8x10')">8" × 10" (20.32 × 25.4 cm) - Large</option>
+                        <option value="kdp8.25x11" x-text="$store.i18n.t('publishing.bookSize.options.kdp8_25x11')">8.25" × 11" (21 × 28 cm) - A4-like</option>
+                        <option value="kdp8.5x11" x-text="$store.i18n.t('publishing.bookSize.options.kdp8_5x11')">8.5" × 11" (21.59 × 27.94 cm) - Letter</option>
+                    </select>
+                </div>
+
+                <!-- TIPO DE PAPEL -->
+                <div style="margin-bottom: var(--spacing-lg);">
+                    <label style="display: block; font-weight: 600; margin-bottom: var(--spacing-sm);" x-text="$store.i18n.t('publishing.paperType.label')">Tipo de Papel</label>
+                    <select x-model="publishingPaperType"
+                            style="width: 100%; padding: var(--spacing-md); background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); font-size: var(--font-size-sm);">
+                        <option value="cream" x-text="$store.i18n.t('publishing.paperType.cream')">📖 Papel Crema (recomendado para ficción)</option>
+                        <option value="white" x-text="$store.i18n.t('publishing.paperType.white')">📄 Papel Blanco (para imágenes a color)</option>
+                    </select>
+                </div>
+
+                <!-- INFO DE ESTIMACIÓN -->
+                <div style="padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: 6px; font-size: var(--font-size-sm);">
+                    <div style="display: flex; align-items: center; gap: var(--spacing-sm); color: var(--text-secondary);">
+                        <i data-lucide="info" width="16" height="16"></i>
+                        <span><span x-text="$store.i18n.t('publishing.kdp.estimate')">Estimado:</span> <strong x-text="estimatePageCount()"></strong> <span x-text="$store.i18n.t('publishing.kdp.pages')">páginas</span></span>
+                    </div>
+                </div>
+                </div>
+            </div>
+
+            <!-- METADATOS -->
+            <div class="card">
+                <div class="card-header" @click="toggleSection('metadata')" style="cursor: pointer;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <h2 class="card-title" x-text="$store.i18n.t('publishing.metadata.title')">Información del Libro</h2>
+                        <i data-lucide="chevron-down" width="20" height="20"
+                           :style="sectionsOpen.metadata ? 'transform: rotate(180deg);' : ''"
+                           style="transition: transform 0.2s; color: var(--text-secondary);"></i>
+                    </div>
+                </div>
+                <div x-show="sectionsOpen.metadata" x-collapse>
+                    <div style="display: grid; grid-template-columns: 1fr; gap: var(--spacing-lg);">
+                        <div class="form-group">
+                            <label x-text="$store.i18n.t('publishing.metadata.bookTitle')">Título del Libro *</label>
+                            <input type="text" x-model="publishingBookTitle" :placeholder="$store.i18n.t('publishing.metadata.bookTitlePlaceholder')">
+                        </div>
+                        <div class="form-group">
+                            <label x-text="$store.i18n.t('publishing.metadata.subtitle')">Subtítulo (opcional)</label>
+                            <input type="text" x-model="publishingSubtitle" :placeholder="$store.i18n.t('publishing.metadata.subtitlePlaceholder')">
+                        </div>
+                        <div class="form-group">
+                            <label x-text="$store.i18n.t('publishing.metadata.author')">Autor *</label>
+                            <input type="text" x-model="publishingAuthor" :placeholder="$store.i18n.t('publishing.metadata.authorPlaceholder')">
+                        </div>
+                        <div class="form-group">
+                            <label x-text="$store.i18n.t('publishing.metadata.isbn')">ISBN (opcional)</label>
+                            <input type="text" x-model="publishingISBN" :placeholder="$store.i18n.t('publishing.metadata.isbnPlaceholder')">
+                        </div>
+                        <div class="form-group">
+                            <label x-text="$store.i18n.t('publishing.metadata.publisher')">Editorial (opcional)</label>
+                            <input type="text" x-model="publishingPublisher" :placeholder="$store.i18n.t('publishing.metadata.publisherPlaceholder')">
+                        </div>
+                        <div class="form-group">
+                            <label x-text="$store.i18n.t('publishing.metadata.genre')">Género</label>
+                            <input type="text" x-model="publishingGenre" :placeholder="$store.i18n.t('publishing.metadata.genrePlaceholder')">
+                        </div>
+                        <div class="form-group">
+                            <label x-text="$store.i18n.t('publishing.metadata.year')">Año</label>
+                            <input type="text" x-model="publishingYear" :placeholder="$store.i18n.t('publishing.metadata.yearPlaceholder')">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SELECCIÓN DE CAPÍTULOS -->
+            <div class="card">
+                <div class="card-header" @click="toggleSection('chapters')" style="cursor: pointer;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <h2 class="card-title" x-text="$store.i18n.t('publishing.chapters.title')">Capítulos</h2>
+                            <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);">
+                                <span x-text="publishingFilteredChapters.length + ' ' + $store.i18n.t('publishing.chapters.available')"></span> ·
+                                <span x-text="publishingSelectedChapters.length + ' ' + $store.i18n.t('publishing.chapters.selected')"></span> ·
+                                <span x-text="publishingTotalWords + ' ' + $store.i18n.t('common.words')"></span>
+                            </p>
+                        </div>
+                        <i data-lucide="chevron-down" width="20" height="20"
+                           :style="sectionsOpen.chapters ? 'transform: rotate(180deg);' : ''"
+                           style="transition: transform 0.2s; color: var(--text-secondary);"></i>
+                    </div>
+                </div>
+                <div x-show="sectionsOpen.chapters" x-collapse>
+
+                <!-- FILTROS -->
+                <div style="display: flex; gap: var(--spacing-sm); margin-bottom: var(--spacing-lg); flex-wrap: wrap;">
+                    <button class="btn-secondary btn-sm"
+                            :class="{ 'active': publishingChapterFilter === 'final' }"
+                            @click="publishingChapterFilter = 'final'"
+                            style="display: flex; align-items: center; gap: var(--spacing-xs);">
+                        <i data-lucide="check-circle" width="14" height="14"></i>
+                        <span x-text="$store.i18n.t('publishing.chapters.onlyFinal')">Solo finales</span>
+                    </button>
+                    <button class="btn-secondary btn-sm"
+                            :class="{ 'active': publishingChapterFilter === 'review' }"
+                            @click="publishingChapterFilter = 'review'">
+                        <span x-text="$store.i18n.t('publishing.chapters.showReview')">Mostrar en revisión</span>
+                    </button>
+                    <button class="btn-secondary btn-sm"
+                            :class="{ 'active': publishingChapterFilter === 'all' }"
+                            @click="publishingChapterFilter = 'all'">
+                        <span x-text="$store.i18n.t('publishing.chapters.statusAll')">Todos</span>
+                    </button>
+                    <div style="flex: 1;"></div>
+                    <button class="btn-secondary btn-sm" @click="publishingSelectAllFiltered()">
+                        <span x-text="$store.i18n.t('publishing.chapters.selectAll')">Seleccionar todos</span>
+                    </button>
+                </div>
+
+                <!-- LISTA DE CAPÍTULOS -->
+                <div x-show="publishingFilteredChapters.length === 0" class="empty-state" style="padding: var(--spacing-xl);">
+                    <i data-lucide="book-open" width="48" height="48"></i>
+                    <p x-text="$store.i18n.t('publishing.chapters.noChapters')">No hay capítulos</p>
+                </div>
+
+                <div x-show="publishingFilteredChapters.length > 0" style="display: flex; flex-direction: column; gap: var(--spacing-sm); max-height: 400px; overflow-y: auto;">
+                    <template x-for="chapter in publishingFilteredChapters" :key="chapter.id">
+                        <div class="chapter-selector-item"
+                             style="display: flex; align-items: center; gap: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: 6px; cursor: pointer; border: 2px solid transparent;"
+                             :style="publishingSelectedChapters.includes(chapter.id) ? 'border-color: var(--accent);' : ''"
+                             @click="toggleChapterSelection(chapter.id)">
+                            <input type="checkbox" :checked="publishingSelectedChapters.includes(chapter.id)"
+                                   @click.stop="toggleChapterSelection(chapter.id)"
+                                   style="width: 18px; height: 18px; cursor: pointer;">
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; gap: var(--spacing-sm);">
+                                    <span style="color: var(--text-tertiary); font-weight: 600;" x-text="$store.i18n.t('publishing.chapters.abbreviation') + ' ' + chapter.number"></span>
+                                    <span style="font-weight: 600;" x-text="chapter.title"></span>
+                                    <!-- Badge de estado -->
+                                    <span x-show="chapter.status === 'final'" style="font-size: 10px; padding: 2px 6px; background: var(--success); color: white; border-radius: 4px; font-weight: 600;" x-text="$store.i18n.t('chapters.form.statuses.final')">FINAL</span>
+                                    <span x-show="chapter.status === 'review'" style="font-size: 10px; padding: 2px 6px; background: var(--warning); color: white; border-radius: 4px; font-weight: 600;" x-text="$store.i18n.t('chapters.form.statuses.review')">REVISIÓN</span>
+                                    <span x-show="chapter.status === 'draft'" style="font-size: 10px; padding: 2px 6px; background: var(--text-tertiary); color: white; border-radius: 4px; font-weight: 600;" x-text="$store.i18n.t('chapters.form.statuses.draft')">BORRADOR</span>
+                                </div>
+                                <div style="font-size: var(--font-size-xs); color: var(--text-secondary); margin-top: 2px;">
+                                    <span x-text="Math.round((chapter.content?.split(' ').length || 0)) + ' ' + $store.i18n.t('common.words')"></span>
+                                </div>
+                            </div>
+                            <i data-lucide="check" width="20" height="20"
+                               x-show="publishingSelectedChapters.includes(chapter.id)"
+                               style="color: var(--accent);"></i>
+                        </div>
+                    </template>
+                </div>
+                </div>
+            </div>
+
+            <!-- IMÁGENES DEL LIBRO -->
+            <div class="card">
+                <div class="card-header">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="flex: 1;">
+                            <h2 class="card-title" x-text="$store.i18n.t('publishing.images.title')">Imágenes</h2>
+                            <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);" x-text="$store.i18n.t('publishing.images.insertHelp')">
+                                Puedes insertar imágenes DENTRO de los capítulos usando marcadores
+                            </p>
+                        </div>
+                        <button class="btn-secondary btn-sm" @click="$refs.bookImageInput.click()">
+                            <i data-lucide="plus" width="14" height="14"></i>
+                            <span x-text="$store.i18n.t('publishing.images.addImage')">Agregar</span>
+                        </button>
+                    </div>
+                </div>
+                <input type="file" x-ref="bookImageInput" accept="image/*" style="display: none;" @change="handleImageUpload($event)">
+
+                <!-- EXPLICACIÓN DE MARCADORES -->
+                <div style="margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: 6px; border-left: 4px solid var(--accent);">
+                    <div style="font-weight: 600; margin-bottom: var(--spacing-sm); display: flex; align-items: center; gap: var(--spacing-xs);">
+                        <i data-lucide="lightbulb" width="16" height="16" style="color: var(--accent);"></i>
+                        <span x-text="$store.i18n.t('publishing.images.howToInsert')">Cómo insertar imágenes dentro de los capítulos:</span>
+                    </div>
+                    <div style="font-size: var(--font-size-sm); color: var(--text-secondary); line-height: 1.6;">
+                        <p style="margin-bottom: var(--spacing-sm);" x-text="$store.i18n.t('publishing.images.useMarkers')">Usa estos marcadores en el texto de tus capítulos:</p>
+                        <ul style="margin-left: var(--spacing-lg); list-style: disc;">
+                            <li style="margin-bottom: var(--spacing-xs);">
+                                <code style="background: var(--bg-secondary); padding: 2px 6px; border-radius: 3px; font-family: monospace; color: var(--accent);">[IMG:1]</code>
+                                <span x-text="'- ' + $store.i18n.t('publishing.images.fullPageDescription')">- Imagen de página completa (inserta una página)</span>
+                            </li>
+                            <li>
+                                <code style="background: var(--bg-secondary); padding: 2px 6px; border-radius: 3px; font-family: monospace; color: var(--accent);">[INLINE-IMG:1]</code>
+                                <span x-text="'- ' + $store.i18n.t('publishing.images.inlineDescription')">- Imagen en línea (fluye con el texto)</span>
+                            </li>
+                        </ul>
+                        <p style="margin-top: var(--spacing-sm); font-style: italic;" x-text="$store.i18n.t('publishing.images.numberHelp')">
+                            El número corresponde al # que aparece en cada imagen abajo.
+                        </p>
+                    </div>
+                </div>
+
+                <div x-show="publishingBookImages.length === 0" class="empty-state" style="padding: var(--spacing-lg);">
+                    <p x-text="$store.i18n.t('publishing.images.noImages')">Sin imágenes</p>
+                </div>
+
+                <div x-show="publishingBookImages.length > 0" style="display: flex; flex-direction: column; gap: var(--spacing-md);">
+                    <template x-for="(img, index) in publishingBookImages" :key="index">
+                        <div style="display: flex; align-items: start; gap: var(--spacing-md); padding: var(--spacing-md); background: var(--bg-tertiary); border-radius: 6px; border: 2px solid var(--border); position: relative;">
+                            <!-- NÚMERO DE IMAGEN -->
+                            <div style="position: absolute; top: 8px; left: 8px; background: var(--accent); color: white; padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"
+                                 x-text="'#' + img.number">
+                            </div>
+
+                            <img :src="img.dataUrl" style="width: 80px; height: 100px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border);">
+                            <div style="flex: 1;">
+                                <label style="display: block; font-weight: 600; margin-bottom: var(--spacing-xs); font-size: var(--font-size-sm);">
+                                    <i data-lucide="map-pin" width="14" height="14" style="vertical-align: middle;"></i>
+                                    <span x-text="$store.i18n.t('publishing.images.position.label')">Posición en el libro:</span>
+                                </label>
+                                <select x-model="img.position"
+                                        style="width: 100%; padding: var(--spacing-sm); background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 4px; color: var(--text-primary); font-size: var(--font-size-sm);">
+                                    <option value="in-chapter" x-text="$store.i18n.t('publishing.images.position.inChapter')">✍️ Dentro de capítulo (usa marcadores [IMG:X] o [INLINE-IMG:X])</option>
+                                    <option value="beginning" x-text="$store.i18n.t('publishing.images.position.beginning')">📖 Al inicio del libro (Front Matter)</option>
+                                    <template x-for="chapter in $store.project.chapters" :key="chapter.id">
+                                        <option :value="'after-' + chapter.id" x-text="$store.i18n.t('publishing.images.position.afterChapter', { number: chapter.number, title: chapter.title })"></option>
+                                    </template>
+                                    <option value="end" x-text="$store.i18n.t('publishing.images.position.end')">📕 Al final del libro (Back Matter)</option>
+                                </select>
+                                <small style="display: block; margin-top: var(--spacing-xs); color: var(--text-secondary); font-size: var(--font-size-xs);" x-show="img.position !== 'in-chapter'" x-text="$store.i18n.t('publishing.images.position.fullPageNote')">
+                                    La imagen aparecerá en una página completa
+                                </small>
+                                <small style="display: block; margin-top: var(--spacing-xs); color: var(--accent); font-size: var(--font-size-xs); font-weight: 600;" x-show="img.position === 'in-chapter'">
+                                    <span x-text="$store.i18n.t('publishing.images.position.useMarker')">Usa</span> <code style="background: var(--bg-secondary); padding: 2px 4px; border-radius: 3px;" x-text="'[IMG:' + img.number + ']'"></code> <span x-text="$store.i18n.t('common.or')">o</span> <code style="background: var(--bg-secondary); padding: 2px 4px; border-radius: 3px;" x-text="'[INLINE-IMG:' + img.number + ']'"></code> <span x-text="$store.i18n.t('publishing.images.position.inChapterText')">en el texto del capítulo</span>
+                                </small>
+                            </div>
+                            <button class="btn-icon" @click="removeBookImage(img.id)" style="margin-top: 20px;">
+                                <i data-lucide="trash-2" width="16" height="16"></i>
+                            </button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA - FRONT MATTER, BACK MATTER Y EXPORTACIÓN -->
+        <div style="display: flex; flex-direction: column; gap: var(--spacing-xl);">
+
+            <!-- FRONT MATTER (Estructura Preliminar) -->
+            <div class="card">
+                <div class="card-header" @click="toggleSection('frontMatter')" style="cursor: pointer;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <h2 class="card-title">
+                                <i data-lucide="file-text" width="20" height="20" style="vertical-align: middle;"></i>
+                                <span x-text="$store.i18n.t('publishing.frontMatter.title')">Estructura Preliminar (Front Matter)</span>
+                            </h2>
+                            <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);" x-text="$store.i18n.t('publishing.frontMatter.description')">
+                                Contenido que aparece antes de los capítulos (opcional)
+                            </p>
+                        </div>
+                        <i data-lucide="chevron-down" width="20" height="20"
+                           :style="sectionsOpen.frontMatter ? 'transform: rotate(180deg);' : ''"
+                           style="transition: transform 0.2s; color: var(--text-secondary);"></i>
+                    </div>
+                </div>
+                <div x-show="sectionsOpen.frontMatter" x-collapse>
+
+                <div style="display: flex; flex-direction: column; gap: var(--spacing-lg);">
+                    <!-- Otros libros del autor -->
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: var(--spacing-xs);">
+                            <i data-lucide="book-open" width="16" height="16"></i>
+                            <span x-text="$store.i18n.t('publishing.frontMatter.otherBooks.label')">Otros libros del autor</span>
+                        </label>
+                        <textarea x-model="publishingOtherBooks"
+                                  :placeholder="$store.i18n.t('publishing.frontMatter.otherBooks.placeholder')"
+                                  rows="3"
+                                  style="width: 100%; padding: var(--spacing-md); background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 4px; color: var(--text-primary); font-family: inherit; resize: vertical;"></textarea>
+                        <small style="color: var(--text-secondary); font-size: var(--font-size-xs);" x-text="$store.i18n.t('publishing.frontMatter.otherBooks.note')">Aparecerá en el reverso de la portadilla</small>
+                    </div>
+
+                    <!-- Dedicatoria -->
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: var(--spacing-xs);">
+                            <i data-lucide="heart" width="16" height="16"></i>
+                            <span x-text="$store.i18n.t('publishing.frontMatter.dedication.label')">Dedicatoria</span>
+                        </label>
+                        <textarea x-model="publishingDedication"
+                                  :placeholder="$store.i18n.t('publishing.frontMatter.dedication.placeholder')"
+                                  rows="2"
+                                  style="width: 100%; padding: var(--spacing-md); background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 4px; color: var(--text-primary); font-family: inherit; resize: vertical;"></textarea>
+                        <small style="color: var(--text-secondary); font-size: var(--font-size-xs);" x-text="$store.i18n.t('publishing.frontMatter.dedication.note')">Aparecerá en página IMPAR después del copyright</small>
+                    </div>
+
+                    <!-- Prólogo -->
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: var(--spacing-xs);">
+                            <i data-lucide="file-text" width="16" height="16"></i>
+                            <span x-text="$store.i18n.t('publishing.frontMatter.prologue.label')">Prólogo</span>
+                        </label>
+                        <textarea x-model="publishingPrologue"
+                                  :placeholder="$store.i18n.t('publishing.frontMatter.prologue.placeholder')"
+                                  rows="6"
+                                  style="width: 100%; padding: var(--spacing-md); background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 4px; color: var(--text-primary); font-family: inherit; resize: vertical;"></textarea>
+                        <small style="color: var(--text-secondary); font-size: var(--font-size-xs);" x-text="$store.i18n.t('publishing.frontMatter.prologue.note')">Se formateará profesionalmente con sangría y justificación</small>
+                    </div>
+                </div>
+                </div>
+            </div>
+
+            <!-- BACK MATTER (Estructura Final) -->
+            <div class="card">
+                <div class="card-header" @click="toggleSection('backMatter')" style="cursor: pointer;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <h2 class="card-title">
+                                <i data-lucide="file-plus" width="20" height="20" style="vertical-align: middle;"></i>
+                                <span x-text="$store.i18n.t('publishing.backMatter.title')">Estructura Final (Back Matter)</span>
+                            </h2>
+                            <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-top: var(--spacing-xs);" x-text="$store.i18n.t('publishing.backMatter.description')">
+                                Contenido que aparece después de los capítulos
+                            </p>
+                        </div>
+                        <i data-lucide="chevron-down" width="20" height="20"
+                           :style="sectionsOpen.backMatter ? 'transform: rotate(180deg);' : ''"
+                           style="transition: transform 0.2s; color: var(--text-secondary);"></i>
+                    </div>
+                </div>
+                <div x-show="sectionsOpen.backMatter" x-collapse>
+
+                <div style="display: flex; flex-direction: column; gap: var(--spacing-lg);">
+                    <!-- Epílogo -->
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: var(--spacing-xs);">
+                            <i data-lucide="bookmark" width="16" height="16"></i>
+                            <span x-text="$store.i18n.t('publishing.backMatter.epilogue.label')">Epílogo (opcional)</span>
+                        </label>
+                        <textarea x-model="publishingEpilogue"
+                                  :placeholder="$store.i18n.t('publishing.backMatter.epilogue.placeholder')"
+                                  rows="6"
+                                  style="width: 100%; padding: var(--spacing-md); background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 4px; color: var(--text-primary); font-family: inherit; resize: vertical;"></textarea>
+                    </div>
+
+                    <!-- Agradecimientos -->
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: var(--spacing-xs);">
+                            <i data-lucide="users" width="16" height="16"></i>
+                            <span x-text="$store.i18n.t('publishing.backMatter.acknowledgments.label')">Agradecimientos (opcional)</span>
+                        </label>
+                        <textarea x-model="publishingAcknowledgments"
+                                  :placeholder="$store.i18n.t('publishing.backMatter.acknowledgments.placeholder')"
+                                  rows="4"
+                                  style="width: 100%; padding: var(--spacing-md); background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 4px; color: var(--text-primary); font-family: inherit; resize: vertical;"></textarea>
+                    </div>
+
+                    <!-- Sobre el Autor -->
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: var(--spacing-xs);">
+                            <i data-lucide="user" width="16" height="16"></i>
+                            <span x-text="$store.i18n.t('publishing.backMatter.aboutAuthor.label')">Sobre el Autor (recomendado)</span>
+                        </label>
+                        <textarea x-model="publishingAboutAuthor"
+                                  :placeholder="$store.i18n.t('publishing.backMatter.aboutAuthor.placeholder')"
+                                  rows="5"
+                                  style="width: 100%; padding: var(--spacing-md); background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 4px; color: var(--text-primary); font-family: inherit; resize: vertical;"></textarea>
+                    </div>
+
+                    <!-- Foto del autor -->
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: var(--spacing-xs);">
+                            <i data-lucide="camera" width="16" height="16"></i>
+                            <span x-text="$store.i18n.t('publishing.backMatter.authorPhoto.label')">Foto del Autor (opcional)</span>
+                        </label>
+                        <div style="display: flex; align-items: center; gap: var(--spacing-md);">
+                            <div x-show="publishingAuthorPhoto"
+                                 style="width: 80px; height: 80px; border-radius: 50%; overflow: hidden; border: 2px solid var(--border);">
+                                <img :src="publishingAuthorPhoto" :alt="$store.i18n.t('publishing.backMatter.authorPhoto.alt')" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                            <div x-show="!publishingAuthorPhoto"
+                                 style="width: 80px; height: 80px; border-radius: 50%; background: var(--bg-tertiary); border: 2px dashed var(--border); display: flex; align-items: center; justify-content: center;">
+                                <i data-lucide="user" width="32" height="32" style="color: var(--text-tertiary);"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <input type="file" x-ref="authorPhotoInput" accept="image/*" style="display: none;" @change="handleAuthorPhotoUpload($event)">
+                                <div style="display: flex; gap: var(--spacing-sm);">
+                                    <button class="btn-secondary btn-sm" @click="$refs.authorPhotoInput.click()">
+                                        <i data-lucide="upload" width="14" height="14"></i>
+                                        <span x-text="publishingAuthorPhoto ? $store.i18n.t('publishing.backMatter.authorPhoto.change') : $store.i18n.t('publishing.backMatter.authorPhoto.upload')"></span>
+                                    </button>
+                                    <button x-show="publishingAuthorPhoto" class="btn-secondary btn-sm" @click="removeAuthorPhoto()">
+                                        <i data-lucide="trash-2" width="14" height="14"></i>
+                                    </button>
+                                </div>
+                                <small style="display: block; margin-top: var(--spacing-xs); color: var(--text-secondary); font-size: var(--font-size-xs);" x-text="$store.i18n.t('publishing.backMatter.authorPhoto.recommendation')">
+                                    Recomendado: cuadrada, mínimo 300x300px
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información de contacto -->
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: var(--spacing-xs);">
+                            <i data-lucide="mail" width="16" height="16"></i>
+                            <span x-text="$store.i18n.t('publishing.backMatter.contact.label')">Información de Contacto (opcional)</span>
+                        </label>
+                        <div style="display: flex; flex-direction: column; gap: var(--spacing-sm);">
+                            <input type="text"
+                                   x-model="publishingContactInfo.website"
+                                   :placeholder="$store.i18n.t('publishing.backMatter.contact.websitePlaceholder')"
+                                   style="padding: var(--spacing-sm); background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 4px; color: var(--text-primary);">
+                            <input type="text"
+                                   x-model="publishingContactInfo.social"
+                                   :placeholder="$store.i18n.t('publishing.backMatter.contact.socialPlaceholder')"
+                                   style="padding: var(--spacing-sm); background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 4px; color: var(--text-primary);">
+                            <input type="text"
+                                   x-model="publishingContactInfo.newsletter"
+                                   :placeholder="$store.i18n.t('publishing.backMatter.contact.newsletterPlaceholder')"
+                                   style="padding: var(--spacing-sm); background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 4px; color: var(--text-primary);">
+                        </div>
+                        <small style="color: var(--text-secondary); font-size: var(--font-size-xs);" x-text="$store.i18n.t('publishing.backMatter.contact.note')">Aparecerá al final de "Sobre el Autor"</small>
+                    </div>
+                </div>
+                </div>
+            </div>
+
+            <!-- EXPORTAR -->
+            <div class="card" style="background: var(--accent); color: white;">
+                <div style="margin-bottom: var(--spacing-lg);">
+                    <h2 style="font-size: var(--font-size-lg); font-weight: 600; margin-bottom: var(--spacing-sm);"
+                        x-text="$store.i18n.t('publishing.export.title')">Exportar</h2>
+
+                    <div x-show="!publishingIsValid()" style="font-size: var(--font-size-sm); opacity: 0.9;">
+                        <span x-text="$store.i18n.t('publishing.validation.warnings')">Advertencias:</span>
+                        <ul style="margin: var(--spacing-sm) 0 0 var(--spacing-lg); list-style: disc;">
+                            <li x-show="!publishingBookTitle" x-text="$store.i18n.t('publishing.validation.noTitle')"></li>
+                            <li x-show="!publishingAuthor" x-text="$store.i18n.t('publishing.validation.noAuthor')"></li>
+                            <li x-show="publishingSelectedChapters.length === 0" x-text="$store.i18n.t('publishing.validation.noChapters')"></li>
+                        </ul>
+                    </div>
+                    <div x-show="publishingIsValid()" style="font-size: var(--font-size-sm); opacity: 0.9; display: flex; align-items: center; gap: var(--spacing-sm);">
+                        <i data-lucide="check-circle" width="16" height="16"></i>
+                        <span x-text="$store.i18n.t('publishing.validation.ready')">Listo</span>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: var(--spacing-sm);">
+                    <button @click="exportToPDF()"
+                            :disabled="!publishingIsValid()"
+                            style="width: 100%; padding: var(--spacing-lg); background: white; color: var(--accent); border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: var(--spacing-md);"
+                            :style="!publishingIsValid() ? 'opacity: 0.5; cursor: not-allowed;' : ''">
+                        <i data-lucide="file-text" width="20" height="20"></i>
+                        <span x-text="$store.i18n.t('publishing.export.exportPDF')">Exportar PDF</span>
+                    </button>
+
+                    <button @click="exportToDOCX()"
+                            :disabled="!publishingIsValid()"
+                            style="width: 100%; padding: var(--spacing-lg); background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: var(--spacing-md);"
+                            :style="!publishingIsValid() ? 'opacity: 0.5; cursor: not-allowed;' : ''">
+                        <i data-lucide="file-code" width="20" height="20"></i>
+                        <span x-text="$store.i18n.t('publishing.export.exportDOCX')">Exportar DOCX</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

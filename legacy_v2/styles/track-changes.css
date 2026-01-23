@@ -1,0 +1,428 @@
+/**
+ * Track Changes - Sistema de seguimiento de cambios en el editor
+ * Estilos para mostrar visualmente las modificaciones de la IA
+ */
+
+/* ============================================
+   TEXTO EDITADO POR USUARIO
+   ============================================ */
+
+/* Texto insertado por el usuario - Color verde */
+.user-edited-text {
+    color: #10b981; /* Verde para texto del usuario */
+    background: rgba(16, 185, 129, 0.08);
+    padding: 1px 2px;
+    border-radius: 2px;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.user-edited-text:hover {
+    background: rgba(16, 185, 129, 0.15);
+}
+
+/* ============================================
+   TEXTO GENERADO POR IA
+   ============================================ */
+
+/* Texto insertado por la IA - Color púrpura */
+.ai-generated-text {
+    color: #a78bfa; /* Púrpura claro para texto de IA */
+    background: rgba(167, 139, 250, 0.08);
+    padding: 1px 2px;
+    border-radius: 2px;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.ai-generated-text:hover {
+    background: rgba(167, 139, 250, 0.15);
+}
+
+/* Indicador visual sutil para texto de IA */
+.ai-generated-text::before {
+    content: '✨';
+    font-size: 0.7em;
+    opacity: 0.3;
+    margin-right: 2px;
+    display: inline-block;
+}
+
+/* ============================================
+   TEXTO TACHADO (REEMPLAZADO)
+   ============================================ */
+
+/* Texto original que fue reemplazado */
+.ai-deleted-text {
+    text-decoration: line-through;
+    color: #ef4444; /* Rojo para texto eliminado */
+    opacity: 0.6;
+    background: rgba(239, 68, 68, 0.08);
+    padding: 1px 2px;
+    border-radius: 2px;
+    transition: all 0.2s ease;
+}
+
+.ai-deleted-text:hover {
+    opacity: 0.8;
+    background: rgba(239, 68, 68, 0.15);
+}
+
+/* Texto nuevo que reemplaza al anterior */
+.ai-inserted-text {
+    color: #10b981; /* Verde para texto insertado */
+    background: rgba(16, 185, 129, 0.08);
+    padding: 1px 2px;
+    border-radius: 2px;
+    border-bottom: 2px solid rgba(16, 185, 129, 0.3);
+    transition: all 0.2s ease;
+}
+
+.ai-inserted-text:hover {
+    background: rgba(16, 185, 129, 0.15);
+    border-bottom-color: rgba(16, 185, 129, 0.5);
+}
+
+/* ============================================
+   MODO EDICIÓN Y MODO READONLY
+   ============================================ */
+
+/* Modo edición activo */
+.rich-editor-content.edit-mode-active {
+    border-left: 3px solid #10b981;
+    position: relative;
+}
+
+/* Modo readonly (no edición) */
+.rich-editor-content.readonly-mode {
+    background: rgba(0, 0, 0, 0.1);
+    cursor: not-allowed;
+    opacity: 0.8;
+    border-left: 3px solid #ef4444;
+}
+
+/* ============================================
+   OCULTAR COLORES TEMPORALMENTE
+   ============================================ */
+
+/* Cuando se ocultan los colores, todos los textos marcados se muestran normales */
+.rich-editor-content.hide-track-colors .ai-generated-text,
+.rich-editor-content.hide-track-colors .ai-inserted-text,
+.rich-editor-content.hide-track-colors .user-edited-text {
+    color: inherit !important;
+    background: transparent !important;
+    border-bottom: none !important;
+}
+
+.rich-editor-content.hide-track-colors .ai-deleted-text {
+    text-decoration: none !important;
+    color: inherit !important;
+    background: transparent !important;
+    opacity: 1 !important;
+}
+
+.rich-editor-content.hide-track-colors .ai-generated-text::before {
+    display: none !important;
+}
+
+.rich-editor-content.hide-track-colors .ai-change-group .ai-deleted-text {
+    display: none !important;
+}
+
+/* ============================================
+   CONTENEDOR DE CAMBIOS
+   ============================================ */
+
+/* Agrupa un cambio (texto eliminado + texto insertado) */
+.ai-change-group {
+    display: inline;
+    position: relative;
+}
+
+/* Tooltip con información del cambio */
+.ai-change-info {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    background: var(--bg-secondary, #252525);
+    border: 1px solid var(--border, #3a3a3a);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 11px;
+    color: var(--text-secondary, #a0a0a0);
+    white-space: nowrap;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.ai-change-group:hover .ai-change-info {
+    opacity: 1;
+}
+
+/* ============================================
+   BOTONES DE CONTROL
+   ============================================ */
+
+/* Contenedor de botones de track changes */
+.track-changes-controls {
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+    background: var(--bg-tertiary, #2f2f2f);
+    border-radius: 6px;
+    margin-bottom: 12px;
+    align-items: center;
+}
+
+/* Botón toggle para modo track changes */
+.track-changes-toggle {
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px solid var(--border, #3a3a3a);
+    border-radius: 6px;
+    color: var(--text-primary, #e0e0e0);
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.track-changes-toggle:hover {
+    background: var(--bg-secondary, #252525);
+    border-color: var(--accent, #4a90e2);
+}
+
+.track-changes-toggle.active {
+    background: rgba(167, 139, 250, 0.15);
+    border-color: #a78bfa;
+    color: #a78bfa;
+}
+
+/* Botón para aceptar todos los cambios */
+.accept-all-changes-btn {
+    padding: 6px 12px;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 6px;
+    color: #10b981;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.accept-all-changes-btn:hover {
+    background: rgba(16, 185, 129, 0.25);
+    border-color: rgba(16, 185, 129, 0.5);
+    transform: translateY(-1px);
+}
+
+.accept-all-changes-btn:active {
+    transform: translateY(0);
+}
+
+/* Botón para rechazar todos los cambios */
+.reject-all-changes-btn {
+    padding: 6px 12px;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 6px;
+    color: #ef4444;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.reject-all-changes-btn:hover {
+    background: rgba(239, 68, 68, 0.25);
+    border-color: rgba(239, 68, 68, 0.5);
+    transform: translateY(-1px);
+}
+
+.reject-all-changes-btn:active {
+    transform: translateY(0);
+}
+
+/* Contador de cambios */
+.changes-count {
+    font-size: 11px;
+    color: var(--text-secondary, #a0a0a0);
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.changes-count-number {
+    font-weight: 600;
+    color: var(--accent, #4a90e2);
+}
+
+/* ============================================
+   BOTONES INLINE PARA CADA CAMBIO
+   ============================================ */
+
+/* Botones que aparecen al hacer hover sobre un cambio */
+.ai-change-actions {
+    display: inline-flex;
+    gap: 4px;
+    margin-left: 4px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    vertical-align: middle;
+}
+
+.ai-change-group:hover .ai-change-actions {
+    opacity: 1;
+}
+
+.ai-change-action-btn {
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    transition: all 0.2s;
+}
+
+.ai-change-action-accept {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+}
+
+.ai-change-action-accept:hover {
+    background: rgba(16, 185, 129, 0.4);
+}
+
+.ai-change-action-reject {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.ai-change-action-reject:hover {
+    background: rgba(239, 68, 68, 0.4);
+}
+
+/* ============================================
+   ANIMACIONES
+   ============================================ */
+
+/* Animación para texto del usuario (verde) */
+@keyframes fadeInUserText {
+    0% {
+        background: rgba(16, 185, 129, 0.4);
+    }
+    100% {
+        background: rgba(16, 185, 129, 0.08);
+    }
+}
+
+.user-edited-text.just-inserted {
+    animation: fadeInUserText 1.5s ease-out;
+}
+
+/* Animación para texto de IA (púrpura) */
+@keyframes fadeInHighlight {
+    0% {
+        background: rgba(167, 139, 250, 0.3);
+    }
+    100% {
+        background: rgba(167, 139, 250, 0.08);
+    }
+}
+
+.ai-generated-text.just-inserted {
+    animation: fadeInHighlight 1.5s ease-out;
+}
+
+/* Animación para texto insertado en reemplazo (verde) */
+@keyframes fadeInChange {
+    0% {
+        background: rgba(16, 185, 129, 0.3);
+    }
+    100% {
+        background: rgba(16, 185, 129, 0.08);
+    }
+}
+
+.ai-inserted-text.just-inserted {
+    animation: fadeInChange 1.5s ease-out;
+}
+
+/* Animación para texto eliminado/tachado (rojo) */
+@keyframes fadeInDeleted {
+    0% {
+        background: rgba(239, 68, 68, 0.3);
+    }
+    100% {
+        background: rgba(239, 68, 68, 0.08);
+    }
+}
+
+.ai-deleted-text.just-deleted {
+    animation: fadeInDeleted 1.5s ease-out;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .track-changes-controls {
+        flex-wrap: wrap;
+    }
+
+    .track-changes-toggle,
+    .accept-all-changes-btn,
+    .reject-all-changes-btn {
+        font-size: 11px;
+        padding: 5px 10px;
+    }
+
+    .ai-change-info {
+        font-size: 10px;
+        padding: 6px 10px;
+    }
+}
+
+/* ============================================
+   MODO OSCURO/CLARO
+   ============================================ */
+
+/* Ajustes para modo claro (si se implementa) */
+[data-theme="light"] .user-edited-text {
+    color: #059669;
+    background: rgba(5, 150, 105, 0.08);
+}
+
+[data-theme="light"] .ai-generated-text {
+    color: #7c3aed;
+    background: rgba(124, 58, 237, 0.08);
+}
+
+[data-theme="light"] .ai-deleted-text {
+    color: #dc2626;
+    background: rgba(220, 38, 38, 0.08);
+}
+
+[data-theme="light"] .ai-inserted-text {
+    color: #059669;
+    background: rgba(5, 150, 105, 0.08);
+    border-bottom-color: rgba(5, 150, 105, 0.3);
+}

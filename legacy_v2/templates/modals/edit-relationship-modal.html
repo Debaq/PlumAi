@@ -1,0 +1,424 @@
+<!-- Edit Relationship Modal -->
+<template x-if="$store.ui.modals.editRelationship">
+<div class="legacy-modal active">
+    <div class="legacy-modal-content" style="max-width: 700px;">
+        <div class="legacy-modal-header">
+            <h2>
+                <i data-lucide="heart" width="20" height="20"></i>
+                <span x-text="$store.i18n.t('modals.editRelationship.title')"></span>
+            </h2>
+            <button class="btn-close" @click="$store.ui.closeModal()">
+                <i data-lucide="x" width="20" height="20"></i>
+            </button>
+        </div>
+        <div class="modal-body" x-data="{
+            showHistoryForm: false,
+            editingEntryIndex: null,
+
+            getRelationship() {
+                const characterId = $store.ui.modalData.characterId;
+                const relationshipIndex = $store.ui.modalData.relationshipIndex;
+                const character = $store.project.getCharacter(characterId);
+
+                if (!character || !character.relationships || !character.relationships[relationshipIndex]) {
+                    return null;
+                }
+
+                return character.relationships[relationshipIndex];
+            },
+
+            addHistoryEntry(form) {
+                const characterId = $store.ui.modalData.characterId;
+                const character = $store.project.getCharacter(characterId);
+                const relationship = this.getRelationship();
+
+                if (!relationship) {
+                    $store.ui.error('Error', $store.i18n.t('relationships.errors.notFound'));
+                    return;
+                }
+
+                const changeData = {
+                    type: form.querySelector('[name=newType]').value,
+                    status: form.querySelector('[name=newStatus]').value,
+                    description: form.querySelector('[name=newDescription]').value,
+                    notes: form.querySelector('[name=newNotes]').value || '',
+                    eventId: form.querySelector('[name=newEvent]').value || null
+                };
+
+                // Agregar al historial usando el nuevo método
+                $store.project.updateRelationshipHistory(characterId, relationship.id, changeData);
+
+                $store.ui.success($store.i18n.t('relationships.success.historyAdded'), '');
+                this.showHistoryForm = false;
+
+                // Limpiar el formulario
+                form.reset();
+
+                lucide.createIcons();
+            },
+
+            editHistoryEntry(index, form) {
+                const characterId = $store.ui.modalData.characterId;
+                const relationship = this.getRelationship();
+
+                if (!relationship) return;
+
+                const updatedData = {
+                    type: form.querySelector('[name=editType]').value,
+                    status: form.querySelector('[name=editStatus]').value,
+                    description: form.querySelector('[name=editDescription]').value,
+                    notes: form.querySelector('[name=editNotes]').value || '',
+                    eventId: form.querySelector('[name=editEvent]').value || null
+                };
+
+                $store.project.editRelationshipHistoryEntry(characterId, relationship.id, index, updatedData);
+
+                $store.ui.success($store.i18n.t('relationships.success.historyUpdated'), '');
+                this.editingEntryIndex = null;
+
+                lucide.createIcons();
+            },
+
+            deleteHistoryEntry(index) {
+                const relationship = this.getRelationship();
+                if (!relationship) return;
+
+                if (relationship.history.length === 1) {
+                    $store.ui.error('Error', $store.i18n.t('relationships.errors.cannotDeleteLastEntry'));
+                    return;
+                }
+
+                if (!confirm($store.i18n.t('relationships.confirm.deleteHistoryEntry'))) return;
+
+                const characterId = $store.ui.modalData.characterId;
+                $store.project.deleteRelationshipHistoryEntry(characterId, relationship.id, index);
+
+                $store.ui.success($store.i18n.t('relationships.success.historyDeleted'), '');
+                lucide.createIcons();
+            },
+
+            deleteRelationship() {
+                if (!confirm($store.i18n.t('relationships.confirm.deleteRelationship'))) return;
+
+                const characterId = $store.ui.modalData.characterId;
+                const relationship = this.getRelationship();
+
+                if (!relationship) return;
+
+                // Usar el nuevo método de eliminación
+                $store.project.deleteRelationship(characterId, relationship.id);
+
+                $store.ui.success($store.i18n.t('relationships.success.deleted'), '');
+                $store.ui.closeModal();
+            },
+
+            formatDate(timestamp) {
+                if (!timestamp) return $store.i18n.t('common.dateUnknown');
+                const date = new Date(timestamp);
+                return date.toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            },
+
+            getEventName(eventId) {
+                if (!eventId) return null;
+                const event = $store.project.timeline.find(e => e.id === eventId);
+                return event ? event.event : $store.i18n.t('timeline.eventUnknown');
+            }
+        }">
+            <!-- Información de personajes -->
+            <div class="form-group" style="background: var(--bg-tertiary); padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="flex: 1; text-align: center;">
+                        <strong x-text="$store.project.getCharacter($store.ui.modalData?.characterId)?.name || $store.i18n.t('characters.defaultName')"></strong>
+                    </div>
+                    <i data-lucide="arrow-right" width="20" height="20"></i>
+                    <div style="flex: 1; text-align: center;">
+                        <strong x-text="$store.project.getCharacter(getRelationship()?.characterId)?.name || $store.i18n.t('characters.otherCharacter')"></strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estado Actual de la Relación -->
+            <div style="background: linear-gradient(135deg, rgba(74, 144, 226, 0.1) 0%, rgba(124, 179, 255, 0.05) 100%); padding: 16px; border-radius: 8px; border: 1px solid rgba(74, 144, 226, 0.2); margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                    <i data-lucide="activity" width="18" height="18" style="color: var(--accent);"></i>
+                    <h4 style="margin: 0; font-size: 14px; font-weight: 600;" x-text="$store.i18n.t('relationships.currentStateLabel')"></h4>
+                </div>
+                <template x-if="getRelationship()">
+                    <div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 8px;">
+                            <div style="flex: 1; min-width: 200px;">
+                                <div style="font-size: 11px; color: var(--text-tertiary); margin-bottom: 4px;" x-text="$store.i18n.t('relationships.type')"></div>
+                                <div style="font-weight: 500;" x-text="$store.i18n.t('characters.form.relationTypes.' + getRelationship().currentType)"></div>
+                            </div>
+                            <div style="flex: 1; min-width: 200px;">
+                                <div style="font-size: 11px; color: var(--text-tertiary); margin-bottom: 4px;" x-text="$store.i18n.t('relationships.status')"></div>
+                                <div>
+                                    <span class="badge" style="font-size: 11px;">
+                                        <span x-text="$store.i18n.t('relationships.statuses.' + getRelationship().currentStatus)"></span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="font-size: 13px; color: var(--text-secondary); font-style: italic;" x-text="getRelationship().currentDescription || $store.i18n.t('common.noDescription')"></div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Historial de Cambios -->
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h4 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="clock" width="18" height="18"></i>
+                        <span x-text="$store.i18n.t('relationships.history')"></span>
+                    </h4>
+                    <button type="button"
+                            class="btn-primary btn-sm"
+                            @click="showHistoryForm = !showHistoryForm">
+                        <i data-lucide="plus" width="14" height="14"></i>
+                        <span x-text="showHistoryForm ? $store.i18n.t('common.cancel') : $store.i18n.t('relationships.addChange')"></span>
+                    </button>
+                </div>
+
+                <!-- Formulario para agregar nuevo cambio -->
+                <div x-show="showHistoryForm"
+                     x-transition
+                     style="background: var(--bg-tertiary); padding: 16px; border-radius: 8px; margin-bottom: 16px; border: 2px dashed var(--border);">
+                    <h5 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 600;" x-text="$store.i18n.t('relationships.newChange')"></h5>
+                    <form @submit.prevent="addHistoryEntry($el)">
+                        <div class="form-group">
+                            <label x-text="$store.i18n.t('relationships.form.newType')"></label>
+                            <select name="newType" required>
+                                <optgroup x-bind:label="$store.i18n.t('characters.form.relationTypeGroups.positive')">
+                                    <option value="friend" x-text="$store.i18n.t('characters.form.relationTypes.friend')"></option>
+                                    <option value="love" x-text="$store.i18n.t('characters.form.relationTypes.love')"></option>
+                                    <option value="family" x-text="$store.i18n.t('characters.form.relationTypes.family')"></option>
+                                    <option value="mentor" x-text="$store.i18n.t('characters.form.relationTypes.mentor')"></option>
+                                    <option value="ally" x-text="$store.i18n.t('characters.form.relationTypes.ally')"></option>
+                                </optgroup>
+                                <optgroup x-bind:label="$store.i18n.t('characters.form.relationTypeGroups.neutral')">
+                                    <option value="acquaintance" x-text="$store.i18n.t('characters.form.relationTypes.acquaintance')"></option>
+                                    <option value="colleague" x-text="$store.i18n.t('characters.form.relationTypes.colleague')"></option>
+                                    <option value="rival" x-text="$store.i18n.t('characters.form.relationTypes.rival')"></option>
+                                </optgroup>
+                                <optgroup x-bind:label="$store.i18n.t('characters.form.relationTypeGroups.negative')">
+                                    <option value="enemy" x-text="$store.i18n.t('characters.form.relationTypes.enemy')"></option>
+                                    <option value="archenemy" x-text="$store.i18n.t('characters.form.relationTypes.archenemy')"></option>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label x-text="$store.i18n.t('relationships.form.newStatus')"></label>
+                            <select name="newStatus" required>
+                                <option value="active" x-text="$store.i18n.t('relationships.statuses.active')"></option>
+                                <option value="strained" x-text="$store.i18n.t('relationships.statuses.strained')"></option>
+                                <option value="improving" x-text="$store.i18n.t('relationships.statuses.improving')"></option>
+                                <option value="deteriorating" x-text="$store.i18n.t('relationships.statuses.deteriorating')"></option>
+                                <option value="ended" x-text="$store.i18n.t('relationships.statuses.ended')"></option>
+                                <option value="complicated" x-text="$store.i18n.t('relationships.statuses.complicated')"></option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label x-text="$store.i18n.t('relationships.form.whatHappened')"></label>
+                            <textarea name="newDescription"
+                                      rows="2"
+                                      required
+                                      x-bind:placeholder="$store.i18n.t('relationships.form.whatHappenedPlaceholder')"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                <i data-lucide="calendar" width="14" height="14"></i>
+                                <span x-text="$store.i18n.t('relationships.form.associatedEvent')"></span>
+                            </label>
+                            <select name="newEvent">
+                                <option value="" x-text="$store.i18n.t('timeline.noSpecificEvent')"></option>
+                                <template x-for="event in $store.project.timeline" :key="event.id">
+                                    <option :value="event.id" x-text="event.event"></option>
+                                </template>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label x-text="$store.i18n.t('relationships.form.additionalNotes')"></label>
+                            <textarea name="newNotes"
+                                      rows="2"
+                                      x-bind:placeholder="$store.i18n.t('relationships.form.additionalNotesPlaceholder')"></textarea>
+                        </div>
+
+                        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                            <button type="button" class="btn-secondary btn-sm" @click="showHistoryForm = false">
+                                <span x-text="$store.i18n.t('common.cancel')"></span>
+                            </button>
+                            <button type="submit" class="btn-primary btn-sm">
+                                <span x-text="$store.i18n.t('relationships.addToHistory')"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Lista de historial -->
+                <template x-if="getRelationship() && getRelationship().history">
+                    <div style="position: relative;">
+                        <!-- Línea temporal vertical -->
+                        <div style="position: absolute; left: 11px; top: 0; bottom: 0; width: 2px; background: var(--border);"></div>
+
+                        <div style="display: flex; flex-direction: column; gap: 16px;">
+                            <template x-for="(entry, idx) in [...getRelationship().history].reverse()" :key="idx">
+                                <div style="position: relative; padding-left: 36px;" x-data="{ actualIndex: getRelationship().history.length - 1 - idx }">
+                                    <!-- Punto en la línea temporal -->
+                                    <div style="position: absolute; left: 0; top: 4px; width: 24px; height: 24px; background: var(--bg-secondary); border: 2px solid var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                        <div style="width: 8px; height: 8px; background: var(--accent); border-radius: 50%;"></div>
+                                    </div>
+
+                                    <!-- Vista normal (no editando) -->
+                                    <div x-show="editingEntryIndex !== actualIndex"
+                                         style="background: var(--bg-tertiary); padding: 12px; border-radius: 6px; border: 1px solid var(--border);">
+                                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                                            <div>
+                                                <span class="badge" style="margin-right: 8px;" x-text="$store.i18n.t('characters.form.relationTypes.' + entry.type)"></span>
+                                                <span class="badge" style="font-size: 10px;">
+                                                    <span x-text="$store.i18n.t('relationships.statuses.' + entry.status)"></span>
+                                                </span>
+                                            </div>
+                                            <div style="display: flex; align-items: center; gap: 8px;">
+                                                <div style="font-size: 11px; color: var(--text-tertiary);" x-text="formatDate(entry.timestamp)"></div>
+                                                <button type="button"
+                                                        class="btn-icon btn-sm"
+                                                        @click="editingEntryIndex = actualIndex"
+                                                        x-bind:title="$store.i18n.t('common.edit')">
+                                                    <i data-lucide="edit-2" width="14" height="14"></i>
+                                                </button>
+                                                <template x-if="getRelationship().history.length > 1">
+                                                    <button type="button"
+                                                            class="btn-icon btn-sm"
+                                                            @click="deleteHistoryEntry(actualIndex)"
+                                                            x-bind:title="$store.i18n.t('common.delete')"
+                                                            style="color: var(--danger);">
+                                                        <i data-lucide="trash-2" width="14" height="14"></i>
+                                                    </button>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        <div style="font-size: 13px; margin-bottom: 6px;" x-text="entry.description || $store.i18n.t('common.noDescription')"></div>
+                                        <template x-if="entry.eventId && getEventName(entry.eventId)">
+                                            <div style="font-size: 11px; color: var(--text-tertiary); display: flex; align-items: center; gap: 4px;">
+                                                <i data-lucide="calendar" width="12" height="12"></i>
+                                                <span x-text="getEventName(entry.eventId)"></span>
+                                            </div>
+                                        </template>
+                                        <template x-if="entry.notes">
+                                            <div style="font-size: 11px; color: var(--text-tertiary); margin-top: 6px; font-style: italic;" x-text="entry.notes"></div>
+                                        </template>
+                                    </div>
+
+                                    <!-- Formulario de edición inline -->
+                                    <div x-show="editingEntryIndex === actualIndex"
+                                         x-transition
+                                         style="background: var(--bg-tertiary); padding: 12px; border-radius: 6px; border: 2px solid var(--accent);">
+                                        <h5 style="margin: 0 0 12px 0; font-size: 13px; font-weight: 600;" x-text="$store.i18n.t('relationships.editingHistoryEntry')"></h5>
+                                        <form @submit.prevent="editHistoryEntry(actualIndex, $el)">
+                                            <div class="form-group">
+                                                <label x-text="$store.i18n.t('relationships.form.type')"></label>
+                                                <select name="editType" required>
+                                                    <optgroup x-bind:label="$store.i18n.t('characters.form.relationTypeGroups.positive')">
+                                                        <option value="friend" :selected="entry.type === 'friend'" x-text="$store.i18n.t('characters.form.relationTypes.friend')"></option>
+                                                        <option value="love" :selected="entry.type === 'love'" x-text="$store.i18n.t('characters.form.relationTypes.love')"></option>
+                                                        <option value="family" :selected="entry.type === 'family'" x-text="$store.i18n.t('characters.form.relationTypes.family')"></option>
+                                                        <option value="mentor" :selected="entry.type === 'mentor'" x-text="$store.i18n.t('characters.form.relationTypes.mentor')"></option>
+                                                        <option value="ally" :selected="entry.type === 'ally'" x-text="$store.i18n.t('characters.form.relationTypes.ally')"></option>
+                                                    </optgroup>
+                                                    <optgroup x-bind:label="$store.i18n.t('characters.form.relationTypeGroups.neutral')">
+                                                        <option value="acquaintance" :selected="entry.type === 'acquaintance'" x-text="$store.i18n.t('characters.form.relationTypes.acquaintance')"></option>
+                                                        <option value="colleague" :selected="entry.type === 'colleague'" x-text="$store.i18n.t('characters.form.relationTypes.colleague')"></option>
+                                                        <option value="rival" :selected="entry.type === 'rival'" x-text="$store.i18n.t('characters.form.relationTypes.rival')"></option>
+                                                    </optgroup>
+                                                    <optgroup x-bind:label="$store.i18n.t('characters.form.relationTypeGroups.negative')">
+                                                        <option value="enemy" :selected="entry.type === 'enemy'" x-text="$store.i18n.t('characters.form.relationTypes.enemy')"></option>
+                                                        <option value="archenemy" :selected="entry.type === 'archenemy'" x-text="$store.i18n.t('characters.form.relationTypes.archenemy')"></option>
+                                                    </optgroup>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label x-text="$store.i18n.t('relationships.status')"></label>
+                                                <select name="editStatus" required>
+                                                    <option value="active" :selected="entry.status === 'active'" x-text="$store.i18n.t('relationships.statuses.active')"></option>
+                                                    <option value="strained" :selected="entry.status === 'strained'" x-text="$store.i18n.t('relationships.statuses.strained')"></option>
+                                                    <option value="improving" :selected="entry.status === 'improving'" x-text="$store.i18n.t('relationships.statuses.improving')"></option>
+                                                    <option value="deteriorating" :selected="entry.status === 'deteriorating'" x-text="$store.i18n.t('relationships.statuses.deteriorating')"></option>
+                                                    <option value="ended" :selected="entry.status === 'ended'" x-text="$store.i18n.t('relationships.statuses.ended')"></option>
+                                                    <option value="complicated" :selected="entry.status === 'complicated'" x-text="$store.i18n.t('relationships.statuses.complicated')"></option>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label x-text="$store.i18n.t('relationships.form.description')"></label>
+                                                <textarea name="editDescription"
+                                                          rows="2"
+                                                          required
+                                                          x-text="entry.description"></textarea>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label>
+                                                    <i data-lucide="calendar" width="14" height="14"></i>
+                                                    <span x-text="$store.i18n.t('relationships.form.associatedEvent')"></span>
+                                                </label>
+                                                <select name="editEvent">
+                                                    <option value="" x-text="$store.i18n.t('timeline.noSpecificEvent')"></option>
+                                                    <template x-for="event in $store.project.timeline" :key="event.id">
+                                                        <option :value="event.id"
+                                                                :selected="event.id === entry.eventId"
+                                                                x-text="event.event"></option>
+                                                    </template>
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label x-text="$store.i18n.t('relationships.form.additionalNotes')"></label>
+                                                <textarea name="editNotes"
+                                                          rows="2"
+                                                          x-text="entry.notes"></textarea>
+                                            </div>
+
+                                            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                                                <button type="button" class="btn-secondary btn-sm" @click="editingEntryIndex = null">
+                                                    <span x-text="$store.i18n.t('common.cancel')"></span>
+                                                </button>
+                                                <button type="submit" class="btn-primary btn-sm">
+                                                    <span x-text="$store.i18n.t('common.saveChanges')"></span>
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Footer con acciones -->
+            <div class="modal-footer" style="justify-content: space-between;">
+                <button type="button"
+                        class="btn-danger"
+                        @click="deleteRelationship()">
+                    <i data-lucide="trash-2" width="16" height="16"></i>
+                    <span x-text="$store.i18n.t('relationships.deleteRelationship')"></span>
+                </button>
+                <button type="button" class="btn-secondary" @click="$store.ui.closeModal()">
+                    <span x-text="$store.i18n.t('common.close')"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+</template>

@@ -1,0 +1,345 @@
+<!-- New/Edit Location Modal -->
+<template x-if="$store.ui.modals.newLocation || $store.ui.modals.editLocation">
+<div class="legacy-modal active">
+    <div class="legacy-modal-content">
+        <div class="legacy-modal-header">
+            <h2 x-text="$store.ui.modals.editLocation ? $store.i18n.t('locations.edit') : $store.i18n.t('locations.new')">Ubicación</h2>
+            <button class="btn-close" @click="$store.ui.closeModal()">
+                <i data-lucide="x" width="20" height="20"></i>
+            </button>
+        </div>
+        <div class="modal-body" x-data="{
+            imagePreview: $store.ui.modalData?.image || '',
+            imageType: $store.ui.modalData?.imageType || 'upload',
+            generatingImage: false,
+            aiPrompt: '',
+            selectedAIProvider: null,
+
+            get availableAIProviders() {
+                if (!window.aiService) return [];
+                return window.aiService.getAvailableImageProviders();
+            },
+
+            handleImageUpload(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.imagePreview = e.target.result;
+                        this.imageType = 'upload';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            },
+
+            handleImageUrl(url) {
+                this.imagePreview = url;
+                this.imageType = 'url';
+            },
+
+            removeImage() {
+                this.imagePreview = '';
+                this.imageType = 'upload';
+            },
+
+            async generateImageWithAI(formElement) {
+                if (!window.aiService) {
+                    $store.ui.error($store.i18n.t('common.error'), $store.i18n.t('errors.aiServiceNotAvailable'));
+                    return;
+                }
+
+                const providers = this.availableAIProviders;
+                if (providers.length === 0) {
+                    $store.ui.error($store.i18n.t('common.error'), $store.i18n.t('errors.noAIProvidersConfigured'));
+                    return;
+                }
+
+                this.generatingImage = true;
+
+                try {
+                    // Construir prompt automático si está vacío
+                    const locationData = {
+                        name: formElement.querySelector('[name=name]')?.value || $store.i18n.t('locations.defaultName'),
+                        type: formElement.querySelector('[name=type]')?.value || $store.i18n.t('locations.defaultType'),
+                        description: this.aiPrompt || ''
+                    };
+
+                    // Si no hay prompt personalizado, construir automáticamente
+                    const prompt = this.aiPrompt || window.aiService.buildImagePrompt('location', locationData);
+
+                    console.log('Generando imagen con prompt:', prompt);
+
+                    // Generar imagen
+                    const result = await window.aiService.generateImage(prompt, this.selectedAIProvider);
+
+                    // Mostrar imagen en preview
+                    this.imagePreview = result.url;
+                    this.imageType = 'ai';
+
+                    console.log('Imagen generada exitosamente');
+
+                    $store.ui.success(
+                        $store.i18n.t('locations.imageGenerated'),
+                        `${$store.i18n.t('common.generatedWith')} ${result.provider}`
+                    );
+
+                } catch (error) {
+                    console.error('Error generando imagen:', error);
+                    $store.ui.error($store.i18n.t('errors.imageGenerationFailed'), error.message);
+                } finally {
+                    this.generatingImage = false;
+                }
+            },
+
+            generateAIPrompt(formElement) {
+                const name = formElement.querySelector('[name=name]')?.value || 'lugar';
+                const type = formElement.querySelector('[name=type]')?.value || 'ubicación';
+
+                // Obtener contenido de los editores
+                let descEditor = formElement.querySelector('[data-field=description]')?.__x?.$data;
+                let sigEditor = formElement.querySelector('[data-field=significance]')?.__x?.$data;
+
+                const description = descEditor?.getContent() || '';
+                const significance = sigEditor?.getContent() || '';
+
+                // Limpiar HTML de los contenidos
+                const cleanText = (html) => {
+                    const div = document.createElement('div');
+                    div.innerHTML = html;
+                    return div.textContent || div.innerText || '';
+                };
+
+                const cleanDesc = cleanText(description);
+                const cleanSig = cleanText(significance);
+
+                // Generar prompt estructurado
+                let prompt = `A detailed, atmospheric illustration of ${name}`;
+
+                if (type) {
+                    prompt += `, a ${type}`;
+                }
+
+                if (cleanDesc) {
+                    prompt += `. ${cleanDesc}`;
+                }
+
+                if (cleanSig) {
+                    prompt += ` This location is significant because: ${cleanSig}`;
+                }
+
+                // Añadir estilo y calidad
+                prompt += '. High quality, detailed artwork, atmospheric lighting, professional illustration, fantasy art style, 4k resolution.';
+
+                // Copiar al portapapeles
+                navigator.clipboard.writeText(prompt).then(() => {
+                    $store.ui.success(
+                        $store.i18n.t('locations.aiPromptCopied') || 'Prompt copiado',
+                        $store.i18n.t('locations.aiPromptCopiedDesc') || 'Pégalo en tu generador de imágenes IA favorito'
+                    );
+                }).catch(err => {
+                    console.error('Error copiando al portapapeles:', err);
+                    $store.ui.error($store.i18n.t('common.error'), $store.i18n.t('errors.clipboardCopyFailed'));
+                });
+            },
+
+            submitForm(form) {
+                // Obtener contenido de los RichEditors
+                let descriptionEditor = form.querySelector('[data-field=description]')?.__x?.$data;
+                let significanceEditor = form.querySelector('[data-field=significance]')?.__x?.$data;
+                let notesEditor = form.querySelector('[data-field=notes]')?.__x?.$data;
+
+                // Obtener el contenido del editor, preservando el valor existente si el editor no devuelve nada válido
+                let description = descriptionEditor?.getContent() ?? $store.ui.modalData?.description ?? '';
+                let significance = significanceEditor?.getContent() ?? $store.ui.modalData?.significance ?? '';
+                let notes = notesEditor?.getContent() ?? $store.ui.modalData?.notes ?? '';
+
+                let formData = {
+                    name: form.querySelector('[name=name]').value,
+                    type: form.querySelector('[name=type]').value,
+                    image: this.imagePreview,
+                    imageType: this.imageType,
+                    description: description,
+                    significance: significance,
+                    notes: notes
+                };
+
+                if ($store.ui.modalData?.id) {
+                    $store.project.updateLocation($store.ui.modalData.id, formData);
+                    $store.ui.success($store.i18n.t('notifications.success.locationUpdated'), '');
+                } else {
+                    $store.project.addLocation(formData);
+                    $store.ui.success($store.i18n.t('notifications.success.locationCreated'), '');
+                }
+                $store.ui.closeModal();
+                form.reset();
+                lucide.createIcons();
+            }
+        }">
+            <form @submit.prevent="submitForm($el)">
+                <!-- Image Section -->
+                <div class="form-group">
+                    <label x-text="$store.i18n.t('locations.form.image') || 'Imagen'">Imagen</label>
+
+                    <!-- Image Preview -->
+                    <div class="image-preview-container" style="margin-bottom: 12px;">
+                        <div x-show="imagePreview" class="image-preview" style="position: relative; width: 100%; height: 200px; border-radius: 8px; overflow: hidden; background: var(--bg-tertiary);">
+                            <img :src="imagePreview" style="width: 100%; height: 100%; object-fit: cover;">
+                            <button type="button" @click="removeImage()" class="btn-icon" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6);">
+                                <i data-lucide="x" width="16" height="16"></i>
+                            </button>
+                        </div>
+                        <div x-show="!imagePreview" class="empty-image-preview" style="width: 100%; height: 200px; border: 2px dashed var(--border-color); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">
+                            <div style="text-align: center;">
+                                <i data-lucide="image" width="48" height="48" style="opacity: 0.5;"></i>
+                                <p x-text="$store.i18n.t('locations.form.noImage') || 'Sin imagen'">Sin imagen</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Image Upload/URL/AI Tabs -->
+                    <div class="tabs" style="display: flex; gap: 8px; margin-bottom: 12px;">
+                        <button type="button" class="btn-secondary" :class="{ 'btn-primary': imageType === 'upload' }" @click="imageType = 'upload'">
+                            <i data-lucide="upload" width="16" height="16"></i>
+                            <span x-text="$store.i18n.t('locations.form.uploadImage') || 'Subir'">Subir</span>
+                        </button>
+                        <button type="button" class="btn-secondary" :class="{ 'btn-primary': imageType === 'url' }" @click="imageType = 'url'">
+                            <i data-lucide="link" width="16" height="16"></i>
+                            <span x-text="$store.i18n.t('locations.form.imageUrl') || 'URL'">URL</span>
+                        </button>
+                        <button type="button" class="btn-secondary" :class="{ 'btn-primary': imageType === 'ai' }" @click="imageType = 'ai'">
+                            <i data-lucide="sparkles" width="16" height="16"></i>
+                            <span x-text="$store.i18n.t('locations.form.generateAI') || 'Generar con IA'">Generar con IA</span>
+                        </button>
+                        <button type="button" class="btn-secondary" @click="generateAIPrompt($el.closest('form'))" style="margin-left: auto;">
+                            <i data-lucide="copy" width="16" height="16"></i>
+                            <span x-text="$store.i18n.t('locations.copyAIPrompt') || 'Copiar Prompt'">Copiar Prompt</span>
+                        </button>
+                    </div>
+
+                    <!-- Upload Input -->
+                    <div x-show="imageType === 'upload'">
+                        <input type="file" accept="image/*" @change="handleImageUpload($event)" class="file-input">
+                    </div>
+
+                    <!-- URL Input -->
+                    <div x-show="imageType === 'url'">
+                        <input type="url" :value="imagePreview" @input="handleImageUrl($event.target.value)" :placeholder="$store.i18n.t('locations.form.imageUrlPlaceholder') || 'https://...'" class="input">
+                    </div>
+
+                    <!-- AI Generation Panel -->
+                    <div x-show="imageType === 'ai'" style="padding: 16px; background: var(--bg-tertiary); border-radius: 8px;">
+                        <!-- Selector de proveedor -->
+                        <template x-if="availableAIProviders.length > 1">
+                            <div style="margin-bottom: 12px;">
+                                <label style="display: block; margin-bottom: 6px; color: var(--text-secondary); font-size: 13px;" x-text="$store.i18n.t('modals.avatarSelector.aiProvider')"></label>
+                                <select x-model="selectedAIProvider" style="width: 100%; padding: 8px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary);">
+                                    <option :value="null" x-text="$store.i18n.t('modals.avatarSelector.automaticProvider')"></option>
+                                    <template x-for="provider in availableAIProviders" :key="provider.id">
+                                        <option :value="provider.id" x-text="provider.name"></option>
+                                    </template>
+                                </select>
+                            </div>
+                        </template>
+
+                        <!-- Prompt personalizado (opcional) -->
+                        <div style="margin-bottom: 12px;">
+                            <label style="display: block; margin-bottom: 6px; color: var(--text-secondary); font-size: 13px;">
+                                <span x-text="$store.i18n.t('modals.avatarSelector.customPrompt')"></span>
+                                <span style="color: var(--text-tertiary); font-size: 11px;" x-text="$store.i18n.t('modals.avatarSelector.seedHint')"></span>
+                            </label>
+                            <textarea
+                                x-model="aiPrompt"
+                                :placeholder="$store.i18n.t('modals.avatarSelector.promptPlaceholder')"
+                                style="width: 100%; min-height: 60px; padding: 8px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; color: var(--text-primary); resize: vertical; font-family: inherit;">
+                            </textarea>
+                        </div>
+
+                        <!-- Botón de generar -->
+                        <button
+                            type="button"
+                            class="btn-primary"
+                            @click="generateImageWithAI($el.closest('form'))"
+                            :disabled="generatingImage || availableAIProviders.length === 0"
+                            style="width: 100%; padding: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <template x-if="!generatingImage">
+                                <span>
+                                    <i data-lucide="wand-2" width="16" height="16" style="vertical-align: middle;"></i>
+                                    <span x-text="$store.i18n.t('locations.generateImage')"></span>
+                                </span>
+                            </template>
+                            <template x-if="generatingImage">
+                                <span>
+                                    <div class="spinner" style="width: 16px; height: 16px; display: inline-block; vertical-align: middle;"></div>
+                                    <span x-text="$store.i18n.t('common.generating')"></span>
+                                </span>
+                            </template>
+                        </button>
+
+                        <!-- Mensaje si no hay proveedores -->
+                        <template x-if="availableAIProviders.length === 0">
+                            <div style="margin-top: 12px; padding: 10px; background: rgba(255,160,0,0.1); border: 1px solid rgba(255,160,0,0.3); border-radius: 6px; color: var(--text-secondary); font-size: 12px;">
+                                <i data-lucide="alert-circle" width="14" height="14" style="vertical-align: middle;"></i>
+                                <span x-text="$store.i18n.t('errors.noAIProvidersConfiguredDetailed')"></span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <div class="form-divider"></div>
+
+                <!-- Name -->
+                <div class="form-group">
+                    <label x-text="$store.i18n.t('locations.form.name')">Nombre</label>
+                    <input type="text" name="name" required :placeholder="$store.i18n.t('locations.form.namePlaceholder')" :value="$store.ui.modalData?.name || ''">
+                </div>
+
+                <!-- Type -->
+                <div class="form-group">
+                    <label x-text="$store.i18n.t('locations.form.type') || 'Tipo'">Tipo</label>
+                    <input type="text" name="type" :placeholder="$store.i18n.t('locations.form.typePlaceholder') || 'Ciudad, bosque, montaña, edificio...'" :value="$store.ui.modalData?.type || ''">
+                    <p class="hint" x-text="$store.i18n.t('locations.form.typeHint') || 'Tipo de ubicación (ciudad, bosque, montaña, etc.)'"></p>
+                </div>
+
+                <!-- Description Rich Editor -->
+                <div class="form-group" x-data="richEditorComponent({
+                    placeholder: $store.i18n.t('locations.form.descriptionPlaceholder'),
+                    initialContent: $store.ui.modalData?.description || '',
+                    enableMentions: true,
+                    enableCommands: false
+                })" x-init="() => { $el.dataset.field = 'description'; }">
+                    <label x-text="$store.i18n.t('locations.form.description')">Descripción</label>
+                    <div x-ref="editorContainer" class="rich-editor-wrapper"></div>
+                </div>
+
+                <!-- Significance Rich Editor -->
+                <div class="form-group" x-data="richEditorComponent({
+                    placeholder: $store.i18n.t('locations.form.significancePlaceholder') || 'Importancia en la historia...',
+                    initialContent: $store.ui.modalData?.significance || '',
+                    enableMentions: true,
+                    enableCommands: false
+                })" x-init="() => { $el.dataset.field = 'significance'; }">
+                    <label x-text="$store.i18n.t('locations.form.significance') || 'Significancia'">Significancia</label>
+                    <div x-ref="editorContainer" class="rich-editor-wrapper"></div>
+                    <p class="hint" x-text="$store.i18n.t('locations.form.significanceHint') || 'Importancia y relevancia de esta ubicación en la historia'"></p>
+                </div>
+
+                <!-- Notes Rich Editor -->
+                <div class="form-group" x-data="richEditorComponent({
+                    placeholder: $store.i18n.t('locations.form.notesPlaceholder') || 'Notas adicionales...',
+                    initialContent: $store.ui.modalData?.notes || '',
+                    enableMentions: true,
+                    enableCommands: false
+                })" x-init="() => { $el.dataset.field = 'notes'; }">
+                    <label x-text="$store.i18n.t('locations.form.notes') || 'Notas'">Notas</label>
+                    <div x-ref="editorContainer" class="rich-editor-wrapper"></div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" @click="$store.ui.closeModal()" x-text="$store.i18n.t('common.cancel')">Cancelar</button>
+                    <button type="submit" class="btn-primary" x-text="$store.ui.modalData?.id ? $store.i18n.t('common.save') : $store.i18n.t('common.create')">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</template>

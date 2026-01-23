@@ -1,0 +1,50 @@
+<aside class="sidebar" :class="{ 'collapsed': $store.ui.sidebarCollapsed }">
+    <nav class="sidebar-nav">
+        <a href="#" class="nav-item" :class="{ 'active': $store.ui.currentView === 'lore' }" @click.prevent="$store.ui.setView('lore')">
+            <i data-lucide="book-open" width="20" height="20"></i>
+            <span x-text="$store.i18n.t('sidebar.lore')">Lore</span>
+            <span class="badge" x-text="$store.project.loreEntries.length"></span>
+        </a>
+
+        <a href="#" class="nav-item" :class="{ 'active': $store.ui.currentView === 'chapters' }" @click.prevent="$store.ui.setView('chapters')">
+            <i data-lucide="book-open" width="20" height="20"></i>
+            <span x-text="$store.i18n.t('sidebar.chapters')">Capítulos</span>
+            <span class="badge" x-text="$store.project.chapters.length"></span>
+        </a>
+
+        <a href="#" class="nav-item" :class="{ 'active': $store.ui.currentView === 'scenes' }" @click.prevent="$store.ui.setView('scenes')">
+            <i data-lucide="film" width="20" height="20"></i>
+            <span x-text="$store.i18n.t('sidebar.scenes')">Escenas</span>
+            <span class="badge" x-text="$store.project.scenes.length"></span>
+        </a>
+
+        <a href="#" class="nav-item" :class="{ 'active': $store.ui.currentView === 'images' }" @click.prevent="$store.ui.setView('images')">
+            <i data-lucide="image" width="20" height="20"></i>
+            <span x-text="$store.i18n.t('sidebar.images') || 'Imágenes'">Imágenes</span>
+            <span class="badge" x-text="window.imagesGalleryService?.getTotalImagesCount() || 0"></span>
+        </a>
+
+        <div class="nav-divider"></div>
+
+        <a href="#" class="nav-item" :class="{ 'active': $store.ui.currentView === 'versionControl' }" @click.prevent="$store.ui.setView('versionControl')">
+            <i data-lucide="git-branch" width="20" height="20"></i>
+            <span x-text="$store.i18n.t('sidebar.versionControl')">Control de Versiones</span>
+            <span class="badge" x-show="$store.versionControl?.commits?.length > 0" x-text="$store.versionControl?.commits?.length || 0"></span>
+        </a>
+
+        <a href="#" class="nav-item" :class="{ 'active': $store.ui.currentView === 'publishing' }" @click.prevent="$store.ui.setView('publishing')">
+            <i data-lucide="book-marked" width="20" height="20"></i>
+            <span x-text="$store.i18n.t('sidebar.publishing')">Publicación</span>
+        </a>
+
+        <a href="#" class="nav-item" :class="{ 'active': $store.ui.currentView === 'aiAssistant' }" @click.prevent="$store.ui.setView('aiAssistant')">
+            <i data-lucide="sparkles" width="20" height="20"></i>
+            <span x-text="$store.i18n.t('sidebar.aiAssistant')">Asistente IA</span>
+            <span class="status-indicator" :class="{ 'active': $store.ai.isActive }"></span>
+        </a>
+    </nav>
+
+    <button class="sidebar-toggle" @click="$store.ui.toggleSidebar()">
+        <i data-lucide="chevron-left" width="16" height="16"></i>
+    </button>
+</aside>

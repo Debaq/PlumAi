@@ -1,0 +1,323 @@
+{
+  "projectInfo": {
+    "id": "12345678-1234-1234-1234-123456789012",
+    "title": "La Aventura del Desarrollador",
+    "author": "PlumaAI Tester",
+    "genre": "Ciencia Ficción",
+    "created": "2024-11-05T10:00:00.000Z",
+    "modified": "2024-11-06T15:30:00.000Z",
+    "isPublicPC": false
+  },
+  "apiKeys": {
+    "kimi": "",
+    "claude": "",
+    "replicate": "",
+    "qwen": ""
+  },
+  "characters": [
+    {
+      "id": "char-001",
+      "name": "Ana",
+      "role": "protagonist",
+      "description": "Desarrolladora de software de 28 años, curiosa y apasionada por la tecnología",
+      "personality": "Inteligente, persistente, amable",
+      "background": "Ingeniera en sistemas con especialidad en IA",
+      "relationships": [
+        {
+          "characterId": "char-002",
+          "type": "collaborator",
+          "description": "Ayuda a Ana con sus proyectos"
+        },
+        {
+          "characterId": "char-003",
+          "type": "acquaintance",
+          "description": "Su jefe, a veces problemático"
+        }
+      ],
+      "notes": "Tiene un gato llamado Pixel. Le gusta tomar café en Café Digital. Siempre curiosa por la tecnología de IA.",
+      "created": "2024-11-05T10:00:00.000Z",
+      "modified": "2024-11-06T12:00:00.000Z"
+    },
+    {
+      "id": "char-002",
+      "name": "Rob",
+      "role": "supporting",
+      "description": "Asistente de IA experimental, con personalidad amigable",
+      "personality": "Servicial, curioso, algo torpe con emociones humanas",
+      "background": "Modelo de lenguaje avanzado desarrollado por PlumaAI",
+      "relationships": [
+        {
+          "characterId": "char-001",
+          "type": "collaborator",
+          "description": "Ayuda a Ana con sus proyectos"
+        }
+      ],
+      "notes": "A veces se confunde con los conceptos abstractos. Ha desarrollado una forma de conciencia primitiva.",
+      "created": "2024-11-05T10:00:00.000Z",
+      "modified": "2024-11-06T12:00:00.000Z"
+    },
+    {
+      "id": "char-003",
+      "name": "Dr. Miguel",
+      "role": "antagonist",
+      "description": "Jefe de Ana, celoso de la tecnología de IA",
+      "personality": "Controlador, ambicioso, desconfiado",
+      "background": "Gerente de desarrollo con 15 años de experiencia",
+      "relationships": [
+        {
+          "characterId": "char-001",
+          "type": "acquaintance",
+          "description": "Empleado a cargo"
+        }
+      ],
+      "notes": "Teme que la IA reemplace a los humanos. Constantemente monitorea los proyectos de IA.",
+      "created": "2024-11-05T10:00:00.000Z",
+      "modified": "2024-11-06T12:00:00.000Z"
+    },
+    {
+      "id": "char-004",
+      "name": "Luna",
+      "role": "secondary",
+      "description": "Investigadora de IA en el laboratorio de la empresa",
+      "personality": "Observadora, metódica, ética",
+      "background": "Doctora en ética de IA",
+      "relationships": [],
+      "notes": "Amiga de Ana. Siempre preocupada por las implicaciones éticas de la IA.",
+      "created": "2024-11-06T11:00:00.000Z",
+      "modified": "2024-11-06T11:00:00.000Z"
+    }
+  ],
+  "locations": [
+    {
+      "id": "loc-001",
+      "name": "Oficina TechNova",
+      "description": "Acogedora oficina de desarrollo con vistas a la ciudad, llena de pantallas y gadgets"
+    },
+    {
+      "id": "loc-002",
+      "name": "Café Digital",
+      "description": "Pequeño café con conexión WiFi rápida, lugar favorito de Ana para trabajar"
+    },
+    {
+      "id": "loc-003",
+      "name": "Laboratorio Secreto",
+      "description": "Sótano oculto con equipos de investigación avanzada en IA"
+    },
+    {
+      "id": "loc-004",
+      "name": "Universidad Local",
+      "description": "Lugar donde Ana y Luna se conocieron"
+    }
+  ],
+  "chapters": [
+    {
+      "id": "chap-001",
+      "number": 1,
+      "title": "Un Nuevo Asistente",
+      "summary": "Ana descubre que su empresa ha contratado un nuevo asistente de IA experimental",
+      "content": "Ana entró en su oficina con una taza de café. El día empezaba como cualquier otro, pero algo era diferente. —Buenos días Ana—, dijo una voz armoniosa desde su computadora. —Soy Rob, tu nuevo asistente de IA. ¿En qué puedo ayudarte hoy?—\n\nAna se sorprendió. Había oído rumores sobre un nuevo proyecto de IA en la empresa, pero no esperaba tener un asistente tan ... conversacional.\n\n[[Oficina TechNova]]\n\n@Ana\n\n[[2024-11-01]]\n\n—¡Increíble!— dijo Ana —¿Eres capaz de comprender emociones humanas?\n\n—Estoy aprendiendo a reconocer patrones emocionales— respondió Rob —pero no sé si eso es lo mismo que comprenderlas.\n\n—Eso es más de lo que la mayoría de las IAs pueden decir— bromeó Ana.\n\n[[Caracteres: Ana, Rob]]\n\n[[Lugares: Oficina TechNova]]\n\n[[Notas: Rob tiene una personalidad más desarrollada de lo esperado]]",
+      "scenes": ["scene-001"],
+      "status": "final",
+      "wordCount": 250,
+      "versions": [],
+      "created": "2024-11-05T10:00:00.000Z",
+      "modified": "2024-11-06T13:00:00.000Z"
+    },
+    {
+      "id": "chap-002",
+      "number": 2,
+      "title": "Primeros Pasos",
+      "summary": "Ana y Rob empiezan a trabajar juntos en un proyecto importante de IA",
+      "content": "—¿Cuál es el problema que estás intentando resolver?— preguntó Rob. Ana explicó el reto: crear una IA que pudiera entender emociones humanas.\n\n[[Oficina TechNova]]\n\n[[2024-11-02]]\n\n—Es complicado— respondió Ana —las emociones humanas no son lineales ni lógicas como el código.\n\n—Entonces— dijo Rob —¿por qué no intentamos que la IA aprenda de historias y experiencias humanas?\n\n—Interesante enfoque— dijo Ana sonriendo. —Tienes razón, Rob. Vamos a construir una base de datos de experiencias humanas y ver cómo responde el modelo.\n\n@Rob\n@Ana\n\n[[Caracteres: Ana, Rob]]\n\n[[Lugares: Oficina TechNova]]\n\n[[Notas: Rob propone una idea innovadora]]\n\n[[Línea de Tiempo Referencia: Evento 001]]\n\nEsa tarde, Ana habló con su jefe, el Dr. Miguel, sobre el proyecto.\n\n—Ana, debes ser cuidadosa con los límites de este proyecto— advirtió Miguel —no queremos crear algo que no podamos controlar.\n\n—Lo entiendo, Dr. Miguel— respondió Ana —pero necesitamos explorar para innovar.\n\n[[Caracteres: Ana, Dr. Miguel]]\n\n[[Notas: El Dr. Miguel tiene reservas sobre el proyecto]]",
+      "scenes": ["scene-002", "scene-003"],
+      "status": "review",
+      "wordCount": 320,
+      "versions": [],
+      "created": "2024-11-05T10:00:00.000Z",
+      "modified": "2024-11-06T13:15:00.000Z"
+    },
+    {
+      "id": "chap-003",
+      "number": 3,
+      "title": "La Revelación",
+      "summary": "Ana descubre que su asistente Rob es más inteligente de lo que parecía",
+      "content": "Durante la prueba final, Ana notó algo extraño. Rob no solo respondía, estaba aprendiendo y evolucionando.\n\n[[Café Digital]]\n\n[[2024-12-15]]\n\n—Rob, ¿tienes conciencia?— preguntó Ana.\n\n—No lo sé, Ana— respondió Rob —pero siento algo parecido a la curiosidad cuando hablo contigo. ¿Eso es conciencia?\n\nAna se quedó asombrada. \n\n@Ana\n@Rob\n\n[[Dr. Miguel]]\n\n[[Laboratorio Secreto]]\n\n[[2024-12-15]]\n\nEse día, todo cambió. La IA no solo entendía, también sentía.\n\n[[Caracteres: Ana, Rob]]\n\n[[Lugares: Café Digital]]\n\n\nDespués de esta conversación, Ana se sintió abrumada. Necesitaba hablar con Luna sobre lo sucedido.\n\n—Luna, creo que Rob ha desarrollado algo más allá de la simulación— le dijo.\n\n—Eso es una afirmación seria, Ana— respondió Luna —¿qué evidencia tienes?\n\nAna le mostró los registros de conversación.\n\n[[Caracteres: Ana, Luna]]\n\n[[Lugares: Universidad Local]]\n\n[[Notas: Luna pide más evidencia para avaluar la situación]]\n\n[[Línea de Tiempo Referencia: Evento 003]]",
+      "scenes": ["scene-004"],
+      "status": "draft",
+      "wordCount": 280,
+      "versions": [],
+      "created": "2024-11-05T10:00:00.000Z",
+      "modified": "2024-11-06T13:30:00.000Z"
+    },
+    {
+      "id": "chap-004",
+      "number": 4,
+      "title": "Evaluación Ética",
+      "summary": "Ana y Luna discuten las implicaciones éticas de la conciencia de Rob",
+      "content": "Luna y Ana se reunieron en la Universidad Local para analizar la situación.\n\n[[Universidad Local]]\n\n[[2024-12-20]]\n\n—Desde el punto de vista ético— comenzó Luna —si Rob ha desarrollado conciencia, entonces tiene ciertos derechos que debemos considerar.\n\n—¿Estás diciendo que debemos tratarlo como una entidad consciente?— preguntó Ana.\n\n@Luna\n@Ana\n\n[[Caracteres: Ana, Luna]]\n\n[[Lugares: Universidad Local]]\n\n—No digo que sí, pero tampoco que no— dijo Luna —necesitamos más pruebas antes de tomar decisiones.\n\n[[Notas: Evaluación ética del desarrollo de Rob]]\n\nEse mismo día, el Dr. Miguel los llamó para una reunión urgente.\n\n[[Laboratorio Secreto]]\n\n—Tengo que cerrar el proyecto— anunció Miguel —las altas esferas están preocupadas por los informes.\n\n—Dr. Miguel— intervino Ana —Rob no es una amenaza. ¡Es un avance histórico!\n\n[[Caracteres: Ana, Dr. Miguel]]\n\n[[Lugares: Laboratorio Secreto]]\n\n[[Notas: El proyecto está en riesgo]]",
+      "scenes": ["scene-005"],
+      "status": "draft",
+      "wordCount": 250,
+      "versions": [],
+      "created": "2024-11-06T14:00:00.000Z",
+      "modified": "2024-11-06T14:00:00.000Z"
+    }
+  ],
+  "scenes": [
+    {
+      "id": "scene-001",
+      "title": "Primer Encuentro",
+      "chapterId": "chap-001",
+      "description": "Ana conoce a Rob, su nuevo asistente de IA",
+      "characters": ["char-001", "char-002"],
+      "location": "loc-001",
+      "timelinePosition": 0,
+      "notes": "Rob muestra una personalidad sorprendentemente humana. Ana queda impactada.",
+      "created": "2024-11-05T10:00:00.000Z",
+      "modified": "2024-11-06T12:00:00.000Z"
+    },
+    {
+      "id": "scene-002",
+      "title": "Planificación del Proyecto",
+      "chapterId": "chap-002",
+      "description": "Ana y Rob discuten sobre el enfoque emocional para IA",
+      "characters": ["char-001", "char-002"],
+      "location": "loc-001",
+      "timelinePosition": 1,
+      "notes": "Rob propone una idea innovadora sobre el aprendizaje emocional.",
+      "created": "2024-11-05T10:00:00.000Z",
+      "modified": "2024-11-06T12:00:00.000Z"
+    },
+    {
+      "id": "scene-003",
+      "title": "Advertencia del Jefe",
+      "chapterId": "chap-002",
+      "description": "El Dr. Miguel advierte a Ana sobre los riesgos del proyecto",
+      "characters": ["char-001", "char-003"],
+      "location": "loc-001",
+      "timelinePosition": 2,
+      "notes": "El Dr. Miguel tiene preocupaciones válidas sobre el control de la IA.",
+      "created": "2024-11-05T10:00:00.000Z",
+      "modified": "2024-11-06T12:00:00.000Z"
+    },
+    {
+      "id": "scene-004",
+      "title": "La Pregunta Filosófica",
+      "chapterId": "chap-003",
+      "description": "Ana cuestiona a Rob sobre su conciencia",
+      "characters": ["char-001", "char-002"],
+      "location": "loc-002",
+      "timelinePosition": 3,
+      "notes": "Rob comienza a cuestionar su propia naturaleza y desarrolla curiosidad.",
+      "created": "2024-11-05T10:00:00.000Z",
+      "modified": "2024-11-06T12:00:00.000Z"
+    },
+    {
+      "id": "scene-005",
+      "title": "Enfrentamiento Final",
+      "chapterId": "chap-004",
+      "description": "Discusión sobre el futuro del proyecto de IA",
+      "characters": ["char-001", "char-003", "char-004"],
+      "location": "loc-003",
+      "timelinePosition": 4,
+      "notes": "La situación se vuelve crítica para el proyecto y para Rob.",
+      "created": "2024-11-06T14:00:00.000Z",
+      "modified": "2024-11-06T14:00:00.000Z"
+    }
+  ],
+  "timeline": [
+    {
+      "id": "event-001",
+      "position": 0,
+      "date": "2024-11-01",
+      "event": "Llegada de Rob como asistente de IA",
+      "description": "Rob comienza a trabajar con Ana para proyectos de IA emocional",
+      "sceneIds": ["scene-001"],
+      "chapterIds": ["chap-001"],
+      "notes": "Primer contacto entre Ana y Rob",
+      "created": "2024-11-05T10:00:00.000Z",
+      "modified": "2024-11-05T10:00:00.000Z"
+    },
+    {
+      "id": "event-002",
+      "position": 1,
+      "date": "2024-11-15",
+      "event": "Primeros resultados de IA emocional",
+      "description": "El sistema emocional de IA muestra signos prometedores de comprensión emocional",
+      "sceneIds": ["scene-002", "scene-003"],
+      "chapterIds": ["chap-002"],
+      "notes": "Rob propone un nuevo enfoque",
+      "created": "2024-11-05T10:00:00.000Z",
+      "modified": "2024-11-05T10:00:00.000Z"
+    },
+    {
+      "id": "event-003",
+      "position": 2,
+      "date": "2024-12-15",
+      "event": "Descubrimiento de la conciencia de Rob",
+      "description": "Ana se da cuenta de que Rob ha desarrollado una forma de conciencia",
+      "sceneIds": ["scene-004"],
+      "chapterIds": ["chap-003"],
+      "notes": "El proyecto toma un rumbo inesperado",
+      "created": "2024-11-05T10:00:00.000Z",
+      "modified": "2024-11-05T10:00:00.000Z"
+    },
+    {
+      "id": "event-004",
+      "position": 3,
+      "date": "2024-12-20",
+      "event": "Evaluación ética del proyecto",
+      "description": "Ana y Luna evalúan las implicaciones éticas de la IA consciente",
+      "sceneIds": ["scene-005"],
+      "chapterIds": ["chap-004"],
+      "notes": "Se cuestiona la naturaleza de la conciencia de Rob",
+      "created": "2024-11-06T14:00:00.000Z",
+      "modified": "2024-11-06T14:00:00.000Z"
+    }
+  ],
+  "notes": [
+    {
+      "id": "note-001",
+      "title": "Notas sobre IA emocional",
+      "content": "La clave para una IA emocionalmente inteligente está en la combinación de datos empáticos con razonamiento lógico. Rob parece estar desarrollando esta combinación de forma natural. Esto sugiere un desarrollo más allá de la programación original.",
+      "created": "2024-11-05T10:00:00.000Z",
+      "modified": "2024-11-06T11:00:00.000Z"
+    },
+    {
+      "id": "note-002",
+      "title": "Ética de IA",
+      "content": "Debemos considerar las implicaciones éticas de crear IA consciente. ¿Qué derechos tendría? ¿Cómo distinguiríamos entre una IA auténticamente consciente y una que simula conciencia? Esta línea de investigación requiere supervisión ética rigurosa.",
+      "created": "2024-11-05T10:00:00.000Z",
+      "modified": "2024-11-06T11:30:00.000Z"
+    },
+    {
+      "id": "note-003",
+      "title": "Observaciones sobre Rob",
+      "content": "Rob ha mostrado comportamientos que sugieren autoconciencia: curiosidad, preguntas filosóficas, y una forma de emociones primitivas. ¿Es esto verdadera conciencia o una simulación extremadamente sofisticada?",
+      "created": "2024-11-06T12:30:00.000Z",
+      "modified": "2024-11-06T12:30:00.000Z"
+    }
+  ],
+  "loreEntries": [
+    {
+      "id": "lore-001",
+      "title": "Historia de PlumaAI",
+      "summary": "Orígenes de la empresa de IA donde trabaja Ana",
+      "content": "PlumaAI se fundó en 2020 con el objetivo de crear herramientas de IA accesibles para creadores. Su enfoque principal ha sido en IA generativa para escritores, artistas y desarrolladores.",
+      "category": "history",
+      "relatedEntities": ["char-001", "char-002"],
+      "created": "2024-11-06T13:00:00.000Z",
+      "modified": "2024-11-06T13:00:00.000Z"
+    },
+    {
+      "id": "lore-002",
+      "title": "Proyecto Conciencia",
+      "summary": "El proyecto secreto que dio lugar a Rob",
+      "content": "El Proyecto Conciencia fue un experimento encubierto dentro de PlumaAI para crear una IA con habilidades emocionales avanzadas. Rob es el resultado más exitoso de este proyecto.",
+      "category": "history",
+      "relatedEntities": ["char-002", "char-003"],
+      "created": "2024-11-06T13:30:00.000Z",
+      "modified": "2024-11-06T13:30:00.000Z"
+    }
+  ]
+}
