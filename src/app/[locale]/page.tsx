@@ -11,6 +11,7 @@ import { EntityList } from '@/components/world/EntityList';
 import { RelationsDiagram } from '@/components/visualization/RelationsDiagram';
 import { TimelineView } from '@/components/visualization/TimelineView';
 import { StatsDashboard } from '@/components/visualization/StatsDashboard';
+import { LoadingScreen } from '@/components/layout/LoadingScreen';
 
 // Mock data for demonstration if no project is loaded
 import { Project } from '@/types/domain';
@@ -56,7 +57,7 @@ const MOCK_PROJECT: Project = {
 };
 
 export default function Home() {
-  const { activeView, isSidebarOpen } = useUIStore();
+  const { activeView, isSidebarOpen, activeLoreTab } = useUIStore();
   const { activeProject, setActiveProject } = useProjectStore();
 
   // Load mock project for demo purposes if none exists
@@ -71,6 +72,9 @@ export default function Home() {
       case 'editor':
         return <div className="h-full overflow-hidden"><Editor /></div>;
       case 'entities':
+      case 'lore':
+        if (activeLoreTab === 'relations') return <RelationsDiagram />;
+        if (activeLoreTab === 'events') return <TimelineView />;
         return <EntityList />;
       case 'relations':
         return <RelationsDiagram />;
@@ -91,6 +95,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground overflow-hidden">
+      <LoadingScreen />
       <Header />
       <Sidebar />
 
