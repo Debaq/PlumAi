@@ -1,96 +1,137 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useProjectStore } from '@/stores/useProjectStore';
-import { User, MapPin, BookOpen } from 'lucide-react';
+import { useUIStore } from '@/stores/useUIStore';
 import { CharacterCard } from './CharacterCard';
+import { CharacterGridCard } from './CharacterGridCard';
 import { LocationCard } from './LocationCard';
-import { LoreCard } from './LoreCard';
-
-type EntityTab = 'characters' | 'locations' | 'lore';
+import { SceneCard } from './SceneCard';
+import { Button } from '@/components/ui/button';
+import { Plus, Map } from 'lucide-react';
 
 export const EntityList = () => {
   const { activeProject } = useProjectStore();
-  const [activeTab, setActiveTab] = useState<EntityTab>('characters');
+  const { activeLoreTab, openModal, setActiveLoreTab } = useUIStore();
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
+
+  // Sync selectedEntityId when tab changes
+  useEffect(() => {
+    setSelectedEntityId(null);
+  }, [activeLoreTab]);
 
   if (!activeProject) return <div>No project loaded.</div>;
 
-  const renderContent = () => {
-    if (selectedEntityId) {
-      if (activeTab === 'characters') {
-        const char = activeProject.characters.find(c => c.id === selectedEntityId);
-        return char ? <CharacterCard character={char} onBack={() => setSelectedEntityId(null)} /> : <div>Character not found</div>;
-      }
-      if (activeTab === 'locations') {
-        const loc = activeProject.locations.find(l => l.id === selectedEntityId);
-        return loc ? <LocationCard location={loc} onBack={() => setSelectedEntityId(null)} /> : <div>Location not found</div>;
-      }
-      if (activeTab === 'lore') {
-        const item = activeProject.loreItems.find(l => l.id === selectedEntityId);
-        return item ? <LoreCard loreItem={item} onBack={() => setSelectedEntityId(null)} /> : <div>Lore item not found</div>;
-      }
+  const handleAddNew = () => {
+    switch (activeLoreTab) {
+      case 'characters': openModal('editCharacter'); break; // Assuming editCharacter handles new if no data
+      case 'summary': openModal('loreItem'); break;
+      case 'locations': openModal('editLocation'); break;
+      case 'scenes': openModal('newScene'); break;
     }
+  };
 
+  const handleEntityClick = (item: any) => {
+    if (activeLoreTab === 'summary') {
+      openModal('loreItem', item);
+    } else if (activeLoreTab === 'locations') {
+      openModal('editLocation', item);
+    } else {
+      setSelectedEntityId(item.id);
+    }
+  };
+
+  const handleViewMap = () => {
+    setActiveLoreTab('map');
+  };
+
+  const renderContent = () => {
     // List View
     const getList = () => {
-      switch (activeTab) {
+      switch (activeLoreTab) {
         case 'characters': return activeProject.characters;
         case 'locations': return activeProject.locations;
-        case 'lore': return activeProject.loreItems;
+        case 'scenes': return activeProject.scenes || [];
+        case 'summary': return activeProject.loreItems;
         default: return [];
       }
     };
 
+    if (selectedEntityId && activeLoreTab !== 'summary') {
+      if (activeLoreTab === 'characters') {
+        const char = activeProject.characters.find(c => c.id === selectedEntityId);
+        return char ? <CharacterCard character={char} onBack={() => setSelectedEntityId(null)} /> : <div>Character not found</div>;
+      }
+      if (activeLoreTab === 'locations') {
+        const loc = activeProject.locations.find(l => l.id === selectedEntityId);
+        return loc ? <LocationCard location={loc} onBack={() => setSelectedEntityId(null)} /> : <div>Location not found</div>;
+      }
+      if (activeLoreTab === 'scenes') {
+        const scene = (activeProject.scenes || []).find(s => s.id === selectedEntityId);
+        return scene ? <SceneCard scene={scene} onBack={() => setSelectedEntityId(null)} /> : <div>Scene not found</div>;
+      }
+    }
+
     const list = getList();
 
     return (
-      <div className="space-y-4">
-        <h2 className="text-xl font-bold capitalize">{activeTab}</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {list.map((item: any) => (
-            <div
-              key={item.id}
-              onClick={() => setSelectedEntityId(item.id)}
-              className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700"
-            >
-              <h3 className="font-semibold">{item.name || item.title}</h3>
-              {item.role && <p className="text-xs text-gray-500 capitalize">{item.role}</p>}
-              {item.type && <p className="text-xs text-gray-500 capitalize">{item.type}</p>}
-              {item.category && <p className="text-xs text-gray-500 capitalize">{item.category}</p>}
+      <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-bold capitalize">{activeLoreTab === 'summary' ? 'Lore Items' : activeLoreTab}</h2>
+          <div className="flex gap-2">
+             {activeLoreTab === 'locations' && (
+                <Button size="sm" variant="secondary" className="gap-2" onClick={handleViewMap}>
+                  <Map className="w-4 h-4" />
+                  Ver Mapa
+                </Button>
+             )}
+             <Button size="sm" className="gap-2" onClick={handleAddNew}>
+                <Plus className="w-4 h-4" />
+                Añadir {activeLoreTab === 'summary' ? 'Lore' : activeLoreTab.slice(0, -1)}
+             </Button>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {list.map((item: any) => {
+            if (activeLoreTab === 'characters') {
+              return (
+                <CharacterGridCard 
+                  key={item.id} 
+                  character={item} 
+                  onClick={() => handleEntityClick(item)} 
+                />
+              );
+            }
+            return (
+              <div
+                key={item.id}
+                onClick={() => handleEntityClick(item)}
+                className="group p-4 bg-card border border-border rounded-lg shadow-sm cursor-pointer hover:border-primary/50 hover:shadow-md transition-all"
+              >
+                <h3 className="font-bold group-hover:text-primary transition-colors">{item.name || item.title}</h3>
+                {item.role && <p className="text-xs text-muted-foreground capitalize mt-1 italic">{item.role}</p>}
+                {item.type && <p className="text-xs text-muted-foreground capitalize mt-1">{item.type}</p>}
+                {item.category && (
+                  <div className="mt-3">
+                    <span className="text-[10px] bg-accent px-2 py-0.5 rounded-full text-muted-foreground font-medium uppercase tracking-tighter">
+                      {item.category}
+                    </span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          {list.length === 0 && (
+            <div className="col-span-full py-12 text-center border-2 border-dashed border-border rounded-xl">
+               <p className="text-muted-foreground">No {activeLoreTab} found in this project.</p>
             </div>
-          ))}
-          {list.length === 0 && <p className="text-gray-500">No items found.</p>}
+          )}
         </div>
       </div>
     );
   };
 
   return (
-    <div className="p-6 h-full overflow-y-auto">
-      {!selectedEntityId && (
-        <div className="flex space-x-4 mb-6 border-b border-gray-200 dark:border-gray-700 pb-2">
-          <button
-            onClick={() => setActiveTab('characters')}
-            className={`flex items-center space-x-2 px-3 py-2 rounded-md ${activeTab === 'characters' ? 'bg-black text-white dark:bg-white dark:text-black' : 'text-gray-600 dark:text-gray-400'}`}
-          >
-            <User className="w-4 h-4" />
-            <span>Characters</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('locations')}
-            className={`flex items-center space-x-2 px-3 py-2 rounded-md ${activeTab === 'locations' ? 'bg-black text-white dark:bg-white dark:text-black' : 'text-gray-600 dark:text-gray-400'}`}
-          >
-            <MapPin className="w-4 h-4" />
-            <span>Locations</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('lore')}
-            className={`flex items-center space-x-2 px-3 py-2 rounded-md ${activeTab === 'lore' ? 'bg-black text-white dark:bg-white dark:text-black' : 'text-gray-600 dark:text-gray-400'}`}
-          >
-            <BookOpen className="w-4 h-4" />
-            <span>Lore</span>
-          </button>
-        </div>
-      )}
+    <div className="p-6 flex-1 overflow-y-auto">
       {renderContent()}
     </div>
   );

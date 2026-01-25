@@ -1,17 +1,19 @@
-'use client';
+
 
 import { useState, useRef, useEffect } from 'react';
 import { useAgenticChat } from '@/hooks/useAgenticChat';
-import { Send, X, MessageSquare, Loader2, Settings } from 'lucide-react';
-import { useSettingsStore } from '@/stores/useSettingsStore';
+import { Send, X, Sparkles, Loader2, Settings, Trash2 } from 'lucide-react';
+import { useUIStore } from '@/stores/useUIStore';
+import { useProjectStore } from '@/stores/useProjectStore';
 
 export function AIChat() {
   const [isOpen, setIsOpen] = useState(false);
-  const [view, setView] = useState<'chat' | 'settings'>('chat');
-  const { messages, sendMessage, isLoading } = useAgenticChat();
+  const { messages, sendMessage, isLoading, clearMessages } = useAgenticChat();
   const [input, setInput] = useState('');
+  const [selectedCharacterId, setSelectedCharacterId] = useState<string>('assistant');
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { activeProvider, setActiveProvider, apiKeys, setApiKey } = useSettingsStore();
+  const { openModal } = useUIStore();
+  const { activeProject } = useProjectStore();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -22,7 +24,12 @@ export function AIChat() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
-    sendMessage(input);
+    
+    if (selectedCharacterId === 'assistant') {
+        sendMessage(input);
+    } else {
+        sendMessage(input, 'character_chat', undefined, undefined, selectedCharacterId);
+    }
     setInput('');
   };
 
@@ -30,121 +37,108 @@ export function AIChat() {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 h-12 w-12 bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center hover:scale-105 transition-transform z-50"
+        className="fixed bottom-10 right-4 h-12 w-12 bg-primary text-primary-foreground rounded-full shadow-lg flex items-center justify-center hover:scale-105 transition-transform z-50"
       >
-        <MessageSquare className="h-6 w-6" />
+        <Sparkles className="h-6 w-6" />
       </button>
     );
   }
 
   return (
-    <div className="fixed bottom-4 right-4 w-96 h-[500px] bg-white border rounded-lg shadow-xl flex flex-col z-50 overflow-hidden dark:bg-gray-900 dark:border-gray-700">
+    <div className="fixed bottom-10 right-4 w-96 h-[500px] bg-card border border-border rounded-xl shadow-2xl flex flex-col z-50 overflow-hidden text-card-foreground">
       {/* Header */}
-      <div className="p-3 border-b flex items-center justify-between bg-gray-50 dark:bg-gray-800">
-        <div className="flex items-center gap-2">
-           <span className="font-semibold text-sm">AI Assistant</span>
+      <div className="p-3 border-b border-border flex items-center justify-between bg-muted/40 gap-2">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+           <select 
+             className="h-8 text-xs bg-transparent border border-border rounded px-2 font-bold max-w-[150px] truncate outline-none focus:ring-1 focus:ring-primary text-foreground"
+             value={selectedCharacterId}
+             onChange={(e) => setSelectedCharacterId(e.target.value)}
+           >
+             <option value="assistant" className="bg-popover text-popover-foreground">🤖 AI Assistant</option>
+             {activeProject?.characters.map(c => (
+               <option key={c.id} value={c.id} className="bg-popover text-popover-foreground">👤 {c.name}</option>
+             ))}
+           </select>
         </div>
-        <div className="flex items-center gap-1">
-            <button
-                onClick={() => setView(view === 'chat' ? 'settings' : 'chat')}
-                className="p-1 hover:bg-gray-200 rounded dark:hover:bg-gray-700"
-                title="Settings"
+        <div className="flex items-center gap-1 shrink-0">
+            <button 
+                onClick={() => { if(confirm('Clear history?')) clearMessages(); }} 
+                className="p-1.5 hover:bg-destructive/10 hover:text-destructive rounded-md transition-colors"
+                title="Clear History"
             >
-                {view === 'chat' ? <Settings className="h-4 w-4" /> : <MessageSquare className="h-4 w-4" />}
+                <Trash2 className="h-4 w-4" />
             </button>
-            <button onClick={() => setIsOpen(false)} className="p-1 hover:bg-gray-200 rounded dark:hover:bg-gray-700">
+            <button
+                onClick={() => openModal('settings')}
+                className="p-1.5 hover:bg-accent hover:text-accent-foreground rounded-md transition-colors"
+                title="AI Settings"
+            >
+                <Settings className="h-4 w-4" />
+            </button>
+            <button onClick={() => setIsOpen(false)} className="p-1.5 hover:bg-accent hover:text-accent-foreground rounded-md transition-colors" title="Close Chat">
                 <X className="h-4 w-4" />
             </button>
         </div>
       </div>
 
-      {view === 'settings' ? (
-        <div className="p-4 space-y-4">
-            <h3 className="font-medium text-sm">AI Settings</h3>
-            <div>
-                <label className="block text-xs font-medium mb-1">Provider</label>
-                <select
-                    value={activeProvider}
-                    onChange={(e) => setActiveProvider(e.target.value as any)}
-                    className="w-full text-sm border rounded p-2 dark:bg-gray-800 dark:border-gray-700"
-                >
-                    <option value="google">Google Gemini</option>
-                    <option value="openai">OpenAI</option>
-                    <option value="anthropic">Anthropic</option>
-                    <option value="ollama">Ollama (Local)</option>
-                </select>
-            </div>
-            {activeProvider !== 'ollama' && (
-                <div>
-                    <label className="block text-xs font-medium mb-1">API Key for {activeProvider}</label>
-                    <input
-                        type="password"
-                        value={apiKeys[activeProvider] || ''}
-                        onChange={(e) => setApiKey(activeProvider, e.target.value)}
-                        className="w-full text-sm border rounded p-2 dark:bg-gray-800 dark:border-gray-700"
-                        placeholder={`Enter ${activeProvider} key`}
-                    />
-                </div>
-            )}
-            <div className="pt-4 text-xs text-gray-500">
-                Your API keys are stored locally in your browser.
-            </div>
-        </div>
-      ) : (
-        <>
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={scrollRef}>
-                {messages.length === 0 && (
-                <div className="text-center text-gray-500 text-sm mt-10">
-                    How can I help you with your story today?
-                </div>
-                )}
-                {messages.map((m, i) => (
-                <div
-                    key={i}
-                    className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                    <div
-                    className={`max-w-[80%] rounded-lg p-3 text-sm ${
-                        m.role === 'user'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100'
-                    }`}
-                    >
-                    {m.role === 'system' ? <span className="text-red-500">{m.content}</span> : m.content}
-                    </div>
-                </div>
-                ))}
-                {isLoading && (
-                    <div className="flex justify-start">
-                        <div className="bg-gray-100 rounded-lg p-3 dark:bg-gray-800">
-                            <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
-                        </div>
-                    </div>
-                )}
-            </div>
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-background/50" ref={scrollRef}>
+          {messages.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-6 opacity-50">
+              <Sparkles size={48} className="mb-4 opacity-20" />
+              <p className="text-sm font-medium">
+                {selectedCharacterId === 'assistant' 
+                  ? "How can I help you with your story today?" 
+                  : "Ask me anything. I'm in character."}
+              </p>
+          </div>
+          )}
+          {messages.map((m, i) => (
+          <div
+              key={i}
+              className={`flex w-full ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+          >
+              <div
+              className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
+                  m.role === 'user'
+                  ? 'bg-primary text-primary-foreground rounded-br-none'
+                  : 'bg-muted border border-border text-foreground rounded-bl-none'
+              }`}
+              >
+              {m.role === 'system' ? <span className="text-destructive font-bold text-xs uppercase block mb-1">System Error</span> : null}
+              {m.content}
+              </div>
+          </div>
+          ))}
+          {isLoading && (
+              <div className="flex justify-start w-full animate-pulse">
+                  <div className="bg-muted border border-border rounded-2xl rounded-bl-none px-4 py-3 shadow-sm flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">Thinking...</span>
+                  </div>
+              </div>
+          )}
+      </div>
 
-            {/* Input */}
-            <form onSubmit={handleSubmit} className="p-3 border-t bg-white dark:bg-gray-900">
-                <div className="flex items-center gap-2">
-                <input
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder="Type a message..."
-                    className="flex-1 text-sm border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700"
-                    disabled={isLoading}
-                />
-                <button
-                    type="submit"
-                    disabled={isLoading || !input.trim()}
-                    className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                >
-                    <Send className="h-4 w-4" />
-                </button>
-                </div>
-            </form>
-        </>
-      )}
+      {/* Input */}
+      <form onSubmit={handleSubmit} className="p-3 border-t border-border bg-card">
+          <div className="flex items-center gap-2">
+          <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={selectedCharacterId === 'assistant' ? "Type a message..." : "Talk to character..."}
+              className="flex-1 text-sm bg-background border border-input rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder:text-muted-foreground"
+              disabled={isLoading}
+          />
+          <button
+              type="submit"
+              disabled={isLoading || !input.trim()}
+              className="p-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 transition-colors"
+          >
+              <Send className="h-4 w-4" />
+          </button>
+          </div>
+      </form>
     </div>
   );
 }

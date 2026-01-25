@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useUIStore } from '@/stores/useUIStore';
+import { useSettingsStore } from '@/stores/useSettingsStore';
 import {
   PenLine,
   Settings,
@@ -20,14 +21,12 @@ import {
   Maximize2,
   ArrowLeft
 } from 'lucide-react';
-import { PublishingEngine } from '@/lib/publishing/PublishingEngine';
 import { LegacyImporter } from '@/lib/importers/LegacyImporter';
 
 export const Header = () => {
   const { activeProject, setActiveProject } = useProjectStore();
+  const settings = useSettingsStore();
   const {
-    theme,
-    setTheme,
     activeView,
     setActiveView,
     activeLoreTab,
@@ -35,7 +34,8 @@ export const Header = () => {
     editorSaveStatus,
     editorZenMode,
     toggleEditorZenMode,
-    currentEditingChapterId
+    currentEditingChapterId,
+    openModal
   } = useUIStore();
 
   const [isThemeOpen, setIsThemeOpen] = useState(false);
@@ -57,10 +57,27 @@ export const Header = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleExport = (type: 'pdf' | 'docx') => {
+  const handleExport = async (type: 'pdf' | 'docx') => {
       if (!activeProject) return;
-      if (type === 'pdf') PublishingEngine.exportToPdf(activeProject);
-      if (type === 'docx') PublishingEngine.exportToDocx(activeProject);
+      const { PublishingEngine } = await import('@/lib/publishing/PublishingEngine');
+      
+      const defaultOptions: any = {
+        title: activeProject.title,
+        author: activeProject.author || 'Author',
+        year: new Date().getFullYear().toString(),
+        bookSize: 'kdp6x9',
+        fontSize: '11',
+        lineHeight: 1.3,
+        paragraphIndent: 7.62,
+        selectedChapters: activeProject.chapters.map(c => c.id),
+        includePageNumbers: true,
+        includeToC: true,
+        includeHeaders: true,
+        contactInfo: { website: '', social: '', newsletter: '' }
+      };
+
+      if (type === 'pdf') PublishingEngine.exportToPdf(activeProject, defaultOptions);
+      if (type === 'docx') PublishingEngine.exportToDocx(activeProject, defaultOptions);
       setIsMoreOpen(false);
   };
 
@@ -85,16 +102,16 @@ export const Header = () => {
   useEffect(() => {
     const root = document.documentElement;
     root.classList.remove('light', 'dark', 'dracula');
-    root.classList.add(theme);
-  }, [theme]);
+    root.classList.add(settings.theme);
+  }, [settings.theme]);
 
   return (
     <header className="h-[48px] bg-card border-b border-border flex items-center justify-between px-4 shrink-0 z-50 fixed top-0 left-0 right-0">
       {/* Left: Logo & Project Info */}
       <div className="flex items-center gap-4 shrink-0">
         <div className="flex items-center gap-2 text-primary font-semibold text-sm">
-          <PenLine size={20} className="text-primary" />
-          <span>PlumaAI</span>
+          <img src="/img/icon.png" alt="Logo" className="w-6 h-6 object-contain" />
+          <span>{activeProject?.isRpgModeEnabled ? 'PlumaAI Worldbuilder' : 'PlumaAI'}</span>
         </div>
 
         {activeProject && (
@@ -148,6 +165,16 @@ export const Header = () => {
               <MapPin size={12} />
               <span>Locations</span>
             </button>
+            <button
+              onClick={() => setActiveLoreTab('scenes')}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-sm text-xs font-medium transition-colors ${activeLoreTab === 'scenes' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              <Users size={12} />
+              <span>Scenes</span>
+              {activeProject?.scenes && activeProject.scenes.length > 0 && (
+                <span className="bg-primary/20 text-primary px-1 rounded-full text-[10px]">{activeProject.scenes.length}</span>
+              )}
+            </button>
           </div>
         )}
 
@@ -163,7 +190,7 @@ export const Header = () => {
             </div>
 
             <div className="flex items-center gap-2">
-               <button className="p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground transition-colors" title="Chapter Settings">
+               <button onClick={() => openModal('settings')} className="p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground transition-colors" title="Chapter Settings">
                  <Settings size={16} />
                </button>
 
@@ -210,20 +237,20 @@ export const Header = () => {
              </button>
              {isThemeOpen && (
                  <div className="absolute right-0 top-full mt-2 w-48 bg-popover border border-border rounded-md shadow-lg py-1 z-50">
-                     <button onClick={() => { setTheme('dark'); setIsThemeOpen(false); }} className="flex items-center w-full px-4 py-2 text-sm hover:bg-accent gap-2 text-popover-foreground">
+                     <button onClick={() => { settings.setTheme('dark'); setIsThemeOpen(false); }} className="flex items-center w-full px-4 py-2 text-sm hover:bg-accent gap-2 text-popover-foreground">
                          <div className="flex gap-1"><div className="w-3 h-3 bg-[#1e1e1e] rounded-[1px]"></div><div className="w-3 h-3 bg-[#007acc] rounded-[1px]"></div></div>
                          <span>Dark</span>
-                         {theme === 'dark' && <Check size={14} className="ml-auto" />}
+                         {settings.theme === 'dark' && <Check size={14} className="ml-auto" />}
                      </button>
-                     <button onClick={() => { setTheme('dracula'); setIsThemeOpen(false); }} className="flex items-center w-full px-4 py-2 text-sm hover:bg-accent gap-2 text-popover-foreground">
+                     <button onClick={() => { settings.setTheme('dracula'); setIsThemeOpen(false); }} className="flex items-center w-full px-4 py-2 text-sm hover:bg-accent gap-2 text-popover-foreground">
                          <div className="flex gap-1"><div className="w-3 h-3 bg-[#282a36] rounded-[1px]"></div><div className="w-3 h-3 bg-[#bd93f9] rounded-[1px]"></div></div>
                          <span>Dracula</span>
-                         {theme === 'dracula' && <Check size={14} className="ml-auto" />}
+                         {settings.theme === 'dracula' && <Check size={14} className="ml-auto" />}
                      </button>
-                     <button onClick={() => { setTheme('light'); setIsThemeOpen(false); }} className="flex items-center w-full px-4 py-2 text-sm hover:bg-accent gap-2 text-popover-foreground">
+                     <button onClick={() => { settings.setTheme('light'); setIsThemeOpen(false); }} className="flex items-center w-full px-4 py-2 text-sm hover:bg-accent gap-2 text-popover-foreground">
                          <div className="flex gap-1"><div className="w-3 h-3 bg-[#faf8f3] rounded-[1px] border border-gray-300"></div><div className="w-3 h-3 bg-[#a89bd5] rounded-[1px]"></div></div>
                          <span>Light</span>
-                         {theme === 'light' && <Check size={14} className="ml-auto" />}
+                         {settings.theme === 'light' && <Check size={14} className="ml-auto" />}
                      </button>
                  </div>
              )}
@@ -240,12 +267,13 @@ export const Header = () => {
              </button>
              {isLangOpen && (
                  <div className="absolute right-0 top-full mt-2 w-48 bg-popover border border-border rounded-md shadow-lg py-1 z-50">
-                     <button className="flex items-center w-full px-4 py-2 text-sm hover:bg-accent gap-2 text-popover-foreground">
+                     <button onClick={() => { settings.setLanguage('en'); setIsLangOpen(false); }} className="flex items-center w-full px-4 py-2 text-sm hover:bg-accent gap-2 text-popover-foreground">
                          <span>🇬🇧 English</span>
-                         <Check size={14} className="ml-auto" />
+                         {settings.language === 'en' && <Check size={14} className="ml-auto" />}
                      </button>
-                     <button className="flex items-center w-full px-4 py-2 text-sm hover:bg-accent gap-2 text-popover-foreground opacity-50 cursor-not-allowed">
-                         <span>🇪🇸 Español (Coming Soon)</span>
+                     <button onClick={() => { settings.setLanguage('es'); setIsLangOpen(false); }} className="flex items-center w-full px-4 py-2 text-sm hover:bg-accent gap-2 text-popover-foreground">
+                         <span>🇪🇸 Español</span>
+                         {settings.language === 'es' && <Check size={14} className="ml-auto" />}
                      </button>
                  </div>
              )}
@@ -253,6 +281,7 @@ export const Header = () => {
 
         {/* Settings Button */}
         <button
+          onClick={() => openModal('settings')}
           className="w-8 h-8 flex items-center justify-center rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
           title="Settings"
         >

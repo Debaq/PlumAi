@@ -1,4 +1,4 @@
-'use client';
+
 
 import { Editor } from '@tiptap/react';
 import { Bold, Italic, Strikethrough, Heading1, Heading2, List, ListOrdered } from 'lucide-react';

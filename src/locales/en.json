@@ -1,0 +1,1156 @@
+{
+  "ai": {
+    "title": "AI Assistant",
+    "subtitle": "Work with artificial intelligence",
+    "status": {
+      "active": "AI Active",
+      "inactive": "AI Inactive",
+      "processing": "Processing..."
+    },
+    "modes": {
+      "write": "AI Writes",
+      "assist": "AI Assists"
+    },
+    "assistantModes": {
+      "continue": "Continue writing",
+      "suggest": "Suggest ideas",
+      "analyze": "Analyze text",
+      "improve": "Improve passage",
+      "dialogue": "Generate dialogue",
+      "worldbuild": "Expand worldbuilding",
+      "characterize": "Develop character"
+    },
+    "prompt": {
+      "label": "Instruction for AI",
+      "placeholder": "Tell the AI what you want it to do...",
+      "examples": {
+        "write": "Example: Write a chapter where {character} discovers a secret",
+        "assist": "Example: Suggest improvements for this paragraph"
+      }
+    },
+    "actions": {
+      "generate": "Generate",
+      "apply": "Apply Changes",
+      "reject": "Reject",
+      "retry": "Retry"
+    },
+    "history": {
+      "title": "History",
+      "empty": "No interactions yet",
+      "user": "You",
+      "assistant": "AI"
+    },
+    "settings": {
+      "title": "AI Configuration",
+      "apiKeys": "API Keys",
+      "worldbuilder": {
+        "title": "Worldbuilder Mode",
+        "enable": "Enable Worldbuilder Mode",
+        "description": "Enables dice tools, character attributes and worldbuilding tools.",
+        "stats": "Worldbuilder Stats"
+      },
+      "model": "Model",
+      "temperature": "Temperature",
+      "maxTokens": "Max Tokens",
+      "noApiKey": "No API key configured",
+      "configure": "Configure"
+    },
+    "noProvidersConfigured": "No providers with API key configured. Go to AI Settings to add one.",
+    "projectContext": "Project Context",
+    "project": "Project:",
+    "characters": "Characters:",
+    "chapters": "Chapters:",
+    "inputPlaceholder": "Type your query here... (e.g., 'Continue the current chapter', 'Give me ideas for the next scene', 'Analyze this dialogue')",
+    "configRequired": "Configuration required: Please configure an API key in Settings → AI Configuration to use the assistant.",
+    "confirmClearChat": "Are you sure you want to clear the chat? This action cannot be undone.",
+    "openChapterFirst": "⚠️ Please open a chapter first",
+    "textInserted": "✅ Text inserted into current chapter",
+    "serviceUnavailable": "❌ The AI service is unavailable"
+  },
+  "avatars": {
+    "selectAvatar": "Select Avatar",
+    "preview": "Preview",
+    "upload": "Upload Image",
+    "select": "Select Avatar",
+    "change": "Change Avatar",
+    "seedPlaceholder": "Name to generate",
+    "hint": "Avatars are generated using your name as seed. Change the preview name to see different variations.",
+    "categories": {
+      "human": "Humans",
+      "fantasy": "Fantasy",
+      "pixel": "Pixel Art",
+      "simple": "Simple"
+    },
+    "uploadHint": "Supported formats: JPG, PNG, GIF, SVG, WebP (max. 5MB)",
+    "errorInvalidType": "Invalid file type",
+    "errorTooLarge": "File is too large"
+  },
+  "chapters": {
+    "title": "Chapters",
+    "subtitle": "Write and organize your chapters",
+    "new": "New Chapter",
+    "edit": "Edit Chapter",
+    "empty": "No chapters created",
+    "emptyHint": "Create your first chapter to start writing",
+    "chapter": "Chapter",
+    "chapterNumber": "Chapter",
+    "defaultName": "chapter",
+    "imageGenerated": "Image generated",
+    "form": {
+      "image": "Chapter image (optional)",
+      "number": "Number",
+      "title": "Title",
+      "titlePlaceholder": "Chapter title",
+      "summary": "Summary",
+      "summaryPlaceholder": "Brief description of what this chapter is about",
+      "summaryHint": "This summary will serve as context for the AI",
+      "content": "Content",
+      "contentHint": "Write the chapter content here. Use / for special commands (@character, /scene, /location, /time)",
+      "status": "Status",
+      "statuses": {
+        "draft": "Draft",
+        "review": "In Review",
+        "final": "Final"
+      }
+    },
+    "stats": {
+      "words": "{count} words",
+      "scenes": "{count} scenes",
+      "modified": "Modified: {date}"
+    },
+    "openEditor": "Open in Editor",
+    "delete": {
+      "title": "Delete Chapter",
+      "message": "Are you sure you want to delete Chapter {number}?",
+      "warning": "This action cannot be undone"
+    }
+  },
+  "characters": {
+    "title": "Characters",
+    "subtitle": "Manage your novel characters",
+    "new": "New Character",
+    "edit": "Edit Character",
+    "empty": "No characters created",
+    "emptyHint": "Create your first character to get started",
+    "unknownCharacter": "Unknown character",
+    "defaultName": "Character",
+    "mainCharacter": "Main Character",
+    "otherCharacter": "Other Character",
+    "form": {
+      "avatar": "Avatar",
+      "name": "Name",
+      "namePlaceholder": "E.g: John Doe",
+      "role": "Role",
+      "rolePlaceholder": "Select a role",
+      "roles": {
+        "protagonist": "Protagonist",
+        "antagonist": "Antagonist",
+        "secondary": "Secondary",
+        "supporting": "Supporting"
+      },
+      "description": "Physical Description",
+      "descriptionPlaceholder": "Describe the character's physical appearance",
+      "personality": "Personality",
+      "personalityPlaceholder": "Describe the character's personality",
+      "background": "Background Story",
+      "backgroundPlaceholder": "Tell the character's story",
+      "notes": "Additional Notes",
+      "notesPlaceholder": "Other notes about the character",
+      "relationships": "Relationships",
+      "relationTypes": {
+        "friend": "Friend",
+        "family": "Family",
+        "love": "Romantic",
+        "enemy": "Enemy",
+        "mentor": "Mentor",
+        "acquaintance": "Acquaintance",
+        "colleague": "Colleague",
+        "collaborator": "Collaborator",
+        "ally": "Ally",
+        "rival": "Rival",
+        "boss": "Boss",
+        "subordinate": "Subordinate",
+        "teacher": "Teacher",
+        "student": "Student",
+        "neighbor": "Neighbor",
+        "partner": "Partner",
+        "guardian": "Guardian",
+        "ward": "Ward",
+        "hero": "Hero",
+        "villain": "Villain",
+        "sidekick": "Sidekick",
+        "archenemy": "Archenemy",
+        "businessPartner": "Business Partner",
+        "ex": "Ex",
+        "crush": "Crush",
+        "rivalLove": "Rival Love"
+      },
+      "relationshipsHint": "Click the plus sign to add a relationship with another character",
+      "relationGroups": {
+        "fiction": "Fiction Relationships"
+      }
+    },
+    "delete": {
+      "title": "Delete Character",
+      "message": "Are you sure you want to delete {name}?",
+      "warning": "This action cannot be undone"
+    }
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "close": "Close",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "export": "Export",
+    "import": "Import",
+    "loading": {
+      "messages": {
+        "creative": "Loading your creative space...",
+        "stories": "Preparing your stories...",
+        "pen": "Sharpening the quill...",
+        "muses": "Invoking the muses...",
+        "organizing": "Organizing your characters...",
+        "ai": "Setting up AI...",
+        "inspiration": "Awakening inspiration...",
+        "stage": "Preparing the stage...",
+        "worlds": "Loading imaginary worlds...",
+        "ready": "Ready to write great stories..."
+      }
+    },
+    "noResults": "No results",
+    "confirm": "Confirm",
+    "confirmDelete": "Are you sure you want to delete this?",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "yes": "Yes",
+    "no": "No",
+    "provider": "Provider",
+    "optional": "Optional",
+    "required": "Required",
+    "viewAll": "View All",
+    "view": "View",
+    "select": "Select",
+    "remove": "Remove",
+    "title": "Title:",
+    "author": "Author:",
+    "change": "Change",
+    "saveChanges": "Save Changes",
+    "noDescription": "No description",
+    "dateUnknown": "Date unknown",
+    "untitled": "Untitled",
+    "words": "words",
+    "list": "List",
+    "automatic": "Automatic"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Overview of your project",
+    "stats": {
+      "words": "Words",
+      "chapters": "Chapters",
+      "characters": "Characters",
+      "scenes": "Scenes"
+    },
+    "recentActivity": {
+      "title": "Recent Activity",
+      "empty": "No recent activity",
+      "hint": "Start by creating characters, scenes or chapters"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "newChapter": "New Chapter",
+      "newCharacter": "New Character",
+      "newScene": "New Scene",
+      "newLocation": "New Location",
+      "newLore": "New Lore Entry",
+      "openEditor": "Open Editor"
+    }
+  },
+  "editor": {
+    "title": "Editor",
+    "toolbar": {
+      "bold": "Bold",
+      "italic": "Italic",
+      "underline": "Underline",
+      "heading": "Heading",
+      "bulletList": "Bullet List",
+      "numberedList": "Numbered List",
+      "quote": "Quote",
+      "undo": "Undo",
+      "redo": "Redo"
+    },
+    "wordCount": "{count} words",
+    "saving": "Saving...",
+    "saved": "Saved",
+    "zenMode": "Zen mode",
+    "exitZenMode": "Exit zen mode",
+    "placeholder": "Start writing your story...",
+    "unsaved": "Unsaved",
+    "confirmLeaveUnsaved": "You have unsaved changes. Are you sure you want to leave?"
+  },
+  "header": {
+    "title": "PlumaAI",
+    "subtitle": "AI-Powered Novel Editor",
+    "newProject": "New Project",
+    "loadProject": "Load Project",
+    "saveProject": "Save Project",
+    "settings": "Settings",
+    "help": "Help",
+    "changeLanguage": "Change language"
+  },
+  "loading": {
+    "messages": {
+      "creative": "Loading your creative space...",
+      "stories": "Preparing your stories...",
+      "pen": "Tuning the pen...",
+      "muses": "Invoking the muses...",
+      "organizing": "Organizing your characters...",
+      "ai": "Setting up AI...",
+      "inspiration": "Awakening inspiration...",
+      "stage": "Preparing the stage...",
+      "worlds": "Loading imaginary worlds...",
+      "ready": "Ready to write great stories..."
+    }
+  },
+  "locations": {
+    "title": "Locations",
+    "subtitle": "Manage your novel locations",
+    "new": "New Location",
+    "edit": "Edit Location",
+    "empty": "No locations created",
+    "emptyHint": "Create your first location",
+    "copyAIPrompt": "Copy AI Prompt",
+    "aiPromptCopied": "Prompt copied to clipboard",
+    "aiPromptCopiedDesc": "Now you can paste it into your favorite AI image generator (DALL-E, Midjourney, Stable Diffusion, etc.)",
+    "imageGenerated": "Image generated",
+    "imageGeneratedSuccessfully": "Image generated successfully",
+    "generateImage": "Generate Image",
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "E.g: Central Café",
+      "type": "Type",
+      "typePlaceholder": "City, forest, mountain, building...",
+      "typeHint": "Type of location (city, forest, mountain, etc.)",
+      "image": "Image",
+      "noImage": "No image",
+      "uploadImage": "Upload",
+      "imageUrl": "URL",
+      "imageUrlPlaceholder": "https://...",
+      "description": "Description",
+      "descriptionPlaceholder": "Describe this place",
+      "significance": "Significance",
+      "significancePlaceholder": "Importance in the story...",
+      "significanceHint": "Importance and relevance of this location in the story",
+      "notes": "Notes",
+      "notesPlaceholder": "Additional notes..."
+    }
+  },
+  "lore": {
+    "title": "Lore",
+    "subtitle": "World knowledge of the story",
+    "new": "New Lore Entry",
+    "edit": "Edit Lore Entry",
+    "empty": "No lore entries",
+    "emptyHint": "Create lore entries to build your story world",
+    "form": {
+      "title": "Title",
+      "titlePlaceholder": "E.g: History of the Northern Kingdom",
+      "summary": "Summary",
+      "summaryPlaceholder": "Brief description of the lore element",
+      "content": "Content",
+      "contentPlaceholder": "Complete details of the lore element...",
+      "category": "Category",
+      "categoryPlaceholder": "Select a category",
+      "categories": {
+        "general": "General",
+        "world": "World",
+        "history": "History",
+        "magic": "Magic",
+        "culture": "Culture",
+        "religion": "Religion",
+        "organization": "Organization",
+        "race": "Race",
+        "location": "Location",
+        "item": "Item",
+        "creature": "Creature"
+      },
+      "relatedEntities": "Related Entities",
+      "relatedEntitiesPlaceholder": "Select characters, locations or other related elements"
+    }
+  },
+  "modals": {
+    "welcome": {
+      "title": "Welcome to PlumaAI!",
+      "subtitle": "AI-powered novel editor",
+      "description": "Get started by creating a new project or loading an existing one",
+      "newProject": "Create New Project",
+      "loadProject": "Load Existing Project",
+      "continueProject": "Continue with \"{projectName}\"",
+      "justLook": "Just Look Around",
+      "getStarted": "Get Started"
+    },
+    "newProject": {
+      "title": "New Project",
+      "form": {
+        "title": "Novel Title",
+        "titlePlaceholder": "E.g: The Lighthouse Mystery",
+        "author": "Author",
+        "authorPlaceholder": "Your name",
+        "genre": "Genre",
+        "genrePlaceholder": "E.g: Mystery, Fantasy, Romance",
+        "isPublicPC": "I'm using a public PC",
+        "publicPCWarning": "Data will not be saved automatically"
+      }
+    },
+    "projectSettings": {
+      "title": "Project Settings",
+      "tabs": {
+        "general": "General",
+        "api": "AI APIs",
+        "preferences": "Preferences"
+      }
+    },
+    "apiKeys": {
+      "title": "Configure AI APIs",
+      "description": "Set up API keys to use AI features",
+      "providers": {
+        "claude": "Claude (Anthropic)",
+        "openai": "OpenAI (ChatGPT)",
+        "google": "Google Gemini",
+        "groq": "Groq (Ultra fast)",
+        "together": "Together AI",
+        "replicate": "Replicate",
+        "huggingface": "HuggingFace",
+        "ollama": "Ollama (Local)",
+        "manual": "Copy Prompt (Manual)",
+        "kimi": "Kimi (Moonshot)",
+        "qwen": "Qwen (Alibaba)"
+      },
+      "providerInfo": {
+        "claude": "Anthropic API - $5 free",
+        "openai": "OpenAI API - Paid only",
+        "google": "Google API - Generous free tier",
+        "groq": "Generous FREE tier - Ultra fast",
+        "together": "$25 free tier on signup",
+        "replicate": "Various models - Pay per use",
+        "huggingface": "Some models free",
+        "ollama": "100% FREE - Requires local installation",
+        "manual": "100% FREE - Copy prompt to any AI"
+      },
+      "form": {
+        "key": "API Key",
+        "keyPlaceholder": "Enter your API key",
+        "test": "Test connection",
+        "status": {
+          "valid": "Valid",
+          "invalid": "Invalid",
+          "testing": "Testing..."
+        }
+      },
+      "warning": "Keys are stored on your device and not sent to any server",
+      "publicPCWarning": "Warning: You're on a public PC. Keys will not be saved automatically"
+    },
+    "export": {
+      "title": "Export Project",
+      "description": "Download your project as a PLUMA file (*.pluma)",
+      "includeApiKeys": "Include API keys",
+      "filename": "Filename",
+      "download": "Download",
+      "formatWithImages": "Format: PLUMA with images",
+      "securityRequired": "Security (Required)",
+      "securityOptional": "Security (Optional)",
+      "apiKeysWarning": "This project contains API keys. For security, it is mandatory to encrypt them. If you forget the password, you will only lose the keys, not the project.",
+      "encryptApiKeysRequired": "Encrypt API keys (required)",
+      "apiKeysAutoEncrypt": "Detected API keys will be automatically encrypted",
+      "encryptAll": "Encrypt entire project",
+      "encryptAllHint": "Maximum privacy - encrypts all content (includes API keys)",
+      "password": "Encryption password",
+      "passwordPlaceholder": "Minimum 12 characters",
+      "passwordHint": "Use a strong password. If you forget it, you cannot recover the data.",
+      "confirmPassword": "Confirm password",
+      "confirmPasswordPlaceholder": "Repeat the password",
+      "success": "Project exported",
+      "successDetails": "File downloaded successfully",
+      "errors": {
+        "passwordRequired": "You must enter a password",
+        "passwordTooShort": "Password must be at least 12 characters",
+        "passwordMismatch": "Passwords do not match",
+        "exportFailed": "Could not export project"
+      }
+    },
+    "import": {
+      "title": "Import Project",
+      "description": "Load a project from a PLUMA file (*.pluma)",
+      "selectFile": "Select file",
+      "selected": "File selected: {filename}",
+      "warning": "This will replace the current project",
+      "success": "Project imported",
+      "encryptedFile": "Encrypted File"
+    },
+    "password": {
+      "title": "Password Required",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "encryptAll": "Encrypt entire project"
+    },
+    "manageImage": {
+      "title": "Manage Image"
+    },
+    "avatarSelector": {
+      "automaticProvider": "Automatic (use first available)",
+      "seedHint": "- If empty, it will be generated automatically",
+      "generateImage": "Generate Image",
+      "generatedSuccessfully": "Image generated successfully",
+      "customImageLoaded": "Custom image loaded"
+    },
+    "projectsList": {
+      "title": "My Projects"
+    },
+    "editRelationship": {
+      "title": "Relationship and its History"
+    },
+    "vitalStatus": {
+      "title": "Vital Status of {name}"
+    },
+    "newRelationship": {
+      "title": "New Relationship"
+    },
+    "settings": {
+      "title": "Settings",
+      "theme": {
+        "title": "Appearance",
+        "label": "Theme",
+        "dark": "Dark",
+        "dracula": "Dracula",
+        "light": "Light Pastel"
+      },
+      "dataManagement": {
+        "title": "Data Management",
+        "description": "Manage data stored locally in this browser",
+        "exportProjectDescription": "Download the current project as a .pluma file with images and optional encryption",
+        "warningTitle": "Important Warning!",
+        "warningDescription": "This action will permanently delete all projects, characters, chapters, and settings stored locally in this browser. This action cannot be undone.",
+        "exportBeforeDeleteLabel": "We recommend exporting your data before deleting it:",
+        "exportAllButton": "Export All Data",
+        "noDataTitle": "No data",
+        "noDataMessage": "No projects to export",
+        "exportSuccessTitle": "Data exported",
+        "exportSuccessMessage": "All data has been exported successfully",
+        "exportErrorTitle": "Export error",
+        "exportErrorMessage": "An error occurred while trying to export the data",
+        "confirmationLabel": "To confirm deletion, type \"DELETE DATA\" in the field below:",
+        "confirmationPlaceholder": "DELETE DATA",
+        "understandCheckbox": "I understand that this action cannot be undone and that I will lose all locally stored data",
+        "deleteButton": "Delete All Data Locally",
+        "deletionConfirmed": "Data deleted successfully. The application will reload in a few seconds.",
+        "confirmDeletion": "Are you completely sure? This action will delete all your local data and cannot be undone.",
+        "deletionSuccessTitle": "Data deleted",
+        "deletionSuccessMessage": "All local data has been deleted successfully.",
+        "deletionErrorTitle": "Error deleting data",
+        "deletionErrorMessage": "An error occurred while trying to delete the data."
+      },
+      "textAPIs": "Text APIs",
+      "imageAPIs": "Image APIs",
+      "imageProvider": "Image Provider",
+      "requiresLocalInstall": "Requires local installation: See instructions",
+      "manualPromptCopy": "Copy the generated prompt and paste it into any web AI (ChatGPT, Claude, etc.)",
+      "savedKeys": "Saved Keys",
+      "lastUsed": "Last used:",
+      "autoFallbackHint": "Automatic fallback: If a key fails, the system will automatically try the next available one.",
+      "keysPrivacy": "Keys are stored on your device and not sent to any server",
+      "tokenOptimization": "Token Optimization",
+      "tokenOptimizationDesc": "Control how much context is sent to the AI to save tokens and reduce costs",
+      "tokenLevels": {
+        "minimal": "⚡ Minimal (~1,000 tokens) - Only essentials",
+        "normal": "⚖️ Normal (~3,000 tokens) - Balanced (recommended)",
+        "complete": "📚 Complete (~8,000 tokens) - Full context",
+        "unlimited": "🚀 Unlimited - Send everything"
+      },
+      "contextLevel": "Context Level",
+      "minimalLevel": "Minimal Level",
+      "minimalLevelDesc": "Only includes: Protagonist, antagonist, current chapter. Ideal for saving tokens.",
+      "normalLevel": "Normal Level (Recommended)",
+      "smartLevelDesc": "Includes: Mentioned characters, relevant lore, cited locations. Perfect balance between quality and cost.",
+      "completeLevel": "Complete Level",
+      "fullLevelDesc": "Includes: All characters, all lore, all locations. Maximum quality, higher cost.",
+      "unlimitedLevel": "Unlimited",
+      "unlimitedLevelWarning": "⚠️ Sends EVERYTHING without restrictions. May consume many tokens on large projects.",
+      "smartSavingTip": "💡 Smart saving: The system automatically detects characters and lore mentioned in your text to include only what is relevant.",
+      "agenticSystem": "🤖 Agentic AI System",
+      "agenticSystemDesc": "AI analyzes your task and decides what context it needs, sending only what is relevant",
+      "agenticMode": "Agentic Mode",
+      "agenticModeDesc": "AI decides what context it needs (recommended)",
+      "twoStepFlow": {
+        "title": "How does the 2-step flow work?",
+        "step1": "<strong>Step 1:</strong> AI receives your task and an inventory of available context (names only, no content)",
+        "step2": "<strong>Step 2:</strong> AI decides which characters, lore, locations it needs and the system sends ONLY that"
+      },
+      "agenticBenefits": {
+        "title": "Benefits of agentic mode",
+        "tokenSaving": "<strong>Massive token savings:</strong> Only sends what it really needs",
+        "relevantContext": "<strong>More relevant context:</strong> AI selects what is specific to your task",
+        "fullTraceability": "<strong>Full traceability:</strong> Logs show exactly what it decided to include",
+        "smartOptimization": "<strong>Smart optimization:</strong> AI decides, not predefined rules",
+        "tip": "<strong>💡 Tip:</strong> Enable debug logs to see the 2-step flow in action."
+      },
+      "debugLogs": {
+        "title": "Debug Logs",
+        "description": "Enable detailed console logs to see the AI request flow"
+      },
+      "apiKeys": {
+        "editName": "Edit name",
+        "markDefault": "Mark as default",
+        "delete": "Delete",
+        "confirmDelete": "Delete this API key?"
+      },
+      "showLogs": "Show Logs",
+      "showLogsDesc": "View detailed AI system information",
+      "logsInfo": {
+        "title": "What is logged?",
+        "items": {
+          "modeAndProvider": "Selected AI mode and provider",
+          "contextBuilding": "Context building (characters, lore, chapters)",
+          "tokenOptimization": "Token optimization (before/after)",
+          "finalPrompt": "Final prompt generated",
+          "apiRequests": "API requests and responses",
+          "responseTimes": "Response times and errors"
+        },
+        "tip": "💡 Tip: Open the browser console (F12) to see logs in real time."
+      },
+      "localDataDesc": "Manage data stored locally in this browser (PLUMA Projects)",
+      "exportCurrentProject": "Export Current Project",
+      "exportProject": "Export Project",
+      "exportAllData": "Export All Data",
+      "deleteAllData": "Delete All Data Locally",
+      "providerInfo": {
+        "freeTier": "Free tier:",
+        "pricing": "Pricing:",
+        "notAvailable": "Not available",
+        "checkWebsite": "Check website"
+      },
+      "messages": {
+        "apiKeyExists": "This API key is already saved",
+        "apiKeySaved": "API key saved as \"{name}\"",
+        "errorSavingKey": "Error saving API key",
+        "testingConnection": "Testing connection...",
+        "connectionSuccess": "✓ Connection successful",
+        "apiKeyDeleted": "API key deleted",
+        "defaultKeyUpdated": "Default key updated",
+        "unnamed": "Unnamed",
+        "logsEnabled": "🔍 Debug logs enabled",
+        "logsDisabled": "🔇 Debug logs disabled",
+        "agenticModeEnabled": "🤖 Agentic mode enabled: AI will decide which context it needs",
+        "traditionalModeEnabled": "📦 Traditional mode enabled: All context will be sent with optimization",
+        "deleteDataText": "DELETE DATA"
+      }
+    }
+  },
+  "notes": {
+    "title": "Notes",
+    "subtitle": "Save ideas and annotations",
+    "new": "New Note",
+    "empty": "No notes",
+    "emptyHint": "Create a note to save ideas",
+    "form": {
+      "title": "Title",
+      "titlePlaceholder": "Note title",
+      "content": "Content",
+      "contentPlaceholder": "Write your note here..."
+    }
+  },
+  "notifications": {
+    "success": {
+      "projectCreated": "Project created successfully",
+      "projectSaved": "Project saved",
+      "projectLoaded": "Project loaded",
+      "projectLoadedDesc": "Project \"{projectName}\" loaded successfully",
+      "characterCreated": "Character created",
+      "characterUpdated": "Character updated",
+      "characterDeleted": "Character deleted",
+      "sceneCreated": "Scene created",
+      "sceneUpdated": "Scene updated",
+      "sceneDeleted": "Scene deleted",
+      "chapterCreated": "Chapter created",
+      "chapterUpdated": "Chapter updated",
+      "chapterDeleted": "Chapter deleted",
+      "locationCreated": "Location created",
+      "locationUpdated": "Location updated",
+      "locationDeleted": "Location deleted",
+      "eventCreated": "Event created",
+      "eventUpdated": "Event updated",
+      "eventDeleted": "Event deleted",
+      "noteCreated": "Note created",
+      "noteUpdated": "Note updated",
+      "noteDeleted": "Note deleted",
+      "loreCreated": "Lore entry created",
+      "loreUpdated": "Lore entry updated",
+      "loreDeleted": "Lore entry deleted",
+      "commitCreated": "Commit created successfully",
+      "commitCreatedDesc": "Commit {commitId} created",
+      "checkoutSuccess": "Checkout successful",
+      "checkoutSuccessDesc": "State changed to commit {commitId}",
+      "forkCreated": "Fork created successfully",
+      "forkCreatedDesc": "Fork {forkName} created",
+      "treeCreated": "Structure created successfully",
+      "treeCreatedDesc": "Structure {treeName} created",
+      "treeFailed": "Error creating structure",
+      "treeFailedDesc": "Could not create structure"
+    },
+    "error": {
+      "generic": "An error occurred",
+      "loadProject": "Error loading project",
+      "saveProject": "Error saving project",
+      "projectList": "Error getting project list",
+      "invalidFile": "Invalid file",
+      "apiError": "API error",
+      "noApiKey": "No API key configured",
+      "commitFailed": "Error creating commit",
+      "commitFailedDesc": "Could not create commit",
+      "checkoutFailed": "Checkout failed",
+      "checkoutFailedDesc": "Could not change to commit state",
+      "forkFailed": "Error creating fork",
+      "forkFailedDesc": "Could not create fork"
+    }
+  },
+  "project": {
+    "untitled": "Untitled",
+    "confirmDelete": "Delete project {name}?",
+    "deleted": "Project deleted",
+    "createNew": "Create New Project",
+    "new": "New Project"
+  },
+  "publishing": {
+    "title": "Publishing",
+    "subtitle": "Prepare your book for publication",
+    "cover": {
+      "title": "Cover",
+      "upload": "Upload Cover",
+      "change": "Change Cover",
+      "remove": "Remove Cover",
+      "recommendation": "Recommended: 1600x2400px (2:3 ratio)",
+      "preview": "Preview",
+      "noCover": "No cover"
+    },
+    "metadata": {
+      "title": "Book Information",
+      "bookTitle": "Book Title",
+      "bookTitlePlaceholder": "Your novel title",
+      "subtitle": "Subtitle",
+      "subtitlePlaceholder": "Optional subtitle",
+      "author": "Author",
+      "authorPlaceholder": "Your name",
+      "isbn": "ISBN",
+      "isbnPlaceholder": "ISBN-13 (optional)",
+      "publisher": "Publisher",
+      "publisherPlaceholder": "Publisher name",
+      "year": "Publication Year",
+      "yearPlaceholder": "2025",
+      "description": "Description",
+      "descriptionPlaceholder": "Book synopsis...",
+      "genre": "Genre",
+      "genrePlaceholder": "Fantasy, Science Fiction, Romance...",
+      "language": "Language",
+      "copyright": "Copyright",
+      "copyrightPlaceholder": "© 2025 Your Name. All rights reserved."
+    },
+    "kdp": {
+      "professionalFormat": "Professional format",
+      "estimate": "Estimated:",
+      "pages": "pages"
+    },
+    "paperType": {
+      "label": "Paper Type",
+      "cream": "Cream Paper (recommended for fiction)",
+      "white": "White Paper (for color images)"
+    },
+    "bookSize": {
+      "title": "Book Size",
+      "options": {
+        "kdp5x8": "5\" × 8\" (12.7 × 20.32 cm) - Compact",
+        "kdp6x9": "6\" × 9\" (15.24 × 22.86 cm) - Standard ⭐",
+        "kdp8.5x11": "8.5\" × 11\" (21.59 × 27.94 cm) - Letter"
+      }
+    },
+    "chapters": {
+      "title": "Chapter Selection",
+      "selectAll": "Select All",
+      "deselectAll": "Deselect All",
+      "selected": "{{count}} chapters selected",
+      "totalWords": "{{count}} total words",
+      "available": "available chapters",
+      "onlyFinal": "Only final",
+      "showReview": "Show in review",
+      "statusAll": "All",
+      "noChapters": "No chapters to export",
+      "abbreviation": "Ch."
+    },
+    "frontMatter": {
+      "title": "Front Matter Structure",
+      "description": "Content that appears before chapters (optional)",
+      "otherBooks": "Other books by the author",
+      "otherBooksPlaceholder": "List of your other books (one per line)...",
+      "dedication": "Dedication",
+      "dedicationPlaceholder": "To whom you dedicate this book...",
+      "prologue": "Prologue",
+      "prologuePlaceholder": "Book prologue (context, introduction)..."
+    },
+    "backMatter": {
+      "title": "Back Matter Structure",
+      "description": "Content that appears after chapters",
+      "epilogue": "Epilogue",
+      "epiloguePlaceholder": "Book epilogue (conclusion, closure)...",
+      "acknowledgments": "Acknowledgments",
+      "acknowledgmentsPlaceholder": "Thank editors, beta readers, family, friends...",
+      "aboutAuthor": "About the Author",
+      "aboutAuthorPlaceholder": "[Author Name] was born in [City, Country] in [Year]..."
+    },
+    "export": {
+      "title": "Export",
+      "exportPDF": "Export PDF",
+      "exportDOCX": "Export DOCX",
+      "success": "Book exported successfully",
+      "error": "Error exporting book"
+    },
+    "validation": {
+      "warnings": "Warnings",
+      "noTitle": "Book title is missing",
+      "noAuthor": "Author name is missing",
+      "noChapters": "No chapters selected",
+      "ready": "Ready"
+    }
+  },
+  "relationships": {
+    "title": "Relationships",
+    "currentState": "Current Relationship State",
+    "currentStateLabel": "Current State",
+    "type": "Type",
+    "status": "Status",
+    "history": "Relationship History",
+    "addChange": "Add Change",
+    "newChange": "New Change in Relationship",
+    "editingHistoryEntry": "Editing History Entry",
+    "deleteRelationship": "Delete Relationship",
+    "addToHistory": "Add to History",
+    "addNew": "Add new relationship",
+    "create": "Create Relationship",
+    "statuses": {
+      "active": "✅ Active",
+      "strained": "😰 Strained",
+      "improving": "📈 Improving",
+      "deteriorating": "📉 Deteriorating",
+      "ended": "💔 Ended",
+      "complicated": "🤔 Complicated"
+    },
+    "form": {
+      "selectOtherCharacter": "Select the other character",
+      "relatedCharacter": "Related Character *",
+      "selectCharacterPlaceholder": "Select a character",
+      "type": "Relationship Type *",
+      "newType": "New Relationship Type *",
+      "description": "Description",
+      "descriptionPlaceholder": "Describe the nature of this relationship",
+      "descriptionHint": "How did they meet? What unites or separates them?",
+      "currentStatus": "Current Status",
+      "newStatus": "New Status",
+      "statusHint": "You can change this later by associating it with events",
+      "whatHappened": "What happened? *",
+      "whatHappenedPlaceholder": "Describe what event or situation caused this change in the relationship",
+      "associatedEvent": "Associated Event (Optional)",
+      "startEvent": "Starting Event (Optional)",
+      "startEventHint": "What event in the story started this relationship?",
+      "additionalNotes": "Additional Notes",
+      "additionalNotesPlaceholder": "Additional details about the relationship..."
+    },
+    "errors": {
+      "notFound": "Relationship not found",
+      "mustSelectCharacter": "You must select a character",
+      "alreadyExists": "A relationship with this character already exists",
+      "cannotDeleteLastEntry": "You cannot delete the only history entry. Delete the entire relationship if you want to remove it."
+    },
+    "success": {
+      "created": "Relationship created",
+      "historyAdded": "Change added to history",
+      "historyUpdated": "History entry updated",
+      "historyDeleted": "Entry deleted from history",
+      "deleted": "Relationship deleted"
+    },
+    "confirm": {
+      "deleteHistoryEntry": "Are you sure you want to delete this history entry?",
+      "deleteRelationship": "Are you sure you want to delete this relationship and all its history?"
+    }
+  },
+  "ui": {
+    "loreTabs": {
+      "summary": "Summary",
+      "characters": "Characters",
+      "relations": "Relations",
+      "events": "Events",
+      "locations": "Locations",
+      "scenes": "Scenes"
+    }
+  },
+  "scenes": {
+    "title": "Scenes",
+    "subtitle": "Organize your story scenes",
+    "new": "New Scene",
+    "edit": "Edit Scene",
+    "empty": "No scenes created",
+    "emptyHint": "Create your first scene",
+    "imageGenerated": "Image generated",
+    "form": {
+      "image": "Scene image (optional)",
+      "title": "Title",
+      "titlePlaceholder": "E.g: Meeting at the cafe",
+      "chapter": "Chapter",
+      "chapterPlaceholder": "Select a chapter",
+      "description": "Description",
+      "descriptionPlaceholder": "Describe what happens in this scene",
+      "characters": "Characters",
+      "charactersPlaceholder": "Select participating characters",
+      "location": "Location",
+      "locationPlaceholder": "Where the scene takes place",
+      "timelinePosition": "Timeline Position",
+      "notes": "Notes",
+      "noCharacters": "No characters available",
+      "noLocations": "No locations available"
+    }
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "characters": "Characters",
+    "chapters": "Chapters",
+    "scenes": "Scenes",
+    "locations": "Locations",
+    "lore": "Lore",
+    "images": "Images",
+    "relations": "Relations",
+    "timeline": "Events",
+    "versionControl": "Version Control",
+    "publishing": "Publishing",
+    "aiAssistant": "AI Assistant",
+    "notes": "Notes",
+    "settings": "Settings",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "hide": "Hide menu",
+    "show": "Show menu"
+  },
+  "stats": {
+    "totalWords": "Total words:",
+    "totalChapters": "Chapters:",
+    "totalCharacters": "Characters:",
+    "totalScenes": "Scenes:"
+  },
+  "status": {
+    "words": "{count} words",
+    "autosave": {
+      "enabled": "Autosave enabled",
+      "disabled": "Autosave disabled",
+      "saving": "Saving...",
+      "saved": "Saved at {time}"
+    },
+    "ai": {
+      "active": "AI ready",
+      "inactive": "AI not configured",
+      "processing": "AI processing..."
+    }
+  },
+  "timeline": {
+    "title": "Timeline",
+    "subtitle": "Visualize your story chronology",
+    "new": "New Event",
+    "edit": "Edit Event",
+    "empty": "No events in timeline",
+    "emptyHint": "Add events to organize the chronology",
+    "viewList": "List",
+    "viewVisual": "Visual",
+    "viewEra": "Eras",
+    "filterAll": "All events",
+    "filterAbsolute": "Only with dates",
+    "filterRelative": "Only relative",
+    "filterEra": "Only eras",
+    "dragHint": "Drag events to reorder them",
+    "noSpecificEvent": "No specific event",
+    "eventUnknown": "Unknown event",
+    "dateMode": {
+      "absolute": "Absolute",
+      "relative": "Relative",
+      "era": "Era"
+    },
+    "importance": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "form": {
+      "dateMode": "Date Mode",
+      "dateModes": {
+        "absolute": "Absolute Date",
+        "relative": "Relative Order",
+        "era": "Era/Epoch"
+      },
+      "date": "Date",
+      "datePlaceholder": "E.g: May 15, 1990",
+      "dateHint": "Exact date of the event",
+      "era": "Era/Epoch",
+      "eraPlaceholder": "E.g: Age of Chaos, Middle Ages...",
+      "eraHint": "Epoch or era when the event occurs",
+      "relativeInfo": "Relative order is defined by dragging events in the timeline view",
+      "event": "Event",
+      "eventPlaceholder": "What happens on this date",
+      "description": "Description",
+      "descriptionPlaceholder": "Event details",
+      "participants": "Participants",
+      "participantsPlaceholder": "Characters involved",
+      "noCharacters": "No characters created",
+      "location": "Location",
+      "locationPlaceholder": "Where it happens",
+      "noLocation": "No location",
+      "importance": "Importance",
+      "importanceLevels": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High"
+      },
+      "tags": "Tags",
+      "tagsPlaceholder": "Add tag...",
+      "relatedScenes": "Related Scenes",
+      "noScenes": "No scenes created",
+      "scenes": "Related scenes",
+      "relatedChapters": "Related Chapters",
+      "noChapters": "No chapters created",
+      "chapters": "Related chapters",
+      "impacts": "Impacts",
+      "impactsHint": "How this event affects characters and relationships",
+      "notes": "Notes"
+    }
+  },
+  "validation": {
+    "required": "This field is required",
+    "minLength": "Minimum {min} characters",
+    "maxLength": "Maximum {max} characters",
+    "invalid": "Invalid value"
+  },
+  "versionControl": {
+    "title": "Version Control",
+    "commitMessage": "Commit message:",
+    "commitMessagePlaceholder": "Change description...",
+    "author": "Author",
+    "authorPlaceholder": "Your name...",
+    "currentProjectStats": "Current Project Statistics",
+    "forkName": "Fork name:",
+    "forkNamePlaceholder": "New project name...",
+    "description": "Description",
+    "descriptionPlaceholder": "Brief description of fork's purpose...",
+    "originalProject": "Original Project",
+    "forkInfo": "A fork creates an independent copy of the project with its own version history.",
+    "checkoutConfirm": "Are you sure you want to switch to this commit's state?",
+    "createCommit": "Create Commit",
+    "createFork": "Create Fork",
+    "history": "History",
+    "branches": "Branches",
+    "commits": "Commits",
+    "currentBranch": "Current branch:",
+    "totalCommits": "Total commits:",
+    "date": "Date",
+    "message": "Message",
+    "actions": "Actions",
+    "emptyHistory": "No commits in this branch",
+    "emptyStateHint": "You can create a commit using the commit button in the header",
+    "forksViewTitle": "Forks Management",
+    "forksList": "Project Forks",
+    "noForks": "No forks of this project",
+    "diffsTitle": "Compare Versions",
+    "compareFrom": "From commit:",
+    "compareTo": "To commit:",
+    "selectCommit": "Select commit...",
+    "compare": "Compare",
+    "changes": "Changes",
+    "createTree": "Create Project Structure",
+    "treeStructure": "Project Structure",
+    "treeStructureDesc": "Create a tree structure to organize your chapters and scenes",
+    "treeName": "Structure name",
+    "treeNamePlaceholder": "Structure name...",
+    "treeType": "Structure type",
+    "chapterTree": "Chapter Tree",
+    "sceneTree": "Scene Tree",
+    "outlineTree": "Outline Tree",
+    "treeDescription": "Description",
+    "treeDescriptionPlaceholder": "Brief description of the structure...",
+    "createFromCurrent": "Create from current project",
+    "noChanges": "No changes detected in this section",
+    "noChangesTitle": "No changes",
+    "noChangesToCommit": "No changes to commit",
+    "branchName": "Branch name",
+    "modifiedFiles": "Modified files:"
+  },
+  "vitalStatus": {
+    "title": "Vital Status",
+    "currentState": "Current State",
+    "history": "Vital Status History",
+    "changeStatus": "Change Status",
+    "changeStatusTitle": "Change Vital Status",
+    "editingEntry": "Editing Entry",
+    "saveChange": "Save Change",
+    "statuses": {
+      "alive": "Alive",
+      "healthy": "Healthy",
+      "wounded": "Wounded",
+      "sick": "Sick",
+      "recovering": "Recovering",
+      "imprisoned": "Imprisoned",
+      "born": "Born",
+      "created": "Created",
+      "appeared": "Appeared",
+      "awakened": "Awakened",
+      "reborn": "Reborn",
+      "dead": "Dead",
+      "murdered": "Murdered",
+      "executed": "Executed",
+      "sacrificed": "Sacrificed",
+      "naturalDeath": "Natural Death",
+      "battleDeath": "Death in Battle",
+      "missing": "Missing",
+      "lost": "Lost",
+      "kidnapped": "Kidnapped",
+      "exiled": "Exiled",
+      "vanished": "Vanished",
+      "escaped": "Escaped",
+      "transformed": "Transformed",
+      "cursed": "Cursed",
+      "possessed": "Possessed",
+      "corrupted": "Corrupted",
+      "ascended": "Ascended",
+      "unknown": "Unknown",
+      "presumedDead": "Presumed Dead",
+      "presumedAlive": "Presumed Alive"
+    },
+    "form": {
+      "newStatus": "New Status *",
+      "status": "Status *",
+      "whatHappened": "What happened? *",
+      "whatHappenedPlaceholder": "Describe what event or situation caused this status change",
+      "associatedEvent": "Associated Event (Optional)",
+      "additionalNotes": "Additional Notes",
+      "additionalNotesPlaceholder": "Additional details...",
+      "description": "Description *"
+    },
+    "errors": {
+      "cannotDeleteLastEntry": "You cannot delete the only vital history entry"
+    },
+    "success": {
+      "updated": "Vital status updated",
+      "entryUpdated": "Entry updated",
+      "entryDeleted": "Entry deleted"
+    },
+    "confirm": {
+      "deleteEntry": "Are you sure you want to delete this entry?"
+    }
+  }
+}

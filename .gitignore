@@ -1,54 +1,51 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
+# Dependencies
 /node_modules
 /.pnp
-.pnp.*
+.pnp.js
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
 
-# testing
+# Testing
 /coverage
 
-# next.js
+# Production / Build
+/dist
+/build
 /.next/
 /out/
 
-# production
-/build
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# misc
+# IDE & System
 .DS_Store
 *.pem
+.vscode/
+.idea/
+*.swp
+*.swo
+thumbs.db
 
-# debug
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
+# Vercel
 .vercel
 
-# typescript
+# TypeScript
 *.tsbuildinfo
 next-env.d.ts
-*.swp
-fonts/Amazon Endure font EN/_MACOSX/_AmazonEndure-Book.otf
-fonts/Amazon Endure font EN/_MACOSX/_AmazonEndure-BookItalic.otf
-fonts/Amazon Endure font EN/_MACOSX/_AmazonEndure-Light.otf
-fonts/Amazon Endure font EN/_MACOSX/_AmazonEndure-LightItalic.otf
-fonts/Amazon Endure font EN/_MACOSX/_AmazonEndure-SemiBold.otf
-fonts/Amazon Endure font EN/_MACOSX/_AmazonEndure-SemiBoldItalic.otf
-fonts/Amazon Endure font EN/AmazonEndure-Book.otf
-fonts/Amazon Endure font EN/AmazonEndure-BookItalic.otf
-fonts/Amazon Endure font EN/AmazonEndure-Light.otf
-fonts/Amazon Endure font EN/AmazonEndure-LightItalic.otf
-fonts/Amazon Endure font EN/AmazonEndure-SemiBold.otf
-fonts/Amazon Endure font EN/AmazonEndure-SemiBoldItalic.otf
+
+# Misc / Local backups
+*.backup
+*.log

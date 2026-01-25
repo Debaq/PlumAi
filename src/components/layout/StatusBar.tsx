@@ -1,5 +1,5 @@
-import React from 'react';
 import { useProjectStore } from '@/stores/useProjectStore';
+import { WorldbuilderStatusBar } from '@/components/rpg/WorldbuilderStatusBar';
 
 export const StatusBar = () => {
   const { activeProject } = useProjectStore();
@@ -14,6 +14,7 @@ export const StatusBar = () => {
         <div className="flex items-center gap-1">
           <span>{totalWords.toLocaleString()} words</span>
         </div>
+        {activeProject?.isRpgModeEnabled && <WorldbuilderStatusBar />}
       </div>
 
       <div className="flex items-center gap-4">

@@ -6,11 +6,15 @@ export const LegacyImporter = {
     const project: Project = {
       id: json.projectInfo?.id || crypto.randomUUID(),
       title: json.projectInfo?.title || 'Untitled Project',
+      author: json.projectInfo?.author || '',
+      description: json.projectInfo?.synopsis || json.projectInfo?.description || '',
+      genre: json.projectInfo?.genre || '',
       chapters: [],
       characters: [],
       locations: [],
       loreItems: [],
-      timelineEvents: []
+      timelineEvents: [],
+      scenes: []
     };
 
     // 2. Characters
@@ -24,7 +28,14 @@ export const LegacyImporter = {
         personality: c.personality,
         history: c.background,
         notes: c.notes,
-        relationships: mapRelationships(c.id, c.relationships)
+        relationships: mapRelationships(c.relationships),
+        vitalStatusHistory: Array.isArray(c.vitalStatusHistory) ? c.vitalStatusHistory : [{
+          id: crypto.randomUUID(),
+          status: c.currentVitalStatus || c.vitalStatus || 'alive',
+          timestamp: new Date().toISOString(),
+          description: 'Imported from legacy'
+        }],
+        currentVitalStatus: c.currentVitalStatus || c.vitalStatus || 'alive'
       }));
     }
 
@@ -46,7 +57,7 @@ export const LegacyImporter = {
     if (Array.isArray(loreList)) {
       project.loreItems = loreList.map((l: any) => ({
         id: l.id,
-        name: l.title,
+        title: l.title || l.name,
         category: l.category || 'general',
         content: l.content || '',
         summary: l.summary,
@@ -61,7 +72,7 @@ export const LegacyImporter = {
             title: t.event || t.title || 'Untitled Event',
             description: t.description,
             dateMode: t.dateMode || 'absolute',
-            absoluteDate: t.date,
+            date: t.date,
             era: t.era,
             participants: t.participants || [],
             locationId: t.location,
@@ -72,20 +83,36 @@ export const LegacyImporter = {
         }));
     }
 
-    // 6. Chapters and Scenes
+    // 6. Scenes (Legacy Top-level)
+    if (Array.isArray(json.scenes)) {
+      project.scenes = json.scenes.map((s: any) => ({
+        id: s.id,
+        title: s.title,
+        chapterId: s.chapterId,
+        characterIds: s.characters || [],
+        locationId: s.location,
+        timelinePosition: s.timelinePosition || 0,
+        description: s.description,
+        notes: s.notes,
+        image: s.image,
+        imageType: s.imageType
+      }));
+    }
+
+    // 7. Chapters and Scenes
     if (Array.isArray(json.chapters)) {
       project.chapters = json.chapters.map((c: any) => {
         // Find scenes for this chapter
-        let scenes: any[] = [];
+        let chapterScenes: any[] = [];
         if (c.scenes && Array.isArray(c.scenes) && c.scenes.length > 0 && typeof c.scenes[0] === 'string') {
             // If c.scenes contains IDs
-             scenes = (json.scenes || []).filter((s: any) => c.scenes.includes(s.id));
+             chapterScenes = (json.scenes || []).filter((s: any) => c.scenes.includes(s.id));
         } else {
-             scenes = (json.scenes || []).filter((s: any) => s.chapterId === c.id);
+             chapterScenes = (json.scenes || []).filter((s: any) => s.chapterId === c.id);
         }
 
         // Sort by timelinePosition if available
-        scenes.sort((a: any, b: any) => (a.timelinePosition || 0) - (b.timelinePosition || 0));
+        chapterScenes.sort((a: any, b: any) => (a.timelinePosition || 0) - (b.timelinePosition || 0));
 
         return {
           id: c.id,
@@ -94,7 +121,7 @@ export const LegacyImporter = {
           status: c.status || 'draft',
           wordCount: c.wordCount || 0,
           summary: c.summary,
-          scenes: scenes.map((s: any) => ({
+          scenes: chapterScenes.map((s: any) => ({
             id: s.id,
             title: s.title,
             chapterId: c.id,
@@ -102,7 +129,9 @@ export const LegacyImporter = {
             locationId: s.location,
             timelinePosition: s.timelinePosition || 0,
             description: s.description,
-            notes: s.notes
+            notes: s.notes,
+            image: s.image,
+            imageType: s.imageType
           }))
         };
       });
@@ -118,15 +147,31 @@ function mapRole(role: string): any {
   return 'secondary';
 }
 
-function mapRelationships(selfId: string, rels: any[]): Relationship[] {
+function mapRelationships(rels: any[]): Relationship[] {
   if (!Array.isArray(rels)) return [];
-  return rels.map(r => ({
-    id: r.id || crypto.randomUUID(),
-    characterId1: selfId,
-    characterId2: r.characterId,
-    type: mapRelType(r.type || r.currentType),
-    description: r.description || r.currentDescription
-  }));
+  return rels.map(r => {
+    const type = mapRelType(r.currentType || r.type);
+    const status = r.currentStatus || 'active';
+    const description = r.currentDescription || r.description || '';
+    
+    // If it already has history, preserve it
+    const history = Array.isArray(r.history) ? r.history : [{
+      id: crypto.randomUUID(),
+      type,
+      status,
+      description,
+      timestamp: new Date().toISOString()
+    }];
+
+    return {
+      id: r.id || crypto.randomUUID(),
+      characterId: r.characterId,
+      currentType: type,
+      currentStatus: status,
+      currentDescription: description,
+      history
+    };
+  });
 }
 
 function mapRelType(type: string): any {

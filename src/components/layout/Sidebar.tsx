@@ -1,6 +1,6 @@
-import React from 'react';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useUIStore } from '@/stores/useUIStore';
+import { useTranslation } from 'react-i18next';
 import {
   Book,
   Film,
@@ -9,12 +9,15 @@ import {
   BookMarked,
   Sparkles,
   ChevronLeft,
-  BarChart
+  BarChart,
+  Dices,
+  Brain
 } from 'lucide-react';
 
 export const Sidebar = () => {
   const { activeProject } = useProjectStore();
-  const { activeView, setActiveView, isSidebarOpen, toggleSidebar } = useUIStore();
+  const { activeView, setActiveView, isSidebarOpen, toggleSidebar, isRpgPanelOpen, toggleRpgPanel } = useUIStore();
+  const { t } = useTranslation();
 
   if (!isSidebarOpen) {
      return (
@@ -22,6 +25,17 @@ export const Sidebar = () => {
            <button onClick={toggleSidebar} className="p-2 text-muted-foreground hover:text-sidebar-foreground">
               <ChevronLeft className="w-4 h-4 rotate-180" />
            </button>
+           {activeProject?.isRpgModeEnabled && (
+             <button
+               onClick={toggleRpgPanel}
+               className={`mt-4 p-2 rounded-md transition-colors ${
+                 isRpgPanelOpen ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent'
+               }`}
+               title={t('ai.settings.worldbuilder.title')}
+             >
+               <Dices className="w-5 h-5" />
+             </button>
+           )}
         </aside>
      )
   }
@@ -67,7 +81,7 @@ export const Sidebar = () => {
           <nav className="space-y-0.5 pr-2">
             <NavItem view="lore" icon={Book} label="Lore" count={activeProject.characters.length + activeProject.locations.length + activeProject.loreItems.length} />
             <NavItem view="chapters" icon={Book} label="Chapters" count={activeProject.chapters.length} />
-            <NavItem view="scenes" icon={Film} label="Scenes" count={activeProject.chapters.reduce((acc, ch) => acc + ch.scenes.length, 0)} />
+            <NavItem view="scenes" icon={Film} label="Scenes" count={activeProject.scenes?.length || 0} />
             <NavItem view="images" icon={ImageIcon} label="Images" />
 
             <div className="h-px bg-sidebar-border my-2 mx-3" />
@@ -76,6 +90,27 @@ export const Sidebar = () => {
             <NavItem view="publishing" icon={BookMarked} label="Publishing" />
             <NavItem view="stats" icon={BarChart} label="Stats" />
             <NavItem view="aiAssistant" icon={Sparkles} label="AI Assistant" />
+            <NavItem view="ragStudio" icon={Brain} label="RAG Studio" />
+            
+            {activeProject.isRpgModeEnabled && (
+              <>
+                <div className="h-px bg-sidebar-border my-2 mx-3" />
+                <button
+                  onClick={toggleRpgPanel}
+                  className={`
+                    flex items-center w-full px-3 py-1.5 text-sm rounded-r-sm
+                    transition-colors mb-[1px] relative group
+                    ${isRpgPanelOpen
+                      ? 'bg-sidebar-accent text-sidebar-accent-foreground border-l-2 border-sidebar-primary pl-[10px]'
+                      : 'text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground border-l-2 border-transparent'
+                    }
+                  `}
+                >
+                  <Dices className="w-4 h-4 mr-3 shrink-0" />
+                  <span className="truncate flex-1 text-left">{t('ai.settings.worldbuilder.title')}</span>
+                </button>
+              </>
+            )}
           </nav>
         </div>
       </div>

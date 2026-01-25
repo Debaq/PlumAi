@@ -1,31 +1,32 @@
-'use client';
-
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export const LoadingScreen = ({ onFinished }: { onFinished?: () => void }) => {
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(true);
   const [messageIndex, setMessageIndex] = useState(0);
 
-  const messages = [
-    'Loading your creative space...',
-    'Preparing your stories...',
-    'Sharpening the quill...',
-    'Invoking the muses...',
-    'Organizing your characters...',
-    'Setting up AI...',
-    'Awakening inspiration...',
-    'Preparing the stage...',
-    'Loading imaginary worlds...',
-    'Ready to write great stories...',
-  ];
+  const messages = useMemo(() => [
+    t('loading.messages.creative'),
+    t('loading.messages.stories'),
+    t('loading.messages.pen'),
+    t('loading.messages.muses'),
+    t('loading.messages.organizing'),
+    t('loading.messages.ai'),
+    t('loading.messages.inspiration'),
+    t('loading.messages.stage'),
+    t('loading.messages.worlds'),
+    t('loading.messages.ready'),
+  ], [t]);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setMessageIndex((prev) => (prev + 1) % messages.length);
     }, 2000);
 
+    // In a real app, we would wait for actual assets/data to load
+    // For this port, we simulate the legacy delay
     const timeout = setTimeout(() => {
-      // Start fade out
       const loader = document.getElementById('app-loader');
       if (loader) {
         loader.style.opacity = '0';
@@ -35,7 +36,7 @@ export const LoadingScreen = ({ onFinished }: { onFinished?: () => void }) => {
         setVisible(false);
         if (onFinished) onFinished();
       }, 500);
-    }, 2500); // Show for 2.5s
+    }, 3500);
 
     return () => {
       clearInterval(interval);
