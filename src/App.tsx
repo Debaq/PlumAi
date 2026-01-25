@@ -25,6 +25,8 @@ import { ContextBanner } from '@/components/ui/ContextBanner';
 import { TimelineEventModal } from '@/components/world/TimelineEventModal';
 import { LocationModal } from '@/components/world/LocationModal';
 import { RelationshipModal } from '@/components/world/RelationshipModal';
+import { CreatureModal } from '@/components/world/CreatureModal';
+import { WorldRuleModal } from '@/components/world/WorldRuleModal';
 import { CommandPalette } from '@/components/ui/command-palette';
 import { ImagesGallery } from '@/components/world/ImagesGallery';
 import { AIAssistantView } from '@/components/ai/AIAssistantView';
@@ -34,23 +36,62 @@ import { AppLock } from '@/components/layout/AppLock';
 import { useAutoSnapshot } from '@/hooks/useAutoSnapshot';
 import { WorldbuilderPanel } from '@/components/rpg/WorldbuilderPanel';
 import { RagStudioView } from '@/components/ai/RagStudioView';
+import { AIConsole } from '@/components/ai/AIConsole';
+import { useSettingsStore } from '@/stores/useSettingsStore';
+import { ProjectManagerView } from '@/components/world/ProjectManagerView';
+
+import { ProjectSettingsModal } from '@/components/world/ProjectSettingsModal';
+
+import { useBannerStore } from '@/stores/useBannerStore';
 
 function App() {
   const { activeView, isSidebarOpen, activeLoreTab, openModal, editorZenMode } = useUIStore();
   const { activeProject } = useProjectStore();
+  const { theme, fontSize, animationsEnabled } = useSettingsStore();
+  const { initializeBanners } = useBannerStore();
 
   useAutoSnapshot();
 
   useEffect(() => {
-    document.title = activeProject?.isRpgModeEnabled ? 'PlumaAI Worldbuilder' : 'PlumaAI';
+    initializeBanners();
+  }, [initializeBanners]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    // Lista de todos los temas disponibles
+    const allThemes = ['light', 'dark', 'dracula', 'emerald', 'parchment', 'hell', 'nordic', 'midnight', 'cyberpunk'];
+    root.classList.remove(...allThemes);
+    root.classList.add(theme);
+    
+    // Aplicar el tamaño de fuente a la raíz (afecta a rem)
+    root.style.fontSize = `${fontSize}px`;
+
+    // Micro-animaciones
+    if (animationsEnabled) {
+      root.classList.add('animations-enabled');
+    } else {
+      root.classList.remove('animations-enabled');
+    }
+  }, [theme, fontSize, animationsEnabled]);
+
+  useEffect(() => {
+    document.title = activeProject?.isRpgModeEnabled ? 'PlumAi Worldbuilder' : 'PlumAi';
   }, [activeProject?.isRpgModeEnabled]);
 
   useEffect(() => {
-    // Legacy-like initialization: If no project is persisted, show welcome modal
     if (!activeProject) {
-      openModal('welcome');
+      // openModal('welcome'); // Legacy
+      // Ensure we are in projects view if no project is loaded
+      if (activeView !== 'projects') {
+        // We can't use setActiveView here directly if it causes a loop, but checking activeView prevents it.
+        // Actually, better to just let the store default handle it, or force it here.
+        // Let's just do nothing, assuming default is 'projects'. 
+        // Or if we want to force it:
+        // setActiveView('projects'); // But I need to import setActiveView from store if I use it here? 
+        // It is already extracted from useUIStore.
+      }
     }
-  }, [activeProject, openModal]);
+  }, [activeProject]);
 
   const renderContent = () => {
     switch (activeView) {
@@ -64,6 +105,8 @@ function App() {
         if (activeLoreTab === 'locations') return <EntityList />;
         if (activeLoreTab === 'scenes') return <EntityList />;
         if (activeLoreTab === 'map') return <TopologicalMap />;
+        if (activeLoreTab === 'bestiary') return <EntityList />;
+        if (activeLoreTab === 'worldRules') return <EntityList />;
         return <EntityList />;
       case 'chapters':
         return <ChapterList />;
@@ -85,10 +128,14 @@ function App() {
         return <AIAssistantView />;
       case 'ragStudio':
         return <RagStudioView />;
+      case 'settings':
+        return <SettingsModal isView />;
+      case 'projects':
+        return <ProjectManagerView />;
       default:
         return (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-             <div className="text-lg font-medium mb-2">{activeProject?.isRpgModeEnabled ? 'PlumaAI Worldbuilder' : 'PlumaAI'}</div>
+             <div className="text-lg font-medium mb-2">{activeProject?.isRpgModeEnabled ? 'PlumAi Worldbuilder' : 'PlumAi'}</div>
              <p className="text-sm">This module is under construction.</p>
           </div>
         );
@@ -111,6 +158,8 @@ function App() {
       if (activeLoreTab === 'locations' || activeLoreTab === 'map') return 'locations';
       if (activeLoreTab === 'events') return 'events';
       if (activeLoreTab === 'scenes') return 'scenes';
+      if (activeLoreTab === 'bestiary') return 'bestiary';
+      if (activeLoreTab === 'worldRules') return 'worldRules';
       return 'lore';
     }
     return null;
@@ -119,7 +168,7 @@ function App() {
   const bannerContext = getBannerContext();
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground overflow-hidden">
+    <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden">
       <LoadingScreen />
       {!editorZenMode && <Header />}
       {!editorZenMode && <Sidebar /> }
@@ -130,9 +179,12 @@ function App() {
       <NewProjectModal />
       <CharacterModal />
       <LoreModal />
+      <ProjectSettingsModal />
       <TimelineEventModal />
       <LocationModal />
       <RelationshipModal />
+      <CreatureModal />
+      <WorldRuleModal />
       <CommandPalette />
 
       <main
@@ -147,6 +199,7 @@ function App() {
 
       {!editorZenMode && <StatusBar />}
       <AIChat />
+      <AIConsole />
       <AppLock />
       <WorldbuilderPanel />
     </div>

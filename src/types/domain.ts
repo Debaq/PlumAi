@@ -1,11 +1,88 @@
 // src/types/domain.ts
 
+// Project Type
+export type ProjectType = 'novel' | 'rpg' | 'worldbuilding';
+
+// Creature Types for Bestiary
+export interface CreatureAbility {
+  id: string;
+  name: string;
+  description: string;
+  cooldown?: string;
+  damage?: string;
+  range?: string;
+}
+
+export type CreatureSize = 'tiny' | 'small' | 'medium' | 'large' | 'huge' | 'gargantuan';
+export type DangerLevel = 'trivial' | 'low' | 'medium' | 'high' | 'deadly' | 'legendary';
+
+export interface Creature {
+  id: string;
+  name: string;
+  type: string;
+  size: CreatureSize;
+  description?: string;
+  physicalDescription?: string;
+  behavior?: string;
+  habitat?: string[];
+  dangerLevel: DangerLevel;
+  challengeRating?: string;
+  stats: Record<string, number | string>;
+  abilities: CreatureAbility[];
+  weaknesses?: string[];
+  resistances?: string[];
+  immunities?: string[];
+  loot?: string[];
+  imageUrl?: string;
+  relatedLocationIds?: string[];
+  notes?: string;
+}
+
+// World Rules Types
+export type WorldRuleCategory =
+  | 'magic'
+  | 'physics'
+  | 'social'
+  | 'combat'
+  | 'economy'
+  | 'religion'
+  | 'nature'
+  | 'technology'
+  | 'temporal'
+  | 'metaphysical'
+  | 'custom';
+
+export type WorldRuleImportance = 'fundamental' | 'major' | 'minor';
+
+export interface WorldRuleExample {
+  id: string;
+  title: string;
+  description: string;
+}
+
+export interface WorldRule {
+  id: string;
+  title: string;
+  category: WorldRuleCategory;
+  customCategory?: string;
+  content: string;
+  summary?: string;
+  importance: WorldRuleImportance;
+  exceptions?: string[];
+  examples?: WorldRuleExample[];
+  relatedRuleIds?: string[];
+  relatedEntityIds?: string[];
+  imageUrl?: string;
+  isSecret?: boolean;
+}
+
 export interface Project {
   id: string;
   title: string;
   author?: string;
   description?: string;
   genre?: string;
+  projectType?: ProjectType; // Project type (novel, rpg, worldbuilding)
   isRpgModeEnabled?: boolean; // RPG Mode Toggle
   rpgSystem?: string; // e.g., 'dnd5e', 'cthulhu', 'custom'
   banners?: Record<string, string>; // Context -> Image URL (custom banners)
@@ -15,6 +92,8 @@ export interface Project {
   loreItems: LoreItem[];
   timelineEvents: TimelineEvent[];
   scenes: Scene[];
+  creatures?: Creature[]; // Bestiary
+  worldRules?: WorldRule[]; // World Rules
   apiKeys?: ProjectApiKeys;
 }
 
@@ -34,14 +113,17 @@ export interface ApiKeyEntry {
 export interface Chapter {
   id: string;
   title: string;
-  content: string; // Rich text content
-  scenes: Scene[];
-  status: 'draft' | 'in_review' | 'final';
-  wordCount: number;
+  content: string;
   summary?: string;
-  number?: number;
-  image?: string; // URL or base64
+  wordCount?: number;
+  status: 'draft' | 'in_review' | 'final';
+  lastModified: number;
+  order: number;
+  number?: number; // Alias for order, kept for legacy compatibility
+  image?: string;
   imageType?: 'upload' | 'url' | 'ai';
+  headerImage?: string;
+  scenes?: string[]; // Scene IDs associated with this chapter
 }
 
 export interface Scene {

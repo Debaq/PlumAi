@@ -6,11 +6,10 @@ import {
   DialogContent
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { 
-  Plus, 
-  FolderOpen, 
-  Sparkles, 
-  BookOpen, 
+import {
+  Plus,
+  FolderOpen,
+  Sparkles,
   Heart,
   Github
 } from 'lucide-react';
@@ -39,12 +38,12 @@ export const WelcomeModal = () => {
           <div className="p-8 text-center space-y-6">
             <div className="relative w-24 h-24 mx-auto">
               <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse" />
-              <img src="/img/icon.png" alt="PlumaAI Logo" className="relative w-full h-full object-contain animate-float drop-shadow-2xl" />
+              <img src="/img/icon_alpha.png" alt="PlumAi Logo" className="relative w-full h-full object-contain animate-float drop-shadow-2xl" />
             </div>
 
             <div className="space-y-2">
               <h1 className="text-4xl font-black tracking-tighter bg-gradient-to-br from-white to-white/60 bg-clip-text text-transparent">
-                PlumaAI <span className="text-primary text-xl font-medium tracking-normal ml-1">v2.0</span>
+                PlumAi <span className="text-primary text-xl font-medium tracking-normal ml-1">v2.0</span>
               </h1>
               <p className="text-white/60 text-sm max-w-[300px] mx-auto">
                 Tu santuario creativo potenciado por inteligencia artificial.
@@ -76,7 +75,7 @@ export const WelcomeModal = () => {
               <div className="flex items-center gap-6 opacity-30 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-500">
                 <Github className="w-5 h-5 cursor-pointer" />
                 <Heart className="w-5 h-5 cursor-pointer fill-red-500 text-red-500" />
-                <img src="/img/icon.png" alt="Logo" className="w-5 h-5 cursor-pointer object-contain" />
+                <img src="/img/icon_alpha.png" alt="Logo" className="w-5 h-5 cursor-pointer object-contain" />
               </div>
             </div>
           </div>

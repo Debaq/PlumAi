@@ -1,0 +1,76 @@
+[package]
+name = "plumai"
+version = "0.1.0"
+description = "AI-powered creative writing assistant"
+authors = ["PlumAi Team"]
+license = "MIT"
+repository = "https://github.com/Debaq/PlumAi"
+edition = "2021"
+rust-version = "1.77.2"
+
+[lib]
+name = "plumai_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# Core Tauri
+tauri = { version = "2", features = [] }
+tauri-plugin-log = "2"
+tauri-plugin-shell = "2"
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Logging
+log = "0.4"
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+
+# Error handling
+thiserror = "2"
+anyhow = "1"
+
+# Phase 3: SQLite Database
+rusqlite = { version = "0.32", features = ["bundled"] }
+
+# Phase 4: AI APIs (HTTP client)
+reqwest = { version = "0.12", features = ["json", "rustls-tls", "stream"] }
+futures = "0.3"
+
+# Phase 5: Cryptography
+aes-gcm = "0.10"
+argon2 = "0.5"
+rand = "0.8"
+base64 = "0.22"
+
+# Phase 6: Publishing (PDF/DOCX)
+printpdf = "0.7"
+docx-rs = "0.4"
+
+# Phase 7: Filesystem
+zip = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+
+# Phase 8: Auto-updater
+tauri-plugin-updater = "2"
+
+# Utilities
+chrono = "0.4"
+uuid = { version = "1", features = ["v4"] }
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true

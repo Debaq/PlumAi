@@ -12,14 +12,17 @@ export type AIProvider =
   | 'manual';
 
 export type TokenOptimizationLevel = 'minimal' | 'normal' | 'complete' | 'unlimited';
-export type AppTheme = 'dark' | 'dracula' | 'light';
+export type AppTheme = 'dark' | 'dracula' | 'light' | 'emerald' | 'parchment' | 'hell' | 'nordic' | 'midnight' | 'cyberpunk';
 export type AppLanguage = 'es' | 'en';
+export type AppFontFamily = 'system' | 'inter' | 'roboto' | 'nunito' | 'merriweather' | 'lora' | 'montserrat' | 'playfair' | 'jetbrains' | 'garamond';
 
 interface SettingsState {
   activeProvider: AIProvider;
   activeModel: string;
   theme: AppTheme;
   language: AppLanguage;
+  fontFamily: AppFontFamily;
+  fontSize: number;
   tokenOptimizationLevel: TokenOptimizationLevel;
   useAgenticContext: boolean;
   enableLogs: boolean;
@@ -45,10 +48,19 @@ interface SettingsState {
   dailyWordGoal: number;
   showWordCountInEditor: boolean;
 
+  // New Writing Experience
+  typewriterMode: boolean;
+  hemingwayMode: boolean;
+  pomodoroEnabled: boolean;
+  animationsEnabled: boolean;
+  ragStudioEnabled: boolean;
+
   setActiveProvider: (provider: AIProvider) => void;
   setActiveModel: (model: string) => void;
   setTheme: (theme: AppTheme) => void;
   setLanguage: (lang: AppLanguage) => void;
+  setFontFamily: (font: AppFontFamily) => void;
+  setFontSize: (fontSize: number) => void;
   setTokenLevel: (level: TokenOptimizationLevel) => void;
   setAgenticContext: (enabled: boolean) => void;
   setEnableLogs: (enabled: boolean) => void;
@@ -62,6 +74,13 @@ interface SettingsState {
   setDropboxToken: (token: string | null) => void;
   setGroqModelMap: (map: { creative: string; logical: string; fast: string }) => void;
   setRagConfiguration: (config: RagConfiguration) => void;
+
+  // New Setters
+  setTypewriterMode: (enabled: boolean) => void;
+  setHemingwayMode: (enabled: boolean) => void;
+  setPomodoroEnabled: (enabled: boolean) => void;
+  setAnimationsEnabled: (enabled: boolean) => void;
+  setRagStudioEnabled: (enabled: boolean) => void;
 }
 
 export interface RagConfigEntry {
@@ -126,6 +145,8 @@ export const useSettingsStore = create<SettingsState>()(
       activeModel: 'gemini-1.5-flash',
       theme: 'dark',
       language: 'es',
+      fontFamily: 'inter',
+      fontSize: 16,
       tokenOptimizationLevel: 'normal',
       useAgenticContext: true,
       enableLogs: true,
@@ -164,13 +185,27 @@ export const useSettingsStore = create<SettingsState>()(
       dailyWordGoal: 500,
       showWordCountInEditor: true,
 
+      // New Writing Experience Defaults
+      typewriterMode: false,
+      hemingwayMode: false,
+      pomodoroEnabled: false,
+      animationsEnabled: true,
+      ragStudioEnabled: true,
+
       setActiveProvider: (provider) => set({ activeProvider: provider }),
       setActiveModel: (activeModel) => set({ activeModel }),
       setTheme: (theme) => {
         set({ theme });
-        document.documentElement.setAttribute('data-theme', theme);
       },
       setLanguage: (language) => set({ language }),
+      setFontFamily: (fontFamily) => {
+        set({ fontFamily });
+        document.documentElement.setAttribute('data-font', fontFamily);
+      },
+      setFontSize: (fontSize) => {
+        set({ fontSize });
+        document.documentElement.style.fontSize = `${fontSize}px`;
+      },
       setTokenLevel: (tokenOptimizationLevel) => set({ tokenOptimizationLevel }),
       setAgenticContext: (useAgenticContext) => set({ useAgenticContext }),
       setEnableLogs: (enableLogs) => set({ enableLogs }),
@@ -184,12 +219,25 @@ export const useSettingsStore = create<SettingsState>()(
       setDropboxToken: (dropboxToken) => set({ dropboxToken }),
       setGroqModelMap: (groqModelMap) => set({ groqModelMap }),
       setRagConfiguration: (ragConfiguration) => set({ ragConfiguration }),
+
+      // New Setters
+      setTypewriterMode: (typewriterMode) => set({ typewriterMode }),
+      setHemingwayMode: (hemingwayMode) => set({ hemingwayMode }),
+      setPomodoroEnabled: (pomodoroEnabled) => set({ pomodoroEnabled }),
+      setAnimationsEnabled: (animationsEnabled) => set({ animationsEnabled }),
+      setRagStudioEnabled: (ragStudioEnabled) => set({ ragStudioEnabled }),
     }),
     {
       name: 'pluma-settings',
       onRehydrateStorage: () => (state) => {
         if (state?.theme) {
           document.documentElement.setAttribute('data-theme', state.theme);
+        }
+        if (state?.fontFamily) {
+          document.documentElement.setAttribute('data-font', state.fontFamily);
+        }
+        if (state?.fontSize) {
+          document.documentElement.style.fontSize = `${state.fontSize}px`;
         }
       },
     }

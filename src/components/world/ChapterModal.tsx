@@ -52,7 +52,7 @@ export const ChapterModal = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (activeModal === 'newChapter') {
-      const nextNumber = (activeProject?.chapters.length || 0) + 1;
+      const nextOrder = (activeProject?.chapters.length || 0) + 1;
       addChapter({
         title,
         summary,
@@ -60,9 +60,9 @@ export const ChapterModal = () => {
         image,
         imageType,
         content: '',
-        scenes: [],
         wordCount: 0,
-        number: nextNumber,
+        order: nextOrder,
+        lastModified: Date.now(),
       });
     } else if (activeModal === 'editChapter' && modalData?.id) {
       updateChapter(modalData.id, {

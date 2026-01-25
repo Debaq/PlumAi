@@ -3,8 +3,9 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { createOllama } from 'ollama-ai-provider';
 import { streamText } from 'ai';
 import { useSettingsStore } from '@/stores/useSettingsStore';
+import { useLogStore } from '@/stores/useLogStore';
 
-const API_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost/api';
+const API_URL = (import.meta as any).env?.VITE_VITE_API_URL || 'http://localhost/api';
 
 /**
  * Generates text using either direct client-side SDKs (for Google/Ollama/Groq)
@@ -18,14 +19,37 @@ export async function generateTextAI(
   intent: 'creative' | 'logical' | 'fast' = 'creative',
   temperature?: number
 ) {
+  const settings = useSettingsStore.getState();
+  const addLog = useLogStore.getState().addLog;
+
+  if (settings.enableLogs) {
+    addLog({
+      type: 'request',
+      provider,
+      model,
+      intent,
+      content: { messages, temperature }
+    });
+  }
+
   // Option 1: Direct Client-Side (No Backend needed)
   if (provider === 'google') {
       const google = createGoogleGenerativeAI({ apiKey });
-      return streamText({
+      const result = await streamText({
         model: google(model || 'gemini-1.5-flash'),
         messages,
         temperature
       });
+
+      if (settings.enableLogs) {
+        addLog({
+          type: 'response',
+          provider,
+          model,
+          content: "Stream started..."
+        });
+      }
+      return result;
   } 
 
   if (provider === 'groq') {
@@ -35,33 +59,47 @@ export async function generateTextAI(
       });
 
       // Get model from routing map if available, otherwise fallback to passed model or hard default
-      const settings = useSettingsStore.getState();
       const mappedModel = settings.groqModelMap?.[intent];
       const selectedModel = mappedModel || model || 'llama-3.3-70b-versatile';
 
-      return streamText({
+      const result = await streamText({
         model: groq(selectedModel),
         messages,
         temperature
       });
+
+      if (settings.enableLogs) {
+        addLog({
+          type: 'response',
+          provider,
+          model: selectedModel,
+          content: "Stream started..."
+        });
+      }
+      return result;
   }
   
   if (provider === 'ollama') {
       const ollama = createOllama({ baseURL: 'http://localhost:11434/api' });
-      return streamText({
+      const result = await streamText({
         model: ollama(model || 'llama3.2') as any,
         messages,
         temperature
       });
+
+      if (settings.enableLogs) {
+        addLog({
+          type: 'response',
+          provider,
+          model,
+          content: "Stream started..."
+        });
+      }
+      return result;
   }
 
   // Option 2: Proxy via PHP Backend (to avoid CORS)
   if (provider === 'openai' || provider === 'anthropic') {
-      // We return a "stream-like" object that mimics the ai-sdk result 
-      // but fetches from our PHP proxy.
-      // Note: This requires the PHP backend to implement streaming or we just await full response.
-      // For this implementation, we'll assume the PHP backend returns a JSON with 'text' or streams text.
-      
       return fetchViaProxy(messages, provider, model, apiKey, temperature);
   }
 
@@ -69,37 +107,57 @@ export async function generateTextAI(
 }
 
 async function fetchViaProxy(messages: any[], provider: string, model: string, apiKey: string, temperature?: number) {
-    const response = await fetch(`${API_URL}/chat.php`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey
-        },
-        body: JSON.stringify({ messages, provider, model, temperature })
-    });
+    const settings = useSettingsStore.getState();
+    const addLog = useLogStore.getState().addLog;
 
-    if (!response.ok) {
-        throw new Error(`Backend error: ${response.statusText}`);
+    try {
+        const response = await fetch(`${API_URL}/chat.php`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': apiKey
+            },
+            body: JSON.stringify({ messages, provider, model, temperature })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Backend error: ${response.statusText}`);
+        }
+
+        if (settings.enableLogs) {
+            addLog({
+                type: 'response',
+                provider,
+                model,
+                content: "Proxy request successful, starting stream..."
+            });
+        }
+
+        if (!response.body) throw new Error('No response body from backend');
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        return {
+            textStream: (async function* () {
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    yield decoder.decode(value, { stream: true });
+                }
+            })()
+        };
+    } catch (err: any) {
+        if (settings.enableLogs) {
+            addLog({
+                type: 'error',
+                provider,
+                model,
+                content: err.message
+            });
+        }
+        throw err;
     }
-
-    // If the backend streams, we can use response.body
-    // Here we wrap it in a structure compatible with useAgenticChat's expectation
-    // which iterates over .textStream
-    
-    if (!response.body) throw new Error('No response body from backend');
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-
-    return {
-        textStream: (async function* () {
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                yield decoder.decode(value, { stream: true });
-            }
-        })()
-    };
 }
 
 export async function generateImageAI(

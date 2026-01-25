@@ -295,7 +295,7 @@
     "confirmLeaveUnsaved": "Tienes cambios sin guardar. ¿Estás seguro de que quieres salir?"
   },
   "header": {
-    "title": "PlumaAI",
+    "title": "PlumAi",
     "subtitle": "Editor de Novelas con IA",
     "newProject": "Nuevo Proyecto",
     "loadProject": "Cargar Proyecto",
@@ -386,7 +386,7 @@
   },
   "modals": {
     "welcome": {
-      "title": "¡Bienvenido a PlumaAI!",
+      "title": "¡Bienvenido a PlumAi!",
       "subtitle": "Editor de novelas con inteligencia artificial",
       "description": "Comienza creando un nuevo proyecto o carga uno existente",
       "newProject": "Crear Nuevo Proyecto",

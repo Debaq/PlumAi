@@ -1,13 +1,43 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Nunito:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap');
+
 @custom-variant dark (&:is(.dark *));
+
+/* Font Family Variables */
+:root {
+  --font-family-system: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-family-inter: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-family-roboto: "Roboto", ui-sans-serif, system-ui, sans-serif;
+  --font-family-nunito: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-family-merriweather: "Merriweather", serif;
+  --font-family-lora: "Lora", serif;
+  --font-family-montserrat: "Montserrat", sans-serif;
+  --font-family-playfair: "Playfair Display", serif;
+  --font-family-jetbrains: "JetBrains Mono", monospace;
+  --font-family-garamond: "EB Garamond", serif;
+  --current-font: var(--font-family-inter);
+  --current-font-size: 16px;
+}
+
+[data-font="system"] { --current-font: var(--font-family-system); }
+[data-font="inter"] { --current-font: var(--font-family-inter); }
+[data-font="roboto"] { --current-font: var(--font-family-roboto); }
+[data-font="nunito"] { --current-font: var(--font-family-nunito); }
+[data-font="merriweather"] { --current-font: var(--font-family-merriweather); }
+[data-font="lora"] { --current-font: var(--font-family-lora); }
+[data-font="montserrat"] { --current-font: var(--font-family-montserrat); }
+[data-font="playfair"] { --current-font: var(--font-family-playfair); }
+[data-font="jetbrains"] { --current-font: var(--font-family-jetbrains); }
+[data-font="garamond"] { --current-font: var(--font-family-garamond); }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-sans: var(--current-font);
+  --font-mono: var(--font-family-jetbrains);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -193,12 +223,267 @@
   --sidebar-ring: #bd93f9;
 }
 
+.emerald {
+  /* Emerald / Zelda Theme */
+  --background: #0a2e1a;
+  --foreground: #e0f2e9;
+
+  --card: #0f3d25;
+  --card-foreground: #e0f2e9;
+
+  --popover: #0f3d25;
+  --popover-foreground: #e0f2e9;
+
+  --primary: #10b981;
+  --primary-foreground: #051f12;
+
+  --secondary: #14532d;
+  --secondary-foreground: #e0f2e9;
+
+  --muted: #14532d;
+  --muted-foreground: #a7d7c5;
+
+  --accent: #d4af37; /* Gold accent */
+  --accent-foreground: #051f12;
+
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+
+  --border: #14532d;
+  --input: #14532d;
+  --ring: #10b981;
+
+  --sidebar: #051f12;
+  --sidebar-foreground: #e0f2e9;
+  --sidebar-primary: #10b981;
+  --sidebar-primary-foreground: #051f12;
+  --sidebar-accent: #14532d;
+  --sidebar-accent-foreground: #e0f2e9;
+  --sidebar-border: #0a2e1a;
+  --sidebar-ring: #10b981;
+}
+
+.parchment {
+  /* Parchment / RPG Theme */
+  --background: #f4e4bc;
+  --foreground: #4a3728;
+
+  --card: #ebd5a3;
+  --card-foreground: #4a3728;
+
+  --popover: #ebd5a3;
+  --popover-foreground: #4a3728;
+
+  --primary: #8b4513;
+  --primary-foreground: #f4e4bc;
+
+  --secondary: #d2b48c;
+  --secondary-foreground: #4a3728;
+
+  --muted: #d2b48c;
+  --muted-foreground: #705a4f;
+
+  --accent: #a0522d;
+  --accent-foreground: #f4e4bc;
+
+  --destructive: #800000;
+  --destructive-foreground: #f4e4bc;
+
+  --border: #c1a37f;
+  --input: #c1a37f;
+  --ring: #8b4513;
+
+  --sidebar: #3e2723;
+  --sidebar-foreground: #f4e4bc;
+  --sidebar-primary: #d2b48c;
+  --sidebar-primary-foreground: #3e2723;
+  --sidebar-accent: #5d4037;
+  --sidebar-accent-foreground: #f4e4bc;
+  --sidebar-border: #2d1b18;
+  --sidebar-ring: #d2b48c;
+}
+
+.hell {
+  /* Hell / Diablo Theme */
+  --background: #0f0000;
+  --foreground: #ffcccc;
+
+  --card: #1a0000;
+  --card-foreground: #ffcccc;
+
+  --popover: #1a0000;
+  --popover-foreground: #ffcccc;
+
+  --primary: #990000;
+  --primary-foreground: #ffffff;
+
+  --secondary: #330000;
+  --secondary-foreground: #ffcccc;
+
+  --muted: #330000;
+  --muted-foreground: #884444;
+
+  --accent: #ff3300;
+  --accent-foreground: #ffffff;
+
+  --destructive: #ff0000;
+  --destructive-foreground: #ffffff;
+
+  --border: #440000;
+  --input: #440000;
+  --ring: #990000;
+
+  --sidebar: #080000;
+  --sidebar-foreground: #ffcccc;
+  --sidebar-primary: #990000;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #220000;
+  --sidebar-accent-foreground: #ffcccc;
+  --sidebar-border: #000000;
+  --sidebar-ring: #990000;
+}
+
+.nordic {
+  /* Nordic / Minimalist Professional */
+  --background: #f0f2f5;
+  --foreground: #1a1c1e;
+
+  --card: #ffffff;
+  --card-foreground: #1a1c1e;
+
+  --popover: #ffffff;
+  --popover-foreground: #1a1c1e;
+
+  --primary: #4a5568;
+  --primary-foreground: #ffffff;
+
+  --secondary: #e2e8f0;
+  --secondary-foreground: #1a1c1e;
+
+  --muted: #edf2f7;
+  --muted-foreground: #718096;
+
+  --accent: #2d3748;
+  --accent-foreground: #ffffff;
+
+  --destructive: #c53030;
+  --destructive-foreground: #ffffff;
+
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #4a5568;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1a1c1e;
+  --sidebar-primary: #4a5568;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f7fafc;
+  --sidebar-accent-foreground: #1a1c1e;
+  --sidebar-border: #edf2f7;
+  --sidebar-ring: #4a5568;
+}
+
+.midnight {
+  /* Midnight / Deep Focus Blue */
+  --background: #0b0e14;
+  --foreground: #cbd5e0;
+
+  --card: #141923;
+  --card-foreground: #cbd5e0;
+
+  --popover: #141923;
+  --popover-foreground: #cbd5e0;
+
+  --primary: #3182ce;
+  --primary-foreground: #ffffff;
+
+  --secondary: #1a202c;
+  --secondary-foreground: #cbd5e0;
+
+  --muted: #1a202c;
+  --muted-foreground: #718096;
+
+  --accent: #2c5282;
+  --accent-foreground: #ffffff;
+
+  --destructive: #e53e3e;
+  --destructive-foreground: #ffffff;
+
+  --border: #2d3748;
+  --input: #2d3748;
+  --ring: #3182ce;
+
+  --sidebar: #0b0e14;
+  --sidebar-foreground: #cbd5e0;
+  --sidebar-primary: #3182ce;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #141923;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #1a202c;
+  --sidebar-ring: #3182ce;
+}
+
+.cyberpunk {
+  /* Cyberpunk / High Contrast Writing */
+  --background: #000000;
+  --foreground: #00ff00; /* Classic Terminal Green */
+
+  --card: #0a0a0a;
+  --card-foreground: #00ff00;
+
+  --popover: #0a0a0a;
+  --popover-foreground: #00ff00;
+
+  --primary: #00ff00;
+  --primary-foreground: #000000;
+
+  --secondary: #111111;
+  --secondary-foreground: #00ff00;
+
+  --muted: #111111;
+  --muted-foreground: #008800;
+
+  --accent: #333333;
+  --accent-foreground: #00ff00;
+
+  --destructive: #ff0000;
+  --destructive-foreground: #000000;
+
+  --border: #00ff00;
+  --input: #00ff00;
+  --ring: #00ff00;
+
+  --sidebar: #000000;
+  --sidebar-foreground: #00ff00;
+  --sidebar-primary: #00ff00;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #0a0a0a;
+  --sidebar-accent-foreground: #00ff00;
+  --sidebar-border: #00ff00;
+  --sidebar-ring: #00ff00;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+  
+  html.animations-enabled {
+    scroll-behavior: smooth;
+  }
+
+  html.animations-enabled body,
+  html.animations-enabled aside,
+  html.animations-enabled header,
+  html.animations-enabled footer,
+  html.animations-enabled div,
+  html.animations-enabled button {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+  }
+
   body {
     @apply bg-background text-foreground;
+    font-size: var(--current-font-size);
   }
 }
 

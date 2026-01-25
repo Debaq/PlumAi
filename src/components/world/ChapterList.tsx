@@ -10,7 +10,7 @@ export const ChapterList = () => {
 
   if (!activeProject) return <div>No project loaded.</div>;
 
-  const chapters = activeProject.chapters.sort((a, b) => (a.number || 0) - (b.number || 0));
+  const chapters = activeProject.chapters.sort((a, b) => (a.order || 0) - (b.order || 0));
 
   const handleDelete = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -72,7 +72,7 @@ export const ChapterList = () => {
               className="group flex items-center gap-4 p-4 bg-card border border-border rounded-lg shadow-sm cursor-pointer hover:border-primary/50 hover:shadow-md transition-all"
             >
               <div className="flex items-center justify-center w-10 h-10 rounded bg-muted font-bold text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                {chapter.number}
+                {chapter.order}
               </div>
               
               <div className="flex-1 min-width-0">

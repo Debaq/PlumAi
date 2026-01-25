@@ -51,7 +51,7 @@ export const AgenticService = {
               type: l.type,
               summary: truncate(l.description, 80)
           })),
-          availableScenes: project.chapters.flatMap(c => c.scenes).map(s => ({ 
+          availableScenes: (project.scenes || []).map(s => ({
               name: s.title,
               summary: truncate(s.description || s.notes, 60)
           })),
@@ -76,7 +76,7 @@ export const AgenticService = {
               inventory.currentChapterInfo = {
                   title: chapter.title,
                   number: index + 1,
-                  wordCount: chapter.wordCount,
+                  wordCount: chapter.wordCount || 0,
                   summary: truncate(chapter.summary, 150)
               };
           }

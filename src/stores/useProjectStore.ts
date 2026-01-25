@@ -1,12 +1,16 @@
 // src/stores/useProjectStore.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Project, Chapter, Character, Location, Scene, ProjectApiKeys, ApiKeyEntry, VitalStatusEntry, LoreItem, TimelineEvent, RelationshipHistoryEntry, LocationImage, LocationConnection } from '@/types/domain';
+import { db } from '@/lib/db';
+import type { Project, Chapter, Character, Location, Scene, ProjectApiKeys, ApiKeyEntry, VitalStatusEntry, LoreItem, TimelineEvent, RelationshipHistoryEntry, LocationImage, LocationConnection, Creature, CreatureAbility, WorldRule, WorldRuleExample, ProjectType } from '@/types/domain';
 
 interface ProjectState {
   activeProject: Project | null;
   setActiveProject: (project: Project) => void;
   clearActiveProject: () => void;
+  saveProject: () => Promise<void>;
+  closeProject: () => Promise<void>;
+  loadProject: (id: string) => Promise<void>;
   
   // Chapters
   addChapter: (chapter: Omit<Chapter, 'id'>) => void;
@@ -55,12 +59,27 @@ interface ProjectState {
   updateApiKey: (type: 'text' | 'image', provider: string, keyId: string, updates: Partial<ApiKeyEntry>) => void;
   deleteApiKey: (type: 'text' | 'image', provider: string, keyId: string) => void;
   setDefaultApiKey: (type: 'text' | 'image', provider: string, keyId: string) => void;
-  createNewProject: (projectInfo: { title: string; author?: string; genre?: string }) => void;
+  createNewProject: (projectInfo: { title: string; author?: string; genre?: string; projectType?: ProjectType }) => Promise<void>;
   
   // Worldbuilder Mode
   toggleRpgMode: (enabled: boolean) => void;
   setRpgSystem: (system: string) => void;
   setContextBanner: (context: string, url: string) => void;
+  setProjectType: (type: ProjectType) => void;
+
+  // Creatures (Bestiary)
+  addCreature: (creature: Omit<Creature, 'id'>) => void;
+  updateCreature: (id: string, updates: Partial<Creature>) => void;
+  deleteCreature: (id: string) => void;
+  addCreatureAbility: (creatureId: string, ability: Omit<CreatureAbility, 'id'>) => void;
+  removeCreatureAbility: (creatureId: string, abilityId: string) => void;
+
+  // World Rules
+  addWorldRule: (rule: Omit<WorldRule, 'id'>) => void;
+  updateWorldRule: (id: string, updates: Partial<WorldRule>) => void;
+  deleteWorldRule: (id: string) => void;
+  addWorldRuleExample: (ruleId: string, example: Omit<WorldRuleExample, 'id'>) => void;
+  removeWorldRuleExample: (ruleId: string, exampleId: string) => void;
 }
 
 const initialApiKeys: ProjectApiKeys = {
@@ -82,15 +101,77 @@ const initialApiKeys: ProjectApiKeys = {
 
 export const useProjectStore = create<ProjectState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       activeProject: null,
-      setActiveProject: (project) => set({ 
+      
+      setActiveProject: (project) => set({
         activeProject: {
           ...project,
+          projectType: project.projectType || 'novel',
+          creatures: project.creatures || [],
+          worldRules: project.worldRules || [],
           apiKeys: project.apiKeys || initialApiKeys
-        } 
+        }
       }),
+      
       clearActiveProject: () => set({ activeProject: null }),
+
+      saveProject: async () => {
+        const { activeProject } = get();
+        if (activeProject) {
+          await db.projects.put(activeProject);
+        }
+      },
+
+      closeProject: async () => {
+        const { activeProject } = get();
+        if (activeProject) {
+          await db.projects.put(activeProject);
+          set({ activeProject: null });
+        }
+      },
+
+      loadProject: async (id: string) => {
+        const project = await db.projects.get(id);
+        if (project) {
+           set({ 
+             activeProject: {
+               ...project,
+               projectType: project.projectType || 'novel',
+               creatures: project.creatures || [],
+               worldRules: project.worldRules || [],
+               apiKeys: project.apiKeys || initialApiKeys
+             }
+           });
+        }
+      },
+
+      createNewProject: async (info) => {
+        const projectType = info.projectType || 'novel';
+        const newProject: Project = {
+          id: crypto.randomUUID(),
+          title: info.title,
+          author: info.author || '',
+          genre: info.genre || '',
+          projectType,
+          isRpgModeEnabled: projectType === 'rpg' || projectType === 'worldbuilding',
+          chapters: [],
+          characters: [],
+          locations: [],
+          loreItems: [],
+          timelineEvents: [],
+          scenes: [],
+          creatures: [],
+          worldRules: [],
+          apiKeys: initialApiKeys
+        };
+        
+        // Save to DB immediately
+        await db.projects.put(newProject);
+        
+        set({ activeProject: newProject });
+      },
+
       addChapter: (chapter) => set((state) => {
         if (!state.activeProject) return state;
         const newChapter = {
@@ -320,7 +401,6 @@ export const useProjectStore = create<ProjectState>()(
                             id: crypto.randomUUID(),
         
                             timestamp: new Date().toISOString()
-        
                           };
         
                           return {
@@ -637,23 +717,6 @@ export const useProjectStore = create<ProjectState>()(
     };
   }),
 
-  createNewProject: (info) => set(() => {
-    const newProject: Project = {
-      id: crypto.randomUUID(),
-      title: info.title,
-      author: info.author || '',
-      genre: info.genre || '',
-      chapters: [],
-      characters: [],
-      locations: [],
-      loreItems: [],
-      timelineEvents: [],
-      scenes: [],
-      apiKeys: initialApiKeys
-    };
-    return { activeProject: newProject };
-  }),
-
   toggleRpgMode: (enabled) => set((state) => {
     if (!state.activeProject) return state;
     return {
@@ -684,6 +747,166 @@ export const useProjectStore = create<ProjectState>()(
           [context]: url
         }
       }
+    };
+  }),
+
+  setProjectType: (type) => set((state) => {
+    if (!state.activeProject) return state;
+    return {
+      activeProject: {
+        ...state.activeProject,
+        projectType: type,
+        isRpgModeEnabled: type === 'rpg' || type === 'worldbuilding' || state.activeProject.isRpgModeEnabled,
+      },
+    };
+  }),
+
+  // Creatures (Bestiary)
+  addCreature: (creature) => set((state) => {
+    if (!state.activeProject) return state;
+    const newCreature: Creature = {
+      ...creature,
+      id: crypto.randomUUID(),
+      abilities: creature.abilities || [],
+      stats: creature.stats || {},
+    };
+    return {
+      activeProject: {
+        ...state.activeProject,
+        creatures: [...(state.activeProject.creatures || []), newCreature],
+      },
+    };
+  }),
+
+  updateCreature: (id, updates) => set((state) => {
+    if (!state.activeProject) return state;
+    return {
+      activeProject: {
+        ...state.activeProject,
+        creatures: (state.activeProject.creatures || []).map((c) =>
+          c.id === id ? { ...c, ...updates } : c
+        ),
+      },
+    };
+  }),
+
+  deleteCreature: (id) => set((state) => {
+    if (!state.activeProject) return state;
+    return {
+      activeProject: {
+        ...state.activeProject,
+        creatures: (state.activeProject.creatures || []).filter((c) => c.id !== id),
+      },
+    };
+  }),
+
+  addCreatureAbility: (creatureId, ability) => set((state) => {
+    if (!state.activeProject) return state;
+    return {
+      activeProject: {
+        ...state.activeProject,
+        creatures: (state.activeProject.creatures || []).map((c) => {
+          if (c.id !== creatureId) return c;
+          const newAbility: CreatureAbility = {
+            ...ability,
+            id: crypto.randomUUID(),
+          };
+          return {
+            ...c,
+            abilities: [...(c.abilities || []), newAbility],
+          };
+        }),
+      },
+    };
+  }),
+
+  removeCreatureAbility: (creatureId, abilityId) => set((state) => {
+    if (!state.activeProject) return state;
+    return {
+      activeProject: {
+        ...state.activeProject,
+        creatures: (state.activeProject.creatures || []).map((c) => {
+          if (c.id !== creatureId) return c;
+          return {
+            ...c,
+            abilities: (c.abilities || []).filter((a) => a.id !== abilityId),
+          };
+        }),
+      },
+    };
+  }),
+
+  // World Rules
+  addWorldRule: (rule) => set((state) => {
+    if (!state.activeProject) return state;
+    const newRule: WorldRule = {
+      ...rule,
+      id: crypto.randomUUID(),
+      examples: rule.examples || [],
+    };
+    return {
+      activeProject: {
+        ...state.activeProject,
+        worldRules: [...(state.activeProject.worldRules || []), newRule],
+      },
+    };
+  }),
+
+  updateWorldRule: (id, updates) => set((state) => {
+    if (!state.activeProject) return state;
+    return {
+      activeProject: {
+        ...state.activeProject,
+        worldRules: (state.activeProject.worldRules || []).map((r) =>
+          r.id === id ? { ...r, ...updates } : r
+        ),
+      },
+    };
+  }),
+
+  deleteWorldRule: (id) => set((state) => {
+    if (!state.activeProject) return state;
+    return {
+      activeProject: {
+        ...state.activeProject,
+        worldRules: (state.activeProject.worldRules || []).filter((r) => r.id !== id),
+      },
+    };
+  }),
+
+  addWorldRuleExample: (ruleId, example) => set((state) => {
+    if (!state.activeProject) return state;
+    return {
+      activeProject: {
+        ...state.activeProject,
+        worldRules: (state.activeProject.worldRules || []).map((r) => {
+          if (r.id !== ruleId) return r;
+          const newExample: WorldRuleExample = {
+            ...example,
+            id: crypto.randomUUID(),
+          };
+          return {
+            ...r,
+            examples: [...(r.examples || []), newExample],
+          };
+        }),
+      },
+    };
+  }),
+
+  removeWorldRuleExample: (ruleId, exampleId) => set((state) => {
+    if (!state.activeProject) return state;
+    return {
+      activeProject: {
+        ...state.activeProject,
+        worldRules: (state.activeProject.worldRules || []).map((r) => {
+          if (r.id !== ruleId) return r;
+          return {
+            ...r,
+            examples: (r.examples || []).filter((e) => e.id !== exampleId),
+          };
+        }),
+      },
     };
   }),
     }),

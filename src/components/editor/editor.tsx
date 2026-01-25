@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -20,7 +20,9 @@ import {
   ChevronRight, 
   ChevronLeft,
   AlertCircle,
-  Minimize
+  Minimize,
+  X,
+  Plus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,10 +36,11 @@ interface EditorProps {
 export function Editor({ className }: EditorProps) {
   const { activeProject, updateChapter } = useProjectStore();
   const { currentEditingChapterId, editorZenMode, toggleEditorZenMode } = useUIStore();
-  const { dailyWordGoal } = useSettingsStore();
+  const { dailyWordGoal, typewriterMode, hemingwayMode } = useSettingsStore();
   const [isEditorSidebarOpen, setIsEditorSidebarOpen] = useState(true);
   const [isEditMode, setIsEditMode] = useState(true);
   const [wordCount, setWordCount] = useState(0);
+  const editorContainerRef = useRef<HTMLDivElement>(null);
 
   const currentChapter = activeProject?.chapters.find(c => c.id === currentEditingChapterId);
 
@@ -65,10 +68,26 @@ export function Editor({ className }: EditorProps) {
           wordCount: count
         });
       }
+
+      // Typewriter Scroll logic
+      if (typewriterMode) {
+        const { selection } = editor.state;
+        const dom = editor.view.domAtPos(selection.from).node as HTMLElement;
+        if (dom instanceof HTMLElement) {
+          dom.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
     },
     editorProps: {
+      handleKeyDown: (_view, event) => {
+        // Hemingway Mode: Disable Backspace and Delete
+        if (hemingwayMode && (event.key === 'Backspace' || event.key === 'Delete')) {
+          return true; // prevent the event
+        }
+        return false;
+      },
       attributes: {
-        class: `prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none p-4 min-h-[300px] ${editorZenMode ? 'prose-stone dark:prose-invert max-w-3xl' : ''}`,
+        class: `prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none p-4 min-h-[300px] ${editorZenMode ? 'prose-stone dark:prose-invert max-w-3xl' : ''} ${typewriterMode ? 'pb-[50vh]' : ''}`,
       },
     },
     immediatelyRender: false,
@@ -92,6 +111,24 @@ export function Editor({ className }: EditorProps) {
     }
   }, [isEditMode, editor]);
 
+  const handleHeaderImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !currentChapter) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      updateChapter(currentChapter.id, { headerImage: base64 });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeHeaderImage = () => {
+    if (currentChapter) {
+      updateChapter(currentChapter.id, { headerImage: undefined });
+    }
+  };
+
   if (!currentChapter) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
@@ -104,9 +141,9 @@ export function Editor({ className }: EditorProps) {
   return (
     <div className={`flex h-full relative ${className || ''} ${editorZenMode ? 'fixed inset-0 z-[100] bg-background' : ''}`}>
       {/* Main Editor Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         {!editorZenMode && (
-          <div className="border-b bg-muted/30">
+          <div className="border-b bg-muted/30 shrink-0">
             <div className="flex justify-between items-center p-2 border-b">
               <Toolbar editor={editor} />
               <Button variant="ghost" size="icon" onClick={() => setIsEditorSidebarOpen(!isEditorSidebarOpen)}>
@@ -122,8 +159,39 @@ export function Editor({ className }: EditorProps) {
         )}
         
         <div 
+          ref={editorContainerRef}
           className={`flex-1 overflow-y-auto bg-background transition-colors duration-200 ${!isEditMode && !editorZenMode ? 'bg-muted/5 border-l-4 border-l-red-500' : ''} ${editorZenMode ? 'pt-20 pb-32 px-4' : ''}`}
         >
+          {/* Chapter Header Image */}
+          <div className="max-w-4xl mx-auto px-4 mt-8 relative group">
+            {currentChapter.headerImage ? (
+              <div className="relative w-full h-64 rounded-2xl overflow-hidden mb-8 shadow-lg border border-border">
+                <img src={currentChapter.headerImage} alt="Header" className="w-full h-full object-cover" />
+                {!editorZenMode && (
+                  <button 
+                    onClick={removeHeaderImage}
+                    className="absolute top-4 right-4 p-2 bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+            ) : (
+              !editorZenMode && (
+                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-2xl hover:border-primary cursor-pointer transition-colors mb-8 text-muted-foreground hover:text-primary">
+                  <Plus size={24} className="mb-2" />
+                  <span className="text-xs font-bold uppercase tracking-wider">Añadir Portada de Capítulo</span>
+                  <input type="file" className="hidden" accept="image/*" onChange={handleHeaderImageUpload} />
+                </label>
+              )
+            )}
+            
+            <div className="mb-12">
+               <h1 className="text-4xl font-black mb-2">{currentChapter.title}</h1>
+               <div className="h-1 w-24 bg-primary rounded-full" />
+            </div>
+          </div>
+
           <EditorContent editor={editor} className="h-full" />
         </div>
 
@@ -198,7 +266,7 @@ export function Editor({ className }: EditorProps) {
       {!editorZenMode && (
         <aside 
           className={`
-            w-80 border-l bg-muted/10 flex flex-col transition-all duration-300 ease-in-out
+            w-80 border-l bg-muted/10 flex flex-col transition-all duration-300 ease-in-out shrink-0
             ${isEditorSidebarOpen ? 'translate-x-0' : 'translate-x-full hidden'}
           `}
         >
@@ -249,7 +317,6 @@ export function Editor({ className }: EditorProps) {
               <p className="text-muted-foreground mb-1 text-xs font-medium uppercase">Assistant</p>
               <p>Hello! I can help you write, edit, or brainstorm ideas for this chapter.</p>
             </div>
-            {/* Placeholder for history */}
           </div>
 
           <div className="space-y-2 mt-auto">
@@ -267,24 +334,13 @@ export function Editor({ className }: EditorProps) {
             </Button>
           </div>
 
-                    <div className="mt-4 p-2 bg-yellow-500/10 border border-yellow-500/20 rounded-md text-[10px] text-yellow-600 flex gap-2">
-
-                      <AlertCircle size={12} className="shrink-0 mt-0.5" />
-
-                      <p>Configure API keys in settings.</p>
-
-                    </div>
-
-                  </div>
-
-                </aside>
-
-                )}
-
-              </div>
-
-            );
-
-          }
-
-          
+          <div className="mt-4 p-2 bg-yellow-500/10 border border-yellow-500/20 rounded-md text-[10px] text-yellow-600 flex gap-2">
+            <AlertCircle size={12} className="shrink-0 mt-0.5" />
+            <p>Configure API keys in settings.</p>
+          </div>
+        </div>
+      </aside>
+      )}
+    </div>
+  );
+}

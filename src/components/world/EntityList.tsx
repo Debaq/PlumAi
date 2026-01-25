@@ -5,6 +5,10 @@ import { CharacterCard } from './CharacterCard';
 import { CharacterGridCard } from './CharacterGridCard';
 import { LocationCard } from './LocationCard';
 import { SceneCard } from './SceneCard';
+import { CreatureCard } from './CreatureCard';
+import { CreatureGridCard } from './CreatureGridCard';
+import { WorldRuleCard } from './WorldRuleCard';
+import { WorldRuleGridCard } from './WorldRuleGridCard';
 import { Button } from '@/components/ui/button';
 import { Plus, Map } from 'lucide-react';
 
@@ -22,10 +26,12 @@ export const EntityList = () => {
 
   const handleAddNew = () => {
     switch (activeLoreTab) {
-      case 'characters': openModal('editCharacter'); break; // Assuming editCharacter handles new if no data
+      case 'characters': openModal('editCharacter'); break;
       case 'summary': openModal('loreItem'); break;
       case 'locations': openModal('editLocation'); break;
       case 'scenes': openModal('newScene'); break;
+      case 'bestiary': openModal('editCreature'); break;
+      case 'worldRules': openModal('editWorldRule'); break;
     }
   };
 
@@ -34,6 +40,8 @@ export const EntityList = () => {
       openModal('loreItem', item);
     } else if (activeLoreTab === 'locations') {
       openModal('editLocation', item);
+    } else if (activeLoreTab === 'worldRules') {
+      setSelectedEntityId(item.id);
     } else {
       setSelectedEntityId(item.id);
     }
@@ -51,6 +59,8 @@ export const EntityList = () => {
         case 'locations': return activeProject.locations;
         case 'scenes': return activeProject.scenes || [];
         case 'summary': return activeProject.loreItems;
+        case 'bestiary': return activeProject.creatures || [];
+        case 'worldRules': return activeProject.worldRules || [];
         default: return [];
       }
     };
@@ -68,6 +78,14 @@ export const EntityList = () => {
         const scene = (activeProject.scenes || []).find(s => s.id === selectedEntityId);
         return scene ? <SceneCard scene={scene} onBack={() => setSelectedEntityId(null)} /> : <div>Scene not found</div>;
       }
+      if (activeLoreTab === 'bestiary') {
+        const creature = (activeProject.creatures || []).find(c => c.id === selectedEntityId);
+        return creature ? <CreatureCard creature={creature} onBack={() => setSelectedEntityId(null)} /> : <div>Creature not found</div>;
+      }
+      if (activeLoreTab === 'worldRules') {
+        const rule = (activeProject.worldRules || []).find(r => r.id === selectedEntityId);
+        return rule ? <WorldRuleCard rule={rule} onBack={() => setSelectedEntityId(null)} /> : <div>Rule not found</div>;
+      }
     }
 
     const list = getList();
@@ -75,7 +93,12 @@ export const EntityList = () => {
     return (
       <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold capitalize">{activeLoreTab === 'summary' ? 'Lore Items' : activeLoreTab}</h2>
+          <h2 className="text-xl font-bold capitalize">
+            {activeLoreTab === 'summary' ? 'Lore Items' :
+             activeLoreTab === 'bestiary' ? 'Bestiario' :
+             activeLoreTab === 'worldRules' ? 'Reglas del Mundo' :
+             activeLoreTab}
+          </h2>
           <div className="flex gap-2">
              {activeLoreTab === 'locations' && (
                 <Button size="sm" variant="secondary" className="gap-2" onClick={handleViewMap}>
@@ -85,7 +108,12 @@ export const EntityList = () => {
              )}
              <Button size="sm" className="gap-2" onClick={handleAddNew}>
                 <Plus className="w-4 h-4" />
-                Añadir {activeLoreTab === 'summary' ? 'Lore' : activeLoreTab.slice(0, -1)}
+                Añadir {
+                  activeLoreTab === 'summary' ? 'Lore' :
+                  activeLoreTab === 'bestiary' ? 'Criatura' :
+                  activeLoreTab === 'worldRules' ? 'Regla' :
+                  activeLoreTab.slice(0, -1)
+                }
              </Button>
           </div>
         </div>
@@ -94,10 +122,28 @@ export const EntityList = () => {
           {list.map((item: any) => {
             if (activeLoreTab === 'characters') {
               return (
-                <CharacterGridCard 
-                  key={item.id} 
-                  character={item} 
-                  onClick={() => handleEntityClick(item)} 
+                <CharacterGridCard
+                  key={item.id}
+                  character={item}
+                  onClick={() => handleEntityClick(item)}
+                />
+              );
+            }
+            if (activeLoreTab === 'bestiary') {
+              return (
+                <CreatureGridCard
+                  key={item.id}
+                  creature={item}
+                  onClick={() => handleEntityClick(item)}
+                />
+              );
+            }
+            if (activeLoreTab === 'worldRules') {
+              return (
+                <WorldRuleGridCard
+                  key={item.id}
+                  rule={item}
+                  onClick={() => handleEntityClick(item)}
                 />
               );
             }
@@ -122,7 +168,7 @@ export const EntityList = () => {
           })}
           {list.length === 0 && (
             <div className="col-span-full py-12 text-center border-2 border-dashed border-border rounded-xl">
-               <p className="text-muted-foreground">No {activeLoreTab} found in this project.</p>
+               <p className="text-muted-foreground">No {activeLoreTab === 'bestiary' ? 'criaturas' : activeLoreTab === 'worldRules' ? 'reglas' : activeLoreTab} found in this project.</p>
             </div>
           )}
         </div>

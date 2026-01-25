@@ -1,67 +1,84 @@
 {
   "lore": [
-    "/img/banner/lore/b_1.png",
-    "/img/banner/lore/b_2.png",
-    "/img/banner/lore/b_3.png"
+    "/img/banner/lore/b_1.webp",
+    "/img/banner/lore/b_2.webp",
+    "/img/banner/lore/b_3.webp"
   ],
   "chapters": [
-    "/img/banner/chapters/b_1.png",
-    "/img/banner/chapters/b_2.png",
-    "/img/banner/chapters/b_3.png"
+    "/img/banner/chapters/b_1.webp",
+    "/img/banner/chapters/b_2.webp",
+    "/img/banner/chapters/b_3.webp"
   ],
   "scenes": [
-    "/img/banner/scenes/b_1.png",
-    "/img/banner/scenes/b_2.png",
-    "/img/banner/scenes/b_3.png"
+    "/img/banner/scenes/b_1.webp",
+    "/img/banner/scenes/b_2.webp",
+    "/img/banner/scenes/b_3.webp"
   ],
   "characters": [
-    "/img/banner/characters/b_1.png",
-    "/img/banner/characters/b_2.png",
-    "/img/banner/characters/b_3.png"
+    "/img/banner/characters/b_1.webp",
+    "/img/banner/characters/b_2.webp",
+    "/img/banner/characters/b_3.webp"
   ],
   "locations": [
-    "/img/banner/locations/b_1.png",
-    "/img/banner/locations/b_2.png",
-    "/img/banner/locations/b_3.png"
+    "/img/banner/locations/b_1.webp",
+    "/img/banner/locations/b_2.webp",
+    "/img/banner/locations/b_3.webp"
   ],
   "events": [
-    "/img/banner/events/b_1.png",
-    "/img/banner/events/b_2.png",
-    "/img/banner/events/b_3.png"
+    "/img/banner/events/b_1.webp",
+    "/img/banner/events/b_2.webp",
+    "/img/banner/events/b_3.webp"
   ],
   "images": [
-    "/img/banner/images/b_1.png",
-    "/img/banner/images/b_2.png",
-    "/img/banner/images/b_3.png"
+    "/img/banner/images/b_1.webp",
+    "/img/banner/images/b_2.webp",
+    "/img/banner/images/b_3.webp"
   ],
   "versionControl": [
-    "/img/banner/versionControl/b_1.png",
-    "/img/banner/versionControl/b_2.png",
-    "/img/banner/versionControl/b_3.png"
+    "/img/banner/versionControl/b_1.webp",
+    "/img/banner/versionControl/b_2.webp",
+    "/img/banner/versionControl/b_3.webp"
   ],
   "stats": [
-    "/img/banner/stats/b_1.png",
-    "/img/banner/stats/b_2.png",
-    "/img/banner/stats/b_3.png"
+    "/img/banner/stats/b_1.webp",
+    "/img/banner/stats/b_2.webp",
+    "/img/banner/stats/b_3.webp"
   ],
   "aiAssistant": [
-    "/img/banner/aiAssistant/b_1.png",
-    "/img/banner/aiAssistant/b_2.png",
-    "/img/banner/aiAssistant/b_3.png"
+    "/img/banner/aiAssistant/b_1.webp",
+    "/img/banner/aiAssistant/b_2.webp",
+    "/img/banner/aiAssistant/b_3.webp"
   ],
   "ragStudio": [
-    "/img/banner/ragStudio/b_1.png",
-    "/img/banner/ragStudio/b_2.png",
-    "/img/banner/ragStudio/b_3.png"
+    "/img/banner/ragStudio/b_1.webp",
+    "/img/banner/ragStudio/b_2.webp",
+    "/img/banner/ragStudio/b_3.webp"
   ],
   "worldbuilder": [
-    "/img/banner/worldbuilder/b_1.png",
-    "/img/banner/worldbuilder/b_2.png",
-    "/img/banner/worldbuilder/b_3.png"
+    "/img/banner/worldbuilder/b_1.webp",
+    "/img/banner/worldbuilder/b_2.webp",
+    "/img/banner/worldbuilder/b_3.webp"
   ],
   "relations": [
-    "/img/banner/relations/b_1.png",
-    "/img/banner/relations/b_2.png",
-    "/img/banner/relations/b_3.png"
+    "/img/banner/relations/b_1.webp",
+    "/img/banner/relations/b_2.webp",
+    "/img/banner/relations/b_3.webp"
+  ],
+  "bestiary": [
+    "/img/banner/bestiary/b_1.webp",
+    "/img/banner/bestiary/b_2.webp",
+    "/img/banner/bestiary/b_3.webp"
+  ],
+  "worldRules": [
+    "/img/banner/worldRules/b_1.webp",
+    "/img/banner/worldRules/b_2.webp",
+    "/img/banner/worldRules/b_3.webp"
+  ],
+  "sidebar": [
+    "/img/banner/sidebar/b_1.webp",
+    "/img/banner/sidebar/b_2.webp",
+    "/img/banner/sidebar/b_3.webp",
+    "/img/banner/sidebar/b_4.webp",
+    "/img/banner/sidebar/b_5.webp"
   ]
 }

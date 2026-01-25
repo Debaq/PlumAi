@@ -12,7 +12,7 @@ export function AIChat() {
   const [input, setInput] = useState('');
   const [selectedCharacterId, setSelectedCharacterId] = useState<string>('assistant');
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { openModal } = useUIStore();
+  const { openModal, activeView } = useUIStore();
   const { activeProject } = useProjectStore();
 
   useEffect(() => {
@@ -32,6 +32,8 @@ export function AIChat() {
     }
     setInput('');
   };
+
+  if (activeView === 'projects') return null;
 
   if (!isOpen) {
     return (

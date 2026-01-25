@@ -295,7 +295,7 @@
     "confirmLeaveUnsaved": "You have unsaved changes. Are you sure you want to leave?"
   },
   "header": {
-    "title": "PlumaAI",
+    "title": "PlumAi",
     "subtitle": "AI-Powered Novel Editor",
     "newProject": "New Project",
     "loadProject": "Load Project",
@@ -386,7 +386,7 @@
   },
   "modals": {
     "welcome": {
-      "title": "Welcome to PlumaAI!",
+      "title": "Welcome to PlumAi!",
       "subtitle": "AI-powered novel editor",
       "description": "Get started by creating a new project or loading an existing one",
       "newProject": "Create New Project",

@@ -3,7 +3,7 @@ import { useProjectStore } from '@/stores/useProjectStore';
 import { useBannerStore } from '@/stores/useBannerStore';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { ShieldOff, Upload, ImageIcon } from 'lucide-react';
+import { ShieldOff, ImageIcon } from 'lucide-react';
 
 interface ContextBannerProps {
   context: string; // 'lore', 'chapters', 'scenes', etc.

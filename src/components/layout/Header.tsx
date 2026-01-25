@@ -1,17 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useUIStore } from '@/stores/useUIStore';
-import { useSettingsStore } from '@/stores/useSettingsStore';
 import {
-  PenLine,
   Settings,
-  Save,
-  Palette,
-  Globe,
-  Check,
-  MoreVertical,
-  FileDown,
-  Upload,
   Book,
   Users,
   Heart,
@@ -19,18 +9,30 @@ import {
   MapPin,
   Minimize2,
   Maximize2,
-  ArrowLeft
+  ArrowLeft,
+  Minus,
+  Square,
+  X,
+  Maximize,
+  Shield,
+  GitBranch,
+  Terminal,
+  Database,
+  Brain
 } from 'lucide-react';
-import { LegacyImporter } from '@/lib/importers/LegacyImporter';
+import { getCurrentWindow } from '@tauri-apps/api/window';
+
+const appWindow = getCurrentWindow();
 
 export const Header = () => {
-  const { activeProject, setActiveProject } = useProjectStore();
-  const settings = useSettingsStore();
+  const { activeProject } = useProjectStore();
   const {
     activeView,
     setActiveView,
     activeLoreTab,
     setActiveLoreTab,
+    activeSettingsTab,
+    setActiveSettingsTab,
     editorSaveStatus,
     editorZenMode,
     toggleEditorZenMode,
@@ -38,80 +40,51 @@ export const Header = () => {
     openModal
   } = useUIStore();
 
-  const [isThemeOpen, setIsThemeOpen] = useState(false);
-  const [isLangOpen, setIsLangOpen] = useState(false);
-  const [isMoreOpen, setIsMoreOpen] = useState(false);
-
-  const themeRef = useRef<HTMLDivElement>(null);
-  const langRef = useRef<HTMLDivElement>(null);
-  const moreRef = useRef<HTMLDivElement>(null);
-
-  // Close dropdowns on click outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (themeRef.current && !themeRef.current.contains(event.target as Node)) setIsThemeOpen(false);
-      if (langRef.current && !langRef.current.contains(event.target as Node)) setIsLangOpen(false);
-      if (moreRef.current && !moreRef.current.contains(event.target as Node)) setIsMoreOpen(false);
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleExport = async (type: 'pdf' | 'docx') => {
-      if (!activeProject) return;
-      const { PublishingEngine } = await import('@/lib/publishing/PublishingEngine');
-      
-      const defaultOptions: any = {
-        title: activeProject.title,
-        author: activeProject.author || 'Author',
-        year: new Date().getFullYear().toString(),
-        bookSize: 'kdp6x9',
-        fontSize: '11',
-        lineHeight: 1.3,
-        paragraphIndent: 7.62,
-        selectedChapters: activeProject.chapters.map(c => c.id),
-        includePageNumbers: true,
-        includeToC: true,
-        includeHeaders: true,
-        contactInfo: { website: '', social: '', newsletter: '' }
-      };
-
-      if (type === 'pdf') PublishingEngine.exportToPdf(activeProject, defaultOptions);
-      if (type === 'docx') PublishingEngine.exportToDocx(activeProject, defaultOptions);
-      setIsMoreOpen(false);
+  const handleMinimize = async () => {
+    try {
+      await appWindow.minimize();
+    } catch (err) {
+      console.error('Failed to minimize:', err);
+    }
   };
 
-  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      try {
-          const text = await file.text();
-          const json = JSON.parse(text);
-          const project = LegacyImporter.importLegacyProject(json);
-          setActiveProject(project);
-          alert('Project imported successfully!');
-      } catch (err) {
-          console.error(err);
-          alert('Failed to import project');
-      }
-      e.target.value = '';
-      setIsMoreOpen(false);
+  const handleMaximize = async () => {
+    try {
+      await appWindow.toggleMaximize();
+    } catch (err) {
+      console.error('Failed to maximize:', err);
+    }
   };
 
-  // Apply theme class to document
-  useEffect(() => {
-    const root = document.documentElement;
-    root.classList.remove('light', 'dark', 'dracula');
-    root.classList.add(settings.theme);
-  }, [settings.theme]);
+  const handleClose = async () => {
+    try {
+      await appWindow.close();
+    } catch (err) {
+      console.error('Failed to close:', err);
+    }
+  };
+
+  const handleFullscreen = async () => {
+    try {
+      const isFullscreen = await appWindow.isFullscreen();
+      await appWindow.setFullscreen(!isFullscreen);
+    } catch (err) {
+      console.error('Failed to toggle fullscreen:', err);
+    }
+  };
 
   return (
-    <header className="h-[48px] bg-card border-b border-border flex items-center justify-between px-4 shrink-0 z-50 fixed top-0 left-0 right-0">
+    <header 
+      className="h-[48px] bg-card border-b border-border flex items-center justify-between shrink-0 z-50 fixed top-0 left-0 right-0 select-none"
+    >
+      {/* Drag Region - Absolute overlay to not interfere with button clicks */}
+      <div data-tauri-drag-region className="absolute inset-0 w-full h-full z-0" />
+
       {/* Left: Logo & Project Info */}
-      <div className="flex items-center gap-4 shrink-0">
+      <div className="relative z-10 flex items-center gap-4 shrink-0 px-4 pointer-events-none">
         <div className="flex items-center gap-2 text-primary font-semibold text-sm">
-          <img src="/img/icon.png" alt="Logo" className="w-6 h-6 object-contain" />
-          <span>{activeProject?.isRpgModeEnabled ? 'PlumaAI Worldbuilder' : 'PlumaAI'}</span>
+          <img src="/img/icon_alpha.png" alt="Logo" className="w-6 h-6 object-contain" />
+          <span>{activeProject?.isRpgModeEnabled ? 'PlumAi Worldbuilder' : 'PlumAi'}</span>
         </div>
 
         {activeProject && (
@@ -122,7 +95,7 @@ export const Header = () => {
       </div>
 
       {/* Center: Contextual Controls */}
-      <div className="flex-1 flex items-center justify-center min-w-0 px-4">
+      <div className="relative z-10 flex-1 flex items-center justify-center min-w-0 px-4">
 
         {/* Lore Tabs */}
         {(activeView === 'lore' || activeView === 'entities') && (
@@ -178,6 +151,29 @@ export const Header = () => {
           </div>
         )}
 
+        {/* Settings Tabs */}
+        {activeView === 'settings' && (
+          <div className="flex items-center gap-4">
+            {!activeProject && (
+              <button 
+                onClick={() => setActiveView('projects')} 
+                className="p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground transition-colors" 
+                title="Back to Projects"
+              >
+                <ArrowLeft size={18} />
+              </button>
+            )}
+            <div className="flex items-center bg-accent/50 p-1 rounded-md overflow-x-auto max-w-full no-scrollbar">
+              <SettingsTabButton id="general" icon={Settings} label="General" current={activeSettingsTab} set={setActiveSettingsTab} />
+              <SettingsTabButton id="ia" icon={Brain} label="IA" current={activeSettingsTab} set={setActiveSettingsTab} />
+              <SettingsTabButton id="security" icon={Shield} label="Seguridad" current={activeSettingsTab} set={setActiveSettingsTab} />
+              <SettingsTabButton id="integrations" icon={GitBranch} label="Integraciones" current={activeSettingsTab} set={setActiveSettingsTab} />
+              <SettingsTabButton id="advanced" icon={Terminal} label="Avanzado" current={activeSettingsTab} set={setActiveSettingsTab} />
+              <SettingsTabButton id="data" icon={Database} label="Datos" current={activeSettingsTab} set={setActiveSettingsTab} />
+            </div>
+          </div>
+        )}
+
         {/* Editor Toolbar */}
         {activeView === 'editor' && (
           <div className="flex items-center gap-4 w-full max-w-2xl">
@@ -222,116 +218,47 @@ export const Header = () => {
 
       </div>
 
-      {/* Right: Actions */}
-      <div className="flex items-center gap-2 shrink-0">
-        <div className="w-px h-6 bg-border mx-2"></div>
-
-        {/* Theme Dropdown */}
-        <div className="relative" ref={themeRef}>
-             <button
-                onClick={() => setIsThemeOpen(!isThemeOpen)}
-                className="w-8 h-8 flex items-center justify-center rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-                title="Theme"
-             >
-                 <Palette size={16} />
-             </button>
-             {isThemeOpen && (
-                 <div className="absolute right-0 top-full mt-2 w-48 bg-popover border border-border rounded-md shadow-lg py-1 z-50">
-                     <button onClick={() => { settings.setTheme('dark'); setIsThemeOpen(false); }} className="flex items-center w-full px-4 py-2 text-sm hover:bg-accent gap-2 text-popover-foreground">
-                         <div className="flex gap-1"><div className="w-3 h-3 bg-[#1e1e1e] rounded-[1px]"></div><div className="w-3 h-3 bg-[#007acc] rounded-[1px]"></div></div>
-                         <span>Dark</span>
-                         {settings.theme === 'dark' && <Check size={14} className="ml-auto" />}
-                     </button>
-                     <button onClick={() => { settings.setTheme('dracula'); setIsThemeOpen(false); }} className="flex items-center w-full px-4 py-2 text-sm hover:bg-accent gap-2 text-popover-foreground">
-                         <div className="flex gap-1"><div className="w-3 h-3 bg-[#282a36] rounded-[1px]"></div><div className="w-3 h-3 bg-[#bd93f9] rounded-[1px]"></div></div>
-                         <span>Dracula</span>
-                         {settings.theme === 'dracula' && <Check size={14} className="ml-auto" />}
-                     </button>
-                     <button onClick={() => { settings.setTheme('light'); setIsThemeOpen(false); }} className="flex items-center w-full px-4 py-2 text-sm hover:bg-accent gap-2 text-popover-foreground">
-                         <div className="flex gap-1"><div className="w-3 h-3 bg-[#faf8f3] rounded-[1px] border border-gray-300"></div><div className="w-3 h-3 bg-[#a89bd5] rounded-[1px]"></div></div>
-                         <span>Light</span>
-                         {settings.theme === 'light' && <Check size={14} className="ml-auto" />}
-                     </button>
-                 </div>
-             )}
-        </div>
-
-        {/* Language Dropdown */}
-        <div className="relative" ref={langRef}>
-             <button
-                onClick={() => setIsLangOpen(!isLangOpen)}
-                className="w-8 h-8 flex items-center justify-center rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-                title="Language"
-             >
-                 <Globe size={16} />
-             </button>
-             {isLangOpen && (
-                 <div className="absolute right-0 top-full mt-2 w-48 bg-popover border border-border rounded-md shadow-lg py-1 z-50">
-                     <button onClick={() => { settings.setLanguage('en'); setIsLangOpen(false); }} className="flex items-center w-full px-4 py-2 text-sm hover:bg-accent gap-2 text-popover-foreground">
-                         <span>🇬🇧 English</span>
-                         {settings.language === 'en' && <Check size={14} className="ml-auto" />}
-                     </button>
-                     <button onClick={() => { settings.setLanguage('es'); setIsLangOpen(false); }} className="flex items-center w-full px-4 py-2 text-sm hover:bg-accent gap-2 text-popover-foreground">
-                         <span>🇪🇸 Español</span>
-                         {settings.language === 'es' && <Check size={14} className="ml-auto" />}
-                     </button>
-                 </div>
-             )}
-        </div>
-
-        {/* Settings Button */}
+      {/* Right: Window Controls */}
+      <div className="relative z-10 flex items-center shrink-0 h-full">
         <button
-          onClick={() => openModal('settings')}
-          className="w-8 h-8 flex items-center justify-center rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-          title="Settings"
+          onClick={handleFullscreen}
+          className="w-10 h-full flex items-center justify-center hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+          title="Toggle Fullscreen"
         >
-            <Settings size={16} />
+          <Maximize size={16} />
         </button>
-
-        {/* More Actions (Import/Export) */}
-        <div className="relative" ref={moreRef}>
-            <button
-                onClick={() => setIsMoreOpen(!isMoreOpen)}
-                className="w-8 h-8 flex items-center justify-center rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-                title="More Actions"
-            >
-                <MoreVertical size={16} />
-            </button>
-            {isMoreOpen && (
-                <div className="absolute right-0 top-full mt-2 w-48 bg-popover border border-border rounded-md shadow-lg py-1 z-50">
-                    <div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Project Actions</div>
-                    <label className="flex items-center w-full px-4 py-2 text-sm hover:bg-accent gap-2 text-popover-foreground cursor-pointer">
-                        <Upload size={14} />
-                        <span>Import JSON</span>
-                        <input
-                            type="file"
-                            className="hidden"
-                            accept=".json"
-                            onChange={handleImport}
-                        />
-                    </label>
-                    <button onClick={() => handleExport('pdf')} className="flex items-center w-full px-4 py-2 text-sm hover:bg-accent gap-2 text-popover-foreground">
-                        <FileDown size={14} />
-                        <span>Export PDF</span>
-                    </button>
-                    <button onClick={() => handleExport('docx')} className="flex items-center w-full px-4 py-2 text-sm hover:bg-accent gap-2 text-popover-foreground">
-                        <FileDown size={14} />
-                        <span>Export DOCX</span>
-                    </button>
-                </div>
-            )}
-        </div>
-
-        {/* Save Button */}
         <button
-          className="flex items-center gap-2 px-3 py-1.5 bg-primary text-primary-foreground text-sm font-medium rounded hover:opacity-90 transition-opacity ml-2"
-          title="Save Project"
+          onClick={handleMinimize}
+          className="w-10 h-full flex items-center justify-center hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+          title="Minimize"
         >
-          <Save size={14} />
-          <span>Save</span>
+          <Minus size={16} />
         </button>
-
+        <button
+          onClick={handleMaximize}
+          className="w-10 h-full flex items-center justify-center hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+          title="Maximize"
+        >
+          <Square size={14} />
+        </button>
+        <button
+          onClick={handleClose}
+          className="w-10 h-full flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground text-muted-foreground transition-colors"
+          title="Close"
+        >
+          <X size={18} />
+        </button>
       </div>
     </header>
   );
 };
+
+const SettingsTabButton = ({ id, icon: Icon, label, current, set }: { id: any, icon: any, label: string, current: string, set: (id: any) => void }) => (
+  <button
+    onClick={() => set(id)}
+    className={`flex items-center gap-1.5 px-3 py-1 rounded-sm text-xs font-medium transition-colors whitespace-nowrap ${current === id ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+  >
+    <Icon size={12} />
+    <span>{label}</span>
+  </button>
+);

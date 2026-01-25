@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
 import ReactFlow, { 
   Background, 
   Controls, 
@@ -12,10 +12,8 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useUIStore } from '@/stores/useUIStore';
-import { 
+import {
   List,
-  Image as ImageIcon,
-  Plus,
   ArrowRight,
   History,
   Sparkles,

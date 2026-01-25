@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useSettingsStore, AIProvider, TokenOptimizationLevel, AppTheme, AppLanguage } from '@/stores/useSettingsStore';
+import { useState, useEffect, useRef } from 'react';
+import { useSettingsStore, AIProvider, TokenOptimizationLevel, AppLanguage, AppFontFamily, AppTheme } from '@/stores/useSettingsStore';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useUIStore } from '@/stores/useUIStore';
 import { useTranslation } from 'react-i18next';
@@ -19,34 +19,42 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Settings, 
   Brain, 
-  Image as ImageIcon, 
   Zap, 
   Terminal, 
-  Database, 
   Save, 
   Trash2, 
-  Shield, 
-  Info,
+  Shield,
   Star,
   Plus,
-  Type,
   ExternalLink,
   Lock,
   Key,
   AlertTriangle,
   GitBranch,
-  Dices
+  Dices,
+  Check,
+  Palette,
+  Type,
+  Maximize,
+  Undo2,
+  Image as ImageIcon,
+  Layers
 } from 'lucide-react';
 
-export const SettingsModal = () => {
+export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
   const { i18n, t } = useTranslation();
-  const { activeModal, closeModal } = useUIStore();
+  const { activeModal, closeModal, activeSettingsTab } = useUIStore();
   const settings = useSettingsStore();
   const { activeProject, setActiveProject, addApiKey, deleteApiKey, setDefaultApiKey } = useProjectStore();
   
-  const [activeTab, setActiveTab] = useState<'general' | 'ai-text' | 'ai-image' | 'optimization' | 'advanced' | 'security' | 'data' | 'integrations' | 'brain'>('general');
   const [newKeyName, setNewKeyName] = useState('');
   const [newKeyValue, setNewKeyValue] = useState('');
+
+  // Confirmation state for Font Size
+  const [isConfirmingSize, setIsConfirmingSize] = useState(false);
+  const [previousSize, setPreviousSize] = useState(16);
+  const [countdown, setCountdown] = useState(10);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Security state
   const [masterPassword, setMasterPassword] = useState('');
@@ -56,16 +64,45 @@ export const SettingsModal = () => {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   useEffect(() => {
-    if (activeModal === 'settings') {
+    if (activeModal === 'settings' || activeSettingsTab === 'security') {
       setSecurityError('');
       setMasterPassword('');
       setConfirmPassword('');
       setCurrentPassword('');
       setIsChangingPassword(false);
     }
-  }, [activeModal]);
+  }, [activeModal, activeSettingsTab]);
 
-  if (activeModal !== 'settings') return null;
+  // Handle countdown for font size
+  useEffect(() => {
+    if (isConfirmingSize && countdown > 0) {
+      timerRef.current = setTimeout(() => setCountdown(countdown - 1), 1000);
+    } else if (isConfirmingSize && countdown === 0) {
+      handleRevertSize();
+    }
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, [isConfirmingSize, countdown]);
+
+  if (!isView && activeModal !== 'settings') return null;
+
+  const handleSizeChange = (newSize: number) => {
+    if (newSize === settings.fontSize) return;
+    setPreviousSize(settings.fontSize);
+    settings.setFontSize(newSize);
+    setIsConfirmingSize(true);
+    setCountdown(10);
+  };
+
+  const handleConfirmSize = () => {
+    setIsConfirmingSize(false);
+    if (timerRef.current) clearTimeout(timerRef.current);
+  };
+
+  const handleRevertSize = () => {
+    settings.setFontSize(previousSize);
+    setIsConfirmingSize(false);
+    if (timerRef.current) clearTimeout(timerRef.current);
+  };
 
   const handleSetMasterPassword = async () => {
     if (masterPassword.length < 4) {
@@ -77,53 +114,65 @@ export const SettingsModal = () => {
       return;
     }
 
-    const hash = await CryptoService.hashPassword(masterPassword);
-    settings.setMasterPassword(hash);
-    setMasterPassword('');
-    setConfirmPassword('');
-    setSecurityError('');
-    alert('Contraseña maestra configurada correctamente');
+    try {
+      const hash = await CryptoService.hashPassword(masterPassword);
+      settings.setMasterPassword(hash);
+      setMasterPassword('');
+      setConfirmPassword('');
+      setSecurityError('');
+      alert('Contraseña maestra configurada correctamente');
+    } catch (err) {
+      setSecurityError('Error al configurar la contraseña');
+    }
   };
 
   const handleChangePassword = async () => {
-    const currentHash = await CryptoService.hashPassword(currentPassword);
-    if (currentHash !== settings.masterPasswordHash) {
-      setSecurityError('La contraseña actual es incorrecta');
-      return;
-    }
+    try {
+      const currentHash = await CryptoService.hashPassword(currentPassword);
+      if (currentHash !== settings.masterPasswordHash) {
+        setSecurityError('La contraseña actual es incorrecta');
+        return;
+      }
 
-    if (masterPassword.length < 4) {
-      setSecurityError('La nueva contraseña debe tener al menos 4 caracteres');
-      return;
-    }
+      if (masterPassword.length < 4) {
+        setSecurityError('La nueva contraseña debe tener al menos 4 caracteres');
+        return;
+      }
 
-    if (masterPassword !== confirmPassword) {
-      setSecurityError('Las nuevas contraseñas no coinciden');
-      return;
-    }
+      if (masterPassword !== confirmPassword) {
+        setSecurityError('Las nuevas contraseñas no coinciden');
+        return;
+      }
 
-    const newHash = await CryptoService.hashPassword(masterPassword);
-    settings.setMasterPassword(newHash);
-    setIsChangingPassword(false);
-    setCurrentPassword('');
-    setMasterPassword('');
-    setConfirmPassword('');
-    setSecurityError('');
-    alert('Contraseña maestra actualizada');
+      const newHash = await CryptoService.hashPassword(masterPassword);
+      settings.setMasterPassword(newHash);
+      setIsChangingPassword(false);
+      setCurrentPassword('');
+      setMasterPassword('');
+      setConfirmPassword('');
+      setSecurityError('');
+      alert('Contraseña maestra actualizada');
+    } catch (err) {
+      setSecurityError('Error al actualizar la contraseña');
+    }
   };
 
   const handleRemovePassword = async () => {
-    const currentHash = await CryptoService.hashPassword(currentPassword);
-    if (currentHash !== settings.masterPasswordHash) {
-      setSecurityError('La contraseña es incorrecta');
-      return;
-    }
+    try {
+      const currentHash = await CryptoService.hashPassword(currentPassword);
+      if (currentHash !== settings.masterPasswordHash) {
+        setSecurityError('La contraseña es incorrecta');
+        return;
+      }
 
-    if (confirm('¿Seguro que quieres eliminar la protección por contraseña? Tus API keys quedarán expuestas en el almacenamiento local.')) {
-      settings.setMasterPassword(null);
-      settings.setEncryptApiKeys(false);
-      setCurrentPassword('');
-      setSecurityError('');
+      if (confirm('¿Seguro que quieres eliminar la protección por contraseña? Tus API keys quedarán expuestas en el almacenamiento local.')) {
+        settings.setMasterPassword(null);
+        settings.setEncryptApiKeys(false);
+        setCurrentPassword('');
+        setSecurityError('');
+      }
+    } catch (err) {
+      setSecurityError('Error al eliminar la contraseña');
     }
   };
 
@@ -139,10 +188,10 @@ export const SettingsModal = () => {
   ];
 
   const imageProviders = [
-    { id: 'googleImagen', name: 'Google Imagen' },
-    { id: 'dalle', name: 'DALL-E' },
-    { id: 'stabilityai', name: 'Stable Diffusion' },
-    { id: 'replicate', name: 'Replicate' },
+    { id: 'googleImagen', name: 'Google Imagen', desc: 'Calidad fotorealista de Google' },
+    { id: 'dalle', name: 'DALL-E 3', desc: 'Comprensión semántica superior' },
+    { id: 'stabilityai', name: 'Stable Diffusion', desc: 'Control total artístico' },
+    { id: 'replicate', name: 'Replicate', desc: 'Acceso a múltiples modelos' },
   ];
 
   const handleAddKey = (type: 'text' | 'image', provider: string) => {
@@ -248,618 +297,681 @@ export const SettingsModal = () => {
     return `${key.slice(0, 4)}••••${key.slice(-4)}`;
   };
 
+  const themes: { id: AppTheme; name: string; colors: string[] }[] = [
+    { id: 'dark', name: 'Dark Modern', colors: ['#1e1e1e', '#007acc'] },
+    { id: 'dracula', name: 'Dracula Focus', colors: ['#282a36', '#bd93f9'] },
+    { id: 'light', name: 'Light Pastel', colors: ['#faf8f3', '#a89bd5'] },
+    { id: 'emerald', name: 'Emerald Forest', colors: ['#0a2e1a', '#10b981'] },
+    { id: 'parchment', name: 'Parchment RPG', colors: ['#f4e4bc', '#8b4513'] },
+    { id: 'hell', name: 'Hell Fire', colors: ['#0f0000', '#990000'] },
+    { id: 'nordic', name: 'Nordic Clean', colors: ['#f0f2f5', '#4a5568'] },
+    { id: 'midnight', name: 'Midnight Focus', colors: ['#0b0e14', '#3182ce'] },
+    { id: 'cyberpunk', name: 'Terminal Green', colors: ['#000000', '#00ff00'] },
+  ];
+
+  const fonts: { id: AppFontFamily; name: string; preview: string; type: 'Serif' | 'Sans' | 'Mono' }[] = [
+    { id: 'inter', name: 'Inter', preview: 'Modern UI', type: 'Sans' },
+    { id: 'merriweather', name: 'Merriweather', preview: 'High Readability', type: 'Serif' },
+    { id: 'lora', name: 'Lora', preview: 'Elegant Writing', type: 'Serif' },
+    { id: 'garamond', name: 'EB Garamond', preview: 'Literary Classic', type: 'Serif' },
+    { id: 'playfair', name: 'Playfair', preview: 'Traditional Style', type: 'Serif' },
+    { id: 'montserrat', name: 'Montserrat', preview: 'Geometric Clean', type: 'Sans' },
+    { id: 'jetbrains', name: 'JetBrains', preview: 'Focus Mono', type: 'Mono' },
+    { id: 'system', name: 'System', preview: 'Default Native', type: 'Sans' },
+  ];
+
+  const sizes = [12, 14, 16, 18, 20, 24, 28];
+
+  const SettingsContent = () => (
+    <div className={`flex flex-col h-full overflow-hidden ${isView ? 'bg-background' : ''}`}>
+      <div className="flex-1 p-6 overflow-y-auto">
+        {/* GENERAL */}
+        {activeSettingsTab === 'general' && (
+          <div className="space-y-10 animate-in fade-in slide-in-from-bottom-2 duration-200 max-w-5xl mx-auto pb-20">
+            
+            {/* Theme Selector */}
+            <div>
+              <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <Palette className="w-4 h-4" />
+                Tema Visual
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {themes.map((t) => (
+                  <button 
+                    key={t.id}
+                    onClick={() => settings.setTheme(t.id)}
+                    className={`p-3 rounded-xl border-2 transition-all flex flex-col gap-2 text-left group ${settings.theme === t.id ? 'border-primary bg-primary/5 shadow-md' : 'border-border hover:border-primary/40 hover:bg-muted/50'}`}
+                  >
+                    <div className="flex gap-1">
+                      <div className="w-full h-6 rounded-md border border-border/20" style={{ backgroundColor: t.colors[0] }}></div>
+                      <div className="w-1/3 h-6 rounded-md border border-border/20" style={{ backgroundColor: t.colors[1] }}></div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold truncate">{t.name}</span>
+                      {settings.theme === t.id && <Check size={14} className="text-primary shrink-0" />}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Font Selector */}
+            <div>
+              <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <Type className="w-4 h-4" />
+                Tipografía Profesional
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                {fonts.map((f) => (
+                  <button 
+                    key={f.id}
+                    onClick={() => settings.setFontFamily(f.id)}
+                    className={`p-4 rounded-xl border-2 transition-all flex flex-col gap-1 text-left relative overflow-hidden ${settings.fontFamily === f.id ? 'border-primary bg-primary/5 shadow-md' : 'border-border hover:border-primary/40 hover:bg-muted/50'}`}
+                  >
+                    <span className="text-[9px] font-black text-primary/60 uppercase tracking-widest absolute top-2 right-3">{f.type}</span>
+                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">{f.name}</span>
+                    <span className="text-lg leading-tight truncate mt-1" style={{ fontFamily: `var(--font-family-${f.id})` }}>
+                      {f.preview}
+                    </span>
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="text-[10px] opacity-50">Abc 123</span>
+                      {settings.fontFamily === f.id && <Check size={14} className="text-primary" />}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Font Size Selector */}
+            <div>
+              <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <Maximize className="w-4 h-4" />
+                Tamaño de Fuente
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {sizes.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => handleSizeChange(s)}
+                    className={`h-12 min-w-12 px-4 rounded-xl border-2 transition-all flex items-center justify-center font-bold ${settings.fontSize === s ? 'border-primary bg-primary/5 text-primary shadow-sm' : 'border-border hover:border-primary/40 text-muted-foreground'}`}
+                  >
+                    <span style={{ fontSize: `${Math.max(12, s * 0.8)}px` }}>{s}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Language and RPG Mode */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-border">
+              <div className="space-y-2">
+                <Label className="text-muted-foreground uppercase text-[10px] font-bold tracking-widest px-1">Idioma de la Interfaz</Label>
+                <Select value={settings.language} onValueChange={(v: AppLanguage) => handleLanguageChange(v)}>
+                  <SelectTrigger className="h-12 rounded-xl bg-card border-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="es">🇪🇸 Español</SelectItem>
+                    <SelectItem value="en">🇬🇧 English</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-muted-foreground uppercase text-[10px] font-bold tracking-widest px-1 flex items-center gap-2">
+                  <Dices className="w-3 h-3" />
+                  Modo Worldbuilder
+                </Label>
+                <div className="flex items-center justify-between p-3 border-2 rounded-xl bg-card h-12">
+                  <span className="text-xs font-medium">{t('ai.settings.worldbuilder.enable')}</span>
+                  <input 
+                    type="checkbox"
+                    className="w-4 h-4 accent-primary"
+                    checked={activeProject?.isRpgModeEnabled || false}
+                    onChange={(e) => useProjectStore.getState().toggleRpgMode(e.target.checked)}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Confirmation Toast for Font Size */}
+        {isConfirmingSize && (
+          <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-10 duration-300">
+            <div className="bg-primary text-primary-foreground px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-6 border border-white/10 backdrop-blur-md">
+              <div className="flex flex-col">
+                <span className="text-sm font-bold">¿Mantener el nuevo tamaño?</span>
+                <span className="text-[10px] opacity-80 uppercase tracking-widest">Se revertirá en {countdown} segundos</span>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="secondary" size="sm" onClick={handleConfirmSize} className="rounded-lg h-9 font-bold px-4 text-primary bg-white hover:bg-white/90 transition-colors">
+                  Mantener
+                </Button>
+                <Button variant="ghost" size="sm" onClick={handleRevertSize} className="rounded-lg h-9 font-bold px-4 hover:bg-white/10 flex gap-2 text-white border border-white/20">
+                  <Undo2 size={14} />
+                  Revertir
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* AI (Consolidated IA Texto, IA Imagen, Optimización) */}
+        {activeSettingsTab === 'ia' && (
+          <div className="space-y-10 animate-in fade-in slide-in-from-bottom-2 duration-200 max-w-4xl mx-auto pb-20">
+            {/* Texto Section */}
+            <div>
+              <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <Type className="w-4 h-4" />
+                Configuración de Texto e IA
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-[10px] uppercase font-bold ml-1">Proveedor Principal</Label>
+                  <Select value={settings.activeProvider} onValueChange={(v: AIProvider) => settings.setActiveProvider(v)}>
+                    <SelectTrigger className="h-11 border-2 rounded-xl bg-card">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {providers.map(p => (
+                        <SelectItem key={p.id} value={p.id}>{p.name} ({p.freeTier})</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-[10px] uppercase font-bold ml-1">Optimización de Tokens</Label>
+                  <Select value={settings.tokenOptimizationLevel} onValueChange={(v: TokenOptimizationLevel) => settings.setTokenLevel(v)}>
+                    <SelectTrigger className="h-11 border-2 rounded-xl bg-card">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="minimal">⚡ Mínimo (~1,000 tokens)</SelectItem>
+                      <SelectItem value="normal">⚖️ Normal (~3,000 tokens)</SelectItem>
+                      <SelectItem value="complete">📚 Completo (~8,000 tokens)</SelectItem>
+                      <SelectItem value="unlimited">🚀 Sin límite</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Key Management */}
+              <div className="mt-6 space-y-4">
+                <div className="flex items-center justify-between px-1">
+                  <Label className="font-bold">API Keys para {providers.find(p => p.id === settings.activeProvider)?.name}</Label>
+                  <Badge variant="outline" className="rounded-lg">{activeProject?.apiKeys?.text?.[settings.activeProvider]?.length || 0} guardadas</Badge>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Input 
+                    placeholder="Nombre" 
+                    className="w-1/3 h-11 border-2 rounded-xl" 
+                    value={newKeyName}
+                    onChange={(e) => setNewKeyName(e.target.value)}
+                  />
+                  <Input 
+                    placeholder="sk-..." 
+                    type="password" 
+                    className="flex-1 h-11 border-2 rounded-xl"
+                    value={newKeyValue}
+                    onChange={(e) => setNewKeyValue(e.target.value)}
+                  />
+                  <Button className="h-11 w-11 rounded-xl" onClick={() => handleAddKey('text', settings.activeProvider)}>
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {(activeProject?.apiKeys?.text?.[settings.activeProvider] || []).map((keyEntry: any) => (
+                    <div key={keyEntry.id} className="p-3 border-2 rounded-xl bg-card/50 flex items-center justify-between">
+                      <div className="flex flex-col min-w-0">
+                        <div className="flex items-center gap-2">
+                          {keyEntry.isDefault && <Star className="w-3 h-3 fill-yellow-500 text-yellow-500" />}
+                          <span className="text-xs font-bold truncate">{keyEntry.name}</span>
+                        </div>
+                        <code className="text-[9px] text-muted-foreground">{maskKey(keyEntry.key)}</code>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {!keyEntry.isDefault && (
+                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setDefaultApiKey('text', settings.activeProvider, keyEntry.id)}>
+                            <Star className="w-4 h-4" />
+                          </Button>
+                        )}
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive" onClick={() => deleteApiKey('text', settings.activeProvider, keyEntry.id)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Agéntica Section */}
+            <div className="p-4 border-2 rounded-2xl bg-primary/5 flex items-center justify-between">
+              <div className="space-y-1">
+                <Label className="flex items-center gap-2 cursor-pointer font-bold" htmlFor="agentic-mode-ia">
+                  <Brain className="w-4 h-4 text-primary" />
+                  Sistema de IA Agéntica
+                </Label>
+                <p className="text-[10px] text-muted-foreground font-medium">
+                  La IA analiza personajes y lore para incluirlos solo cuando son relevantes.
+                </p>
+              </div>
+              <input 
+                id="agentic-mode-ia"
+                type="checkbox" 
+                className="w-5 h-5 accent-primary cursor-pointer" 
+                checked={settings.useAgenticContext}
+                onChange={(e) => settings.setAgenticContext(e.target.checked)}
+              />
+            </div>
+
+            {/* Imagen Section */}
+            <div className="pt-6 border-t border-border">
+              <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <ImageIcon className="w-4 h-4" />
+                Generación de Imágenes
+              </h3>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-[10px] uppercase font-bold ml-1">Proveedor de Imagen</Label>
+                  <Select defaultValue="googleImagen">
+                    <SelectTrigger className="h-11 border-2 rounded-xl bg-card">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {imageProviders.map(p => (
+                        <SelectItem key={p.id} value={p.id}>
+                          <span className="font-bold">{p.name}</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SECURITY */}
+        {activeSettingsTab === 'security' && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200 max-w-3xl mx-auto pb-20">
+            <div>
+              <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">Privacidad y Protección</h3>
+              
+              {!settings.masterPasswordHash ? (
+                <div className="space-y-4">
+                  <div className="p-4 border-2 border-yellow-500/20 bg-yellow-500/5 rounded-2xl flex gap-3">
+                    <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-bold">Sin Contraseña Maestra</p>
+                      <p className="text-xs text-muted-foreground">
+                        Tus API Keys se guardan en texto plano en el navegador. Recomendamos activar la protección.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 p-6 border-2 rounded-2xl bg-card">
+                    <Label className="text-lg font-black">Configurar Contraseña Maestra</Label>
+                    <div className="space-y-3">
+                      <Input 
+                        type="password" 
+                        placeholder="Nueva Contraseña" 
+                        value={masterPassword}
+                        onChange={(e) => setMasterPassword(e.target.value)}
+                        className="h-12 rounded-xl"
+                      />
+                      <Input 
+                        type="password" 
+                        placeholder="Confirmar Contraseña" 
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="h-12 rounded-xl"
+                      />
+                      {securityError && <p className="text-xs text-destructive font-bold">{securityError}</p>}
+                      <Button className="w-full h-12 gap-2 rounded-xl text-md font-bold" onClick={handleSetMasterPassword}>
+                        <Lock className="w-4 h-4" />
+                        Activar Protección
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="p-4 border-2 border-green-500/20 bg-green-500/5 rounded-2xl flex gap-3">
+                    <Shield className="w-5 h-5 text-green-500 shrink-0" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-bold text-green-600">Protección Activada</p>
+                      <p className="text-xs text-muted-foreground">
+                        Tus datos sensibles están encriptados con tu contraseña maestra.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 border-2 rounded-2xl bg-card/50">
+                    <div className="space-y-1">
+                      <Label className="flex items-center gap-2 font-bold">
+                        <Key className="w-4 h-4 text-primary" />
+                        Encriptar API Keys
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        Requiere la contraseña maestra cada vez que inicies sesión.
+                      </p>
+                    </div>
+                    <input 
+                      type="checkbox"
+                      className="w-4 h-4 accent-primary"
+                      checked={settings.encryptApiKeys}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => settings.setEncryptApiKeys(e.target.checked)}
+                    />
+                  </div>
+
+                  {!isChangingPassword ? (
+                    <div className="flex gap-2">
+                      <Button variant="outline" className="flex-1 h-12 rounded-xl border-2 font-bold" onClick={() => setIsChangingPassword(true)}>
+                        Cambiar Contraseña
+                      </Button>
+                      <Button variant="ghost" className="text-destructive hover:bg-destructive/10 h-12 rounded-xl font-bold" onClick={() => setIsChangingPassword(false)}>
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3 p-6 border-2 rounded-2xl bg-card">
+                      <Label className="font-bold">Cambiar Contraseña Maestra</Label>
+                      <div className="space-y-3">
+                        <Input 
+                          type="password" 
+                          placeholder="Contraseña Actual" 
+                          value={currentPassword}
+                          onChange={(e) => setCurrentPassword(e.target.value)}
+                          className="h-12 rounded-xl"
+                        />
+                        <hr className="my-2 border-border" />
+                        <Input 
+                          type="password" 
+                          placeholder="Nueva Contraseña" 
+                          value={masterPassword}
+                          onChange={(e) => setMasterPassword(e.target.value)}
+                          className="h-12 rounded-xl"
+                        />
+                        <Input 
+                          type="password" 
+                          placeholder="Confirmar Nueva Contraseña" 
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          className="h-12 rounded-xl"
+                        />
+                        {securityError && <p className="text-xs text-destructive font-bold">{securityError}</p>}
+                        <div className="flex gap-2">
+                          <Button variant="ghost" className="flex-1 h-12 rounded-xl font-bold" onClick={() => setIsChangingPassword(false)}>Cancelar</Button>
+                          <Button className="flex-1 h-12 rounded-xl font-bold" onClick={handleChangePassword}>Actualizar</Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {!isChangingPassword && (
+                    <div className="pt-4 border-t border-border">
+                      <Label className="text-destructive block mb-2 font-black uppercase tracking-tighter">Zona de Peligro</Label>
+                      <div className="space-y-2 p-4 border-2 border-destructive/20 rounded-2xl bg-destructive/5">
+                        <p className="text-xs text-muted-foreground font-medium">Para eliminar la protección por completo, introduce tu contraseña actual:</p>
+                        <div className="flex gap-2">
+                          <Input 
+                            type="password" 
+                            placeholder="Contraseña Actual" 
+                            className="flex-1 h-11 rounded-xl"
+                            value={currentPassword}
+                            onChange={(e) => setCurrentPassword(e.target.value)}
+                          />
+                          <Button variant="destructive" className="h-11 rounded-xl px-6 font-bold" onClick={handleRemovePassword}>Eliminar</Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* INTEGRATIONS */}
+        {activeSettingsTab === 'integrations' && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200 max-w-3xl mx-auto pb-20">
+            <div>
+              <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">Sincronización Externa</h3>
+              <div className="space-y-6">
+                {/* GitHub */}
+                <div className="p-6 border-2 rounded-2xl bg-card space-y-4 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-foreground/5 rounded-full border">
+                      <GitBranch className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-md font-black">GitHub Sync</p>
+                      <p className="text-xs text-muted-foreground">Sincroniza tus proyectos con repositorios privados.</p>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] uppercase font-black text-muted-foreground ml-1">Personal Access Token</Label>
+                      <Input 
+                        type="password" 
+                        placeholder="ghp_..." 
+                        value={settings.githubToken || ''} 
+                        onChange={(e: any) => settings.setGithubToken(e.target.value)}
+                        className="h-11 rounded-xl bg-muted/20"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] uppercase font-black text-muted-foreground ml-1">Repositorio (usuario/repo)</Label>
+                      <Input 
+                        placeholder="nombre/mi-obra-maestra" 
+                        value={settings.githubRepo || ''} 
+                        onChange={(e: any) => settings.setGithubRepo(e.target.value)}
+                        className="h-11 rounded-xl bg-muted/20"
+                      />
+                    </div>
+                    <Button className="w-full h-11 rounded-xl gap-2 text-xs font-bold border-2" variant="outline" disabled={!settings.githubToken}>
+                      <Save size={14} />
+                      Verificar y Sincronizar
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Dropbox Placeholder */}
+                <div className="p-6 border-2 border-dashed rounded-2xl bg-muted/10 opacity-60 grayscale flex items-center justify-between">
+                   <div className="flex items-center gap-3">
+                      <div className="p-3 bg-blue-500/10 rounded-full">
+                        <ExternalLink className="w-6 h-6 text-blue-500" />
+                      </div>
+                      <div>
+                        <p className="text-md font-bold">Dropbox</p>
+                        <p className="text-xs text-muted-foreground italic">Próximamente...</p>
+                      </div>
+                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ADVANCED */}
+        {activeSettingsTab === 'advanced' && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200 max-w-3xl mx-auto pb-20">
+            <div>
+              <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">Experiencia de Escritura</h3>
+              <div className="grid grid-cols-1 gap-3">
+                <ToggleItem 
+                  id="typewriter" 
+                  icon={Type} 
+                  label="Typewriter Scroll" 
+                  description="Mantiene la línea activa centrada verticalmente." 
+                  checked={settings.typewriterMode} 
+                  onChange={settings.setTypewriterMode} 
+                />
+                <ToggleItem 
+                  id="hemingway" 
+                  icon={Zap} 
+                  label="Modo Hemingway" 
+                  description="Desactiva borrar y retroceso. Solo hacia adelante." 
+                  checked={settings.hemingwayMode} 
+                  onChange={settings.setHemingwayMode} 
+                />
+                <ToggleItem 
+                  id="pomodoro" 
+                  icon={Maximize} 
+                  label="Temporizador Pomodoro" 
+                  description="Habilita un timer de 25/5 en la barra de estado." 
+                  checked={settings.pomodoroEnabled} 
+                  onChange={settings.setPomodoroEnabled} 
+                />
+              </div>
+            </div>
+
+            <div className="pt-6 border-t border-border">
+              <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">Módulos del Sistema</h3>
+              <div className="grid grid-cols-1 gap-3">
+                <ToggleItem 
+                  id="rag-studio-toggle" 
+                  icon={Layers} 
+                  label="Habilitar RAG Studio" 
+                  description="Muestra u oculta el módulo de entrenamiento de IA en el menú lateral." 
+                  checked={settings.ragStudioEnabled} 
+                  onChange={settings.setRagStudioEnabled} 
+                />
+              </div>
+            </div>
+
+            <div className="pt-6 border-t border-border">
+              <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">Estética y Pulido</h3>
+              <div className="grid grid-cols-1 gap-3">
+                <ToggleItem 
+                  id="animations" 
+                  icon={Palette} 
+                  label="Micro-animaciones" 
+                  description="Transiciones suaves entre temas y estados de UI." 
+                  checked={settings.animationsEnabled} 
+                  onChange={settings.setAnimationsEnabled} 
+                />
+              </div>
+            </div>
+
+            <div className="pt-6 border-t border-border">
+              <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">Depuración</h3>
+              <div className="flex items-center justify-between p-4 border-2 rounded-2xl bg-card/50">
+                <div className="space-y-1">
+                  <Label className="flex items-center gap-2 cursor-pointer font-bold" htmlFor="debug-logs">
+                    <Terminal className="w-4 h-4 text-primary" />
+                    Logs de IA Interactivos
+                  </Label>
+                  <p className="text-xs text-muted-foreground font-medium">
+                    Habilita la consola técnica en la barra inferior.
+                  </p>
+                </div>
+                <input 
+                  id="debug-logs"
+                  type="checkbox" 
+                  className="w-4 h-4 accent-primary" 
+                  checked={settings.enableLogs}
+                  onChange={(e) => settings.setEnableLogs(e.target.checked)}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* DATA */}
+        {activeSettingsTab === 'data' && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200 max-w-3xl mx-auto pb-20">
+            <div>
+              <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">Gestión de Datos</h3>
+              <div className="space-y-4">
+                <div className="p-6 border-2 rounded-2xl bg-card space-y-4 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-primary/5 rounded-full border">
+                      <Shield className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-md font-black">Almacenamiento Local</p>
+                      <p className="text-xs text-muted-foreground font-medium">Tus datos nunca salen de este dispositivo.</p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                    <Button variant="outline" className="justify-start gap-3 h-12 rounded-xl border-2 font-bold" onClick={handleExportAll}>
+                      <Save className="w-4 h-4" />
+                      Exportar Backup
+                    </Button>
+                    <Button variant="outline" className="justify-start gap-3 h-12 rounded-xl border-2 font-bold" onClick={handleImport}>
+                      <Plus className="w-4 h-4" />
+                      Importar Proyecto
+                    </Button>
+                    <Button variant="outline" className="justify-start gap-3 h-12 rounded-xl border-2 font-bold text-destructive hover:bg-destructive/10 hover:text-destructive sm:col-span-2" onClick={handleDeleteAll}>
+                      <Trash2 className="w-4 h-4" />
+                      Eliminar Todos los Datos de la App
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="p-6 rounded-2xl bg-muted/30 border-2 border-dashed flex flex-col items-center justify-center gap-3 text-center">
+                  <ExternalLink className="w-8 h-8 text-muted-foreground/30" />
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Próximamente</p>
+                    <p className="text-xs text-muted-foreground opacity-60">Sincronización en la Nube (Google Drive, iCloud)</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {!isView && (
+        <DialogFooter className="p-4 border-t border-border bg-muted/20 shrink-0">
+          <Button variant="secondary" onClick={() => closeModal()} className="rounded-xl font-bold px-8">Cerrar</Button>
+        </DialogFooter>
+      )}
+    </div>
+  );
+
+  if (isView) {
+    return <SettingsContent />;
+  }
+
   return (
     <Dialog open={activeModal === 'settings'} onOpenChange={() => closeModal()}>
-      <DialogContent className="sm:max-w-[600px] w-full h-[90vh] flex flex-col p-0 gap-0 overflow-hidden bg-background border-border">
-        <DialogHeader className="p-6 border-b bg-card shrink-0">
+      <DialogContent className="sm:max-w-[800px] w-full h-[80vh] flex flex-col p-0 gap-0 overflow-hidden bg-background border-border shadow-2xl rounded-3xl">
+        <DialogHeader className="p-4 border-b border-border bg-card shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Settings className="w-5 h-5 text-primary" />
             <span>{t('header.settings')}</span>
           </DialogTitle>
         </DialogHeader>
-
-        <div className="flex flex-1 overflow-hidden">
-          {/* Sidebar Tabs */}
-          <div className="w-48 bg-muted/30 border-r flex flex-col p-2 shrink-0 overflow-y-auto">
-            <TabButton active={activeTab === 'general'} onClick={() => setActiveTab('general')} icon={Settings} label="General" />
-            <TabButton active={activeTab === 'ai-text'} onClick={() => setActiveTab('ai-text')} icon={Type} label="IA Texto" />
-            <TabButton active={activeTab === 'ai-image'} onClick={() => setActiveTab('ai-image')} icon={ImageIcon} label="IA Imágenes" />
-            <TabButton active={activeTab === 'optimization'} onClick={() => setActiveTab('optimization')} icon={Zap} label="Optimización" />
-            <TabButton active={activeTab === 'security'} onClick={() => setActiveTab('security')} icon={Shield} label="Seguridad" />
-            <TabButton active={activeTab === 'integrations'} onClick={() => setActiveTab('integrations')} icon={GitBranch} label="Integraciones" />
-            <TabButton active={activeTab === 'advanced'} onClick={() => setActiveTab('advanced')} icon={Terminal} label="Avanzado" />
-            <TabButton active={activeTab === 'data'} onClick={() => setActiveTab('data')} icon={Database} label="Datos" />
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 p-6 overflow-y-auto">
-            
-            {/* GENERAL */}
-            {activeTab === 'general' && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                <div>
-                  <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">Apariencia y Lenguaje</h3>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Tema de la aplicación</Label>
-                      <Select value={settings.theme} onValueChange={(v: AppTheme) => settings.setTheme(v)}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="dark">Oscuro (VSCode)</SelectItem>
-                          <SelectItem value="dracula">Dracula</SelectItem>
-                          <SelectItem value="light">Claro Pastel</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Idioma</Label>
-                      <Select value={settings.language} onValueChange={(v: AppLanguage) => handleLanguageChange(v)}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="es">🇪🇸 Español</SelectItem>
-                          <SelectItem value="en">🇬🇧 English</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  
-                  {/* RPG Mode Toggle */}
-                  <div className="pt-4 border-t border-border mt-4">
-                    <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                      <Dices className="w-4 h-4 text-primary" />
-                      {t('ai.settings.worldbuilder.title')}
-                    </h4>
-                    <div className="flex items-center justify-between p-4 border rounded-lg bg-card/50">
-                      <div className="space-y-1">
-                         <Label className="cursor-pointer" htmlFor="worldbuilder-mode-toggle">{t('ai.settings.worldbuilder.enable')}</Label>
-                         <p className="text-xs text-muted-foreground">
-                           {t('ai.settings.worldbuilder.description')}
-                         </p>
-                      </div>
-                      <input 
-                        id="worldbuilder-mode-toggle"
-                        type="checkbox"
-                        className="w-4 h-4 accent-primary"
-                        checked={activeProject?.isRpgModeEnabled || false}
-                        onChange={(e) => useProjectStore.getState().toggleRpgMode(e.target.checked)}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* AI TEXT */}
-            {activeTab === 'ai-text' && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                <div>
-                  <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">Configuración de Texto</h3>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Proveedor Principal</Label>
-                      <Select value={settings.activeProvider} onValueChange={(v: AIProvider) => settings.setActiveProvider(v)}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {providers.map(p => (
-                            <SelectItem key={p.id} value={p.id}>{p.name} ({p.freeTier})</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    {/* Key Management */}
-                    <div className="space-y-4 pt-4">
-                      <div className="flex items-center justify-between">
-                        <Label>API Keys para {providers.find(p => p.id === settings.activeProvider)?.name}</Label>
-                        <Badge variant="outline">{activeProject?.apiKeys?.text[settings.activeProvider]?.length || 0} guardadas</Badge>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <div className="flex gap-2">
-                          <Input 
-                            placeholder="Nombre (ej: Principal)" 
-                            className="w-1/3" 
-                            value={newKeyName}
-                            onChange={(e) => setNewKeyName(e.target.value)}
-                          />
-                          <Input 
-                            placeholder="sk-..." 
-                            type="password" 
-                            className="flex-1"
-                            value={newKeyValue}
-                            onChange={(e) => setNewKeyValue(e.target.value)}
-                          />
-                          <Button size="icon" onClick={() => handleAddKey('text', settings.activeProvider)}>
-                            <Plus className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2 border rounded-md divide-y overflow-hidden">
-                        {(activeProject?.apiKeys?.text[settings.activeProvider] || []).map((keyEntry) => (
-                          <div key={keyEntry.id} className="p-3 flex items-center justify-between bg-card/50">
-                            <div className="flex flex-col">
-                              <div className="flex items-center gap-2">
-                                {keyEntry.isDefault && <Star className="w-3 h-3 fill-yellow-500 text-yellow-500" />}
-                                <span className="text-sm font-medium">{keyEntry.name}</span>
-                              </div>
-                              <code className="text-[10px] text-muted-foreground">{maskKey(keyEntry.key)}</code>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              {!keyEntry.isDefault && (
-                                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDefaultApiKey('text', settings.activeProvider, keyEntry.id)}>
-                                  <Star className="w-4 h-4" />
-                                </Button>
-                              )}
-                              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteApiKey('text', settings.activeProvider, keyEntry.id)}>
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                        {(activeProject?.apiKeys?.text[settings.activeProvider] || []).length === 0 && (
-                          <div className="p-8 text-center text-muted-foreground text-sm">
-                            No hay llaves configuradas para este proveedor.
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {/* Groq Model Routing */}
-                    {settings.activeProvider === 'groq' && (
-                      <div className="pt-4 border-t border-border mt-4 animate-in fade-in slide-in-from-top-2">
-                        <div className="flex items-center gap-2 mb-3">
-                           <div className="p-1 rounded-md bg-orange-500/10 text-orange-500">
-                              <Zap className="w-4 h-4" />
-                           </div>
-                           <h4 className="text-sm font-semibold">Enrutamiento de Modelos (Groq)</h4>
-                        </div>
-                        <p className="text-xs text-muted-foreground mb-4">
-                          Asigna modelos especializados para cada tipo de tarea. Esto optimiza velocidad y calidad.
-                        </p>
-                        
-                        <div className="grid grid-cols-1 gap-4 p-4 border rounded-lg bg-card/50">
-                          <div className="space-y-2">
-                             <Label className="text-xs uppercase font-bold text-muted-foreground">Narrativa (Creativo)</Label>
-                             <Select 
-                               value={settings.groqModelMap?.creative || 'llama-3.3-70b-versatile'} 
-                               onValueChange={(v: string) => settings.setGroqModelMap({
-                                 creative: v, 
-                                 logical: settings.groqModelMap?.logical || 'mixtral-8x7b-32768', 
-                                 fast: settings.groqModelMap?.fast || 'llama-3.1-8b-instant'
-                               })}
-                             >
-                               <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                               <SelectContent>
-                                 <SelectItem value="llama-3.3-70b-versatile">Llama 3.3 70B (Versatile)</SelectItem>
-                                 <SelectItem value="llama-3.1-70b-versatile">Llama 3.1 70B (Versatile)</SelectItem>
-                                 <SelectItem value="mixtral-8x7b-32768">Mixtral 8x7B</SelectItem>
-                               </SelectContent>
-                             </Select>
-                          </div>
-
-                          <div className="space-y-2">
-                             <Label className="text-xs uppercase font-bold text-muted-foreground">Lógica y Reglas (Razonamiento)</Label>
-                             <Select 
-                               value={settings.groqModelMap?.logical || 'mixtral-8x7b-32768'} 
-                               onValueChange={(v: string) => settings.setGroqModelMap({
-                                 logical: v, 
-                                 creative: settings.groqModelMap?.creative || 'llama-3.3-70b-versatile', 
-                                 fast: settings.groqModelMap?.fast || 'llama-3.1-8b-instant'
-                               })}
-                             >
-                               <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                               <SelectContent>
-                                 <SelectItem value="mixtral-8x7b-32768">Mixtral 8x7B (Recomendado)</SelectItem>
-                                 <SelectItem value="llama-3.3-70b-versatile">Llama 3.3 70B</SelectItem>
-                                 <SelectItem value="llama3-70b-8192">Llama 3 70B</SelectItem>
-                               </SelectContent>
-                             </Select>
-                          </div>
-
-                          <div className="space-y-2">
-                             <Label className="text-xs uppercase font-bold text-muted-foreground">Chat Rápido / NPCs (Velocidad)</Label>
-                             <Select 
-                               value={settings.groqModelMap?.fast || 'llama-3.1-8b-instant'} 
-                               onValueChange={(v: string) => settings.setGroqModelMap({
-                                 fast: v, 
-                                 creative: settings.groqModelMap?.creative || 'llama-3.3-70b-versatile', 
-                                 logical: settings.groqModelMap?.logical || 'mixtral-8x7b-32768'
-                               })}
-                             >
-                               <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                               <SelectContent>
-                                 <SelectItem value="llama-3.1-8b-instant">Llama 3.1 8B Instant (Ultra Rápido)</SelectItem>
-                                 <SelectItem value="gemma2-9b-it">Gemma 2 9B</SelectItem>
-                                 <SelectItem value="llama3-8b-8192">Llama 3 8B</SelectItem>
-                               </SelectContent>
-                             </Select>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* AI IMAGE */}
-            {activeTab === 'ai-image' && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                <div>
-                  <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">Generación de Imágenes</h3>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Proveedor de Imagen</Label>
-                      <Select defaultValue="googleImagen">
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {imageProviders.map(p => (
-                            <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="p-4 border border-dashed rounded-lg bg-muted/20 text-center">
-                      <p className="text-sm text-muted-foreground">La gestión de llaves de imagen estará disponible próximamente.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* OPTIMIZATION */}
-            {activeTab === 'optimization' && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                <div>
-                  <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">Eficiencia de Contexto</h3>
-                  <div className="space-y-6">
-                    <div className="space-y-2">
-                      <Label>Nivel de Optimización de Tokens</Label>
-                      <Select value={settings.tokenOptimizationLevel} onValueChange={(v: TokenOptimizationLevel) => settings.setTokenLevel(v)}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="minimal">⚡ Mínimo (~1,000 tokens)</SelectItem>
-                          <SelectItem value="normal">⚖️ Normal (~3,000 tokens)</SelectItem>
-                          <SelectItem value="complete">📚 Completo (~8,000 tokens)</SelectItem>
-                          <SelectItem value="unlimited">🚀 Sin límite</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 border rounded-lg bg-accent/10">
-                      <div className="space-y-1">
-                        <Label className="flex items-center gap-2 cursor-pointer" htmlFor="agentic-mode">
-                          <Brain className="w-4 h-4 text-primary" />
-                          Sistema de IA Agéntica
-                        </Label>
-                        <p className="text-xs text-muted-foreground">
-                          La IA analiza tu tarea y decide qué contexto necesita.
-                        </p>
-                      </div>
-                      <input 
-                        id="agentic-mode"
-                        type="checkbox" 
-                        className="w-4 h-4 accent-primary" 
-                        checked={settings.useAgenticContext}
-                        onChange={(e) => settings.setAgenticContext(e.target.checked)}
-                      />
-                    </div>
-
-                    <div className="bg-muted/50 p-4 rounded-lg space-y-2">
-                      <div className="flex items-center gap-2 text-sm font-medium">
-                        <Info className="w-4 h-4" />
-                        <span>¿Cómo funciona?</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        El sistema analiza personajes y lore mencionados para incluir solo lo relevante, 
-                        ahorrando tokens sin perder calidad.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* SECURITY */}
-            {activeTab === 'security' && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                <div>
-                  <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">Privacidad y Protección</h3>
-                  
-                  {!settings.masterPasswordHash ? (
-                    <div className="space-y-4">
-                      <div className="p-4 border border-yellow-500/20 bg-yellow-500/5 rounded-lg flex gap-3">
-                        <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0" />
-                        <div className="space-y-1">
-                          <p className="text-sm font-medium">Sin Contraseña Maestra</p>
-                          <p className="text-xs text-muted-foreground">
-                            Tus API Keys se guardan en texto plano en el navegador. Cualquiera con acceso físico a este equipo podría verlas.
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="space-y-3 p-4 border rounded-lg bg-card">
-                        <Label>Configurar Contraseña Maestra</Label>
-                        <div className="space-y-2">
-                          <Input 
-                            type="password" 
-                            placeholder="Nueva Contraseña" 
-                            value={masterPassword}
-                            onChange={(e) => setMasterPassword(e.target.value)}
-                          />
-                          <Input 
-                            type="password" 
-                            placeholder="Confirmar Contraseña" 
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                          />
-                          {securityError && <p className="text-xs text-destructive">{securityError}</p>}
-                          <Button className="w-full gap-2" onClick={handleSetMasterPassword}>
-                            <Lock className="w-4 h-4" />
-                            Activar Protección
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <div className="p-4 border border-green-500/20 bg-green-500/5 rounded-lg flex gap-3">
-                        <Shield className="w-5 h-5 text-green-500 shrink-0" />
-                        <div className="space-y-1">
-                          <p className="text-sm font-medium">Protección Activada</p>
-                          <p className="text-xs text-muted-foreground">
-                            La contraseña maestra permite encriptar tus datos sensibles.
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="space-y-1">
-                          <Label className="flex items-center gap-2">
-                            <Key className="w-4 h-4" />
-                            Encriptar API Keys
-                          </Label>
-                          <p className="text-xs text-muted-foreground">
-                            Requiere la contraseña maestra al iniciar sesión.
-                          </p>
-                        </div>
-                        <input 
-                          type="checkbox"
-                          className="w-4 h-4 accent-primary"
-                          checked={settings.encryptApiKeys}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => settings.setEncryptApiKeys(e.target.checked)}
-                        />
-                      </div>
-
-                      {!isChangingPassword ? (
-                        <div className="flex gap-2">
-                          <Button variant="outline" className="flex-1" onClick={() => setIsChangingPassword(true)}>
-                            Cambiar Contraseña
-                          </Button>
-                          <Button variant="ghost" className="text-destructive" onClick={() => setIsChangingPassword(false)}>
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <div className="space-y-3 p-4 border rounded-lg bg-card">
-                          <Label>Cambiar Contraseña Maestra</Label>
-                          <div className="space-y-2">
-                            <Input 
-                              type="password" 
-                              placeholder="Contraseña Actual" 
-                              value={currentPassword}
-                              onChange={(e) => setCurrentPassword(e.target.value)}
-                            />
-                            <hr className="my-2" />
-                            <Input 
-                              type="password" 
-                              placeholder="Nueva Contraseña" 
-                              value={masterPassword}
-                              onChange={(e) => setMasterPassword(e.target.value)}
-                            />
-                            <Input 
-                              type="password" 
-                              placeholder="Confirmar Nueva Contraseña" 
-                              value={confirmPassword}
-                              onChange={(e) => setConfirmPassword(e.target.value)}
-                            />
-                            {securityError && <p className="text-xs text-destructive">{securityError}</p>}
-                            <div className="flex gap-2">
-                              <Button variant="ghost" className="flex-1" onClick={() => setIsChangingPassword(false)}>Cancelar</Button>
-                              <Button className="flex-1" onClick={handleChangePassword}>Actualizar</Button>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {!isChangingPassword && (
-                        <div className="pt-4 border-t">
-                          <Label className="text-destructive block mb-2">Zona de Peligro</Label>
-                          <div className="space-y-2">
-                            <p className="text-xs text-muted-foreground">Para eliminar la contraseña maestra, introduce la actual:</p>
-                            <div className="flex gap-2">
-                              <Input 
-                                type="password" 
-                                placeholder="Contraseña Actual" 
-                                className="flex-1"
-                                value={currentPassword}
-                                onChange={(e) => setCurrentPassword(e.target.value)}
-                              />
-                              <Button variant="destructive" onClick={handleRemovePassword}>Eliminar</Button>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-            {/* INTEGRATIONS */}
-            {activeTab === 'integrations' && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                <div>
-                  <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">Sincronización Externa</h3>
-                  <div className="space-y-6">
-                    {/* GitHub */}
-                    <div className="p-4 border rounded-xl bg-card space-y-4">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-foreground/10 rounded-full">
-                          <GitBranch className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold">GitHub</p>
-                          <p className="text-xs text-muted-foreground">Sincroniza tu archivo .pluma con un repositorio privado.</p>
-                        </div>
-                      </div>
-                      <div className="space-y-3">
-                        <div className="space-y-1.5">
-                          <Label className="text-[10px] uppercase font-bold text-muted-foreground">Personal Access Token</Label>
-                          <Input 
-                            type="password" 
-                            placeholder="ghp_..." 
-                            value={settings.githubToken || ''} 
-                            onChange={(e: any) => settings.setGithubToken(e.target.value)}
-                          />
-                        </div>
-                        <div className="space-y-1.5">
-                          <Label className="text-[10px] uppercase font-bold text-muted-foreground">Repositorio (usuario/repo)</Label>
-                          <Input 
-                            placeholder="nick/mi-novela" 
-                            value={settings.githubRepo || ''} 
-                            onChange={(e: any) => settings.setGithubRepo(e.target.value)}
-                          />
-                        </div>
-                        <Button className="w-full h-9 rounded-lg gap-2 text-xs" variant="outline" disabled={!settings.githubToken}>
-                          <Save size={14} />
-                          Probar Conexión y Push
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Dropbox Placeholder */}
-                    <div className="p-4 border rounded-xl bg-card/50 opacity-60 grayscale space-y-4 cursor-not-allowed">
-                       <div className="flex items-center gap-3">
-                          <div className="p-2 bg-blue-500/10 rounded-full">
-                            <ExternalLink className="w-5 h-5 text-blue-500" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-bold">Dropbox</p>
-                            <p className="text-xs text-muted-foreground">Próximamente: Sincronización automática con Dropbox.</p>
-                          </div>
-                       </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* ADVANCED */}
-            {activeTab === 'advanced' && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                <div>
-                  <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">Depuración</h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="space-y-1">
-                        <Label className="flex items-center gap-2 cursor-pointer" htmlFor="debug-logs">
-                          <Terminal className="w-4 h-4" />
-                          Logs de IA en Consola
-                        </Label>
-                        <p className="text-xs text-muted-foreground">
-                          Ver información técnica de peticiones en F12.
-                        </p>
-                      </div>
-                      <input 
-                        id="debug-logs"
-                        type="checkbox" 
-                        className="w-4 h-4 accent-primary" 
-                        checked={settings.enableLogs}
-                        onChange={(e) => settings.setEnableLogs(e.target.checked)}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* DATA */}
-            {activeTab === 'data' && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                <div>
-                  <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">Gestión de Datos</h3>
-                  <div className="space-y-4">
-                    <div className="p-4 border rounded-lg bg-card space-y-4">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-full">
-                          <Shield className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium">Almacenamiento Local</p>
-                          <p className="text-xs text-muted-foreground">Tus datos nunca salen de este navegador.</p>
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 gap-2 pt-2">
-                        <Button variant="outline" className="justify-start gap-2 h-10" onClick={handleExportAll}>
-                          <Save className="w-4 h-4" />
-                          Exportar Backup (.pluma / .json)
-                        </Button>
-                        <Button variant="outline" className="justify-start gap-2 h-10" onClick={handleImport}>
-                          <Plus className="w-4 h-4" />
-                          Importar Proyecto
-                        </Button>
-                        <Button variant="outline" className="justify-start gap-2 h-10 text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={handleDeleteAll}>
-                          <Trash2 className="w-4 h-4" />
-                          Eliminar Todos los Datos
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="p-4 rounded-lg bg-muted/30 border border-dashed flex flex-col items-center justify-center gap-2 text-center">
-                      <ExternalLink className="w-8 h-8 text-muted-foreground/50" />
-                      <p className="text-xs text-muted-foreground">Próximamente: Sincronización en la Nube</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-          </div>
-        </div>
-
-        <DialogFooter className="p-4 border-t bg-muted/20 shrink-0">
-          <Button variant="secondary" onClick={() => closeModal()}>Cerrar</Button>
-        </DialogFooter>
+        <SettingsContent />
       </DialogContent>
     </Dialog>
   );
 };
 
-const TabButton = ({ active, onClick, icon: Icon, label }: { active: boolean, onClick: () => void, icon: any, label: string }) => (
-  <button
-    onClick={onClick}
-    className={`
-      flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-all
-      ${active 
-        ? 'bg-primary text-primary-foreground shadow-sm font-medium' 
-        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-      }
-    `}
-  >
-    <Icon className={`w-4 h-4 ${active ? '' : 'text-muted-foreground'}`} />
-    <span>{label}</span>
-  </button>
+const ToggleItem = ({ id, icon: Icon, label, description, checked, onChange }: { id: string, icon: any, label: string, description: string, checked: boolean, onChange: (v: boolean) => void }) => (
+  <div className="flex items-center justify-between p-4 border-2 border-border/60 rounded-2xl bg-card/50 hover:bg-card hover:border-primary/40 transition-all group">
+    <div className="flex gap-3">
+      <div className="p-2.5 bg-primary/10 rounded-xl h-fit group-hover:bg-primary/20 transition-colors">
+        <Icon size={20} className="text-primary" />
+      </div>
+      <div className="space-y-0.5">
+        <Label className="font-black text-sm cursor-pointer tracking-tight" htmlFor={id}>{label}</Label>
+        <p className="text-[10px] text-muted-foreground leading-relaxed font-medium">{description}</p>
+      </div>
+    </div>
+    <input 
+      id={id}
+      type="checkbox" 
+      className="w-5 h-5 accent-primary cursor-pointer rounded-full" 
+      checked={checked}
+      onChange={(e) => onChange(e.target.checked)}
+    />
+  </div>
 );

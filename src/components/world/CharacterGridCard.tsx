@@ -1,7 +1,7 @@
 import { Character } from '@/types/domain';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { Badge } from '@/components/ui/badge';
-import { User, Heart, Shield, Zap, Brain, Star } from 'lucide-react';
+import { User, Heart, Zap } from 'lucide-react';
 
 interface CharacterGridCardProps {
   character: Character;
