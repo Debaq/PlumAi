@@ -1,0 +1,26 @@
+{
+  "id": "system-worldbuilder-banners",
+  "version": "1.0.0",
+  "author": "PlumAi Core",
+  "category": "identity",
+  "metadata": {
+    "es": {
+      "name": "Banners Worldbuilder Oficiales",
+      "description": "El set oficial de banners para el modo construcción de mundos. Paisajes épicos, ciudades y mapas antiguos."
+    },
+    "en": {
+      "name": "Official Worldbuilder Banners",
+      "description": "The official set of banners for worldbuilding mode. Epic landscapes, cities, and ancient maps."
+    }
+  },
+  "styles": {
+    "banners": {
+      "sidebar": "banners/wb-sidebar-default.jpg",
+      "characters": "banners/wb-characters.jpg",
+      "bestiary": "banners/wb-bestiary.jpg",
+      "locations": "banners/wb-locations.jpg",
+      "lore": "banners/wb-lore.jpg",
+      "events": "banners/wb-timeline.jpg"
+    }
+  }
+}

@@ -15,8 +15,12 @@ pub fn init_database(conn: &Connection) -> Result<()> {
             genre TEXT,
             is_rpg_mode_enabled INTEGER DEFAULT 0,
             rpg_system TEXT,
+            active_identity_package TEXT,
+            origin_package_id TEXT,
             banners TEXT, -- JSON
             api_keys TEXT, -- JSON (encrypted)
+            creatures TEXT, -- JSON
+            world_rules TEXT, -- JSON
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT DEFAULT CURRENT_TIMESTAMP
         );
@@ -59,6 +63,7 @@ pub fn init_database(conn: &Connection) -> Result<()> {
         CREATE TABLE IF NOT EXISTS characters (
             id TEXT PRIMARY KEY,
             project_id TEXT NOT NULL,
+            origin_package_id TEXT,
             name TEXT NOT NULL,
             role TEXT DEFAULT 'secondary',
             avatar_url TEXT,
@@ -115,6 +120,7 @@ pub fn init_database(conn: &Connection) -> Result<()> {
         CREATE TABLE IF NOT EXISTS lore_items (
             id TEXT PRIMARY KEY,
             project_id TEXT NOT NULL,
+            origin_package_id TEXT,
             title TEXT NOT NULL,
             category TEXT,
             content TEXT,
@@ -153,6 +159,12 @@ pub fn init_database(conn: &Connection) -> Result<()> {
         CREATE INDEX IF NOT EXISTS idx_locations_project ON locations(project_id);
         CREATE INDEX IF NOT EXISTS idx_lore_items_project ON lore_items(project_id);
         CREATE INDEX IF NOT EXISTS idx_timeline_events_project ON timeline_events(project_id);
+
+        -- App Settings table (Key-Value store for global preferences)
+        CREATE TABLE IF NOT EXISTS app_settings (
+            key TEXT PRIMARY KEY,
+            value TEXT NOT NULL
+        );
         "#,
     )?;
 

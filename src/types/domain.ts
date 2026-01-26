@@ -85,6 +85,8 @@ export interface Project {
   projectType?: ProjectType; // Project type (novel, rpg, worldbuilding)
   isRpgModeEnabled?: boolean; // RPG Mode Toggle
   rpgSystem?: string; // e.g., 'dnd5e', 'cthulhu', 'custom'
+  activeIdentityPackage?: string; // ID of the currently active identity package
+  originPackageId?: string; // ID of the package this project was created from
   banners?: Record<string, string>; // Context -> Image URL (custom banners)
   chapters: Chapter[];
   characters: Character[];

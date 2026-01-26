@@ -11,6 +11,10 @@ use crate::filesystem::{self, ProjectData};
 use crate::publishing::{self, DocxOptions, ExportDocument, PdfOptions};
 use std::path::PathBuf;
 
+pub mod packages;
+
+pub use packages::*;
+
 // ============================================================================
 // App Info Commands
 // ============================================================================
@@ -304,6 +308,24 @@ pub fn db_update_timeline_event(
 pub fn db_delete_timeline_event(db: DbConn<'_>, id: String) -> Result<(), String> {
     let conn = db.0.lock().map_err(|e| e.to_string())?;
     database::delete_timeline_event(&conn, &id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn db_clear_all_data(db: DbConn<'_>) -> Result<(), String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    database::clear_database(&conn).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn db_get_setting(db: DbConn<'_>, key: String) -> Result<Option<String>, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    database::get_setting(&conn, &key).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn db_set_setting(db: DbConn<'_>, key: String, value: String) -> Result<(), String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    database::set_setting(&conn, &key, &value).map_err(|e| e.to_string())
 }
 
 // ============================================================================

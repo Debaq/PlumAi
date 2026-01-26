@@ -1,0 +1,57 @@
+{
+  "id": "fantasy-pack-001",
+  "version": "1.0.0",
+  "author": "PlumAi Studio",
+  "category": "hybrid",
+  "metadata": {
+    "es": {
+      "name": "Bestiario Fantasía Básica",
+      "description": "Un conjunto esencial de criaturas y lore para campañas de fantasía épica. Incluye Goblins, Dragones y un tema visual oscuro."
+    },
+    "en": {
+      "name": "Basic Fantasy Bestiary",
+      "description": "An essential set of creatures and lore for epic fantasy campaigns. Includes Goblins, Dragons, and a dark visual theme."
+    }
+  },
+  "styles": {
+    "theme": "dark",
+    "primary_color": "#e11d48",
+    "font_family": "merriweather",
+    "banners": {
+      "sidebar": "banners/fantasy-sidebar.jpg",
+      "chapter": "banners/chapter-header.jpg"
+    }
+  },
+  "content": {
+    "characters": [
+      {
+        "id": "char-goblin-basic",
+        "name": "Explorador Goblin",
+        "role": "secondary",
+        "avatarUrl": "avatars/goblin.jpg",
+        "physicalDescription": "Pequeño, piel verdosa y ojos amarillentos. Viste harapos de cuero.",
+        "personality": "Cobarde en solitario, valiente en grupo. Astuto y traicionero.",
+        "history": "Viene de las cuevas del norte, enviado a espiar los asentamientos humanos."
+      },
+      {
+        "id": "char-dragon-red",
+        "name": "Venerable Dragón Rojo",
+        "role": "antagonist",
+        "avatarUrl": "avatars/red-dragon.jpg",
+        "physicalDescription": "Escamas carmesí del tamaño de escudos. Su aliento huele a azufre y ceniza.",
+        "personality": "Arrogante, codicioso y extremadamente inteligente.",
+        "history": "Ha dormido sobre su tesoro durante tres siglos, despertando solo para alimentarse."
+      }
+    ],
+    "lore_items": [
+      {
+        "id": "lore-mana-basics",
+        "title": "La Corriente de Maná",
+        "category": "Magia",
+        "content": "El maná es la energía invisible que fluye a través de todas las cosas vivas...",
+        "summary": "Conceptos básicos sobre la energía mágica en este mundo.",
+        "related_entity_ids": []
+      }
+    ]
+  }
+}

@@ -10,7 +10,7 @@ export const StatusBar = () => {
   const { activeProject } = useProjectStore();
   const { language, setLanguage, enableLogs, pomodoroEnabled } = useSettingsStore();
   const { toggleConsole } = useLogStore();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const totalWords = activeProject?.chapters.reduce((acc, ch) => acc + (ch.wordCount || 0), 0) || 0;
 
   // Pomodoro Logic
@@ -94,7 +94,7 @@ export const StatusBar = () => {
         )}
         <div className="flex items-center gap-1.5">
           <span className={`w-2 h-2 rounded-full transition-colors ${isAIActive ? 'bg-green-500 animate-pulse' : 'bg-muted-foreground/50'}`}></span>
-          <span>{isAIActive ? 'AI Active' : 'AI Inactive'}</span>
+          <span>{isAIActive ? t('aiStatus.active') : t('aiStatus.inactive')}</span>
         </div>
         <button 
           onClick={toggleLanguage}

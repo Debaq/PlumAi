@@ -12,6 +12,7 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useUIStore } from '@/stores/useUIStore';
+import { useTranslation } from 'react-i18next';
 import {
   List,
   ArrowRight,
@@ -44,6 +45,7 @@ const RELATION_COLORS: Record<string, string> = {
 const getRelationColor = (type: string) => RELATION_COLORS[type] || '#BDBDBD';
 
 export const RelationsDiagram = () => {
+  const { t } = useTranslation();
   const { activeProject, updateCharacterPosition } = useProjectStore();
   const { openModal } = useUIStore();
   
@@ -161,7 +163,7 @@ export const RelationsDiagram = () => {
     });
   };
 
-  if (!activeProject) return <div className="p-8 text-center text-muted-foreground">No project loaded.</div>;
+  if (!activeProject) return <div className="p-8 text-center text-muted-foreground">{t('project.noProjectLoaded')}.</div>;
 
   return (
     <div className="flex flex-col flex-1 bg-background overflow-hidden">

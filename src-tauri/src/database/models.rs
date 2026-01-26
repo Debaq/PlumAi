@@ -18,9 +18,17 @@ pub struct Project {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rpg_system: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub active_identity_package: Option<String>, // New field for Style Packs
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub origin_package_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub banners: Option<serde_json::Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub api_keys: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub creatures: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub world_rules: Option<serde_json::Value>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -72,6 +80,8 @@ pub struct Scene {
 pub struct Character {
     pub id: String,
     pub project_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub origin_package_id: Option<String>,
     pub name: String,
     #[serde(default = "default_role")]
     pub role: String,
@@ -147,6 +157,8 @@ pub struct Location {
 pub struct LoreItem {
     pub id: String,
     pub project_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub origin_package_id: Option<String>,
     pub title: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub category: Option<String>,

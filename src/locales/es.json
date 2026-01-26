@@ -246,7 +246,29 @@
     "untitled": "Sin título",
     "words": "palabras",
     "list": "Lista",
-    "automatic": "Automático"
+    "automatic": "Automático",
+    "general": "General",
+    "identity": "Estilo",
+    "identityAndStyle": "Identidad y Estilo",
+    "dangerZone": "Zona de Peligro",
+    "packageStorage": "Almacén de Paquetes",
+    "ai": "IA",
+    "askAI": "Preguntar a la IA: \"{query}\"",
+    "clearPackageCache": "Limpiar Caché de Paquetes",
+    "clearPackageCacheDesc": "Elimina los archivos temporales de los paquetes inyectados.",
+    "danger": "Peligro",
+    "moduleUnderConstruction": "Este módulo está en construcción.",
+    "noResultsForQuery": "No se encontraron resultados para",
+    "windowControls": {
+      "fullscreen": "Pantalla completa",
+      "minimize": "Minimizar",
+      "maximize": "Maximizar",
+      "close": "Cerrar"
+    },
+    "aiStatus": {
+      "active": "IA Activa",
+      "inactive": "IA Inactiva"
+    }
   },
   "dashboard": {
     "title": "Dashboard",
@@ -283,7 +305,8 @@
       "numberedList": "Lista numerada",
       "quote": "Cita",
       "undo": "Deshacer",
-      "redo": "Rehacer"
+      "redo": "Rehacer",
+      "settings": "Configuración del Capítulo"
     },
     "wordCount": "{count} palabras",
     "saving": "Guardando...",
@@ -416,6 +439,7 @@
         "preferences": "Preferencias"
       }
     },
+    "packages": "Paquetes",
     "apiKeys": {
       "title": "Configurar APIs de IA",
       "description": "Configura las claves de API para usar la IA",
@@ -720,6 +744,8 @@
   },
   "project": {
     "untitled": "Sin título",
+    "noProjectLoaded": "No hay proyecto cargado",
+    "projectSettings": "Configuración del Proyecto",
     "confirmDelete": "¿Eliminar el proyecto {name}?",
     "deleted": "Proyecto eliminado",
     "createNew": "Crear Nuevo Proyecto",
@@ -939,7 +965,11 @@
     "collapse": "Contraer",
     "expand": "Expandir",
     "hide": "Ocultar menú",
-    "show": "Mostrar menú"
+    "show": "Mostrar menú",
+    "ragStudio": "RAG Studio",
+    "projectSettings": "Configuración del Proyecto",
+    "bestiary": "Bestiario",
+    "worldRules": "Reglas del Mundo"
   },
   "stats": {
     "totalWords": "Palabras totales:",
@@ -953,7 +983,8 @@
       "enabled": "Autoguardado activo",
       "disabled": "Autoguardado desactivado",
       "saving": "Guardando...",
-      "saved": "Guardado a las {time}"
+      "saved": "Guardado a las {time}",
+      "unsaved": "Sin guardar"
     },
     "ai": {
       "active": "IA lista",

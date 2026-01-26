@@ -7,8 +7,10 @@ import {
   Search,
   Dices,
   Globe,
-  Settings2
+  Settings2,
+  ArrowLeft
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useProjectStore } from '@/stores/useProjectStore';
@@ -16,11 +18,14 @@ import { useUIStore } from '@/stores/useUIStore';
 import { db } from '@/lib/db';
 import type { Project, ProjectType } from '@/types/domain';
 
+import { ProjectConfigContent } from './ProjectConfigContent';
+
 export const ProjectManagerView = () => {
   const { setActiveProject } = useProjectStore();
   const { setActiveView, openModal } = useUIStore();
   const projects = useLiveQuery(() => db.projects.toArray());
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [isSettingsMode, setIsSettingsMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   useTranslation();
 
@@ -37,7 +42,8 @@ export const ProjectManagerView = () => {
 
   const handleEditProject = (e: React.MouseEvent, project: Project) => {
     e.stopPropagation();
-    openModal('projectSettings', project);
+    setSelectedProjectId(project.id);
+    setIsSettingsMode(true);
   };
 
   const handleDeleteProject = async (e: React.MouseEvent, id: string) => {
@@ -46,6 +52,11 @@ export const ProjectManagerView = () => {
       await db.projects.delete(id);
       if (selectedProjectId === id) setSelectedProjectId(null);
     }
+  };
+
+  const handleSelectProject = (id: string) => {
+    setSelectedProjectId(id);
+    setIsSettingsMode(false); // Reset to stats view when selecting a new project
   };
 
   const filteredProjects = projects?.filter(p => 
@@ -92,7 +103,7 @@ export const ProjectManagerView = () => {
           {filteredProjects?.map(project => (
             <div
               key={project.id}
-              onClick={() => setSelectedProjectId(project.id)}
+              onClick={() => handleSelectProject(project.id)}
               onDoubleClick={() => handleOpenProject(project)}
               className={`
                 p-3 rounded-lg cursor-pointer transition-all border
@@ -132,76 +143,90 @@ export const ProjectManagerView = () => {
         </div>
 
         {selectedProject ? (
-          <div className="flex-1 p-8 flex flex-col w-full h-full overflow-y-auto animate-in fade-in duration-300 relative z-10">
-            <div className="max-w-3xl mx-auto w-full flex flex-col min-h-full">
-              <div className="flex justify-between items-start mb-8">
-                <div>
-                  <h1 className="text-4xl font-bold mb-2">{selectedProject.title}</h1>
-                  <div className="flex items-center gap-4 text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <User className="w-4 h-4" />
-                      <span>{selectedProject.author || 'No author specified'}</span>
+          <div className="flex-1 flex flex-col w-full h-full overflow-hidden relative z-10">
+            {isSettingsMode ? (
+              <div className="flex-1 flex flex-col h-full bg-background/50">
+                <div className="p-4 border-b border-border bg-card/30 flex items-center gap-4">
+                  <Button variant="ghost" size="sm" onClick={() => setIsSettingsMode(false)} className="rounded-lg h-8 px-2 gap-1 text-xs">
+                    <ArrowLeft size={14} /> Volver a Stats
+                  </Button>
+                  <h2 className="font-black text-xs uppercase tracking-widest text-muted-foreground">Configuración de {selectedProject.title}</h2>
+                </div>
+                <ProjectConfigContent project={selectedProject} onSave={() => {}} />
+              </div>
+            ) : (
+              <div className="flex-1 p-8 flex flex-col w-full h-full overflow-y-auto animate-in fade-in duration-300">
+                <div className="max-w-3xl mx-auto w-full flex flex-col min-h-full">
+                  <div className="flex justify-between items-start mb-8">
+                    <div>
+                      <h1 className="text-4xl font-bold mb-2">{selectedProject.title}</h1>
+                      <div className="flex items-center gap-4 text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <User className="w-4 h-4" />
+                          <span>{selectedProject.author || 'No author specified'}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {getProjectTypeIcon(selectedProject.projectType)}
+                          <span className="capitalize">{selectedProject.projectType || 'Novel'}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      {getProjectTypeIcon(selectedProject.projectType)}
-                      <span className="capitalize">{selectedProject.projectType || 'Novel'}</span>
+                    <button
+                      onClick={(e) => handleEditProject(e, selectedProject)}
+                      className="p-2 hover:bg-accent rounded-md transition-colors text-muted-foreground hover:text-foreground border border-transparent hover:border-border"
+                      title="Project Settings"
+                    >
+                      <Settings2 className="w-6 h-6" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 mb-8">
+                    <div className="bg-card p-4 rounded-lg border border-border">
+                      <div className="text-sm text-muted-foreground mb-1">Chapters</div>
+                      <div className="text-2xl font-bold">{selectedProject.chapters?.length || 0}</div>
+                    </div>
+                    <div className="bg-card p-4 rounded-lg border border-border">
+                      <div className="text-sm text-muted-foreground mb-1">Characters</div>
+                      <div className="text-2xl font-bold">{selectedProject.characters?.length || 0}</div>
+                    </div>
+                    <div className="bg-card p-4 rounded-lg border border-border">
+                      <div className="text-sm text-muted-foreground mb-1">Locations</div>
+                      <div className="text-2xl font-bold">{selectedProject.locations?.length || 0}</div>
+                    </div>
+                    <div className="bg-card p-4 rounded-lg border border-border">
+                      <div className="text-sm text-muted-foreground mb-1">Words</div>
+                      <div className="text-2xl font-bold">
+                        {selectedProject.chapters?.reduce((acc, c) => acc + (c.wordCount || 0), 0) || 0}
+                      </div>
                     </div>
                   </div>
-                </div>
-                <button
-                  onClick={(e) => handleEditProject(e, selectedProject)}
-                  className="p-2 hover:bg-accent rounded-md transition-colors text-muted-foreground hover:text-foreground border border-transparent hover:border-border"
-                  title="Project Settings"
-                >
-                  <Settings2 className="w-6 h-6" />
-                </button>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4 mb-8">
-                <div className="bg-card p-4 rounded-lg border border-border">
-                  <div className="text-sm text-muted-foreground mb-1">Chapters</div>
-                  <div className="text-2xl font-bold">{selectedProject.chapters?.length || 0}</div>
-                </div>
-                <div className="bg-card p-4 rounded-lg border border-border">
-                  <div className="text-sm text-muted-foreground mb-1">Characters</div>
-                  <div className="text-2xl font-bold">{selectedProject.characters?.length || 0}</div>
-                </div>
-                <div className="bg-card p-4 rounded-lg border border-border">
-                  <div className="text-sm text-muted-foreground mb-1">Locations</div>
-                  <div className="text-2xl font-bold">{selectedProject.locations?.length || 0}</div>
-                </div>
-                <div className="bg-card p-4 rounded-lg border border-border">
-                  <div className="text-sm text-muted-foreground mb-1">Words</div>
-                  <div className="text-2xl font-bold">
-                    {selectedProject.chapters?.reduce((acc, c) => acc + (c.wordCount || 0), 0) || 0}
+                  {selectedProject.description && (
+                    <div className="mb-8">
+                      <h3 className="text-lg font-semibold mb-2">Description</h3>
+                      <p className="text-muted-foreground leading-relaxed">
+                        {selectedProject.description}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex gap-4 mt-auto">
+                    <button
+                      onClick={() => handleOpenProject(selectedProject)}
+                      className="flex-1 bg-primary text-primary-foreground py-3 rounded-md font-medium hover:opacity-90 transition-opacity shadow-lg shadow-primary/20"
+                    >
+                      Open Project
+                    </button>
+                    <button
+                      onClick={(e) => handleDeleteProject(e, selectedProject.id)}
+                      className="px-4 border border-destructive/50 text-destructive rounded-md hover:bg-destructive/10 transition-colors"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
                   </div>
                 </div>
               </div>
-
-              {selectedProject.description && (
-                <div className="mb-8">
-                  <h3 className="text-lg font-semibold mb-2">Description</h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    {selectedProject.description}
-                  </p>
-                </div>
-              )}
-
-              <div className="flex gap-4 mt-auto">
-                <button
-                  onClick={() => handleOpenProject(selectedProject)}
-                  className="flex-1 bg-primary text-primary-foreground py-3 rounded-md font-medium hover:opacity-90 transition-opacity"
-                >
-                  Open Project
-                </button>
-                <button
-                  onClick={(e) => handleDeleteProject(e, selectedProject.id)}
-                  className="px-4 border border-destructive/50 text-destructive rounded-md hover:bg-destructive/10 transition-colors"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
+            )}
           </div>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground">

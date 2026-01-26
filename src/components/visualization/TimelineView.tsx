@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useUIStore } from '@/stores/useUIStore';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Plus, Calendar, User, MapPin, Tag, GitGraph, Rows } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 export const TimelineView = () => {
+  const { t } = useTranslation();
   const { activeProject } = useProjectStore();
   const { openModal } = useUIStore();
   const [viewMode, setViewMode] = useState<'list' | 'parallel'>('list');
 
-  if (!activeProject) return <div>No project loaded.</div>;
+  if (!activeProject) return <div>{t('project.noProjectLoaded')}.</div>;
 
   const events = activeProject.timelineEvents || [];
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useUIStore } from '@/stores/useUIStore';
+import { useTranslation } from 'react-i18next';
 import { CharacterCard } from './CharacterCard';
 import { CharacterGridCard } from './CharacterGridCard';
 import { LocationCard } from './LocationCard';
@@ -13,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Map } from 'lucide-react';
 
 export const EntityList = () => {
+  const { t } = useTranslation();
   const { activeProject } = useProjectStore();
   const { activeLoreTab, openModal, setActiveLoreTab } = useUIStore();
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
@@ -22,7 +24,7 @@ export const EntityList = () => {
     setSelectedEntityId(null);
   }, [activeLoreTab]);
 
-  if (!activeProject) return <div>No project loaded.</div>;
+  if (!activeProject) return <div>{t('project.noProjectLoaded')}.</div>;
 
   const handleAddNew = () => {
     switch (activeLoreTab) {

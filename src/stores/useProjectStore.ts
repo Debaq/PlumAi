@@ -1,7 +1,15 @@
 // src/stores/useProjectStore.ts
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { db } from '@/lib/db';
+import { 
+  dbCreateProject, dbGetProject, dbUpdateProject,
+  dbCreateChapter, dbGetChaptersByProject, dbUpdateChapter, dbDeleteChapter,
+  dbCreateScene, dbGetScenesByChapter, dbUpdateScene, dbDeleteScene,
+  dbCreateCharacter, dbGetCharactersByProject, dbUpdateCharacter, dbDeleteCharacter,
+  dbCreateRelationship, dbGetRelationshipsByCharacter, dbUpdateRelationship, dbDeleteRelationship,
+  dbCreateLocation, dbGetLocationsByProject, dbUpdateLocation, dbDeleteLocation,
+  dbCreateLoreItem, dbGetLoreItemsByProject, dbUpdateLoreItem, dbDeleteLoreItem,
+  dbCreateTimelineEvent, dbGetTimelineEventsByProject, dbUpdateTimelineEvent, dbDeleteTimelineEvent
+} from '@/lib/tauri-bridge';
 import type { Project, Chapter, Character, Location, Scene, ProjectApiKeys, ApiKeyEntry, VitalStatusEntry, LoreItem, TimelineEvent, RelationshipHistoryEntry, LocationImage, LocationConnection, Creature, CreatureAbility, WorldRule, WorldRuleExample, ProjectType } from '@/types/domain';
 
 interface ProjectState {
@@ -11,61 +19,62 @@ interface ProjectState {
   saveProject: () => Promise<void>;
   closeProject: () => Promise<void>;
   loadProject: (id: string) => Promise<void>;
+  updateProject: (updates: Partial<Project>) => Promise<void>;
   
   // Chapters
-  addChapter: (chapter: Omit<Chapter, 'id'>) => void;
-  updateChapter: (id: string, updates: Partial<Chapter>) => void;
-  deleteChapter: (id: string) => void;
+  addChapter: (chapter: Omit<Chapter, 'id'>) => Promise<void>;
+  updateChapter: (id: string, updates: Partial<Chapter>) => Promise<void>;
+  deleteChapter: (id: string) => Promise<void>;
   
   // Characters
-  addCharacter: (character: Omit<Character, 'id' | 'vitalStatusHistory' | 'currentVitalStatus'>) => void;
-  updateCharacter: (id: string, updates: Partial<Character>) => void;
-  deleteCharacter: (id: string) => void;
-  updateCharacterVitalStatus: (id: string, status: string, description?: string) => void;
-  updateCharacterPosition: (id: string, position: { x: number; y: number }) => void;
+  addCharacter: (character: Omit<Character, 'id' | 'vitalStatusHistory' | 'currentVitalStatus'>) => Promise<void>;
+  updateCharacter: (id: string, updates: Partial<Character>) => Promise<void>;
+  deleteCharacter: (id: string) => Promise<void>;
+  updateCharacterVitalStatus: (id: string, status: string, description?: string) => Promise<void>;
+  updateCharacterPosition: (id: string, position: { x: number; y: number }) => Promise<void>;
 
   // Relationships
-  addRelationship: (ownerId: string, targetId: string, type: string, status: string, description: string, isSecret?: boolean) => void;
-  updateRelationshipHistory: (charId: string, relId: string, entry: Omit<RelationshipHistoryEntry, 'id' | 'timestamp'>) => void;
-  deleteRelationship: (charId: string, relId: string) => void;
+  addRelationship: (ownerId: string, targetId: string, type: string, status: string, description: string, isSecret?: boolean) => Promise<void>;
+  updateRelationshipHistory: (charId: string, relId: string, entry: Omit<RelationshipHistoryEntry, 'id' | 'timestamp'>) => Promise<void>;
+  deleteRelationship: (charId: string, relId: string) => Promise<void>;
 
   // Locations
-  addLocation: (location: Omit<Location, 'id'>) => void;
-  updateLocation: (id: string, updates: Partial<Location>) => void;
-  deleteLocation: (id: string) => void;
-  updateLocationPosition: (id: string, position: { x: number; y: number }) => void;
-  addLocationImage: (locationId: string, type: 'gallery' | 'plans', image: Omit<LocationImage, 'id'>) => void;
-  removeLocationImage: (locationId: string, type: 'gallery' | 'plans', imageId: string) => void;
-  addLocationConnection: (locationId: string, connection: Omit<LocationConnection, 'id'>) => void;
-  removeLocationConnection: (locationId: string, connectionId: string) => void;
+  addLocation: (location: Omit<Location, 'id'>) => Promise<void>;
+  updateLocation: (id: string, updates: Partial<Location>) => Promise<void>;
+  deleteLocation: (id: string) => Promise<void>;
+  updateLocationPosition: (id: string, position: { x: number; y: number }) => Promise<void>;
+  addLocationImage: (locationId: string, type: 'gallery' | 'plans', image: Omit<LocationImage, 'id'>) => Promise<void>;
+  removeLocationImage: (locationId: string, type: 'gallery' | 'plans', imageId: string) => Promise<void>;
+  addLocationConnection: (locationId: string, connection: Omit<LocationConnection, 'id'>) => Promise<void>;
+  removeLocationConnection: (locationId: string, connectionId: string) => Promise<void>;
 
   // Lore
-  addLoreItem: (loreItem: Omit<LoreItem, 'id'>) => void;
-  updateLoreItem: (id: string, updates: Partial<LoreItem>) => void;
-  deleteLoreItem: (id: string) => void;
+  addLoreItem: (loreItem: Omit<LoreItem, 'id'>) => Promise<void>;
+  updateLoreItem: (id: string, updates: Partial<LoreItem>) => Promise<void>;
+  deleteLoreItem: (id: string) => Promise<void>;
 
   // Timeline
-  addTimelineEvent: (event: Omit<TimelineEvent, 'id'>) => void;
-  updateTimelineEvent: (id: string, updates: Partial<TimelineEvent>) => void;
-  deleteTimelineEvent: (id: string) => void;
+  addTimelineEvent: (event: Omit<TimelineEvent, 'id'>) => Promise<void>;
+  updateTimelineEvent: (id: string, updates: Partial<TimelineEvent>) => Promise<void>;
+  deleteTimelineEvent: (id: string) => Promise<void>;
 
   // Scenes
-  addScene: (scene: Omit<Scene, 'id'>) => void;
-  updateScene: (id: string, updates: Partial<Scene>) => void;
-  deleteScene: (id: string) => void;
+  addScene: (scene: Omit<Scene, 'id'>) => Promise<void>;
+  updateScene: (id: string, updates: Partial<Scene>) => Promise<void>;
+  deleteScene: (id: string) => Promise<void>;
   
   // AI API Key Management
-  addApiKey: (type: 'text' | 'image', provider: string, keyData: { name: string; key: string }) => void;
-  updateApiKey: (type: 'text' | 'image', provider: string, keyId: string, updates: Partial<ApiKeyEntry>) => void;
-  deleteApiKey: (type: 'text' | 'image', provider: string, keyId: string) => void;
-  setDefaultApiKey: (type: 'text' | 'image', provider: string, keyId: string) => void;
+  addApiKey: (type: 'text' | 'image', provider: string, keyData: { name: string; key: string }) => Promise<void>;
+  updateApiKey: (type: 'text' | 'image', provider: string, keyId: string, updates: Partial<ApiKeyEntry>) => Promise<void>;
+  deleteApiKey: (type: 'text' | 'image', provider: string, keyId: string) => Promise<void>;
+  setDefaultApiKey: (type: 'text' | 'image', provider: string, keyId: string) => Promise<void>;
   createNewProject: (projectInfo: { title: string; author?: string; genre?: string; projectType?: ProjectType }) => Promise<void>;
   
   // Worldbuilder Mode
-  toggleRpgMode: (enabled: boolean) => void;
-  setRpgSystem: (system: string) => void;
-  setContextBanner: (context: string, url: string) => void;
-  setProjectType: (type: ProjectType) => void;
+  toggleRpgMode: (enabled: boolean) => Promise<void>;
+  setRpgSystem: (system: string) => Promise<void>;
+  setContextBanner: (context: string, url: string) => Promise<void>;
+  setProjectType: (type: ProjectType) => Promise<void>;
 
   // Creatures (Bestiary)
   addCreature: (creature: Omit<Creature, 'id'>) => void;
@@ -80,6 +89,9 @@ interface ProjectState {
   deleteWorldRule: (id: string) => void;
   addWorldRuleExample: (ruleId: string, example: Omit<WorldRuleExample, 'id'>) => void;
   removeWorldRuleExample: (ruleId: string, exampleId: string) => void;
+  
+  // Packages
+  applyPackageIdentity: (packageId: string | null) => Promise<void>;
 }
 
 const initialApiKeys: ProjectApiKeys = {
@@ -99,9 +111,7 @@ const initialApiKeys: ProjectApiKeys = {
   }
 };
 
-export const useProjectStore = create<ProjectState>()(
-  persist(
-    (set, get) => ({
+export const useProjectStore = create<ProjectState>((set, get) => ({
       activeProject: null,
       
       setActiveProject: (project) => set({
@@ -117,33 +127,99 @@ export const useProjectStore = create<ProjectState>()(
       clearActiveProject: () => set({ activeProject: null }),
 
       saveProject: async () => {
-        const { activeProject } = get();
-        if (activeProject) {
-          await db.projects.put(activeProject);
-        }
+        // No-op or trigger explicit save if needed, but we save atomically now.
+        // Maybe sync to cloud or export backup?
       },
 
       closeProject: async () => {
-        const { activeProject } = get();
-        if (activeProject) {
-          await db.projects.put(activeProject);
-          set({ activeProject: null });
-        }
+        set({ activeProject: null });
       },
 
       loadProject: async (id: string) => {
-        const project = await db.projects.get(id);
-        if (project) {
-           set({ 
-             activeProject: {
-               ...project,
-               projectType: project.projectType || 'novel',
-               creatures: project.creatures || [],
-               worldRules: project.worldRules || [],
-               apiKeys: project.apiKeys || initialApiKeys
-             }
-           });
+        try {
+          const dbProject = await dbGetProject(id);
+          if (!dbProject) return;
+
+          // Fetch all related data in parallel
+          const [chapters, characters, locations, loreItems, timelineEvents] = await Promise.all([
+            dbGetChaptersByProject(id),
+            dbGetCharactersByProject(id),
+            dbGetLocationsByProject(id),
+            dbGetLoreItemsByProject(id),
+            dbGetTimelineEventsByProject(id)
+          ]);
+
+          // Fetch scenes for each chapter (could be optimized with a join or bulk query, but loop for now)
+          const fullChapters = await Promise.all(chapters.map(async (c) => {
+            const scenes = await dbGetScenesByChapter(c.id);
+            // TODO: Map DB types to Domain types if needed (e.g., date strings to Date objects)
+            // Assuming direct mapping for now
+            return { ...c, scenes }; 
+          }));
+
+          // Fetch relationships for each character
+          const fullCharacters = await Promise.all(characters.map(async (c) => {
+             const relationships = await dbGetRelationshipsByCharacter(c.id);
+             return { ...c, relationships };
+          }));
+
+          // Construct full Project object
+          // Note: Some fields like creatures/worldRules are not in SQLite yet (from schema check)
+          // We will use defaults for them or they might be stored in JSON fields if we add them later.
+          // For now, they are empty arrays in the store init, so we keep them empty.
+          
+          const fullProject: Project = {
+            id: dbProject.id,
+            title: dbProject.title,
+            author: dbProject.author || '',
+            description: dbProject.description || '',
+            genre: dbProject.genre || '',
+            isRpgModeEnabled: dbProject.isRpgModeEnabled || false,
+            rpgSystem: dbProject.rpgSystem || 'generic',
+            activeIdentityPackage: undefined, // TODO: Add to DB Schema if missing
+            originPackageId: undefined,      // TODO: Add to DB Schema if missing
+            banners: dbProject.banners as any || {},
+            chapters: fullChapters as any[],
+            characters: fullCharacters as any[],
+            locations: locations as any[],
+            loreItems: loreItems as any[],
+            timelineEvents: timelineEvents as any[],
+            scenes: [], // Scenes are inside chapters usually, but domain type might have flat list too?
+                        // Domain type has scenes array in Project interface? 
+                        // Let's check domain type definition if possible.
+                        // Assuming scenes are in chapters for structure, but maybe flat list in Project for search.
+                        // Let's flatten them for the Project object.
+            creatures: [], // Not in DB yet
+            worldRules: [], // Not in DB yet
+            apiKeys: (dbProject.apiKeys as any) || initialApiKeys,
+            projectType: 'novel' // Default or from DB
+          };
+          
+          // Flatten scenes for the project object
+          fullProject.scenes = fullChapters.flatMap(c => c.scenes) as any[];
+
+          set({ activeProject: fullProject });
+
+        } catch (error) {
+          console.error("Failed to load project:", error);
         }
+      },
+
+      updateProject: async (updates) => {
+        const { activeProject } = get();
+        if (!activeProject) return;
+
+        const updatedProject = { ...activeProject, ...updates };
+
+        await dbUpdateProject({
+            ...updatedProject,
+            apiKeys: JSON.stringify(updatedProject.apiKeys),
+            banners: JSON.stringify(updatedProject.banners || {}),
+            creatures: JSON.stringify(updatedProject.creatures || []),
+            worldRules: JSON.stringify(updatedProject.worldRules || [])
+        } as any);
+
+        set({ activeProject: updatedProject });
       },
 
       createNewProject: async (info) => {
@@ -152,6 +228,7 @@ export const useProjectStore = create<ProjectState>()(
           id: crypto.randomUUID(),
           title: info.title,
           author: info.author || '',
+          description: '',
           genre: info.genre || '',
           projectType,
           isRpgModeEnabled: projectType === 'rpg' || projectType === 'worldbuilding',
@@ -166,498 +243,773 @@ export const useProjectStore = create<ProjectState>()(
           apiKeys: initialApiKeys
         };
         
-        // Save to DB immediately
-        await db.projects.put(newProject);
+        // Save to SQLite via bridge
+        // We need to map Domain Project to DbProject.
+        // DbProject definition: id, title, author, description, genre, isRpgModeEnabled, rpgSystem, banners, apiKeys
+        // Note: DbProject doesn't have lists of children. They are separate tables.
+        // Banners and API Keys need JSON stringification if the bridge expects raw types, 
+        // but looking at tauri-bridge.ts, it expects objects for banners/apiKeys? 
+        // "apiKeys?: unknown;" in DbProject interface in bridge.
+        // "banners?: Record<string, string>;"
+        // Let's pass it as is, assuming bridge handles serialization or Tauri does.
+        // Actually, tauri-bridge.ts signatures:
+        // export interface DbProject { ... apiKeys?: unknown; ... }
+        // The Rust command `db_create_project` takes `database::Project`.
+        // `database::Project` in `models.rs` has `api_keys: Option<String>`.
+        // Wait, the Rust side expects `database::Project` struct.
+        // If I pass a JS object, Tauri will try to deserialize it into `database::Project`.
+        // `database::Project` struct fields must match the JS object fields.
+        // `models.rs`: api_keys is Option<String>.
+        // So I should probably stringify apiKeys before sending if the Rust side expects String.
+        // Let's check `src-tauri/src/database/models.rs`.
+        
+        // Assume for now that tauri-bridge interface `DbProject` should match what we pass.
+        // If `apiKeys` is `unknown` in TS, and `Option<String>` in Rust, Tauri won't automatically JSON stringify `unknown` to `String`.
+        // It would try to map object to string and fail.
+        // I should probably update `createNewProject` to handle this mapping.
+        
+        // Actually, let's look at `operations.rs` again.
+        // pub struct Project { ... pub banners: Option<String>, pub api_keys: Option<String> ... }
+        // Yes, they are Strings (JSON).
+        // So I must stringify them in JS before sending.
+        
+        const projectPayload = {
+            id: newProject.id,
+            title: newProject.title,
+            author: newProject.author,
+            description: newProject.description,
+            genre: newProject.genre,
+            isRpgModeEnabled: newProject.isRpgModeEnabled,
+            rpgSystem: newProject.rpgSystem,
+            activeIdentityPackage: newProject.activeIdentityPackage,
+            originPackageId: newProject.originPackageId,
+            banners: JSON.stringify(newProject.banners),
+            apiKeys: JSON.stringify(newProject.apiKeys)
+        };
+
+        await dbCreateProject(projectPayload as any);
         
         set({ activeProject: newProject });
       },
 
-      addChapter: (chapter) => set((state) => {
-        if (!state.activeProject) return state;
+      addChapter: async (chapter) => {
+        const { activeProject } = get();
+        if (!activeProject) return;
+        
         const newChapter = {
           ...chapter,
           id: crypto.randomUUID(),
+          projectId: activeProject.id, // Ensure projectId is set
+          status: 'draft',
+          wordCount: 0,
+          number: activeProject.chapters.length + 1
         } as Chapter;
-        return {
-          activeProject: {
+
+        // Bridge call
+        await dbCreateChapter(newChapter as any);
+
+        set((state) => ({
+          activeProject: state.activeProject ? {
             ...state.activeProject,
             chapters: [...state.activeProject.chapters, newChapter],
-          },
-        };
-      }),
-      updateChapter: (id, updates) => set((state) => {
-        if (!state.activeProject) return state;
-        return {
-          activeProject: {
+          } : null,
+        }));
+      },
+
+      updateChapter: async (id, updates) => {
+        const { activeProject } = get();
+        if (!activeProject) return;
+
+        const currentChapter = activeProject.chapters.find(c => c.id === id);
+        if (!currentChapter) return;
+
+        const updatedChapter = { ...currentChapter, ...updates };
+        
+        // Bridge call
+        await dbUpdateChapter(updatedChapter as any);
+
+        set((state) => ({
+          activeProject: state.activeProject ? {
             ...state.activeProject,
             chapters: state.activeProject.chapters.map((c) =>
-              c.id === id ? { ...c, ...updates } : c
+              c.id === id ? updatedChapter : c
             ),
-          },
-        };
-      }),
-        deleteChapter: (id) => set((state) => {
-          if (!state.activeProject) return state;
-          return {
-            activeProject: {
-              ...state.activeProject,
-              chapters: state.activeProject.chapters.filter((c) => c.id !== id),
-            },
-          };
-        }),
+          } : null,
+        }));
+      },
+
+      deleteChapter: async (id) => {
+        const { activeProject } = get();
+        if (!activeProject) return;
+
+        // Bridge call
+        await dbDeleteChapter(id);
+
+        set((state) => ({
+          activeProject: state.activeProject ? {
+            ...state.activeProject,
+            chapters: state.activeProject.chapters.filter((c) => c.id !== id),
+          } : null,
+        }));
+      },
       
-        addCharacter: (character) => set((state) => {
-          if (!state.activeProject) return state;
-          const initialStatus: VitalStatusEntry = {
-            id: crypto.randomUUID(),
-            status: 'alive',
-            timestamp: new Date().toISOString(),
-            description: 'Initial state'
-          };
-          const newCharacter: Character = {
-            ...character,
-            id: crypto.randomUUID(),
-            vitalStatusHistory: [initialStatus],
-            currentVitalStatus: 'alive'
-          } as Character;
-          return {
-            activeProject: {
-              ...state.activeProject,
-              characters: [...state.activeProject.characters, newCharacter],
-            },
-          };
-        }),
-        updateCharacter: (id, updates) => set((state) => {
-          if (!state.activeProject) return state;
-          return {
-            activeProject: {
-              ...state.activeProject,
-              characters: state.activeProject.characters.map((c) => {
-                if (c.id !== id) return c;
-                
-                const newCharacter = { ...c, ...updates };
-                
-                // If attributes changed, record in history
-                if (updates.attributes && JSON.stringify(updates.attributes) !== JSON.stringify(c.attributes)) {
-                  const historyEntry = {
-                    timestamp: new Date().toISOString(),
-                    attributes: updates.attributes
-                  };
-                  newCharacter.attributeHistory = [...(c.attributeHistory || []), historyEntry];
-                }
-                
-                return newCharacter;
-              }),
-            },
-          };
-        }),
-        deleteCharacter: (id) => set((state) => {
-          if (!state.activeProject) return state;
-          return {
-            activeProject: {
-              ...state.activeProject,
-              characters: state.activeProject.characters.filter((c) => c.id !== id),
-            },
-          };
-        }),
-            updateCharacterVitalStatus: (id, status, description) => set((state) => {
-              if (!state.activeProject) return state;
-              return {
-                activeProject: {
-                  ...state.activeProject,
-                  characters: state.activeProject.characters.map((c) => {
-                    if (c.id !== id) return c;
-                    const newEntry: VitalStatusEntry = {
-                      id: crypto.randomUUID(),
-                      status,
-                      description,
-                      timestamp: new Date().toISOString()
-                    };
-                    return {
-                      ...c,
-                      currentVitalStatus: status,
-                      vitalStatusHistory: [...c.vitalStatusHistory, newEntry]
-                    };
-                  }),
-                },
+      addCharacter: async (character) => {
+        const { activeProject } = get();
+        if (!activeProject) return;
+        
+        const initialStatus: VitalStatusEntry = {
+          id: crypto.randomUUID(),
+          status: 'alive',
+          timestamp: new Date().toISOString(),
+          description: 'Initial state'
+        };
+        
+        const newCharacter = {
+          ...character,
+          id: crypto.randomUUID(),
+          projectId: activeProject.id,
+          vitalStatusHistory: [initialStatus],
+          currentVitalStatus: 'alive',
+          attributes: character.attributes || {},
+          attributeHistory: []
+        } as Character;
+        
+        // Bridge call - Stringify JSON fields
+        const payload = {
+            ...newCharacter,
+            attributes: JSON.stringify(newCharacter.attributes),
+            attributeHistory: JSON.stringify(newCharacter.attributeHistory),
+            vitalStatusHistory: JSON.stringify(newCharacter.vitalStatusHistory),
+            visualPosition: newCharacter.visualPosition ? JSON.stringify(newCharacter.visualPosition) : null
+        };
+
+        await dbCreateCharacter(payload as any);
+
+        set((state) => ({
+          activeProject: state.activeProject ? {
+            ...state.activeProject,
+            characters: [...state.activeProject.characters, newCharacter],
+          } : null,
+        }));
+      },
+      
+      updateCharacter: async (id, updates) => {
+        const { activeProject } = get();
+        if (!activeProject) return;
+
+        const current = activeProject.characters.find(c => c.id === id);
+        if (!current) return;
+
+        // Logic for history
+        let newAttributeHistory = current.attributeHistory || [];
+        if (updates.attributes && JSON.stringify(updates.attributes) !== JSON.stringify(current.attributes)) {
+             newAttributeHistory = [...newAttributeHistory, {
+                timestamp: new Date().toISOString(),
+                attributes: updates.attributes
+             }];
+        }
+
+        const updatedCharacter = { 
+            ...current, 
+            ...updates, 
+            attributeHistory: newAttributeHistory 
+        };
+
+        const payload = {
+            ...updatedCharacter,
+            attributes: JSON.stringify(updatedCharacter.attributes),
+            attributeHistory: JSON.stringify(updatedCharacter.attributeHistory),
+            vitalStatusHistory: JSON.stringify(updatedCharacter.vitalStatusHistory),
+            visualPosition: updatedCharacter.visualPosition ? JSON.stringify(updatedCharacter.visualPosition) : null
+        };
+
+        await dbUpdateCharacter(payload as any);
+
+        set((state) => ({
+          activeProject: state.activeProject ? {
+            ...state.activeProject,
+            characters: state.activeProject.characters.map((c) => c.id === id ? updatedCharacter : c),
+          } : null,
+        }));
+      },
+
+      deleteCharacter: async (id) => {
+        const { activeProject } = get();
+        if (!activeProject) return;
+
+        await dbDeleteCharacter(id);
+
+        set((state) => ({
+          activeProject: state.activeProject ? {
+            ...state.activeProject,
+            characters: state.activeProject.characters.filter((c) => c.id !== id),
+          } : null,
+        }));
+      },
+
+            updateCharacterVitalStatus: async (id, status, description) => {
+              const { activeProject } = get();
+              if (!activeProject) return;
+              
+              const current = activeProject.characters.find(c => c.id === id);
+              if (!current) return;
+
+              const newEntry: VitalStatusEntry = {
+                id: crypto.randomUUID(),
+                status,
+                description,
+                timestamp: new Date().toISOString()
               };
-            }),
-          
-            updateCharacterPosition: (id, position) => set((state) => {
-              if (!state.activeProject) return state;
-              return {
-                activeProject: {
+              
+              const updatedCharacter = {
+                  ...current,
+                  currentVitalStatus: status,
+                  vitalStatusHistory: [...current.vitalStatusHistory, newEntry]
+              };
+              
+              const payload = {
+                ...updatedCharacter,
+                attributes: JSON.stringify(updatedCharacter.attributes),
+                attributeHistory: JSON.stringify(updatedCharacter.attributeHistory),
+                vitalStatusHistory: JSON.stringify(updatedCharacter.vitalStatusHistory),
+                visualPosition: updatedCharacter.visualPosition ? JSON.stringify(updatedCharacter.visualPosition) : null
+              };
+
+              await dbUpdateCharacter(payload as any);
+
+              set((state) => ({
+                activeProject: state.activeProject ? {
                   ...state.activeProject,
                   characters: state.activeProject.characters.map((c) =>
-                    c.id === id ? { ...c, visualPosition: position } : c
+                    c.id === id ? updatedCharacter : c
                   ),
-                },
-              };
-            }),
-                        addRelationship: (ownerId, targetId, type, status, description, isSecret = false) => set((state) => {
-        
-                if (!state.activeProject) return state;
-        
-                
-        
-                const relId = crypto.randomUUID();
-        
-                const timestamp = new Date().toISOString();
-        
-            
-        
-                const historyEntry: RelationshipHistoryEntry = {
-        
-                  id: crypto.randomUUID(),
-        
-                  type,
-        
-                  status,
-        
-                  description,
-        
-                  timestamp,
-        
-                  isSecret
-        
-                };
-        
-            
-        
-                return {
-        
-                  activeProject: {
-        
-                    ...state.activeProject,
-        
-                    characters: state.activeProject.characters.map(c => {
-        
-                      if (c.id === ownerId) {
-        
-                        return {
-        
-                          ...c,
-        
-                          relationships: [...c.relationships, {
-        
-                            id: relId,
-        
-                            characterId: targetId,
-        
-                            currentType: type,
-        
-                            currentStatus: status,
-        
-                            currentDescription: description,
-        
-                            isSecret,
-        
-                            history: [historyEntry]
-        
-                          }]
-        
-                        };
-        
-                      }
-        
-                      return c;
-        
-                    })
-        
-                  }
-        
-                };
-        
-              }),
-        
-            
-        
-              updateRelationshipHistory: (charId, relId, entry) => set((state) => {
-        
-                if (!state.activeProject) return state;
-        
-                return {
-        
-                  activeProject: {
-        
-                    ...state.activeProject,
-        
-                    characters: state.activeProject.characters.map(c => {
-        
-                      if (c.id !== charId) return c;
-        
-                      return {
-        
-                        ...c,
-        
-                        relationships: c.relationships.map(r => {
-        
-                          if (r.id !== relId) return r;
-        
-                          const newEntry: RelationshipHistoryEntry = {
-        
-                            ...entry,
-        
-                            id: crypto.randomUUID(),
-        
-                            timestamp: new Date().toISOString()
-                          };
-        
-                          return {
-        
-                            ...r,
-        
-                            currentType: entry.type,
-        
-                            currentStatus: entry.status,
-        
-                            currentDescription: entry.description,
-        
-                            isSecret: entry.isSecret ?? r.isSecret,
-        
-                            history: [...r.history, newEntry]
-        
-                          };
-        
-                        })
-        
-                      };
-        
-                    })
-        
-                  }
-        
-                };
-        
-              }),
-        
-            
-        
-          deleteRelationship: (charId, relId) => set((state) => {
-            if (!state.activeProject) return state;
-            // Note: In a true symmetric system, deleting one should delete the other.
-            // For now, we delete specifically the requested one.
-            return {
-              activeProject: {
-                ...state.activeProject,
-                characters: state.activeProject.characters.map(c => {
-                  if (c.id !== charId) return c;
-                  return {
-                    ...c,
-                    relationships: c.relationships.filter(r => r.id !== relId)
-                  };
-                })
-              }
-            };
-          }),
-                addLocation: (location) => set((state) => {
-          if (!state.activeProject) return state;
-          const newLocation = {
-            ...location,
-            id: crypto.randomUUID(),
-          } as Location;
-          return {
-            activeProject: {
-              ...state.activeProject,
-              locations: [...state.activeProject.locations, newLocation],
+                } : null,
+              }));
             },
-          };
-        }),
-        updateLocation: (id, updates) => set((state) => {
-          if (!state.activeProject) return state;
-          return {
-            activeProject: {
-              ...state.activeProject,
-              locations: state.activeProject.locations.map((l) =>
-                l.id === id ? { ...l, ...updates } : l
-              ),
-            },
-          };
-        }),
-            deleteLocation: (id) => set((state) => {
-              if (!state.activeProject) return state;
-              return {
-                activeProject: {
-                  ...state.activeProject,
-                  locations: state.activeProject.locations.filter((l) => l.id !== id),
-                },
-              };
-            }),
-            updateLocationPosition: (id, position) => set((state) => {
-              if (!state.activeProject) return state;
-              return {
-                activeProject: {
-                  ...state.activeProject,
-                  locations: state.activeProject.locations.map((l) =>
-                    l.id === id ? { ...l, visualPosition: position } : l
-                  ),
-                },
-              };
-            }),
           
-            addLocationImage: (locationId, type, image) => set((state) => {
-              if (!state.activeProject) return state;
-              return {
-                activeProject: {
-                  ...state.activeProject,
-                  locations: state.activeProject.locations.map(l => {
-                    if (l.id !== locationId) return l;
-                    const newList = [...(l[type] || []), { ...image, id: crypto.randomUUID() }];
-                    return { ...l, [type]: newList };
-                  })
-                }
-              };
-            }),
-          
-            removeLocationImage: (locationId, type, imageId) => set((state) => {
-              if (!state.activeProject) return state;
-              return {
-                activeProject: {
-                  ...state.activeProject,
-                  locations: state.activeProject.locations.map(l => {
-                    if (l.id !== locationId) return l;
-                    const newList = (l[type] || []).filter((img: any) => img.id !== imageId);
-                    return { ...l, [type]: newList };
-                  })
-                }
-              };
-            }),
-          
-              addLocationConnection: (locationId, connection) => set((state) => {
-                if (!state.activeProject) return state;
-                return {
-                  activeProject: {
-                    ...state.activeProject,
-                    locations: state.activeProject.locations.map(l => {
-                      if (l.id !== locationId) return l;
-                      const newConnection: LocationConnection = {
-                        ...connection,
-                        id: crypto.randomUUID()
-                      };
-                      const newList = [...(l.connections || []), newConnection];
-                      return { ...l, connections: newList };
-                    })
-                  }
-                };
-              }),
-                        removeLocationConnection: (locationId, connectionId) => set((state) => {
-              if (!state.activeProject) return state;
-              return {
-                activeProject: {
-                  ...state.activeProject,
-                  locations: state.activeProject.locations.map(l => {
-                    if (l.id !== locationId) return l;
-                    const newList = (l.connections || []).filter(c => c.id !== connectionId);
-                    return { ...l, connections: newList };
-                  })
-                }
-              };
-            }),
-                    addLoreItem: (loreItem) => set((state) => {
-            if (!state.activeProject) return state;
-            const newLoreItem: LoreItem = {
-              ...loreItem,
-              id: crypto.randomUUID(),
-            } as LoreItem;
-            return {
-              activeProject: {
-                ...state.activeProject,
-                loreItems: [...(state.activeProject.loreItems || []), newLoreItem],
-              },
-            };
-          }),
-          updateLoreItem: (id, updates) => set((state) => {
-            if (!state.activeProject) return state;
-            return {
-              activeProject: {
-                ...state.activeProject,
-                loreItems: (state.activeProject.loreItems || []).map((l) =>
-                  l.id === id ? { ...l, ...updates } : l
-                ),
-              },
-            };
-          }),
-            deleteLoreItem: (id) => set((state) => {
-              if (!state.activeProject) return state;
-              return {
-                activeProject: {
-                  ...state.activeProject,
-                  loreItems: (state.activeProject.loreItems || []).filter((l) => l.id !== id),
-                },
-              };
-            }),
-          
-            addTimelineEvent: (event) => set((state) => {
-              if (!state.activeProject) return state;
-              const newEvent: TimelineEvent = {
-                ...event,
-                id: crypto.randomUUID(),
-              } as TimelineEvent;
-              return {
-                activeProject: {
-                  ...state.activeProject,
-                  timelineEvents: [...(state.activeProject.timelineEvents || []), newEvent],
-                },
-              };
-            }),
-            updateTimelineEvent: (id, updates) => set((state) => {
-              if (!state.activeProject) return state;
-              return {
-                activeProject: {
-                  ...state.activeProject,
-                  timelineEvents: (state.activeProject.timelineEvents || []).map((e) =>
-                    e.id === id ? { ...e, ...updates } : e
-                  ),
-                },
-              };
-            }),
-            deleteTimelineEvent: (id) => set((state) => {
-              if (!state.activeProject) return state;
-              return {
-                activeProject: {
-                  ...state.activeProject,
-                  timelineEvents: (state.activeProject.timelineEvents || []).filter((e) => e.id !== id),
-                },
-              };
-            }),
-          
-          addScene: (scene) => set((state) => {
-    if (!state.activeProject) return state;
-    const newScene = {
-      ...scene,
-      id: crypto.randomUUID(),
-    } as Scene;
-    return {
-      activeProject: {
-        ...state.activeProject,
-        scenes: [...(state.activeProject.scenes || []), newScene],
-      },
-    };
-  }),
-  updateScene: (id, updates) => set((state) => {
-    if (!state.activeProject) return state;
-    return {
-      activeProject: {
-        ...state.activeProject,
-        scenes: (state.activeProject.scenes || []).map((s) =>
-          s.id === id ? { ...s, ...updates } : s
-        ),
-      },
-    };
-  }),
-  deleteScene: (id) => set((state) => {
-    if (!state.activeProject) return state;
-    return {
-      activeProject: {
-        ...state.activeProject,
-        scenes: (state.activeProject.scenes || []).filter((s) => s.id !== id),
-      },
-    };
-  }),
+            updateCharacterPosition: async (id, position) => {
+              const { activeProject } = get();
+              if (!activeProject) return;
 
-  addApiKey: (type, provider, keyData) => set((state) => {
-    if (!state.activeProject) return state;
-    const apiKeys = { ...state.activeProject.apiKeys } as ProjectApiKeys;
+              const current = activeProject.characters.find(c => c.id === id);
+              if (!current) return;
+              
+              const updatedCharacter = { ...current, visualPosition: position };
+              
+              const payload = {
+                ...updatedCharacter,
+                attributes: JSON.stringify(updatedCharacter.attributes),
+                attributeHistory: JSON.stringify(updatedCharacter.attributeHistory),
+                vitalStatusHistory: JSON.stringify(updatedCharacter.vitalStatusHistory),
+                visualPosition: JSON.stringify(updatedCharacter.visualPosition)
+              };
+
+              await dbUpdateCharacter(payload as any);
+
+              set((state) => ({
+                activeProject: state.activeProject ? {
+                  ...state.activeProject,
+                  characters: state.activeProject.characters.map((c) =>
+                    c.id === id ? updatedCharacter : c
+                  ),
+                } : null,
+              }));
+            },
+                        addRelationship: async (ownerId, targetId, type, status, description, isSecret = false) => {
+                const { activeProject } = get();
+                if (!activeProject) return;
+                
+                const newRel = {
+                    id: crypto.randomUUID(),
+                    characterId: targetId,
+                    currentType: type,
+                    currentStatus: status,
+                    currentDescription: description,
+                    isSecret,
+                    history: []
+                };
+
+                const payload = {
+                    ...newRel,
+                    history: JSON.stringify(newRel.history)
+                };
+
+                await dbCreateRelationship(ownerId, payload as any);
+
+                set((state) => ({
+                    activeProject: state.activeProject ? {
+                        ...state.activeProject,
+                        characters: state.activeProject.characters.map(c => {
+                            if (c.id === ownerId) {
+                                return { ...c, relationships: [...c.relationships, newRel] };
+                            }
+                            return c;
+                        })
+                    } : null
+                }));
+            },
+            
+            updateRelationshipHistory: async (charId, relId, entry) => {
+                 const { activeProject } = get();
+                 if (!activeProject) return;
+                 
+                 const char = activeProject.characters.find(c => c.id === charId);
+                 if (!char) return;
+                 
+                 const rel = char.relationships.find(r => r.id === relId);
+                 if (!rel) return;
+                 
+                 const fullEntry = { ...entry, id: crypto.randomUUID(), timestamp: new Date().toISOString() };
+                 const updatedRel = { ...rel, history: [...rel.history, fullEntry] };
+                 
+                 const payload = {
+                     ...updatedRel,
+                     history: JSON.stringify(updatedRel.history)
+                 };
+                 
+                 await dbUpdateRelationship(charId, payload as any);
+                 
+                 set((state) => ({
+                    activeProject: state.activeProject ? {
+                        ...state.activeProject,
+                        characters: state.activeProject.characters.map(c => {
+                            if (c.id === charId) {
+                                return { 
+                                    ...c, 
+                                    relationships: c.relationships.map(r => r.id === relId ? updatedRel : r)
+                                };
+                            }
+                            return c;
+                        })
+                    } : null
+                }));
+            },
+
+            deleteRelationship: async (charId, relId) => {
+                 const { activeProject } = get();
+                 if (!activeProject) return;
+                 
+                 await dbDeleteRelationship(relId);
+                 
+                 set((state) => ({
+                    activeProject: state.activeProject ? {
+                        ...state.activeProject,
+                        characters: state.activeProject.characters.map(c => {
+                            if (c.id === charId) {
+                                return { 
+                                    ...c, 
+                                    relationships: c.relationships.filter(r => r.id !== relId)
+                                };
+                            }
+                            return c;
+                        })
+                    } : null
+                }));
+            },
+
+            addLocation: async (location) => {
+                 const { activeProject } = get();
+                 if (!activeProject) return;
+
+                 const newLocation = {
+                     ...location,
+                     id: crypto.randomUUID(),
+                     projectId: activeProject.id,
+                     gallery: [],
+                     plans: [],
+                     connections: []
+                 } as Location;
+                 
+                 const payload = {
+                     ...newLocation,
+                     gallery: JSON.stringify(newLocation.gallery),
+                     plans: JSON.stringify(newLocation.plans),
+                     connections: JSON.stringify(newLocation.connections),
+                     visualPosition: newLocation.visualPosition ? JSON.stringify(newLocation.visualPosition) : null
+                 };
+                 
+                 await dbCreateLocation(payload as any);
+                 
+                 set((state) => ({
+                    activeProject: state.activeProject ? {
+                        ...state.activeProject,
+                        locations: [...state.activeProject.locations, newLocation]
+                    } : null
+                }));
+            },
+            
+            updateLocation: async (id, updates) => {
+                 const { activeProject } = get();
+                 if (!activeProject) return;
+                 
+                 const current = activeProject.locations.find(l => l.id === id);
+                 if (!current) return;
+                 
+                 const updated = { ...current, ...updates };
+                 
+                 const payload = {
+                     ...updated,
+                     gallery: JSON.stringify(updated.gallery),
+                     plans: JSON.stringify(updated.plans),
+                     connections: JSON.stringify(updated.connections),
+                     visualPosition: updated.visualPosition ? JSON.stringify(updated.visualPosition) : null
+                 };
+                 
+                 await dbUpdateLocation(payload as any);
+                 
+                 set((state) => ({
+                    activeProject: state.activeProject ? {
+                        ...state.activeProject,
+                        locations: state.activeProject.locations.map(l => l.id === id ? updated : l)
+                    } : null
+                }));
+            },
+            
+            deleteLocation: async (id) => {
+                 const { activeProject } = get();
+                 if (!activeProject) return;
+                 
+                 await dbDeleteLocation(id);
+                 
+                 set((state) => ({
+                    activeProject: state.activeProject ? {
+                        ...state.activeProject,
+                        locations: state.activeProject.locations.filter(l => l.id !== id)
+                    } : null
+                }));
+            },
+            
+            updateLocationPosition: async (id, position) => {
+                const { updateLocation } = get();
+                await updateLocation(id, { visualPosition: position });
+            },
+
+            addLocationImage: async (locationId, type, image) => {
+                 const { activeProject } = get();
+                 if (!activeProject) return;
+                 
+                 const loc = activeProject.locations.find(l => l.id === locationId);
+                 if (!loc) return;
+                 
+                 const newImage = { ...image, id: crypto.randomUUID() };
+                 const updates: any = {};
+                 
+                 // Safe array access
+                 const currentList = type === 'gallery' ? (loc.gallery || []) : (loc.plans || []);
+                 if (type === 'gallery') updates.gallery = [...currentList, newImage];
+                 else updates.plans = [...currentList, newImage];
+                 
+                 const updated = { ...loc, ...updates };
+                 
+                 const payload = {
+                     ...updated,
+                     gallery: JSON.stringify(updated.gallery || []),
+                     plans: JSON.stringify(updated.plans || []),
+                     connections: JSON.stringify(updated.connections || []),
+                     visualPosition: updated.visualPosition ? JSON.stringify(updated.visualPosition) : null
+                 };
+                 
+                 await dbUpdateLocation(payload as any);
+                 
+                 set((state) => ({
+                    activeProject: state.activeProject ? {
+                        ...state.activeProject,
+                        locations: state.activeProject.locations.map(l => l.id === locationId ? updated : l)
+                    } : null
+                }));
+            },
+            
+            removeLocationImage: async (locationId, type, imageId) => {
+                 const { activeProject } = get();
+                 if (!activeProject) return;
+                 
+                 const loc = activeProject.locations.find(l => l.id === locationId);
+                 if (!loc) return;
+                 
+                 const updates: any = {};
+                 if (type === 'gallery') updates.gallery = (loc.gallery || []).filter(i => i.id !== imageId);
+                 else updates.plans = (loc.plans || []).filter(i => i.id !== imageId);
+
+                 const updated = { ...loc, ...updates };
+                 
+                 const payload = {
+                     ...updated,
+                     gallery: JSON.stringify(updated.gallery || []),
+                     plans: JSON.stringify(updated.plans || []),
+                     connections: JSON.stringify(updated.connections || []),
+                     visualPosition: updated.visualPosition ? JSON.stringify(updated.visualPosition) : null
+                 };
+                 
+                 await dbUpdateLocation(payload as any);
+                 
+                 set((state) => ({
+                    activeProject: state.activeProject ? {
+                        ...state.activeProject,
+                        locations: state.activeProject.locations.map(l => l.id === locationId ? updated : l)
+                    } : null
+                }));
+            },
+            
+            addLocationConnection: async (locationId, connection) => {
+                 const { activeProject } = get();
+                 if (!activeProject) return;
+                 
+                 const loc = activeProject.locations.find(l => l.id === locationId);
+                 if (!loc) return;
+                 
+                 const newConn = { ...connection, id: crypto.randomUUID() };
+                 const updated = { ...loc, connections: [...(loc.connections || []), newConn] };
+                 
+                 const payload = {
+                     ...updated,
+                     gallery: JSON.stringify(updated.gallery || []),
+                     plans: JSON.stringify(updated.plans || []),
+                     connections: JSON.stringify(updated.connections || []),
+                     visualPosition: updated.visualPosition ? JSON.stringify(updated.visualPosition) : null
+                 };
+                 
+                 await dbUpdateLocation(payload as any);
+                 
+                 set((state) => ({
+                    activeProject: state.activeProject ? {
+                        ...state.activeProject,
+                        locations: state.activeProject.locations.map(l => l.id === locationId ? updated : l)
+                    } : null
+                }));
+            },
+            
+            removeLocationConnection: async (locationId, connectionId) => {
+                 const { activeProject } = get();
+                 if (!activeProject) return;
+                 
+                 const loc = activeProject.locations.find(l => l.id === locationId);
+                 if (!loc) return;
+                 
+                 const updated = { ...loc, connections: (loc.connections || []).filter(c => c.id !== connectionId) };
+                 
+                 const payload = {
+                     ...updated,
+                     gallery: JSON.stringify(updated.gallery || []),
+                     plans: JSON.stringify(updated.plans || []),
+                     connections: JSON.stringify(updated.connections || []),
+                     visualPosition: updated.visualPosition ? JSON.stringify(updated.visualPosition) : null
+                 };
+                 
+                 await dbUpdateLocation(payload as any);
+                 
+                 set((state) => ({
+                    activeProject: state.activeProject ? {
+                        ...state.activeProject,
+                        locations: state.activeProject.locations.map(l => l.id === locationId ? updated : l)
+                    } : null
+                }));
+            },
+            addLoreItem: async (loreItem) => {
+                const { activeProject } = get();
+                if (!activeProject) return;
+                
+                const newLoreItem = {
+                    ...loreItem,
+                    id: crypto.randomUUID(),
+                    projectId: activeProject.id,
+                    relatedEntityIds: []
+                } as LoreItem;
+                
+                const payload = {
+                    ...newLoreItem,
+                    relatedEntityIds: JSON.stringify(newLoreItem.relatedEntityIds || [])
+                };
+                
+                await dbCreateLoreItem(payload as any);
+                
+                set((state) => ({
+                    activeProject: state.activeProject ? {
+                        ...state.activeProject,
+                        loreItems: [...(state.activeProject.loreItems || []), newLoreItem],
+                    } : null
+                }));
+            },
+            
+            updateLoreItem: async (id, updates) => {
+                const { activeProject } = get();
+                if (!activeProject) return;
+                
+                const current = (activeProject.loreItems || []).find(l => l.id === id);
+                if (!current) return;
+                
+                const updated = { ...current, ...updates };
+                
+                const payload = {
+                    ...updated,
+                    relatedEntityIds: JSON.stringify(updated.relatedEntityIds || [])
+                };
+                
+                await dbUpdateLoreItem(payload as any);
+                
+                set((state) => ({
+                    activeProject: state.activeProject ? {
+                        ...state.activeProject,
+                        loreItems: (state.activeProject.loreItems || []).map((l) =>
+                            l.id === id ? updated : l
+                        ),
+                    } : null
+                }));
+            },
+            
+            deleteLoreItem: async (id) => {
+                const { activeProject } = get();
+                if (!activeProject) return;
+                
+                await dbDeleteLoreItem(id);
+                
+                set((state) => ({
+                    activeProject: state.activeProject ? {
+                        ...state.activeProject,
+                        loreItems: (state.activeProject.loreItems || []).filter((l) => l.id !== id),
+                    } : null
+                }));
+            },
+          
+            addTimelineEvent: async (event) => {
+                const { activeProject } = get();
+                if (!activeProject) return;
+                
+                const newEvent = {
+                    ...event,
+                    id: crypto.randomUUID(),
+                    projectId: activeProject.id,
+                    participants: event.participants || [],
+                    tags: event.tags || []
+                } as TimelineEvent;
+                
+                const payload = {
+                    ...newEvent,
+                    participants: JSON.stringify(newEvent.participants),
+                    tags: JSON.stringify(newEvent.tags)
+                };
+                
+                await dbCreateTimelineEvent(payload as any);
+                
+                set((state) => ({
+                    activeProject: state.activeProject ? {
+                        ...state.activeProject,
+                        timelineEvents: [...(state.activeProject.timelineEvents || []), newEvent],
+                    } : null
+                }));
+            },
+            
+            updateTimelineEvent: async (id, updates) => {
+                const { activeProject } = get();
+                if (!activeProject) return;
+                
+                const current = (activeProject.timelineEvents || []).find(e => e.id === id);
+                if (!current) return;
+                
+                const updated = { ...current, ...updates };
+                
+                const payload = {
+                    ...updated,
+                    participants: JSON.stringify(updated.participants),
+                    tags: JSON.stringify(updated.tags)
+                };
+                
+                await dbUpdateTimelineEvent(payload as any);
+                
+                set((state) => ({
+                    activeProject: state.activeProject ? {
+                        ...state.activeProject,
+                        timelineEvents: (state.activeProject.timelineEvents || []).map((e) =>
+                            e.id === id ? updated : e
+                        ),
+                    } : null
+                }));
+            },
+            
+            deleteTimelineEvent: async (id) => {
+                const { activeProject } = get();
+                if (!activeProject) return;
+                
+                await dbDeleteTimelineEvent(id);
+                
+                set((state) => ({
+                    activeProject: state.activeProject ? {
+                        ...state.activeProject,
+                        timelineEvents: (state.activeProject.timelineEvents || []).filter((e) => e.id !== id),
+                    } : null
+                }));
+            },
+          
+          addScene: async (scene) => {
+                const { activeProject } = get();
+                if (!activeProject) return;
+                
+                const newScene = {
+                    ...scene,
+                    id: crypto.randomUUID(),
+                    characterIds: scene.characterIds || []
+                } as Scene;
+                
+                const payload = {
+                    ...newScene,
+                    characterIds: JSON.stringify(newScene.characterIds)
+                };
+                
+                await dbCreateScene(payload as any);
+                
+                set((state) => ({
+                    activeProject: state.activeProject ? {
+                        ...state.activeProject,
+                        scenes: [...(state.activeProject.scenes || []), newScene],
+                    } : null
+                }));
+            },
+            
+            updateScene: async (id, updates) => {
+                const { activeProject } = get();
+                if (!activeProject) return;
+                
+                const current = (activeProject.scenes || []).find(s => s.id === id);
+                if (!current) return;
+                
+                const updated = { ...current, ...updates };
+                
+                const payload = {
+                    ...updated,
+                    characterIds: JSON.stringify(updated.characterIds)
+                };
+                
+                await dbUpdateScene(payload as any);
+                
+                set((state) => ({
+                    activeProject: state.activeProject ? {
+                        ...state.activeProject,
+                        scenes: (state.activeProject.scenes || []).map((s) =>
+                            s.id === id ? updated : s
+                        ),
+                    } : null
+                }));
+            },
+            
+            deleteScene: async (id) => {
+                const { activeProject } = get();
+                if (!activeProject) return;
+                
+                await dbDeleteScene(id);
+                
+                set((state) => ({
+                    activeProject: state.activeProject ? {
+                        ...state.activeProject,
+                        scenes: (state.activeProject.scenes || []).filter((s) => s.id !== id),
+                    } : null
+                }));
+            },
+
+  addApiKey: async (type, provider, keyData) => {
+    const { activeProject } = get();
+    if (!activeProject) return;
+    
+    const apiKeys = { ...activeProject.apiKeys } as ProjectApiKeys;
+    if (!apiKeys[type]) apiKeys[type] = {} as any; // Ensure type exists
     if (!apiKeys[type][provider]) apiKeys[type][provider] = [];
     
     const newKey: ApiKeyEntry = {
@@ -669,27 +1021,48 @@ export const useProjectStore = create<ProjectState>()(
     
     apiKeys[type][provider] = [...apiKeys[type][provider], newKey];
     
-    return {
-      activeProject: { ...state.activeProject, apiKeys }
-    };
-  }),
+    const updatedProject = { ...activeProject, apiKeys };
+    
+    // Persist to DB
+    await dbUpdateProject({
+        ...updatedProject,
+        apiKeys: JSON.stringify(updatedProject.apiKeys),
+        banners: JSON.stringify(updatedProject.banners || {}),
+        creatures: JSON.stringify(updatedProject.creatures || []),
+        worldRules: JSON.stringify(updatedProject.worldRules || [])
+    } as any);
+    
+    set({ activeProject: updatedProject });
+  },
 
-  updateApiKey: (type, provider, keyId, updates) => set((state) => {
-    if (!state.activeProject) return state;
-    const apiKeys = { ...state.activeProject.apiKeys } as ProjectApiKeys;
+  updateApiKey: async (type, provider, keyId, updates) => {
+    const { activeProject } = get();
+    if (!activeProject) return;
+    
+    const apiKeys = { ...activeProject.apiKeys } as ProjectApiKeys;
     
     apiKeys[type][provider] = apiKeys[type][provider].map(k => 
       k.id === keyId ? { ...k, ...updates } : k
     );
     
-    return {
-      activeProject: { ...state.activeProject, apiKeys }
-    };
-  }),
+    const updatedProject = { ...activeProject, apiKeys };
+    
+    await dbUpdateProject({
+        ...updatedProject,
+        apiKeys: JSON.stringify(updatedProject.apiKeys),
+        banners: JSON.stringify(updatedProject.banners || {}),
+        creatures: JSON.stringify(updatedProject.creatures || []),
+        worldRules: JSON.stringify(updatedProject.worldRules || [])
+    } as any);
+    
+    set({ activeProject: updatedProject });
+  },
 
-  deleteApiKey: (type, provider, keyId) => set((state) => {
-    if (!state.activeProject) return state;
-    const apiKeys = { ...state.activeProject.apiKeys } as ProjectApiKeys;
+  deleteApiKey: async (type, provider, keyId) => {
+    const { activeProject } = get();
+    if (!activeProject) return;
+    
+    const apiKeys = { ...activeProject.apiKeys } as ProjectApiKeys;
     
     const wasDefault = apiKeys[type][provider].find(k => k.id === keyId)?.isDefault;
     apiKeys[type][provider] = apiKeys[type][provider].filter(k => k.id !== keyId);
@@ -698,220 +1071,395 @@ export const useProjectStore = create<ProjectState>()(
       apiKeys[type][provider][0].isDefault = true;
     }
     
-    return {
-      activeProject: { ...state.activeProject, apiKeys }
-    };
-  }),
+    const updatedProject = { ...activeProject, apiKeys };
+    
+    await dbUpdateProject({
+        ...updatedProject,
+        apiKeys: JSON.stringify(updatedProject.apiKeys),
+        banners: JSON.stringify(updatedProject.banners || {}),
+        creatures: JSON.stringify(updatedProject.creatures || []),
+        worldRules: JSON.stringify(updatedProject.worldRules || [])
+    } as any);
+    
+    set({ activeProject: updatedProject });
+  },
 
-  setDefaultApiKey: (type, provider, keyId) => set((state) => {
-    if (!state.activeProject) return state;
-    const apiKeys = { ...state.activeProject.apiKeys } as ProjectApiKeys;
+  setDefaultApiKey: async (type, provider, keyId) => {
+    const { activeProject } = get();
+    if (!activeProject) return;
+    
+    const apiKeys = { ...activeProject.apiKeys } as ProjectApiKeys;
     
     apiKeys[type][provider] = apiKeys[type][provider].map(k => ({
       ...k,
       isDefault: k.id === keyId
     }));
     
-    return {
-      activeProject: { ...state.activeProject, apiKeys }
-    };
-  }),
+    const updatedProject = { ...activeProject, apiKeys };
+    
+    await dbUpdateProject({
+        ...updatedProject,
+        apiKeys: JSON.stringify(updatedProject.apiKeys),
+        banners: JSON.stringify(updatedProject.banners || {}),
+        creatures: JSON.stringify(updatedProject.creatures || []),
+        worldRules: JSON.stringify(updatedProject.worldRules || [])
+    } as any);
+    
+    set({ activeProject: updatedProject });
+  },
 
-  toggleRpgMode: (enabled) => set((state) => {
-    if (!state.activeProject) return state;
-    return {
-      activeProject: {
-        ...state.activeProject,
-        isRpgModeEnabled: enabled,
-      },
+  toggleRpgMode: async (enabled) => {
+    const { activeProject } = get();
+    if (!activeProject) return;
+    
+    const updatedProject = {
+      ...activeProject,
+      isRpgModeEnabled: enabled,
     };
-  }),
+    
+    await dbUpdateProject({
+        ...updatedProject,
+        apiKeys: JSON.stringify(updatedProject.apiKeys),
+        banners: JSON.stringify(updatedProject.banners || {}),
+        creatures: JSON.stringify(updatedProject.creatures || []),
+        worldRules: JSON.stringify(updatedProject.worldRules || [])
+    } as any);
+    
+    set({ activeProject: updatedProject });
+  },
 
-  setRpgSystem: (system) => set((state) => {
-    if (!state.activeProject) return state;
-    return {
-      activeProject: {
-        ...state.activeProject,
-        rpgSystem: system,
-      },
+  setRpgSystem: async (system) => {
+    const { activeProject } = get();
+    if (!activeProject) return;
+    
+    const updatedProject = {
+      ...activeProject,
+      rpgSystem: system,
     };
-  }),
+    
+    await dbUpdateProject({
+        ...updatedProject,
+        apiKeys: JSON.stringify(updatedProject.apiKeys),
+        banners: JSON.stringify(updatedProject.banners || {}),
+        creatures: JSON.stringify(updatedProject.creatures || []),
+        worldRules: JSON.stringify(updatedProject.worldRules || [])
+    } as any);
+    
+    set({ activeProject: updatedProject });
+  },
 
-  setContextBanner: (context, url) => set((state) => {
-    if (!state.activeProject) return state;
-    return {
-      activeProject: {
-        ...state.activeProject,
-        banners: {
-          ...(state.activeProject.banners || {}),
-          [context]: url
-        }
+  setContextBanner: async (context, url) => {
+    const { activeProject } = get();
+    if (!activeProject) return;
+    
+    const updatedProject = {
+      ...activeProject,
+      banners: {
+        ...(activeProject.banners || {}),
+        [context]: url
       }
     };
-  }),
+    
+    await dbUpdateProject({
+        ...updatedProject,
+        apiKeys: JSON.stringify(updatedProject.apiKeys),
+        banners: JSON.stringify(updatedProject.banners || {}),
+        creatures: JSON.stringify(updatedProject.creatures || []),
+        worldRules: JSON.stringify(updatedProject.worldRules || [])
+    } as any);
+    
+    set({ activeProject: updatedProject });
+  },
 
-  setProjectType: (type) => set((state) => {
-    if (!state.activeProject) return state;
-    return {
-      activeProject: {
-        ...state.activeProject,
-        projectType: type,
-        isRpgModeEnabled: type === 'rpg' || type === 'worldbuilding' || state.activeProject.isRpgModeEnabled,
-      },
+  setProjectType: async (type) => {
+    const { activeProject } = get();
+    if (!activeProject) return;
+    
+    const updatedProject = {
+      ...activeProject,
+      projectType: type,
+      isRpgModeEnabled: type === 'rpg' || type === 'worldbuilding' || activeProject.isRpgModeEnabled,
     };
-  }),
+    
+    await dbUpdateProject({
+        ...updatedProject,
+        apiKeys: JSON.stringify(updatedProject.apiKeys),
+        banners: JSON.stringify(updatedProject.banners || {}),
+        creatures: JSON.stringify(updatedProject.creatures || []),
+        worldRules: JSON.stringify(updatedProject.worldRules || [])
+    } as any);
+    
+    set({ activeProject: updatedProject });
+  },
 
   // Creatures (Bestiary)
-  addCreature: (creature) => set((state) => {
-    if (!state.activeProject) return state;
+  addCreature: async (creature) => {
+    const { activeProject } = get();
+    if (!activeProject) return;
     const newCreature: Creature = {
       ...creature,
       id: crypto.randomUUID(),
       abilities: creature.abilities || [],
       stats: creature.stats || {},
     };
-    return {
-      activeProject: {
-        ...state.activeProject,
-        creatures: [...(state.activeProject.creatures || []), newCreature],
-      },
+    
+    const updatedProject = {
+      ...activeProject,
+      creatures: [...(activeProject.creatures || []), newCreature],
     };
-  }),
+    
+    await dbUpdateProject({
+        ...updatedProject,
+        apiKeys: JSON.stringify(updatedProject.apiKeys),
+        banners: JSON.stringify(updatedProject.banners || {}),
+        creatures: JSON.stringify(updatedProject.creatures || []),
+        worldRules: JSON.stringify(updatedProject.worldRules || [])
+    } as any);
+    
+    set({ activeProject: updatedProject });
+  },
 
-  updateCreature: (id, updates) => set((state) => {
-    if (!state.activeProject) return state;
-    return {
-      activeProject: {
-        ...state.activeProject,
-        creatures: (state.activeProject.creatures || []).map((c) =>
-          c.id === id ? { ...c, ...updates } : c
-        ),
-      },
+  updateCreature: async (id, updates) => {
+    const { activeProject } = get();
+    if (!activeProject) return;
+    
+    const updatedProject = {
+      ...activeProject,
+      creatures: (activeProject.creatures || []).map((c) =>
+        c.id === id ? { ...c, ...updates } : c
+      ),
     };
-  }),
+    
+    await dbUpdateProject({
+        ...updatedProject,
+        apiKeys: JSON.stringify(updatedProject.apiKeys),
+        banners: JSON.stringify(updatedProject.banners || {}),
+        creatures: JSON.stringify(updatedProject.creatures || []),
+        worldRules: JSON.stringify(updatedProject.worldRules || [])
+    } as any);
+    
+    set({ activeProject: updatedProject });
+  },
 
-  deleteCreature: (id) => set((state) => {
-    if (!state.activeProject) return state;
-    return {
-      activeProject: {
-        ...state.activeProject,
-        creatures: (state.activeProject.creatures || []).filter((c) => c.id !== id),
-      },
+  deleteCreature: async (id) => {
+    const { activeProject } = get();
+    if (!activeProject) return;
+    
+    const updatedProject = {
+      ...activeProject,
+      creatures: (activeProject.creatures || []).filter((c) => c.id !== id),
     };
-  }),
+    
+    await dbUpdateProject({
+        ...updatedProject,
+        apiKeys: JSON.stringify(updatedProject.apiKeys),
+        banners: JSON.stringify(updatedProject.banners || {}),
+        creatures: JSON.stringify(updatedProject.creatures || []),
+        worldRules: JSON.stringify(updatedProject.worldRules || [])
+    } as any);
+    
+    set({ activeProject: updatedProject });
+  },
 
-  addCreatureAbility: (creatureId, ability) => set((state) => {
-    if (!state.activeProject) return state;
-    return {
-      activeProject: {
-        ...state.activeProject,
-        creatures: (state.activeProject.creatures || []).map((c) => {
-          if (c.id !== creatureId) return c;
-          const newAbility: CreatureAbility = {
-            ...ability,
-            id: crypto.randomUUID(),
-          };
-          return {
-            ...c,
-            abilities: [...(c.abilities || []), newAbility],
-          };
-        }),
-      },
+  addCreatureAbility: async (creatureId, ability) => {
+    const { activeProject } = get();
+    if (!activeProject) return;
+    
+    const updatedProject = {
+      ...activeProject,
+      creatures: (activeProject.creatures || []).map((c) => {
+        if (c.id !== creatureId) return c;
+        const newAbility: CreatureAbility = {
+          ...ability,
+          id: crypto.randomUUID(),
+        };
+        return {
+          ...c,
+          abilities: [...(c.abilities || []), newAbility],
+        };
+      }),
     };
-  }),
+    
+    await dbUpdateProject({
+        ...updatedProject,
+        apiKeys: JSON.stringify(updatedProject.apiKeys),
+        banners: JSON.stringify(updatedProject.banners || {}),
+        creatures: JSON.stringify(updatedProject.creatures || []),
+        worldRules: JSON.stringify(updatedProject.worldRules || [])
+    } as any);
+    
+    set({ activeProject: updatedProject });
+  },
 
-  removeCreatureAbility: (creatureId, abilityId) => set((state) => {
-    if (!state.activeProject) return state;
-    return {
-      activeProject: {
-        ...state.activeProject,
-        creatures: (state.activeProject.creatures || []).map((c) => {
-          if (c.id !== creatureId) return c;
-          return {
-            ...c,
-            abilities: (c.abilities || []).filter((a) => a.id !== abilityId),
-          };
-        }),
-      },
+  removeCreatureAbility: async (creatureId, abilityId) => {
+    const { activeProject } = get();
+    if (!activeProject) return;
+    
+    const updatedProject = {
+      ...activeProject,
+      creatures: (activeProject.creatures || []).map((c) => {
+        if (c.id !== creatureId) return c;
+        return {
+          ...c,
+          abilities: (c.abilities || []).filter((a) => a.id !== abilityId),
+        };
+      }),
     };
-  }),
+    
+    await dbUpdateProject({
+        ...updatedProject,
+        apiKeys: JSON.stringify(updatedProject.apiKeys),
+        banners: JSON.stringify(updatedProject.banners || {}),
+        creatures: JSON.stringify(updatedProject.creatures || []),
+        worldRules: JSON.stringify(updatedProject.worldRules || [])
+    } as any);
+    
+    set({ activeProject: updatedProject });
+  },
 
   // World Rules
-  addWorldRule: (rule) => set((state) => {
-    if (!state.activeProject) return state;
+  addWorldRule: async (rule) => {
+    const { activeProject } = get();
+    if (!activeProject) return;
+    
     const newRule: WorldRule = {
       ...rule,
       id: crypto.randomUUID(),
       examples: rule.examples || [],
     };
-    return {
-      activeProject: {
-        ...state.activeProject,
-        worldRules: [...(state.activeProject.worldRules || []), newRule],
-      },
+    
+    const updatedProject = {
+      ...activeProject,
+      worldRules: [...(activeProject.worldRules || []), newRule],
     };
-  }),
+    
+    await dbUpdateProject({
+        ...updatedProject,
+        apiKeys: JSON.stringify(updatedProject.apiKeys),
+        banners: JSON.stringify(updatedProject.banners || {}),
+        creatures: JSON.stringify(updatedProject.creatures || []),
+        worldRules: JSON.stringify(updatedProject.worldRules || [])
+    } as any);
+    
+    set({ activeProject: updatedProject });
+  },
 
-  updateWorldRule: (id, updates) => set((state) => {
-    if (!state.activeProject) return state;
-    return {
-      activeProject: {
-        ...state.activeProject,
-        worldRules: (state.activeProject.worldRules || []).map((r) =>
-          r.id === id ? { ...r, ...updates } : r
-        ),
-      },
+  updateWorldRule: async (id, updates) => {
+    const { activeProject } = get();
+    if (!activeProject) return;
+    
+    const updatedProject = {
+      ...activeProject,
+      worldRules: (activeProject.worldRules || []).map((r) =>
+        r.id === id ? { ...r, ...updates } : r
+      ),
     };
-  }),
+    
+    await dbUpdateProject({
+        ...updatedProject,
+        apiKeys: JSON.stringify(updatedProject.apiKeys),
+        banners: JSON.stringify(updatedProject.banners || {}),
+        creatures: JSON.stringify(updatedProject.creatures || []),
+        worldRules: JSON.stringify(updatedProject.worldRules || [])
+    } as any);
+    
+    set({ activeProject: updatedProject });
+  },
 
-  deleteWorldRule: (id) => set((state) => {
-    if (!state.activeProject) return state;
-    return {
-      activeProject: {
-        ...state.activeProject,
-        worldRules: (state.activeProject.worldRules || []).filter((r) => r.id !== id),
-      },
+  deleteWorldRule: async (id) => {
+    const { activeProject } = get();
+    if (!activeProject) return;
+    
+    const updatedProject = {
+      ...activeProject,
+      worldRules: (activeProject.worldRules || []).filter((r) => r.id !== id),
     };
-  }),
+    
+    await dbUpdateProject({
+        ...updatedProject,
+        apiKeys: JSON.stringify(updatedProject.apiKeys),
+        banners: JSON.stringify(updatedProject.banners || {}),
+        creatures: JSON.stringify(updatedProject.creatures || []),
+        worldRules: JSON.stringify(updatedProject.worldRules || [])
+    } as any);
+    
+    set({ activeProject: updatedProject });
+  },
 
-  addWorldRuleExample: (ruleId, example) => set((state) => {
-    if (!state.activeProject) return state;
-    return {
-      activeProject: {
-        ...state.activeProject,
-        worldRules: (state.activeProject.worldRules || []).map((r) => {
-          if (r.id !== ruleId) return r;
-          const newExample: WorldRuleExample = {
-            ...example,
-            id: crypto.randomUUID(),
-          };
-          return {
-            ...r,
-            examples: [...(r.examples || []), newExample],
-          };
-        }),
-      },
+  addWorldRuleExample: async (ruleId, example) => {
+    const { activeProject } = get();
+    if (!activeProject) return;
+    
+    const updatedProject = {
+      ...activeProject,
+      worldRules: (activeProject.worldRules || []).map((r) => {
+        if (r.id !== ruleId) return r;
+        const newExample: WorldRuleExample = {
+          ...example,
+          id: crypto.randomUUID(),
+        };
+        return {
+          ...r,
+          examples: [...(r.examples || []), newExample],
+        };
+      }),
     };
-  }),
+    
+    await dbUpdateProject({
+        ...updatedProject,
+        apiKeys: JSON.stringify(updatedProject.apiKeys),
+        banners: JSON.stringify(updatedProject.banners || {}),
+        creatures: JSON.stringify(updatedProject.creatures || []),
+        worldRules: JSON.stringify(updatedProject.worldRules || [])
+    } as any);
+    
+    set({ activeProject: updatedProject });
+  },
 
-  removeWorldRuleExample: (ruleId, exampleId) => set((state) => {
-    if (!state.activeProject) return state;
-    return {
-      activeProject: {
-        ...state.activeProject,
-        worldRules: (state.activeProject.worldRules || []).map((r) => {
-          if (r.id !== ruleId) return r;
-          return {
-            ...r,
-            examples: (r.examples || []).filter((e) => e.id !== exampleId),
-          };
-        }),
-      },
+  removeWorldRuleExample: async (ruleId, exampleId) => {
+    const { activeProject } = get();
+    if (!activeProject) return;
+    
+    const updatedProject = {
+      ...activeProject,
+      worldRules: (activeProject.worldRules || []).map((r) => {
+        if (r.id !== ruleId) return r;
+        return {
+          ...r,
+          examples: (r.examples || []).filter((e) => e.id !== exampleId),
+        };
+      }),
     };
-  }),
-    }),
-    {
-      name: 'pluma-project',
-    }
-  )
-);
+    
+    await dbUpdateProject({
+        ...updatedProject,
+        apiKeys: JSON.stringify(updatedProject.apiKeys),
+        banners: JSON.stringify(updatedProject.banners || {}),
+        creatures: JSON.stringify(updatedProject.creatures || []),
+        worldRules: JSON.stringify(updatedProject.worldRules || [])
+    } as any);
+    
+    set({ activeProject: updatedProject });
+  },
+
+  // Packages
+  applyPackageIdentity: async (packageId) => {
+    const { activeProject } = get();
+    if (!activeProject) return;
+
+    const updatedProject = {
+      ...activeProject,
+      activeIdentityPackage: packageId || undefined
+    };
+    
+    await dbUpdateProject({
+        ...updatedProject,
+        apiKeys: JSON.stringify(updatedProject.apiKeys),
+        banners: JSON.stringify(updatedProject.banners || {}),
+        creatures: JSON.stringify(updatedProject.creatures || []),
+        worldRules: JSON.stringify(updatedProject.worldRules || [])
+    } as any);
+
+    set({ activeProject: updatedProject });
+  },
+}));

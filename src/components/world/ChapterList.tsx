@@ -1,14 +1,16 @@
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useUIStore } from '@/stores/useUIStore';
+import { useTranslation } from 'react-i18next';
 import { BookOpen, Trash2, Edit, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 export const ChapterList = () => {
+  const { t } = useTranslation();
   const { activeProject, deleteChapter } = useProjectStore();
   const { setCurrentEditingChapterId, setActiveView, openModal } = useUIStore();
 
-  if (!activeProject) return <div>No project loaded.</div>;
+  if (!activeProject) return <div>{t('project.noProjectLoaded')}.</div>;
 
   const chapters = activeProject.chapters.sort((a, b) => (a.order || 0) - (b.order || 0));
 

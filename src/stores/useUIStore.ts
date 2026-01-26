@@ -2,10 +2,10 @@
 import { create } from 'zustand';
 
 type ModalType = 'newProject' | 'welcome' | 'editCharacter' | 'newChapter' | 'editChapter' | 'newScene' | 'editScene' | 'loreItem' | 'timelineEvent' | 'editLocation' | 'editRelationship' | 'settings' | 'editCreature' | 'editWorldRule' | 'projectSettings' | null;
-type ViewType = 'editor' | 'relations' | 'timeline' | 'stats' | 'entities' | 'lore' | 'chapters' | 'scenes' | 'images' | 'publishing' | 'aiAssistant' | 'versionControl' | 'rpgTools' | 'ragStudio' | 'settings' | 'projects';
+type ViewType = 'editor' | 'relations' | 'timeline' | 'stats' | 'entities' | 'lore' | 'chapters' | 'scenes' | 'images' | 'publishing' | 'aiAssistant' | 'versionControl' | 'rpgTools' | 'ragStudio' | 'settings' | 'projects' | 'projectSettings';
 type EditorSaveStatus = 'saved' | 'saving' | 'unsaved';
 type LoreTab = 'summary' | 'characters' | 'relations' | 'events' | 'locations' | 'scenes' | 'map' | 'bestiary' | 'worldRules';
-type SettingsTab = 'general' | 'ia' | 'security' | 'data' | 'integrations' | 'advanced';
+type SettingsTab = 'general' | 'ia' | 'security' | 'data' | 'integrations' | 'advanced' | 'packages';
 
 interface UIState {
   isSidebarOpen: boolean;

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useUIStore } from '@/stores/useUIStore';
-import { db } from '@/lib/db';
+import { dbUpdateProject } from '@/lib/tauri-bridge';
 import { 
   Dialog, 
   DialogContent, 
@@ -12,12 +13,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useTranslation } from 'react-i18next';
 import { Settings2, Book, Dices, Globe2 } from 'lucide-react';
 import type { Project } from '@/types/domain';
 
 export const ProjectSettingsModal = () => {
-  useTranslation();
+  const { t } = useTranslation();
   const { activeModal, closeModal, modalData } = useUIStore();
   const [project, setProject] = useState<Partial<Project>>({});
 
@@ -33,8 +33,22 @@ export const ProjectSettingsModal = () => {
     e.preventDefault();
     if (!project.title?.trim() || !project.id) return;
 
-    await db.projects.update(project.id, project);
-    closeModal();
+    try {
+      // Need to stringify complex fields for the bridge
+      const payload = {
+        ...project,
+        banners: typeof project.banners === 'object' ? JSON.stringify(project.banners) : project.banners,
+        apiKeys: typeof project.apiKeys === 'object' ? JSON.stringify(project.apiKeys) : project.apiKeys,
+        creatures: typeof project.creatures === 'object' ? JSON.stringify(project.creatures) : project.creatures,
+        worldRules: typeof project.worldRules === 'object' ? JSON.stringify(project.worldRules) : project.worldRules,
+      };
+
+      await dbUpdateProject(payload as any);
+      closeModal();
+      window.location.reload(); // Reload to refresh project list/data for now
+    } catch (error) {
+      console.error('Failed to update project:', error);
+    }
   };
 
   return (
@@ -43,7 +57,7 @@ export const ProjectSettingsModal = () => {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Settings2 className="w-5 h-5 text-primary" />
-            Project Settings
+            {t('project.projectSettings')}
           </DialogTitle>
         </DialogHeader>
         

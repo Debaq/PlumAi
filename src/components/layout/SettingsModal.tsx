@@ -4,18 +4,21 @@ import { useProjectStore } from '@/stores/useProjectStore';
 import { useUIStore } from '@/stores/useUIStore';
 import { useTranslation } from 'react-i18next';
 import { CryptoService } from '@/lib/crypto';
+import { dbClearAllData } from '@/lib/tauri-bridge';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { PackageManager } from './PackageManager';
 import { 
   Settings, 
   Brain, 
@@ -38,14 +41,16 @@ import {
   Maximize,
   Undo2,
   Image as ImageIcon,
-  Layers
+  Layers,
+  AlertOctagon,
+  Loader2
 } from 'lucide-react';
 
 export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
   const { i18n, t } = useTranslation();
   const { activeModal, closeModal, activeSettingsTab } = useUIStore();
   const settings = useSettingsStore();
-  const { activeProject, setActiveProject, addApiKey, deleteApiKey, setDefaultApiKey } = useProjectStore();
+  const { activeProject, setActiveProject, clearActiveProject, addApiKey, deleteApiKey, setDefaultApiKey } = useProjectStore();
   
   const [newKeyName, setNewKeyName] = useState('');
   const [newKeyValue, setNewKeyValue] = useState('');
@@ -63,6 +68,12 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
   const [securityError, setSecurityError] = useState('');
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
+  // Danger Zone State
+  const [showDangerModal, setShowDangerModal] = useState(false);
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const CONFIRMATION_KEYWORD = "ELIMINAR";
+
   useEffect(() => {
     if (activeModal === 'settings' || activeSettingsTab === 'security') {
       setSecurityError('');
@@ -72,6 +83,14 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
       setIsChangingPassword(false);
     }
   }, [activeModal, activeSettingsTab]);
+
+  // Reset danger modal when closed
+  useEffect(() => {
+    if (!showDangerModal) {
+      setDeleteConfirmationText('');
+      setIsDeleting(false);
+    }
+  }, [showDangerModal]);
 
   // Handle countdown for font size
   useEffect(() => {
@@ -285,10 +304,34 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
     input.click();
   };
 
-  const handleDeleteAll = () => {
-    if (confirm('¿ESTÁS SEGURO? Esta acción eliminará permanentemente todos los datos de este proyecto.')) {
+  // Triggered by button click, opens the Danger Modal
+  const handleInitiateDelete = () => {
+    setShowDangerModal(true);
+  };
+
+  // Executed when user confirms in the Danger Modal
+  const handleExecuteDelete = async () => {
+    if (deleteConfirmationText !== CONFIRMATION_KEYWORD) return;
+    
+    setIsDeleting(true);
+    
+    try {
+      // 1. Clear Backend (Source of Truth)
+      await dbClearAllData();
+      
+      // 2. Clear Frontend State
+      clearActiveProject();
+      
+      // 3. Clear Browser Storage (Legacy & Cache)
       localStorage.clear();
-      window.location.reload();
+      sessionStorage.clear();
+      
+      // 4. Hard Reload
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Error deleting all data:', error);
+      alert('Error al eliminar los datos de la base de datos.');
+      setIsDeleting(false);
     }
   };
 
@@ -592,6 +635,13 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* PACKAGES */}
+        {activeSettingsTab === 'packages' && (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-200 max-w-5xl mx-auto pb-20">
+            <PackageManager />
           </div>
         )}
 
@@ -908,7 +958,11 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
                       <Plus className="w-4 h-4" />
                       Importar Proyecto
                     </Button>
-                    <Button variant="outline" className="justify-start gap-3 h-12 rounded-xl border-2 font-bold text-destructive hover:bg-destructive/10 hover:text-destructive sm:col-span-2" onClick={handleDeleteAll}>
+                    <Button 
+                      variant="outline" 
+                      className="justify-start gap-3 h-12 rounded-xl border-2 font-bold text-destructive hover:bg-destructive/10 hover:text-destructive sm:col-span-2" 
+                      onClick={handleInitiateDelete}
+                    >
                       <Trash2 className="w-4 h-4" />
                       Eliminar Todos los Datos de la App
                     </Button>
@@ -937,21 +991,87 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
   );
 
   if (isView) {
-    return <SettingsContent />;
+    return (
+      <>
+        <SettingsContent />
+        <DangerModal />
+      </>
+    );
+  }
+
+  // DANGER MODAL COMPONENT
+  function DangerModal() {
+    return (
+      <Dialog open={showDangerModal} onOpenChange={setShowDangerModal}>
+        <DialogContent className="sm:max-w-[450px] border-destructive/20 shadow-2xl shadow-destructive/10 bg-background/95 backdrop-blur-xl">
+          <DialogHeader className="space-y-4">
+            <div className="mx-auto w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center border-2 border-destructive/20 animate-pulse">
+              <AlertOctagon className="w-6 h-6 text-destructive" />
+            </div>
+            <div className="space-y-2 text-center">
+              <DialogTitle className="text-xl font-black text-destructive tracking-tight">
+                ¿ELIMINAR ABSOLUTAMENTE TODO?
+              </DialogTitle>
+              <DialogDescription className="text-muted-foreground">
+                Esta acción es <span className="font-bold text-foreground">irreversible</span>.
+                Se borrarán todos los proyectos, personajes, configuraciones y claves API de este dispositivo.
+              </DialogDescription>
+            </div>
+          </DialogHeader>
+
+          <div className="py-6 space-y-4">
+            <div className="p-4 bg-muted/30 rounded-xl border-2 border-dashed text-xs text-center text-muted-foreground">
+              Para confirmar, escribe <span className="font-black select-all text-foreground">ELIMINAR</span> a continuación:
+            </div>
+            <Input 
+              value={deleteConfirmationText}
+              onChange={(e) => setDeleteConfirmationText(e.target.value)}
+              placeholder="Escribe ELIMINAR"
+              className="text-center font-bold tracking-widest h-12 rounded-xl border-2 focus-visible:ring-destructive"
+            />
+          </div>
+
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button 
+              variant="ghost" 
+              onClick={() => setShowDangerModal(false)}
+              className="rounded-xl font-bold h-11"
+              disabled={isDeleting}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleExecuteDelete}
+              disabled={deleteConfirmationText !== 'ELIMINAR' || isDeleting}
+              className="rounded-xl font-bold h-11 px-8 gap-2 shadow-lg shadow-destructive/20"
+            >
+              {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+              {isDeleting ? 'Eliminando...' : 'Sí, eliminar todo'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
   }
 
   return (
-    <Dialog open={activeModal === 'settings'} onOpenChange={() => closeModal()}>
-      <DialogContent className="sm:max-w-[800px] w-full h-[80vh] flex flex-col p-0 gap-0 overflow-hidden bg-background border-border shadow-2xl rounded-3xl">
-        <DialogHeader className="p-4 border-b border-border bg-card shrink-0">
-          <DialogTitle className="flex items-center gap-2">
-            <Settings className="w-5 h-5 text-primary" />
-            <span>{t('header.settings')}</span>
-          </DialogTitle>
-        </DialogHeader>
-        <SettingsContent />
-      </DialogContent>
-    </Dialog>
+    <>
+      <Dialog open={activeModal === 'settings'} onOpenChange={() => closeModal()}>
+        <DialogContent className="sm:max-w-[800px] w-full h-[80vh] flex flex-col p-0 gap-0 overflow-hidden bg-background border-border shadow-2xl rounded-3xl">
+          <DialogHeader className="p-4 border-b border-border bg-card shrink-0">
+            <DialogTitle className="flex items-center gap-2">
+              <Settings className="w-5 h-5 text-primary" />
+              <span>{t('header.settings')}</span>
+            </DialogTitle>
+          </DialogHeader>
+          <SettingsContent />
+        </DialogContent>
+      </Dialog>
+      
+      {/* Danger Modal Rendering for normal mode */}
+      <DangerModal />
+    </>
   );
 };
 

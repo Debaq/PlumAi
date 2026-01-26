@@ -452,6 +452,28 @@ export async function dbDeleteTimelineEvent(id: string): Promise<void> {
 }
 
 // ============================================================================
+// Database Commands - System
+// ============================================================================
+
+export async function dbClearAllData(): Promise<void> {
+  if (!isTauri()) throw new Error('Tauri not available');
+  return invoke('db_clear_all_data');
+}
+
+export async function dbGetSetting(key: string): Promise<string | null> {
+  if (!isTauri()) return localStorage.getItem(key);
+  return invoke('db_get_setting', { key });
+}
+
+export async function dbSetSetting(key: string, value: string): Promise<void> {
+  if (!isTauri()) {
+    localStorage.setItem(key, value);
+    return;
+  }
+  return invoke('db_set_setting', { key, value });
+}
+
+// ============================================================================
 // AI Commands
 // ============================================================================
 

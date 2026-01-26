@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useUIStore } from '@/stores/useUIStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
+import { useIdentity } from '@/hooks/useIdentity';
 import { useBannerStore } from '@/stores/useBannerStore';
 import { useTranslation } from 'react-i18next';
 import {
@@ -35,7 +36,8 @@ export const Sidebar = () => {
     goBack
   } = useUIStore();
   const { ragStudioEnabled } = useSettingsStore();
-  const { getBanner, rotateBanner } = useBannerStore();
+  const { rotateBanner } = useBannerStore();
+  const { getBanner } = useIdentity();
   const { t } = useTranslation();
 
   const sidebarBanner = getBanner('sidebar');
@@ -70,7 +72,7 @@ export const Sidebar = () => {
                <div 
                  className="absolute inset-0 z-[-1] cursor-pointer group" 
                  onClick={handleBannerClick} 
-                 title="Click to change banner"
+                 title={t('sidebar.show')}
                >
                  {sidebarBanner ? (
                    <img 
@@ -94,7 +96,7 @@ export const Sidebar = () => {
                           setActiveView('projects');
                         }}
                         className="p-2 rounded-md bg-black/20 hover:bg-black/40 text-white/70 hover:text-white backdrop-blur-sm transition-all mb-2"
-                        title="Back to Projects"
+                        title={t('common.back')}
                       >
                         <BookMarked className="w-5 h-5" />
                       </button>
@@ -107,7 +109,7 @@ export const Sidebar = () => {
                          ? 'bg-primary text-primary-foreground shadow-md' 
                          : 'bg-black/20 hover:bg-black/40 text-white/70 hover:text-white'
                      }`}
-                     title="Settings"
+                     title={t('sidebar.settings')}
                    >
                      <Settings className="w-5 h-5" />
                    </button>
@@ -134,7 +136,7 @@ export const Sidebar = () => {
                    {activeProject && (
                      <button
                        className="p-2 rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-                       title="Save Project"
+                       title={t('header.saveProject')}
                        onClick={() => saveProject()}
                      >
                        <Save className="w-5 h-5" />
@@ -145,7 +147,7 @@ export const Sidebar = () => {
                      className={`p-2 rounded-md transition-colors ${
                        activeView === 'settings' ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-muted-foreground hover:text-sidebar-foreground hover:bg-sidebar-accent'
                      }`}
-                     title="Settings"
+                     title={t('sidebar.settings')}
                    >
                      <Settings className="w-5 h-5" />
                    </button>
@@ -216,7 +218,7 @@ export const Sidebar = () => {
               <nav className="space-y-0.5 pr-2">              <NavItem
                 view="lore"
                 icon={Book}
-                label="Lore"
+                label={t('sidebar.lore')}
                 count={activeProject.characters.length + activeProject.locations.length + activeProject.loreItems.length}
                 onClick={() => {
                   setActiveView('lore');
@@ -224,19 +226,20 @@ export const Sidebar = () => {
                 }}
                 isActive={activeView === 'lore' && !['bestiary', 'worldRules'].includes(activeLoreTab)}
               />
-              <NavItem view="chapters" icon={Book} label="Chapters" count={activeProject.chapters.length} />
-              <NavItem view="scenes" icon={Film} label="Scenes" count={activeProject.scenes?.length || 0} />
-              <NavItem view="images" icon={ImageIcon} label="Images" />
+              <NavItem view="chapters" icon={Book} label={t('sidebar.chapters')} count={activeProject.chapters.length} />
+              <NavItem view="scenes" icon={Film} label={t('sidebar.scenes')} count={activeProject.scenes?.length || 0} />
+              <NavItem view="images" icon={ImageIcon} label={t('sidebar.images')} />
 
               <div className="h-px bg-sidebar-border my-2 mx-3" />
 
-              <NavItem view="versionControl" icon={GitBranch} label="Version Control" />
-              <NavItem view="publishing" icon={BookMarked} label="Publishing" />
-              <NavItem view="stats" icon={BarChart} label="Stats" />
-              <NavItem view="aiAssistant" icon={Sparkles} label="AI Assistant" />
-              
+              <NavItem view="projectSettings" icon={Settings} label={t('sidebar.projectSettings')} />
+              <NavItem view="versionControl" icon={GitBranch} label={t('sidebar.versionControl')} />
+              <NavItem view="publishing" icon={BookMarked} label={t('sidebar.publishing')} />
+              <NavItem view="stats" icon={BarChart} label={t('sidebar.stats')} />
+              <NavItem view="aiAssistant" icon={Sparkles} label={t('sidebar.aiAssistant')} />
+
               {ragStudioEnabled && (
-                <NavItem view="ragStudio" icon={Brain} label="RAG Studio" />
+                <NavItem view="ragStudio" icon={Brain} label={t('sidebar.ragStudio')} />
               )}
               
               {activeProject.isRpgModeEnabled && (
@@ -250,7 +253,7 @@ export const Sidebar = () => {
                   <NavItem
                     view="lore"
                     icon={Skull}
-                    label="Bestiario"
+                    label={t('sidebar.bestiary')}
                     count={activeProject.creatures?.length || 0}
                     onClick={() => {
                       setActiveView('lore');
@@ -261,7 +264,7 @@ export const Sidebar = () => {
                   <NavItem
                     view="lore"
                     icon={BookCheck}
-                    label="Reglas del Mundo"
+                    label={t('sidebar.worldRules')}
                     count={activeProject.worldRules?.length || 0}
                     onClick={() => {
                       setActiveView('lore');
@@ -290,7 +293,7 @@ export const Sidebar = () => {
         ) : (
           <div className="p-4 text-center">
              <div className="h-20" /> {/* Spacer to push content down if banner is present */}
-             {!showBanner && <p className="text-muted-foreground text-sm">No project loaded.</p>}
+             {!showBanner && <p className="text-muted-foreground text-sm">{t('project.noProjectLoaded')}.</p>}
           </div>
         )}
       </div>
@@ -305,10 +308,10 @@ export const Sidebar = () => {
               setActiveView('projects');
             }}
             className="flex items-center w-full px-3 py-2 text-sm rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-            title="Save & Close Project"
+            title={t('modals.projectSettings.title')}
           >
             <Save className="w-4 h-4 mr-3 shrink-0" />
-            <span className="truncate flex-1 text-left">Save & Close</span>
+            <span className="truncate flex-1 text-left">{t('common.save')} & {t('common.close')}</span>
           </button>
         )}
 
@@ -324,7 +327,7 @@ export const Sidebar = () => {
           `}
         >
           <Settings className="w-4 h-4 mr-3 shrink-0" />
-          <span className="truncate flex-1 text-left">Settings</span>
+          <span className="truncate flex-1 text-left">{t('sidebar.settings')}</span>
         </button>
       </div>
 

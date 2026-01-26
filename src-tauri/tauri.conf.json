@@ -26,7 +26,8 @@
         "resizable": true,
         "fullscreen": false,
         "center": true,
-        "decorations": false
+        "decorations": false,
+        "backgroundColor": "#000000"
       }
     ],
     "security": {
@@ -42,6 +43,10 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
+    ],
+    "resources": [
+      "models/en",
+      "models/es"
     ],
     "category": "Productivity",
     "shortDescription": "AI-powered creative writing assistant",

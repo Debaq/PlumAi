@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { dbGetSetting, dbSetSetting } from '@/lib/tauri-bridge';
 
 export type AIProvider = 
   | 'anthropic' 
@@ -54,6 +54,8 @@ interface SettingsState {
   pomodoroEnabled: boolean;
   animationsEnabled: boolean;
   ragStudioEnabled: boolean;
+
+  initializeSettings: () => Promise<void>;
 
   setActiveProvider: (provider: AIProvider) => void;
   setActiveModel: (model: string) => void;
@@ -138,9 +140,11 @@ Proyecto: {{PROJECT_TITLE}}
 Autor: {{USER_INPUT}}
 {{CHAR_NAME}}:`;
 
-export const useSettingsStore = create<SettingsState>()(
-  persist(
-    (set) => ({
+const helperSet = (key: string, value: any) => {
+    dbSetSetting(key, JSON.stringify(value)).catch(e => console.error(`Failed to save setting ${key}:`, e));
+};
+
+export const useSettingsStore = create<SettingsState>((set) => ({
       activeProvider: 'google',
       activeModel: 'gemini-1.5-flash',
       theme: 'dark',
@@ -192,54 +196,98 @@ export const useSettingsStore = create<SettingsState>()(
       animationsEnabled: true,
       ragStudioEnabled: true,
 
-      setActiveProvider: (provider) => set({ activeProvider: provider }),
-      setActiveModel: (activeModel) => set({ activeModel }),
+      initializeSettings: async () => {
+        try {
+            const keys: (keyof SettingsState)[] = [
+                'activeProvider', 'activeModel', 'theme', 'language', 'fontFamily', 'fontSize',
+                'tokenOptimizationLevel', 'useAgenticContext', 'enableLogs', 'masterPasswordHash',
+                'encryptApiKeys', 'githubToken', 'githubRepo', 'dropboxToken', 'groqModelMap',
+                'ragConfiguration', 'zenAmbience', 'dailyWordGoal', 'showWordCountInEditor',
+                'typewriterMode', 'hemingwayMode', 'pomodoroEnabled', 'animationsEnabled', 'ragStudioEnabled'
+            ];
+
+            const updates: Partial<SettingsState> = {};
+            for (const key of keys) {
+                const val = await dbGetSetting(key);
+                if (val !== null) {
+                    try {
+                        updates[key] = JSON.parse(val);
+                    } catch (e) {
+                        // If parse fails, assume string or ignore? Most settings are JSON safe.
+                        // Simple strings might not be JSON quoted if saved raw, but helperSet uses JSON.stringify.
+                        // However, legacy storage might have issues. Assuming JSON.parse works for now.
+                         console.warn(`Failed to parse setting ${key}:`, e);
+                    }
+                }
+            }
+            
+            set(updates);
+
+            // Apply side effects immediately
+            if (updates.theme) document.documentElement.className = updates.theme; // Tailwind dark mode uses class usually, or data-theme
+            // Actually index.css uses class .dark, .dracula etc directly on html?
+            // The original code used data-theme attribute in onRehydrateStorage
+            // Let's check index.css again. It uses classes like .dark, .dracula.
+            // But previous code: document.documentElement.setAttribute('data-theme', state.theme);
+            // Let's assume the previous code was correct for the CSS setup.
+            // Wait, looking at index.css: .dark { ... } .dracula { ... }
+            // These are usually classes on <html> or <body>. 
+            // The original onRehydrateStorage did: setAttribute('data-theme', state.theme). 
+            // Let's stick to what was there, or maybe improve it. 
+            // Actually, Tailwind 4 theme config suggests classes.
+            // Let's apply class to documentElement for safety.
+            if (updates.theme) {
+                 document.documentElement.className = updates.theme;
+            }
+
+            if (updates.fontFamily) {
+                document.documentElement.setAttribute('data-font', updates.fontFamily);
+            }
+            if (updates.fontSize) {
+                document.documentElement.style.fontSize = `${updates.fontSize}px`;
+            }
+            
+        } catch (e) {
+            console.error("Failed to initialize settings:", e);
+        }
+      },
+
+      setActiveProvider: (provider) => { set({ activeProvider: provider }); helperSet('activeProvider', provider); },
+      setActiveModel: (activeModel) => { set({ activeModel }); helperSet('activeModel', activeModel); },
       setTheme: (theme) => {
         set({ theme });
+        document.documentElement.className = theme; // Apply class immediately
+        helperSet('theme', theme);
       },
-      setLanguage: (language) => set({ language }),
+      setLanguage: (language) => { set({ language }); helperSet('language', language); },
       setFontFamily: (fontFamily) => {
         set({ fontFamily });
         document.documentElement.setAttribute('data-font', fontFamily);
+        helperSet('fontFamily', fontFamily);
       },
       setFontSize: (fontSize) => {
         set({ fontSize });
         document.documentElement.style.fontSize = `${fontSize}px`;
+        helperSet('fontSize', fontSize);
       },
-      setTokenLevel: (tokenOptimizationLevel) => set({ tokenOptimizationLevel }),
-      setAgenticContext: (useAgenticContext) => set({ useAgenticContext }),
-      setEnableLogs: (enableLogs) => set({ enableLogs }),
-      setMasterPassword: (masterPasswordHash) => set({ masterPasswordHash }),
-      setEncryptApiKeys: (encryptApiKeys) => set({ encryptApiKeys }),
-      setZenAmbience: (zenAmbience) => set({ zenAmbience }),
-      setDailyWordGoal: (dailyWordGoal) => set({ dailyWordGoal }),
-      setShowWordCount: (showWordCountInEditor) => set({ showWordCountInEditor }),
-      setGithubToken: (githubToken) => set({ githubToken }),
-      setGithubRepo: (githubRepo) => set({ githubRepo }),
-      setDropboxToken: (dropboxToken) => set({ dropboxToken }),
-      setGroqModelMap: (groqModelMap) => set({ groqModelMap }),
-      setRagConfiguration: (ragConfiguration) => set({ ragConfiguration }),
+      setTokenLevel: (tokenOptimizationLevel) => { set({ tokenOptimizationLevel }); helperSet('tokenOptimizationLevel', tokenOptimizationLevel); },
+      setAgenticContext: (useAgenticContext) => { set({ useAgenticContext }); helperSet('useAgenticContext', useAgenticContext); },
+      setEnableLogs: (enableLogs) => { set({ enableLogs }); helperSet('enableLogs', enableLogs); },
+      setMasterPassword: (masterPasswordHash) => { set({ masterPasswordHash }); helperSet('masterPasswordHash', masterPasswordHash); },
+      setEncryptApiKeys: (encryptApiKeys) => { set({ encryptApiKeys }); helperSet('encryptApiKeys', encryptApiKeys); },
+      setZenAmbience: (zenAmbience) => { set({ zenAmbience }); helperSet('zenAmbience', zenAmbience); },
+      setDailyWordGoal: (dailyWordGoal) => { set({ dailyWordGoal }); helperSet('dailyWordGoal', dailyWordGoal); },
+      setShowWordCount: (showWordCountInEditor) => { set({ showWordCountInEditor }); helperSet('showWordCountInEditor', showWordCountInEditor); },
+      setGithubToken: (githubToken) => { set({ githubToken }); helperSet('githubToken', githubToken); },
+      setGithubRepo: (githubRepo) => { set({ githubRepo }); helperSet('githubRepo', githubRepo); },
+      setDropboxToken: (dropboxToken) => { set({ dropboxToken }); helperSet('dropboxToken', dropboxToken); },
+      setGroqModelMap: (groqModelMap) => { set({ groqModelMap }); helperSet('groqModelMap', groqModelMap); },
+      setRagConfiguration: (ragConfiguration) => { set({ ragConfiguration }); helperSet('ragConfiguration', ragConfiguration); },
 
       // New Setters
-      setTypewriterMode: (typewriterMode) => set({ typewriterMode }),
-      setHemingwayMode: (hemingwayMode) => set({ hemingwayMode }),
-      setPomodoroEnabled: (pomodoroEnabled) => set({ pomodoroEnabled }),
-      setAnimationsEnabled: (animationsEnabled) => set({ animationsEnabled }),
-      setRagStudioEnabled: (ragStudioEnabled) => set({ ragStudioEnabled }),
-    }),
-    {
-      name: 'pluma-settings',
-      onRehydrateStorage: () => (state) => {
-        if (state?.theme) {
-          document.documentElement.setAttribute('data-theme', state.theme);
-        }
-        if (state?.fontFamily) {
-          document.documentElement.setAttribute('data-font', state.fontFamily);
-        }
-        if (state?.fontSize) {
-          document.documentElement.style.fontSize = `${state.fontSize}px`;
-        }
-      },
-    }
-  )
-);
+      setTypewriterMode: (typewriterMode) => { set({ typewriterMode }); helperSet('typewriterMode', typewriterMode); },
+      setHemingwayMode: (hemingwayMode) => { set({ hemingwayMode }); helperSet('hemingwayMode', hemingwayMode); },
+      setPomodoroEnabled: (pomodoroEnabled) => { set({ pomodoroEnabled }); helperSet('pomodoroEnabled', pomodoroEnabled); },
+      setAnimationsEnabled: (animationsEnabled) => { set({ animationsEnabled }); helperSet('animationsEnabled', animationsEnabled); },
+      setRagStudioEnabled: (ragStudioEnabled) => { set({ ragStudioEnabled }); helperSet('ragStudioEnabled', ragStudioEnabled); },
+}));

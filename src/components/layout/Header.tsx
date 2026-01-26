@@ -1,5 +1,6 @@
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useUIStore } from '@/stores/useUIStore';
+import { useTranslation } from 'react-i18next';
 import {
   Settings,
   Book,
@@ -18,13 +19,15 @@ import {
   GitBranch,
   Terminal,
   Database,
-  Brain
+  Brain,
+  Package
 } from 'lucide-react';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 
 const appWindow = getCurrentWindow();
 
 export const Header = () => {
+  const { t } = useTranslation();
   const { activeProject } = useProjectStore();
   const {
     activeView,
@@ -105,14 +108,14 @@ export const Header = () => {
               className={`flex items-center gap-1.5 px-3 py-1 rounded-sm text-xs font-medium transition-colors ${activeLoreTab === 'summary' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
             >
               <Book size={12} />
-              <span>Lore</span>
+              <span>{t('ui.loreTabs.summary')}</span>
             </button>
             <button
               onClick={() => setActiveLoreTab('characters')}
               className={`flex items-center gap-1.5 px-3 py-1 rounded-sm text-xs font-medium transition-colors ${activeLoreTab === 'characters' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
             >
               <Users size={12} />
-              <span>Characters</span>
+              <span>{t('ui.loreTabs.characters')}</span>
               {activeProject?.characters && activeProject.characters.length > 0 && (
                 <span className="bg-primary/20 text-primary px-1 rounded-full text-[10px]">{activeProject.characters.length}</span>
               )}
@@ -122,28 +125,28 @@ export const Header = () => {
               className={`flex items-center gap-1.5 px-3 py-1 rounded-sm text-xs font-medium transition-colors ${activeLoreTab === 'relations' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
             >
               <Heart size={12} />
-              <span>Relations</span>
+              <span>{t('ui.loreTabs.relations')}</span>
             </button>
             <button
               onClick={() => setActiveLoreTab('events')}
               className={`flex items-center gap-1.5 px-3 py-1 rounded-sm text-xs font-medium transition-colors ${activeLoreTab === 'events' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
             >
               <Calendar size={12} />
-              <span>Timeline</span>
+              <span>{t('ui.loreTabs.events')}</span>
             </button>
             <button
               onClick={() => setActiveLoreTab('locations')}
               className={`flex items-center gap-1.5 px-3 py-1 rounded-sm text-xs font-medium transition-colors ${activeLoreTab === 'locations' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
             >
               <MapPin size={12} />
-              <span>Locations</span>
+              <span>{t('ui.loreTabs.locations')}</span>
             </button>
             <button
               onClick={() => setActiveLoreTab('scenes')}
               className={`flex items-center gap-1.5 px-3 py-1 rounded-sm text-xs font-medium transition-colors ${activeLoreTab === 'scenes' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
             >
               <Users size={12} />
-              <span>Scenes</span>
+              <span>{t('ui.loreTabs.scenes')}</span>
               {activeProject?.scenes && activeProject.scenes.length > 0 && (
                 <span className="bg-primary/20 text-primary px-1 rounded-full text-[10px]">{activeProject.scenes.length}</span>
               )}
@@ -164,12 +167,13 @@ export const Header = () => {
               </button>
             )}
             <div className="flex items-center bg-accent/50 p-1 rounded-md overflow-x-auto max-w-full no-scrollbar">
-              <SettingsTabButton id="general" icon={Settings} label="General" current={activeSettingsTab} set={setActiveSettingsTab} />
-              <SettingsTabButton id="ia" icon={Brain} label="IA" current={activeSettingsTab} set={setActiveSettingsTab} />
-              <SettingsTabButton id="security" icon={Shield} label="Seguridad" current={activeSettingsTab} set={setActiveSettingsTab} />
-              <SettingsTabButton id="integrations" icon={GitBranch} label="Integraciones" current={activeSettingsTab} set={setActiveSettingsTab} />
-              <SettingsTabButton id="advanced" icon={Terminal} label="Avanzado" current={activeSettingsTab} set={setActiveSettingsTab} />
-              <SettingsTabButton id="data" icon={Database} label="Datos" current={activeSettingsTab} set={setActiveSettingsTab} />
+              <SettingsTabButton id="general" icon={Settings} label={t('modals.projectSettings.tabs.general')} current={activeSettingsTab} set={setActiveSettingsTab} />
+              <SettingsTabButton id="ia" icon={Brain} label={t('modals.projectSettings.tabs.api')} current={activeSettingsTab} set={setActiveSettingsTab} />
+              <SettingsTabButton id="packages" icon={Package} label={t('packages')} current={activeSettingsTab} set={setActiveSettingsTab} />
+              <SettingsTabButton id="security" icon={Shield} label={t('modals.settings.dataManagement.title')} current={activeSettingsTab} set={setActiveSettingsTab} />
+              <SettingsTabButton id="integrations" icon={GitBranch} label={t('modals.settings.textAPIs')} current={activeSettingsTab} set={setActiveSettingsTab} />
+              <SettingsTabButton id="advanced" icon={Terminal} label={t('modals.settings.tokenOptimization')} current={activeSettingsTab} set={setActiveSettingsTab} />
+              <SettingsTabButton id="data" icon={Database} label={t('modals.settings.dataManagement.title')} current={activeSettingsTab} set={setActiveSettingsTab} />
             </div>
           </div>
         )}
@@ -182,11 +186,11 @@ export const Header = () => {
             </button>
 
             <div className="flex-1 text-center font-medium text-sm truncate">
-              {activeProject?.chapters.find(c => c.id === currentEditingChapterId)?.title || 'Untitled Chapter'}
+              {activeProject?.chapters.find(c => c.id === currentEditingChapterId)?.title || t('common.untitled')}
             </div>
 
             <div className="flex items-center gap-2">
-               <button onClick={() => openModal('settings')} className="p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground transition-colors" title="Chapter Settings">
+               <button onClick={() => openModal('settings')} className="p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground transition-colors" title={t('editor.toolbar.settings')}>
                  <Settings size={16} />
                </button>
 
@@ -195,7 +199,7 @@ export const Header = () => {
                  editorSaveStatus === 'saved' ? 'bg-green-500/10 text-green-500' :
                  'bg-yellow-500/10 text-yellow-500'
                }`}>
-                 {editorSaveStatus === 'saving' ? 'Saving...' : editorSaveStatus === 'saved' ? 'Saved' : 'Unsaved'}
+                 {editorSaveStatus === 'saving' ? t('status.autosave.saving') : editorSaveStatus === 'saved' ? t('status.autosave.saved') : t('status.autosave.unsaved')}
                </div>
 
                <button
@@ -210,11 +214,11 @@ export const Header = () => {
         )}
 
         {/* Other Views Titles */}
-        {activeView === 'chapters' && <span className="font-semibold text-sm">Chapters</span>}
-        {activeView === 'scenes' && <span className="font-semibold text-sm">Scenes</span>}
-        {activeView === 'images' && <span className="font-semibold text-sm">Image Gallery</span>}
-        {activeView === 'publishing' && <span className="font-semibold text-sm">Publishing</span>}
-        {activeView === 'aiAssistant' && <span className="font-semibold text-sm">AI Assistant</span>}
+        {activeView === 'chapters' && <span className="font-semibold text-sm">{t('sidebar.chapters')}</span>}
+        {activeView === 'scenes' && <span className="font-semibold text-sm">{t('sidebar.scenes')}</span>}
+        {activeView === 'images' && <span className="font-semibold text-sm">{t('sidebar.images')}</span>}
+        {activeView === 'publishing' && <span className="font-semibold text-sm">{t('sidebar.publishing')}</span>}
+        {activeView === 'aiAssistant' && <span className="font-semibold text-sm">{t('sidebar.aiAssistant')}</span>}
 
       </div>
 
@@ -223,28 +227,28 @@ export const Header = () => {
         <button
           onClick={handleFullscreen}
           className="w-10 h-full flex items-center justify-center hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-          title="Toggle Fullscreen"
+          title={t('common.windowControls.fullscreen')}
         >
           <Maximize size={16} />
         </button>
         <button
           onClick={handleMinimize}
           className="w-10 h-full flex items-center justify-center hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-          title="Minimize"
+          title={t('common.windowControls.minimize')}
         >
           <Minus size={16} />
         </button>
         <button
           onClick={handleMaximize}
           className="w-10 h-full flex items-center justify-center hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-          title="Maximize"
+          title={t('common.windowControls.maximize')}
         >
           <Square size={14} />
         </button>
         <button
           onClick={handleClose}
           className="w-10 h-full flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground text-muted-foreground transition-colors"
-          title="Close"
+          title={t('common.windowControls.close')}
         >
           <X size={18} />
         </button>

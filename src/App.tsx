@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';
 import { StatusBar } from '@/components/layout/StatusBar';
@@ -39,22 +40,25 @@ import { RagStudioView } from '@/components/ai/RagStudioView';
 import { AIConsole } from '@/components/ai/AIConsole';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { ProjectManagerView } from '@/components/world/ProjectManagerView';
+import { ProjectSettingsView } from '@/components/world/ProjectSettingsView';
 
 import { ProjectSettingsModal } from '@/components/world/ProjectSettingsModal';
 
 import { useBannerStore } from '@/stores/useBannerStore';
 
 function App() {
-  const { activeView, isSidebarOpen, activeLoreTab, openModal, editorZenMode } = useUIStore();
+  const { t } = useTranslation();
+  const { activeView, isSidebarOpen, activeLoreTab, editorZenMode } = useUIStore();
   const { activeProject } = useProjectStore();
-  const { theme, fontSize, animationsEnabled } = useSettingsStore();
+  const { theme, fontSize, animationsEnabled, initializeSettings } = useSettingsStore();
   const { initializeBanners } = useBannerStore();
 
   useAutoSnapshot();
 
   useEffect(() => {
+    initializeSettings();
     initializeBanners();
-  }, [initializeBanners]);
+  }, [initializeSettings, initializeBanners]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -132,11 +136,13 @@ function App() {
         return <SettingsModal isView />;
       case 'projects':
         return <ProjectManagerView />;
+      case 'projectSettings':
+        return <ProjectSettingsView />;
       default:
         return (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
              <div className="text-lg font-medium mb-2">{activeProject?.isRpgModeEnabled ? 'PlumAi Worldbuilder' : 'PlumAi'}</div>
-             <p className="text-sm">This module is under construction.</p>
+             <p className="text-sm">{t('common.moduleUnderConstruction')}</p>
           </div>
         );
     }

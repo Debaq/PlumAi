@@ -9,8 +9,8 @@ use rusqlite::{params, Connection, Result};
 
 pub fn create_project(conn: &Connection, project: &Project) -> Result<()> {
     conn.execute(
-        r#"INSERT INTO projects (id, title, author, description, genre, is_rpg_mode_enabled, rpg_system, banners, api_keys)
-           VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)"#,
+        r#"INSERT INTO projects (id, title, author, description, genre, is_rpg_mode_enabled, rpg_system, active_identity_package, origin_package_id, banners, api_keys, creatures, world_rules)
+           VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)"#,
         params![
             project.id,
             project.title,
@@ -19,8 +19,12 @@ pub fn create_project(conn: &Connection, project: &Project) -> Result<()> {
             project.genre,
             project.is_rpg_mode_enabled,
             project.rpg_system,
+            project.active_identity_package,
+            project.origin_package_id,
             project.banners.as_ref().map(|v| v.to_string()),
             project.api_keys.as_ref().map(|v| v.to_string()),
+            project.creatures.as_ref().map(|v| v.to_string()),
+            project.world_rules.as_ref().map(|v| v.to_string()),
         ],
     )?;
     Ok(())
@@ -28,7 +32,7 @@ pub fn create_project(conn: &Connection, project: &Project) -> Result<()> {
 
 pub fn get_project(conn: &Connection, id: &str) -> Result<Option<Project>> {
     let mut stmt = conn.prepare(
-        "SELECT id, title, author, description, genre, is_rpg_mode_enabled, rpg_system, banners, api_keys FROM projects WHERE id = ?1"
+        "SELECT id, title, author, description, genre, is_rpg_mode_enabled, rpg_system, active_identity_package, origin_package_id, banners, api_keys, creatures, world_rules FROM projects WHERE id = ?1"
     )?;
 
     let mut rows = stmt.query(params![id])?;
@@ -42,8 +46,12 @@ pub fn get_project(conn: &Connection, id: &str) -> Result<Option<Project>> {
             genre: row.get(4)?,
             is_rpg_mode_enabled: row.get::<_, i32>(5)? != 0,
             rpg_system: row.get(6)?,
-            banners: row.get::<_, Option<String>>(7)?.and_then(|s| serde_json::from_str(&s).ok()),
-            api_keys: row.get::<_, Option<String>>(8)?.and_then(|s| serde_json::from_str(&s).ok()),
+            active_identity_package: row.get(7)?,
+            origin_package_id: row.get(8)?,
+            banners: row.get::<_, Option<String>>(9)?.and_then(|s| serde_json::from_str(&s).ok()),
+            api_keys: row.get::<_, Option<String>>(10)?.and_then(|s| serde_json::from_str(&s).ok()),
+            creatures: row.get::<_, Option<String>>(11)?.and_then(|s| serde_json::from_str(&s).ok()),
+            world_rules: row.get::<_, Option<String>>(12)?.and_then(|s| serde_json::from_str(&s).ok()),
         }))
     } else {
         Ok(None)
@@ -52,7 +60,7 @@ pub fn get_project(conn: &Connection, id: &str) -> Result<Option<Project>> {
 
 pub fn get_all_projects(conn: &Connection) -> Result<Vec<Project>> {
     let mut stmt = conn.prepare(
-        "SELECT id, title, author, description, genre, is_rpg_mode_enabled, rpg_system, banners, api_keys FROM projects ORDER BY updated_at DESC"
+        "SELECT id, title, author, description, genre, is_rpg_mode_enabled, rpg_system, active_identity_package, origin_package_id, banners, api_keys, creatures, world_rules FROM projects ORDER BY updated_at DESC"
     )?;
 
     let rows = stmt.query_map([], |row| {
@@ -64,8 +72,12 @@ pub fn get_all_projects(conn: &Connection) -> Result<Vec<Project>> {
             genre: row.get(4)?,
             is_rpg_mode_enabled: row.get::<_, i32>(5)? != 0,
             rpg_system: row.get(6)?,
-            banners: row.get::<_, Option<String>>(7)?.and_then(|s| serde_json::from_str(&s).ok()),
-            api_keys: row.get::<_, Option<String>>(8)?.and_then(|s| serde_json::from_str(&s).ok()),
+            active_identity_package: row.get(7)?,
+            origin_package_id: row.get(8)?,
+            banners: row.get::<_, Option<String>>(9)?.and_then(|s| serde_json::from_str(&s).ok()),
+            api_keys: row.get::<_, Option<String>>(10)?.and_then(|s| serde_json::from_str(&s).ok()),
+            creatures: row.get::<_, Option<String>>(11)?.and_then(|s| serde_json::from_str(&s).ok()),
+            world_rules: row.get::<_, Option<String>>(12)?.and_then(|s| serde_json::from_str(&s).ok()),
         })
     })?;
 
@@ -75,7 +87,7 @@ pub fn get_all_projects(conn: &Connection) -> Result<Vec<Project>> {
 pub fn update_project(conn: &Connection, project: &Project) -> Result<()> {
     conn.execute(
         r#"UPDATE projects SET title = ?2, author = ?3, description = ?4, genre = ?5,
-           is_rpg_mode_enabled = ?6, rpg_system = ?7, banners = ?8, api_keys = ?9, updated_at = CURRENT_TIMESTAMP
+           is_rpg_mode_enabled = ?6, rpg_system = ?7, active_identity_package = ?8, origin_package_id = ?9, banners = ?10, api_keys = ?11, creatures = ?12, world_rules = ?13, updated_at = CURRENT_TIMESTAMP
            WHERE id = ?1"#,
         params![
             project.id,
@@ -85,8 +97,12 @@ pub fn update_project(conn: &Connection, project: &Project) -> Result<()> {
             project.genre,
             project.is_rpg_mode_enabled,
             project.rpg_system,
+            project.active_identity_package,
+            project.origin_package_id,
             project.banners.as_ref().map(|v| v.to_string()),
             project.api_keys.as_ref().map(|v| v.to_string()),
+            project.creatures.as_ref().map(|v| v.to_string()),
+            project.world_rules.as_ref().map(|v| v.to_string()),
         ],
     )?;
     Ok(())
@@ -250,11 +266,12 @@ pub fn delete_scene(conn: &Connection, id: &str) -> Result<()> {
 
 pub fn create_character(conn: &Connection, character: &Character) -> Result<()> {
     conn.execute(
-        r#"INSERT INTO characters (id, project_id, name, role, avatar_url, physical_description, personality, history, notes, attributes, attribute_history, vital_status_history, current_vital_status, visual_position)
-           VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)"#,
+        r#"INSERT INTO characters (id, project_id, origin_package_id, name, role, avatar_url, physical_description, personality, history, notes, attributes, attribute_history, vital_status_history, current_vital_status, visual_position)
+           VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)"#,
         params![
             character.id,
             character.project_id,
+            character.origin_package_id,
             character.name,
             character.role,
             character.avatar_url,
@@ -274,7 +291,7 @@ pub fn create_character(conn: &Connection, character: &Character) -> Result<()> 
 
 pub fn get_characters_by_project(conn: &Connection, project_id: &str) -> Result<Vec<Character>> {
     let mut stmt = conn.prepare(
-        "SELECT id, project_id, name, role, avatar_url, physical_description, personality, history, notes, attributes, attribute_history, vital_status_history, current_vital_status, visual_position
+        "SELECT id, project_id, origin_package_id, name, role, avatar_url, physical_description, personality, history, notes, attributes, attribute_history, vital_status_history, current_vital_status, visual_position
          FROM characters WHERE project_id = ?1 ORDER BY name"
     )?;
 
@@ -282,20 +299,21 @@ pub fn get_characters_by_project(conn: &Connection, project_id: &str) -> Result<
         Ok(Character {
             id: row.get(0)?,
             project_id: row.get(1)?,
-            name: row.get(2)?,
-            role: row.get(3)?,
-            avatar_url: row.get(4)?,
-            physical_description: row.get(5)?,
-            personality: row.get(6)?,
-            history: row.get(7)?,
-            notes: row.get(8)?,
-            attributes: row.get::<_, Option<String>>(9)?.and_then(|s| serde_json::from_str(&s).ok()),
-            attribute_history: row.get::<_, Option<String>>(10)?.and_then(|s| serde_json::from_str(&s).ok()),
-            vital_status_history: row.get::<_, Option<String>>(11)?
+            origin_package_id: row.get(2)?,
+            name: row.get(3)?,
+            role: row.get(4)?,
+            avatar_url: row.get(5)?,
+            physical_description: row.get(6)?,
+            personality: row.get(7)?,
+            history: row.get(8)?,
+            notes: row.get(9)?,
+            attributes: row.get::<_, Option<String>>(10)?.and_then(|s| serde_json::from_str(&s).ok()),
+            attribute_history: row.get::<_, Option<String>>(11)?.and_then(|s| serde_json::from_str(&s).ok()),
+            vital_status_history: row.get::<_, Option<String>>(12)?
                 .and_then(|s| serde_json::from_str(&s).ok())
                 .unwrap_or_default(),
-            current_vital_status: row.get(12)?,
-            visual_position: row.get::<_, Option<String>>(13)?.and_then(|s| serde_json::from_str(&s).ok()),
+            current_vital_status: row.get(13)?,
+            visual_position: row.get::<_, Option<String>>(14)?.and_then(|s| serde_json::from_str(&s).ok()),
             relationships: vec![], // Loaded separately
         })
     })?;
@@ -307,7 +325,7 @@ pub fn update_character(conn: &Connection, character: &Character) -> Result<()> 
     conn.execute(
         r#"UPDATE characters SET name = ?2, role = ?3, avatar_url = ?4, physical_description = ?5,
            personality = ?6, history = ?7, notes = ?8, attributes = ?9, attribute_history = ?10,
-           vital_status_history = ?11, current_vital_status = ?12, visual_position = ?13, updated_at = CURRENT_TIMESTAMP
+           vital_status_history = ?11, current_vital_status = ?12, visual_position = ?13, origin_package_id = ?14, updated_at = CURRENT_TIMESTAMP
            WHERE id = ?1"#,
         params![
             character.id,
@@ -323,6 +341,7 @@ pub fn update_character(conn: &Connection, character: &Character) -> Result<()> 
             serde_json::to_string(&character.vital_status_history).unwrap_or_default(),
             character.current_vital_status,
             character.visual_position.as_ref().map(|v| v.to_string()),
+            character.origin_package_id,
         ],
     )?;
     Ok(())
@@ -492,11 +511,12 @@ pub fn delete_location(conn: &Connection, id: &str) -> Result<()> {
 
 pub fn create_lore_item(conn: &Connection, item: &LoreItem) -> Result<()> {
     conn.execute(
-        r#"INSERT INTO lore_items (id, project_id, title, category, content, summary, related_entity_ids)
-           VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)"#,
+        r#"INSERT INTO lore_items (id, project_id, origin_package_id, title, category, content, summary, related_entity_ids)
+           VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)"#,
         params![
             item.id,
             item.project_id,
+            item.origin_package_id,
             item.title,
             item.category,
             item.content,
@@ -509,7 +529,7 @@ pub fn create_lore_item(conn: &Connection, item: &LoreItem) -> Result<()> {
 
 pub fn get_lore_items_by_project(conn: &Connection, project_id: &str) -> Result<Vec<LoreItem>> {
     let mut stmt = conn.prepare(
-        "SELECT id, project_id, title, category, content, summary, related_entity_ids
+        "SELECT id, project_id, origin_package_id, title, category, content, summary, related_entity_ids
          FROM lore_items WHERE project_id = ?1 ORDER BY category, title"
     )?;
 
@@ -517,11 +537,12 @@ pub fn get_lore_items_by_project(conn: &Connection, project_id: &str) -> Result<
         Ok(LoreItem {
             id: row.get(0)?,
             project_id: row.get(1)?,
-            title: row.get(2)?,
-            category: row.get(3)?,
-            content: row.get(4)?,
-            summary: row.get(5)?,
-            related_entity_ids: row.get::<_, Option<String>>(6)?
+            origin_package_id: row.get(2)?,
+            title: row.get(3)?,
+            category: row.get(4)?,
+            content: row.get(5)?,
+            summary: row.get(6)?,
+            related_entity_ids: row.get::<_, Option<String>>(7)?
                 .and_then(|s| serde_json::from_str(&s).ok())
                 .unwrap_or_default(),
         })
@@ -533,7 +554,7 @@ pub fn get_lore_items_by_project(conn: &Connection, project_id: &str) -> Result<
 pub fn update_lore_item(conn: &Connection, item: &LoreItem) -> Result<()> {
     conn.execute(
         r#"UPDATE lore_items SET title = ?2, category = ?3, content = ?4, summary = ?5,
-           related_entity_ids = ?6, updated_at = CURRENT_TIMESTAMP
+           related_entity_ids = ?6, origin_package_id = ?7, updated_at = CURRENT_TIMESTAMP
            WHERE id = ?1"#,
         params![
             item.id,
@@ -542,6 +563,7 @@ pub fn update_lore_item(conn: &Connection, item: &LoreItem) -> Result<()> {
             item.content,
             item.summary,
             serde_json::to_string(&item.related_entity_ids).unwrap_or_default(),
+            item.origin_package_id,
         ],
     )?;
     Ok(())
@@ -636,5 +658,53 @@ pub fn update_timeline_event(conn: &Connection, event: &TimelineEvent) -> Result
 
 pub fn delete_timeline_event(conn: &Connection, id: &str) -> Result<()> {
     conn.execute("DELETE FROM timeline_events WHERE id = ?1", params![id])?;
+    Ok(())
+}
+
+// ============================================================================
+// System
+// ============================================================================
+
+pub fn clear_database(conn: &Connection) -> Result<()> {
+    // Disable foreign key constraints temporarily to avoid ordering issues
+    conn.execute("PRAGMA foreign_keys = OFF", [])?;
+
+    let tables = [
+        "timeline_events",
+        "lore_items",
+        "relationships",
+        "scenes",
+        "chapters",
+        "locations",
+        "characters",
+        "projects",
+        "app_settings"
+    ];
+
+    for table in tables {
+        conn.execute(&format!("DELETE FROM {}", table), [])?;
+    }
+
+    conn.execute("PRAGMA foreign_keys = ON", [])?;
+    conn.execute("VACUUM", [])?;
+    Ok(())
+}
+
+pub fn get_setting(conn: &Connection, key: &str) -> Result<Option<String>> {
+    let mut stmt = conn.prepare("SELECT value FROM app_settings WHERE key = ?1")?;
+    let mut rows = stmt.query(params![key])?;
+    
+    if let Some(row) = rows.next()? {
+        Ok(Some(row.get(0)?))
+    } else {
+        Ok(None)
+    }
+}
+
+pub fn set_setting(conn: &Connection, key: &str, value: &str) -> Result<()> {
+    conn.execute(
+        "INSERT OR REPLACE INTO app_settings (key, value) VALUES (?1, ?2)",
+        params![key, value],
+    )?;
     Ok(())
 }

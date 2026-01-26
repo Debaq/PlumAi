@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useUIStore } from '@/stores/useUIStore';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { 
@@ -19,6 +20,7 @@ import {
 } from '@/components/ui/dialog';
 
 export const CommandPalette = () => {
+  const { t } = useTranslation();
   const { isCommandPaletteOpen, setCommandPaletteOpen, setActiveView, setActiveLoreTab, setCurrentEditingChapterId, openModal, toggleEditorZenMode } = useUIStore();
   const { activeProject } = useProjectStore();
   const [query, setInput] = useState('');
@@ -30,7 +32,7 @@ export const CommandPalette = () => {
     
     const all = [
       // Actions
-      { id: 'act-ai', title: `Preguntar a la IA: "${query}"`, category: 'IA', icon: Sparkles, action: () => {
+      { id: 'act-ai', title: t('common.askAI', { query }), category: t('common.ai'), icon: Sparkles, action: () => {
          if (!query) return;
          setActiveView('aiAssistant');
          // We might want to pass the query to the AI store here
@@ -141,7 +143,7 @@ export const CommandPalette = () => {
             {items.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground space-y-2">
                 <Search className="w-8 h-8 mx-auto opacity-20" />
-                <p className="text-xs">No se encontraron resultados para "{query}"</p>
+                <p className="text-xs">{t('common.noResultsForQuery')} "{query}"</p>
               </div>
             ) : (
               <div className="space-y-4">

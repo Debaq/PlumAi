@@ -12,10 +12,12 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useUIStore } from '@/stores/useUIStore';
+import { useTranslation } from 'react-i18next';
 import { MapPin, Maximize, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export const TopologicalMap = () => {
+  const { t } = useTranslation();
   const { activeProject, updateLocationPosition, addLocationConnection } = useProjectStore();
   const { openModal } = useUIStore();
   
@@ -115,7 +117,7 @@ export const TopologicalMap = () => {
     });
   };
 
-  if (!activeProject) return <div className="p-8 text-center text-muted-foreground">No project loaded.</div>;
+  if (!activeProject) return <div className="p-8 text-center text-muted-foreground">{t('project.noProjectLoaded')}.</div>;
 
   return (
     <div className="flex flex-col flex-1 bg-background overflow-hidden p-6">

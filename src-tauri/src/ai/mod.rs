@@ -3,6 +3,7 @@
 //! Provides unified interface for Claude, GPT, and Gemini APIs.
 
 mod providers;
+pub mod speech;
 
 pub use providers::*;
 

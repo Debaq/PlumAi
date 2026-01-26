@@ -7,6 +7,7 @@ mod commands;
 mod crypto;
 mod database;
 mod filesystem;
+mod packages;
 mod publishing;
 
 use database::DbState;
@@ -49,6 +50,7 @@ pub fn run() {
 
             // Store connection in app state
             app.manage(DbState(Mutex::new(conn)));
+            app.manage(ai::speech::SpeechState(Mutex::new(None)));
 
             log::info!("PlumAi application started");
             Ok(())
@@ -98,8 +100,14 @@ pub fn run() {
             commands::db_get_timeline_events_by_project,
             commands::db_update_timeline_event,
             commands::db_delete_timeline_event,
+            // Database - System
+            commands::db_clear_all_data,
+            commands::db_get_setting,
+            commands::db_set_setting,
             // AI
             commands::ai_chat,
+            ai::speech::start_dictation,
+            ai::speech::stop_dictation,
             // Crypto
             commands::crypto_encrypt,
             commands::crypto_decrypt,
@@ -113,6 +121,11 @@ pub fn run() {
             commands::fs_load_project,
             commands::fs_project_to_json,
             commands::fs_project_from_json,
+            // Packages
+            commands::get_available_packages,
+            commands::get_package_by_id,
+            commands::resolve_package_asset,
+            commands::inject_package_content,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
