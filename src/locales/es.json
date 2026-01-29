@@ -268,7 +268,8 @@
     "aiStatus": {
       "active": "IA Activa",
       "inactive": "IA Inactiva"
-    }
+    },
+    "randomize": "Aleatorio"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -420,16 +421,54 @@
     },
     "newProject": {
       "title": "Nuevo Proyecto",
+      "new": "Nuevo",
+      "stepOf": "Paso {{step}} de {{total}}",
+      "steps": {
+        "basics": "Fundamentos",
+        "structure": "Estructura",
+        "content": "Contenido",
+        "identity": "Identidad"
+      },
+      "titles": {
+        "basics": "Define tu Obra",
+        "structure": "¿Qué estás creando?",
+        "content": "Inspiración Inicial",
+        "identity": "Toque Final"
+      },
       "form": {
-        "title": "Título de la Novela",
-        "titlePlaceholder": "Ej: El Misterio del Faro",
+        "title": "Título del Proyecto",
+        "titlePlaceholder": "Ej: El Despertar del Vacío",
         "author": "Autor",
-        "authorPlaceholder": "Tu nombre",
+        "authorPlaceholder": "Tu nombre o seudónimo",
         "genre": "Género",
-        "genrePlaceholder": "Ej: Misterio, Fantasía, Romance",
+        "genrePlaceholder": "Fantasía, Sci-Fi, Policiaca...",
         "isPublicPC": "Estoy usando un PC público",
         "publicPCWarning": "No se guardarán datos automáticamente"
-      }
+      },
+      "types": {
+        "novel": "Novela Narrativa",
+        "novelDesc": "Enfocado en la escritura, capítulos y escenas.",
+        "worldbuilding": "Worldbuilding",
+        "worldbuildingDesc": "Creación de mundos, geografía y leyes.",
+        "rpg": "Campaña de Rol",
+        "rpgDesc": "Gestión de personajes, dados y bestiario."
+      },
+      "packages": {
+        "description": "Añade una base de datos predefinida para no empezar de cero.",
+        "blankCanvas": "Lienzo en Blanco",
+        "blankCanvasDesc": "Sin contenido pre-inyectado.",
+        "by": "Por"
+      },
+      "preview": {
+        "noTitle": "Nuevo Proyecto",
+        "noGenre": "Sin Género",
+        "noAuthor": "Autor Anónimo",
+        "withPackage": "Con Paquete",
+        "themeNote": "Se aplicará el tema visual por defecto o el del paquete seleccionado al finalizar la creación."
+      },
+      "continue": "Continuar",
+      "start": "¡EMPEZAR!",
+      "errorCreating": "Error al crear el proyecto"
     },
     "projectSettings": {
       "title": "Configuración del Proyecto",
@@ -851,7 +890,256 @@
       "ready": "Listo"
     }
   },
+  "loreModal": {
+    "new": "Nueva Entrada del Lore",
+    "edit": "Editar Entrada del Lore",
+    "title": "Título",
+    "category": "Categoría",
+    "summary": "Resumen Corto",
+    "content": "Contenido Detallado",
+    "placeholders": {
+      "title": "Nombre de la entrada...",
+      "summary": "Una breve descripción para referencia rápida...",
+      "content": "Escribe aquí toda la información detallada..."
+    },
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar esta entrada del lore?"
+  },
+  "characterCard": {
+    "back": "Volver a la lista",
+    "edit": "Editar Datos",
+    "save": "Guardar Cambios",
+    "physical": "Descripción Física",
+    "personality": "Personalidad",
+    "placeholders": {
+      "physical": "Escribe cómo se ve...",
+      "personality": "Escribe cómo se comporta..."
+    },
+    "noStats": "Sin estadísticas definidas"
+  },
+  "relationsDiagram": {
+    "timeline": "Cronología de Vínculos",
+    "empty": "Sin relaciones",
+    "noDesc": "Sin descripción",
+    "legend": "Leyenda",
+    "reorder": "RE-ORDENAR",
+    "dragConnect": "ARRASTRA PARA CONECTAR"
+  },
+  "ragStudio": {
+    "title": "RAG Studio",
+    "subtitle": "Laboratorio de Ingeniería de Prompts y Ajuste Cognitivo",
+    "librarian": {
+      "title": "El Bibliotecario",
+      "type": "Análisis",
+      "description": "Este agente recibe tu pregunta y el índice del proyecto. Su trabajo es decidir qué capítulos o fichas leer.",
+      "precision": "Precisión",
+      "logic": "Lógica Estricta (0.0)",
+      "creative": "Creativo (1.0)"
+    },
+    "writer": {
+      "title": "El Escritor",
+      "type": "Generación",
+      "description": "Este agente redacta la respuesta final utilizando el contexto recuperado por el bibliotecario.",
+      "creativity": "Creatividad",
+      "technical": "Técnico (0.0)",
+      "literary": "Literario (1.0)"
+    },
+    "actor": {
+      "title": "El Actor",
+      "type": "NPCs",
+      "description": "Este agente simula la personalidad de los personajes para chats rápidos e interacciones directas.",
+      "improvisation": "Improvisación",
+      "robotic": "Robótico (0.0)",
+      "chaotic": "Caótico (1.0)"
+    },
+    "common": {
+      "systemPrompt": "System Prompt",
+      "vars": "Vars:"
+    }
+  },
+  "imageManager": {
+    "coverImage": "Imagen de Portada",
+    "noImage": "Ninguna imagen seleccionada",
+    "upload": "Subir",
+    "url": "URL",
+    "ai": "IA",
+    "describe": "Describe la imagen (opcional)...",
+    "generate": "Generar Imagen",
+    "chooseFile": "Elegir Archivo"
+  },
+  "packageManager": {
+    "title": "Almacén de Contenido e Identidad",
+    "subtitle": "Inyecta bibliotecas de datos o aplica temas visuales a tu proyecto.",
+    "available": "Paquetes Disponibles",
+    "noPackages": "No se encontraron paquetes",
+    "noPackagesDesc": "Copia tus paquetes en la carpeta",
+    "howTo": "Cómo instalar paquetes",
+    "active": "Activo",
+    "injectable": "Inyectable",
+    "visualStyle": "Estilo Visual",
+    "injectContent": "Inyectar Contenido",
+    "styleApplied": "Estilo Aplicado",
+    "applyStyle": "Aplicar Estilo",
+    "loading": "Buscando paquetes instalados...",
+    "error": "Error de Conexión",
+    "retry": "Reintentar",
+    "successInject": "¡Contenido inyectado correctamente!",
+    "errorInject": "Error al inyectar contenido"
+  },
+  "chapterModal": {
+    "new": "Nuevo Capítulo",
+    "edit": "Editar Capítulo",
+    "titleLabel": "Título",
+    "titlePlaceholder": "Título del capítulo...",
+    "summaryLabel": "Resumen",
+    "summaryPlaceholder": "Breve resumen...",
+    "statusLabel": "Estado",
+    "create": "Crear Capítulo",
+    "save": "Guardar Cambios"
+  },
+  "characterModal": {
+    "new": "Nuevo Personaje",
+    "edit": "Editar Personaje",
+    "upload": "Subir",
+    "generate": "Generar con IA",
+    "name": "Nombre",
+    "namePlaceholder": "Nombre del personaje...",
+    "role": "Rol en la Historia",
+    "physical": "Descripción Física",
+    "physicalPlaceholder": "Ej: Alto, ojos azules, cicatriz en...",
+    "personality": "Personalidad",
+    "personalityPlaceholder": "Ej: Introvertido, valiente, sarcástico...",
+    "history": "Historia / Trasfondo",
+    "historyPlaceholder": "Origen, motivaciones, eventos pasados...",
+    "notes": "Notas Privadas",
+    "notesPlaceholder": "Secretos, debilidades, planes futuros...",
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar a {name}?",
+    "roles": {
+      "protagonist": "Protagonista",
+      "antagonist": "Antagonista",
+      "secondary": "Secundario",
+      "supporting": "Apoyo"
+    }
+  },
+  "banners": {
+    "personalize": "Personalizar Banner",
+    "change": "Cambiar Banner"
+  },
+  "locationModal": {
+    "new": "Nueva Ubicación",
+    "edit": "Editar {name}",
+    "tabs": {
+      "info": "Información",
+      "gallery": "Galería",
+      "plans": "Planos",
+      "connections": "Conexiones"
+    },
+    "labels": {
+      "name": "Nombre",
+      "type": "Tipo",
+      "description": "Descripción",
+      "significance": "Significancia / Importancia",
+      "notes": "Notas adicionales",
+      "destiny": "Destino",
+      "distance": "Distancia / Tiempo",
+      "travelMethod": "Método de Viaje"
+    },
+    "placeholders": {
+      "name": "Nombre del lugar...",
+      "type": "Ej: Ciudad, Bosque, Castillo...",
+      "description": "Describe cómo se ve y se siente este lugar...",
+      "significance": "¿Por qué es importante este lugar en tu historia?...",
+      "notes": "Secretos, clima, población, detalles menores...",
+      "select": "Seleccionar lugar...",
+      "distance": "Ej: 50km, 2 días...",
+      "travel": "Ej: A pie, Barco, Portal..."
+    },
+    "galleryTitle": "Galería de Imágenes",
+    "plansTitle": "Planos y Mapas",
+    "addConnection": "Añadir Conexión",
+    "existingRoutes": "Rutas Existentes",
+    "noImages": "No hay archivos cargados.",
+    "noConnections": "No hay conexiones definidas.",
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar \"{name}\"?",
+    "create": "Crear Ubicación",
+    "done": "Listo"
+  },
+  "statsView": {
+    "title": "Dashboard",
+    "subtitle": "Resumen analítico de \"{title}\"",
+    "streak": "Racha de {days} días",
+    "totalWords": "Palabras Totales",
+    "volumeChart": "Volumen por Capítulo",
+    "volumeSubtitle": "Distribución de longitud del manuscrito",
+    "dailyGoal": "Meta Diaria",
+    "keepGoing": "Mantén el ritmo de escritura",
+    "basedOn": "Basado en tu última sesión. Escribe {words} palabras más para alcanzar tu objetivo hoy.",
+    "recentAchievements": "Logros Recientes"
+  },
+  "aiAssistantView": {
+    "context": "Contexto del Proyecto",
+    "provider": "Proveedor",
+    "model": "Modelo",
+    "mode": "Modo de Asistencia",
+    "inputPlaceholder": "Escribe tu consulta aquí... (Ctrl + Enter para enviar)",
+    "sendInstructions": "Ctrl + Enter para enviar",
+    "clearChat": "Limpiar Chat",
+    "quickQueries": "Consultas Rápidas",
+    "emptyState": {
+      "title": "Brainstorming Creativo",
+      "description": "Tengo memoria conversacional y entiendo el contexto de tu proyecto. Puedo ayudarte a expandir tu mundo o resolver dudas de la trama."
+    }
+  },
+  "worldRules": {
+    "modal": {
+      "new": "Nueva Regla del Mundo",
+      "edit": "Editar Regla del Mundo",
+      "title": "Título",
+      "category": "Categoría",
+      "customCategory": "Categoría Personalizada",
+      "importance": "Importancia",
+      "secret": "Conocimiento Secreto",
+      "summary": "Resumen Corto",
+      "content": "Contenido Detallado",
+      "exceptions": "Excepciones",
+      "examples": "Ejemplos de Aplicación",
+      "related": "Reglas Relacionadas",
+      "placeholders": {
+        "title": "Nombre de la regla...",
+        "customCategory": "Nombre de la categoría...",
+        "summary": "Una breve descripción de la regla...",
+        "content": "Describe la regla en detalle, cómo funciona, sus implicaciones...",
+        "exception": "Añadir una excepción...",
+        "exampleTitle": "Título del ejemplo",
+        "exampleDesc": "Describe el ejemplo..."
+      },
+      "deleteConfirm": "¿Estás seguro de que quieres eliminar \"{title}\"?"
+    },
+    "categories": {
+      "magic": "Magia",
+      "physics": "Física",
+      "social": "Social",
+      "combat": "Combate",
+      "economy": "Economía",
+      "religion": "Religión",
+      "nature": "Naturaleza",
+      "technology": "Tecnología",
+      "temporal": "Temporal",
+      "metaphysical": "Metafísica",
+      "custom": "Personalizado"
+    },
+    "importance": {
+      "fundamental": "Fundamental",
+      "major": "Mayor",
+      "minor": "Menor"
+    }
+  },
   "relationships": {
+    "manager": {
+      "title": "Relaciones",
+      "add": "Añadir",
+      "empty": "No hay relaciones definidas.",
+      "unknown": "Desconocido"
+    },
     "title": "Relaciones",
     "currentState": "Estado Actual de la Relación",
     "currentStateLabel": "Estado Actual",
@@ -911,6 +1199,196 @@
       "deleteRelationship": "¿Estás seguro de que quieres eliminar esta relación y todo su historial?"
     }
   },
+  "entityList": {
+    "viewMap": "Ver Mapa",
+    "add": "Añadir",
+    "notFound": "No se encontraron elementos de tipo {type} en este proyecto.",
+    "singular": {
+      "summary": "Lore",
+      "bestiary": "Criatura",
+      "worldRules": "Regla",
+      "characters": "Personaje",
+      "locations": "Ubicación",
+      "scenes": "Escena"
+    },
+    "titles": {
+      "summary": "Lore Items",
+      "bestiary": "Bestiario",
+      "worldRules": "Reglas del Mundo",
+      "characters": "Personajes",
+      "locations": "Ubicaciones",
+      "scenes": "Escenas"
+    }
+  },
+  "chapterList": {
+    "title": "Capítulos",
+    "subtitle": "Escribe y organiza los capítulos de tu historia",
+    "new": "Nuevo Capítulo",
+    "empty": {
+      "title": "Aún no hay capítulos",
+      "subtitle": "Crea tu primer capítulo para comenzar a escribir"
+    },
+    "add": "Agregar Capítulo",
+    "untitled": "Sin título",
+    "words": "palabras"
+  },
+  "projectManager": {
+    "title": "Proyectos",
+    "create": "Crear Nuevo Proyecto",
+    "searchPlaceholder": "Buscar proyectos...",
+    "noProjects": "No se encontraron proyectos.",
+    "backToStats": "Volver a Estadísticas",
+    "settingsTitle": "Configuración de {title}",
+    "noAuthor": "Autor no especificado",
+    "novel": "Novela",
+    "description": "Descripción",
+    "open": "Abrir Proyecto",
+    "selectHint": "Selecciona un proyecto para ver detalles"
+  },
+  "projectSettings": {
+    "title": "Ajustes del Proyecto",
+    "save": "Guardar Cambios",
+    "basics": "Fundamentos",
+    "labels": {
+      "title": "Título de la Obra",
+      "author": "Autor / Seudónimo",
+      "genre": "Género Principal",
+      "type": "Tipo de Proyecto"
+    },
+    "worldbuilder": {
+      "active": "Modo Worldbuilder Activo",
+      "description": "Habilita herramientas de construcción de mundos, mapas y cronologías.",
+      "enabled": "HABILITADO"
+    },
+    "visual": {
+      "title": "Personalización Visual",
+      "banners": "Banners del Proyecto",
+      "bannerSidebar": "Banner Sidebar",
+      "bannerChapters": "Banner Capítulos",
+      "identityPackage": "Identidad por Paquete",
+      "currentPackage": "Actualmente este proyecto utiliza el estilo visual del paquete:",
+      "defaultStyle": "Estilo por defecto de PlumAi",
+      "change": "Cambiar en el Almacén"
+    },
+    "danger": {
+      "title": "Acciones Críticas",
+      "delete": "Borrar Proyecto",
+      "deleteWarning": "Esta acción es irreversible y eliminará todos los capítulos, personajes y assets.",
+      "deletePermanent": "Borrar Permanentemente"
+    }
+  },
+  "settingsModal": {
+    "theme": {
+      "title": "Tema Visual"
+    },
+    "font": {
+      "title": "Tipografía Profesional",
+      "size": "Tamaño de Fuente",
+      "confirm": "¿Mantener el nuevo tamaño?",
+      "revert": "Se revertirá en {seconds} segundos",
+      "keep": "Mantener",
+      "undo": "Revertir"
+    },
+    "language": "Idioma de la Interfaz",
+    "worldbuilder": "Modo Worldbuilder",
+    "ai": {
+      "title": "Configuración de Texto e IA",
+      "provider": "Proveedor Principal",
+      "optimization": "Optimización de Tokens",
+      "keys": "API Keys para {provider}",
+      "saved": "guardadas",
+      "agentic": {
+        "title": "Sistema de IA Agéntica",
+        "description": "La IA analiza personajes y lore para incluirlos solo cuando son relevantes."
+      },
+      "image": {
+        "title": "Generación de Imágenes",
+        "provider": "Proveedor de Imagen"
+      }
+    },
+    "security": {
+      "title": "Privacidad y Protección",
+      "noPassword": "Sin Contraseña Maestra",
+      "noPasswordDesc": "Tus API Keys se guardan en texto plano en el navegador. Recomendamos activar la protección.",
+      "setPassword": "Configurar Contraseña Maestra",
+      "activate": "Activar Protección",
+      "active": "Protección Activada",
+      "activeDesc": "Tus datos sensibles están encriptados con tu contraseña maestra.",
+      "encryptKeys": "Encriptar API Keys",
+      "encryptKeysDesc": "Requiere la contraseña maestra cada vez que inicies sesión.",
+      "changePassword": "Cambiar Contraseña",
+      "danger": "Zona de Peligro",
+      "removeProtection": "Para eliminar la protección por completo, introduce tu contraseña actual:",
+      "remove": "Eliminar"
+    },
+    "integrations": {
+      "title": "Sincronización Externa",
+      "github": {
+        "title": "GitHub Sync",
+        "desc": "Sincroniza tus proyectos con repositorios privados.",
+        "token": "Personal Access Token",
+        "repo": "Repositorio (usuario/repo)",
+        "verify": "Verificar y Sincronizar"
+      },
+      "dropbox": {
+        "title": "Dropbox",
+        "desc": "Próximamente..."
+      }
+    },
+    "advanced": {
+      "writing": "Experiencia de Escritura",
+      "typewriter": {
+        "label": "Typewriter Scroll",
+        "desc": "Mantiene la línea activa centrada verticalmente."
+      },
+      "hemingway": {
+        "label": "Modo Hemingway",
+        "desc": "Desactiva borrar y retroceso. Solo hacia adelante."
+      },
+      "pomodoro": {
+        "label": "Temporizador Pomodoro",
+        "desc": "Habilita un timer de 25/5 en la barra de estado."
+      },
+      "modules": "Módulos del Sistema",
+      "ragStudio": {
+        "label": "Habilitar RAG Studio",
+        "desc": "Muestra u oculta el módulo de entrenamiento de IA en el menú lateral."
+      },
+      "aesthetics": "Estética y Pulido",
+      "animations": {
+        "label": "Micro-animaciones",
+        "desc": "Transiciones suaves entre temas y estados de UI."
+      },
+      "debug": {
+        "title": "Depuración",
+        "label": "Logs de IA Interactivos",
+        "desc": "Habilita la consola técnica en la barra inferior."
+      }
+    },
+    "data": {
+      "title": "Gestión de Datos",
+      "local": {
+        "title": "Almacenamiento Local",
+        "desc": "Tus datos nunca salen de este dispositivo."
+      },
+      "export": "Exportar Backup",
+      "import": "Importar Proyecto",
+      "deleteAll": "Eliminar Todos los Datos de la App",
+      "cloud": {
+        "title": "Próximamente",
+        "desc": "Sincronización en la Nube (Google Drive, iCloud)"
+      }
+    },
+    "dangerModal": {
+      "title": "¿ELIMINAR ABSOLUTAMENTE TODO?",
+      "description": "Esta acción es irreversible. Se borrarán todos los proyectos, personajes, configuraciones y claves API de este dispositivo.",
+      "confirmText": "Para confirmar, escribe ELIMINAR a continuación:",
+      "placeholder": "Escribe ELIMINAR",
+      "cancel": "Cancelar",
+      "confirm": "Sí, eliminar todo",
+      "deleting": "Eliminando..."
+    }
+  },
   "ui": {
     "loreTabs": {
       "summary": "Resumen",
@@ -949,6 +1427,7 @@
   },
   "sidebar": {
     "dashboard": "Dashboard",
+    "stats": "Estadísticas",
     "characters": "Personajes",
     "chapters": "Capítulos",
     "scenes": "Escenas",
@@ -969,7 +1448,47 @@
     "ragStudio": "RAG Studio",
     "projectSettings": "Configuración del Proyecto",
     "bestiary": "Bestiario",
-    "worldRules": "Reglas del Mundo"
+    "worldRules": "Reglas del Mundo",
+    "packageStore": "Tienda de Paquetes"
+  },
+  "packageStore": {
+    "title": "Tienda de Paquetes",
+    "subtitle": "Explora, instala y gestiona paquetes de contenido",
+    "browse": "Explorar",
+    "installedTab": "Instalados",
+    "updatesTab": "Actualizaciones",
+    "filterAll": "Todos",
+    "filterContent": "Contenido",
+    "filterIdentity": "Identidad",
+    "filterHybrid": "Híbrido",
+    "searchPlaceholder": "Buscar paquetes...",
+    "searchInstalled": "Buscar paquetes instalados...",
+    "loadingCatalog": "Cargando catálogo de paquetes...",
+    "noPackagesFound": "No se encontraron paquetes",
+    "tryDifferentSearch": "Intenta con otro término de búsqueda",
+    "noInstalledPackages": "No hay paquetes instalados",
+    "browseToInstall": "Explora el catálogo para instalar paquetes",
+    "noUpdates": "Todos los paquetes están actualizados",
+    "install": "Instalar",
+    "installed": "Instalado",
+    "uninstall": "Desinstalar",
+    "update": "Actualizar",
+    "version": "Versión",
+    "category": "Categoría",
+    "size": "Tamaño",
+    "registry": "Registro",
+    "requiresVersion": "Requiere versión de la app",
+    "installedVersion": "Versión instalada",
+    "official": "Oficial",
+    "registries": "Registros de Paquetes",
+    "addRegistry": "Agregar Registro",
+    "removeRegistry": "Eliminar registro",
+    "registryNamePlaceholder": "Nombre del registro",
+    "registryUrlPlaceholder": "https://github.com/usuario/repo",
+    "manageRegistries": "Gestionar registros",
+    "refresh": "Actualizar",
+    "disable": "Desactivar",
+    "enable": "Activar"
   },
   "stats": {
     "totalWords": "Palabras totales:",
@@ -990,6 +1509,10 @@
       "active": "IA lista",
       "inactive": "IA no configurada",
       "processing": "IA procesando..."
+    },
+    "pomodoro": {
+      "breakTime": "¡Tiempo de descanso!",
+      "workTime": "¡A escribir!"
     }
   },
   "timeline": {
@@ -1000,8 +1523,15 @@
     "empty": "No hay eventos en la línea temporal",
     "emptyHint": "Agrega eventos para organizar la cronología",
     "viewList": "Lista",
+    "viewVerticalList": "Lista Vertical",
     "viewVisual": "Visual",
     "viewEra": "Eras",
+    "viewParallel": "Líneas Paralelas (Swimlanes)",
+    "noAssignedCharacters": "Los eventos no tienen personajes asignados.",
+    "eventDefaultName": "Evento",
+    "crucial": "CRUCIAL",
+    "emptyStateTitle": "No hay eventos registrados en la cronología.",
+    "createFirstEvent": "Crear el primer evento",
     "filterAll": "Todos los eventos",
     "filterAbsolute": "Solo con fechas",
     "filterRelative": "Solo relativos",
@@ -1020,6 +1550,7 @@
       "high": "Alta"
     },
     "form": {
+      "titlePlaceholder": "Ej: La Batalla de las Sombras...",
       "dateMode": "Modo de Fecha",
       "dateModes": {
         "absolute": "Fecha Absoluta",

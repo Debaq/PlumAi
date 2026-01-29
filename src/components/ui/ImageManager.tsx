@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Upload, Link as LinkIcon, Sparkles, Image as ImageIcon, X, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface ImageManagerProps {
   initialImage?: string;
@@ -17,10 +18,12 @@ export const ImageManager = ({
   onImageChange,
   entityContext = ''
 }: ImageManagerProps) => {
+  const { t } = useTranslation();
   const [image, setImage] = useState(initialImage);
   const [activeTab, setActiveTab] = useState<'upload' | 'url' | 'ai'>(initialType);
   const [aiPrompt, setAiPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -60,7 +63,7 @@ export const ImageManager = ({
 
   return (
     <div className="space-y-4">
-      <Label>Cover Image</Label>
+      <Label>{t('imageManager.coverImage')}</Label>
       
       {/* Preview Area */}
       <div className="relative w-full h-48 bg-muted rounded-md overflow-hidden border border-border flex items-center justify-center">
@@ -79,7 +82,7 @@ export const ImageManager = ({
         ) : (
           <div className="text-center text-muted-foreground">
             <ImageIcon size={32} className="mx-auto mb-2 opacity-50" />
-            <span className="text-xs">No image selected</span>
+            <span className="text-xs">{t('imageManager.noImage')}</span>
           </div>
         )}
       </div>
@@ -93,7 +96,7 @@ export const ImageManager = ({
           onClick={() => setActiveTab('upload')}
           className="flex-1 gap-2"
         >
-          <Upload size={14} /> Upload
+          <Upload size={14} /> {t('imageManager.upload')}
         </Button>
         <Button
           type="button"
@@ -102,7 +105,7 @@ export const ImageManager = ({
           onClick={() => setActiveTab('url')}
           className="flex-1 gap-2"
         >
-          <LinkIcon size={14} /> URL
+          <LinkIcon size={14} /> {t('imageManager.url')}
         </Button>
         <Button
           type="button"
@@ -111,19 +114,31 @@ export const ImageManager = ({
           onClick={() => setActiveTab('ai')}
           className="flex-1 gap-2"
         >
-          <Sparkles size={14} /> AI
+          <Sparkles size={14} /> {t('imageManager.ai')}
         </Button>
       </div>
 
       {/* Content per Tab */}
       <div className="p-4 bg-muted/30 rounded-md border border-border">
         {activeTab === 'upload' && (
-          <Input 
-            type="file" 
-            accept="image/*" 
-            onChange={handleFileUpload}
-            className="cursor-pointer" 
-          />
+          <div className="flex flex-col items-center gap-2">
+            <input 
+              ref={fileInputRef}
+              type="file" 
+              accept="image/*" 
+              onChange={handleFileUpload}
+              className="hidden" 
+            />
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="w-full h-24 border-dashed flex flex-col gap-2 hover:bg-accent/50"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload className="w-6 h-6 opacity-50" />
+              {t('imageManager.chooseFile')}
+            </Button>
+          </div>
         )}
 
         {activeTab === 'url' && (
@@ -139,7 +154,7 @@ export const ImageManager = ({
           <div className="space-y-3">
             <textarea
               className="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              placeholder="Describe the image (optional)..."
+              placeholder={t('imageManager.describe')}
               value={aiPrompt}
               onChange={(e) => setAiPrompt(e.target.value)}
             />
@@ -150,7 +165,7 @@ export const ImageManager = ({
               className="w-full gap-2"
             >
               {isGenerating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-              Generate Image
+              {t('imageManager.generate')}
             </Button>
           </div>
         )}

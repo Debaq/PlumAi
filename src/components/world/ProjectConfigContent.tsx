@@ -72,13 +72,13 @@ export const ProjectConfigContent = ({ project, onSave }: Props) => {
       <div className="flex items-center gap-2 p-4 border-b border-border bg-muted/20">
         <TabButton id="general" icon={Settings} label={t('common.general')} />
         <TabButton id="identity" icon={Palette} label={t('common.identity')} />
-        <TabButton id="packages" icon={Package} label={t('packages')} />
+        <TabButton id="packages" icon={Package} label={t('modals.packages')} />
         <TabButton id="danger" icon={ShieldAlert} label={t('common.danger')} />
         
         <div className="ml-auto">
           <Button size="sm" onClick={handleSave} className="gap-2 h-8 font-black rounded-lg">
             <Save size={14} />
-            Guardar
+            {t('common.save')}
           </Button>
         </div>
       </div>
@@ -88,19 +88,19 @@ export const ProjectConfigContent = ({ project, onSave }: Props) => {
           <div className="space-y-6 animate-in fade-in duration-300">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest ml-1">Título</Label>
+                <Label className="text-[10px] font-black uppercase tracking-widest ml-1">{t('projectSettings.labels.title')}</Label>
                 <Input value={title} onChange={e => setTitle(e.target.value)} className="h-10 rounded-lg border-2" />
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest ml-1">Autor</Label>
+                <Label className="text-[10px] font-black uppercase tracking-widest ml-1">{t('projectSettings.labels.author')}</Label>
                 <Input value={author} onChange={e => setAuthor(e.target.value)} className="h-10 rounded-lg border-2" />
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest ml-1">Género</Label>
+                <Label className="text-[10px] font-black uppercase tracking-widest ml-1">{t('projectSettings.labels.genre')}</Label>
                 <Input value={genre} onChange={e => setGenre(e.target.value)} className="h-10 rounded-lg border-2" />
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase tracking-widest ml-1">Estructura</Label>
+                <Label className="text-[10px] font-black uppercase tracking-widest ml-1">{t('projectSettings.labels.type')}</Label>
                 <div className="h-10 flex items-center px-3 bg-muted/30 border-2 border-border rounded-lg text-xs font-bold gap-2">
                   {project.projectType === 'rpg' ? <Dices size={14} className="text-primary" /> : <Book size={14} className="text-primary" />}
                   {project.projectType?.toUpperCase()}
@@ -115,27 +115,27 @@ export const ProjectConfigContent = ({ project, onSave }: Props) => {
             <section className="p-5 rounded-2xl border-2 border-primary/20 bg-primary/5 space-y-3">
               <div className="flex items-center gap-2">
                 <Sparkles size={16} className="text-primary" />
-                <span className="font-black uppercase text-[10px] tracking-widest">Identidad Visual</span>
+                <span className="font-black uppercase text-[10px] tracking-widest">{t('projectSettings.visual.title')}</span>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Este proyecto utiliza el estilo: 
+                {t('projectSettings.visual.currentPackage')} 
                 <span className="text-foreground font-bold ml-1">
-                  {project.activeIdentityPackage || "Estilo por defecto"}
+                  {project.activeIdentityPackage || t('projectSettings.visual.defaultStyle')}
                 </span>
               </p>
               <Button variant="outline" size="sm" onClick={() => setActiveTab('packages')} className="rounded-lg h-8 text-[10px] font-black gap-2">
-                Cambiar en Almacén <ChevronRight size={12} />
+                {t('projectSettings.visual.change')} <ChevronRight size={12} />
               </Button>
             </section>
 
             <div className="grid grid-cols-2 gap-4">
                <div className="aspect-video rounded-xl border-2 border-dashed border-border bg-muted/20 flex flex-col items-center justify-center gap-2">
                   <ImageIcon size={20} className="opacity-20" />
-                  <span className="text-[9px] font-bold uppercase opacity-40">Banner Sidebar</span>
+                  <span className="text-[9px] font-bold uppercase opacity-40">{t('projectSettings.visual.bannerSidebar')}</span>
                </div>
                <div className="aspect-video rounded-xl border-2 border-dashed border-border bg-muted/20 flex flex-col items-center justify-center gap-2">
                   <ImageIcon size={20} className="opacity-20" />
-                  <span className="text-[9px] font-bold uppercase opacity-40">Banner Header</span>
+                  <span className="text-[9px] font-bold uppercase opacity-40">{t('projectSettings.visual.bannerChapters')}</span>
                </div>
             </div>
           </div>
@@ -151,10 +151,10 @@ export const ProjectConfigContent = ({ project, onSave }: Props) => {
           <div className="space-y-6 animate-in fade-in duration-300">
             <div className="p-5 rounded-2xl border-2 border-destructive/20 bg-destructive/5 flex items-center justify-between">
               <div className="space-y-1">
-                <h4 className="font-bold text-xs">Eliminar este Proyecto</h4>
-                <p className="text-[10px] text-muted-foreground">Borra permanentemente todos los datos de esta obra.</p>
+                <h4 className="font-bold text-xs">{t('projectSettings.danger.delete')}</h4>
+                <p className="text-[10px] text-muted-foreground">{t('projectSettings.danger.deleteWarning')}</p>
               </div>
-              <Button variant="destructive" size="sm" className="rounded-lg font-bold">Borrar</Button>
+              <Button variant="destructive" size="sm" className="rounded-lg font-bold">{t('common.delete')}</Button>
             </div>
           </div>
         )}

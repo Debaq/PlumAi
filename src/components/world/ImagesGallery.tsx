@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useUIStore } from '@/stores/useUIStore';
+import { confirm } from '@/stores/useConfirmStore';
 import { 
   Search, 
   Grid3x3, 
@@ -120,8 +121,8 @@ export const ImagesGallery = () => {
     });
   }, [images, filterType, searchQuery]);
 
-  const handleDelete = (image: GalleryImage) => {
-    if (!confirm(`Are you sure you want to remove the image for "${image.name}"?`)) return;
+  const handleDelete = async (image: GalleryImage) => {
+    if (!await confirm(`¿Estás seguro de que quieres eliminar la imagen "${image.name}"?`, { variant: 'destructive', confirmText: 'Eliminar' })) return;
 
     switch (image.type) {
       case 'character':

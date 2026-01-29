@@ -16,6 +16,7 @@
 /build
 /.next/
 /out/
+/releases/
 
 # Environment variables
 .env

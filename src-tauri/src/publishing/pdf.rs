@@ -76,10 +76,12 @@ pub fn generate_pdf(
         "Layer 1",
     );
 
-    let font = doc.add_builtin_font(BuiltinFont::Helvetica)
+    let font = doc
+        .add_builtin_font(BuiltinFont::Helvetica)
         .map_err(|e| PublishingError::PdfError(e.to_string()))?;
 
-    let font_bold = doc.add_builtin_font(BuiltinFont::HelveticaBold)
+    let font_bold = doc
+        .add_builtin_font(BuiltinFont::HelveticaBold)
         .map_err(|e| PublishingError::PdfError(e.to_string()))?;
 
     let margin = Mm(options.margin_mm);
@@ -166,13 +168,7 @@ pub fn generate_pdf(
         let chapter_title = format!("Chapter {}: {}", chapter_num, chapter.title);
 
         // Chapter title
-        current_layer.use_text(
-            &chapter_title,
-            16.0_f32,
-            margin,
-            Mm(y_position),
-            &font_bold,
-        );
+        current_layer.use_text(&chapter_title, 16.0_f32, margin, Mm(y_position), &font_bold);
         y_position -= line_height * 2.0;
 
         // Chapter content
@@ -194,13 +190,7 @@ pub fn generate_pdf(
             if line.is_empty() {
                 y_position -= line_height * 0.5; // Paragraph spacing
             } else {
-                current_layer.use_text(
-                    &line,
-                    options.font_size_pt,
-                    margin,
-                    Mm(y_position),
-                    &font,
-                );
+                current_layer.use_text(&line, options.font_size_pt, margin, Mm(y_position), &font);
                 y_position -= line_height;
             }
         }

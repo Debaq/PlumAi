@@ -2,13 +2,13 @@
 //!
 //! Provides CRUD operations for all domain entities.
 
-mod schema;
 mod models;
 mod operations;
+mod schema;
 
-pub use schema::init_database;
 pub use models::*;
 pub use operations::*;
+pub use schema::init_database;
 
 use rusqlite::Connection;
 use std::sync::Mutex;

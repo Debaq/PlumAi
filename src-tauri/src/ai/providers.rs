@@ -78,7 +78,9 @@ async fn send_claude_chat(request: AiChatRequest) -> Result<AiChatResponse, AiEr
     let client = Client::new();
 
     let claude_request = ClaudeRequest {
-        model: request.model.unwrap_or_else(|| "claude-sonnet-4-20250514".to_string()),
+        model: request
+            .model
+            .unwrap_or_else(|| "claude-sonnet-4-20250514".to_string()),
         max_tokens: request.max_tokens.unwrap_or(4096),
         system: request.system_prompt,
         messages: request
@@ -310,7 +312,9 @@ struct GeminiErrorDetail {
 async fn send_gemini_chat(request: AiChatRequest) -> Result<AiChatResponse, AiError> {
     let client = Client::new();
 
-    let model = request.model.unwrap_or_else(|| "gemini-2.0-flash".to_string());
+    let model = request
+        .model
+        .unwrap_or_else(|| "gemini-2.0-flash".to_string());
 
     let gemini_request = GeminiRequest {
         contents: request

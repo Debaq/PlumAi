@@ -23,24 +23,84 @@
     }
   },
   "content": {
-    "characters": [
+    "creatures": [
       {
-        "id": "char-goblin-basic",
+        "id": "creature-goblin-basic",
         "name": "Explorador Goblin",
-        "role": "secondary",
-        "avatarUrl": "avatars/goblin.jpg",
+        "type": "Humanoide",
+        "size": "small",
+        "description": "Cobarde en solitario, valiente en grupo. Astuto y traicionero.",
         "physicalDescription": "Pequeño, piel verdosa y ojos amarillentos. Viste harapos de cuero.",
-        "personality": "Cobarde en solitario, valiente en grupo. Astuto y traicionero.",
-        "history": "Viene de las cuevas del norte, enviado a espiar los asentamientos humanos."
+        "behavior": "Viene de las cuevas del norte, enviado a espiar los asentamientos humanos. Prefiere emboscadas y huye al verse superado.",
+        "habitat": ["Cuevas", "Bosques oscuros", "Ruinas"],
+        "dangerLevel": "low",
+        "challengeRating": "1/4",
+        "stats": {
+          "HP": 7,
+          "AC": 15,
+          "STR": 8,
+          "DEX": 14,
+          "CON": 10,
+          "INT": 10,
+          "WIS": 8,
+          "CHA": 8
+        },
+        "abilities": [
+          {
+            "id": "ability-nimble-escape",
+            "name": "Escape Ágil",
+            "description": "Puede realizar la acción de Desenganche o Esconderse como acción adicional."
+          }
+        ],
+        "weaknesses": ["Luz solar directa", "Fuerza bruta"],
+        "resistances": [],
+        "immunities": [],
+        "loot": ["Daga oxidada", "Monedas de cobre (1d6)"],
+        "imageUrl": "avatars/goblin.jpg",
+        "notes": "Nunca viajan solos. Donde hay uno, hay al menos una docena más."
       },
       {
-        "id": "char-dragon-red",
+        "id": "creature-dragon-red",
         "name": "Venerable Dragón Rojo",
-        "role": "antagonist",
-        "avatarUrl": "avatars/red-dragon.jpg",
+        "type": "Dragón",
+        "size": "gargantuan",
+        "description": "Arrogante, codicioso y extremadamente inteligente. Un depredador supremo.",
         "physicalDescription": "Escamas carmesí del tamaño de escudos. Su aliento huele a azufre y ceniza.",
-        "personality": "Arrogante, codicioso y extremadamente inteligente.",
-        "history": "Ha dormido sobre su tesoro durante tres siglos, despertando solo para alimentarse."
+        "behavior": "Ha dormido sobre su tesoro durante tres siglos, despertando solo para alimentarse. Considera a todas las criaturas inferiores.",
+        "habitat": ["Volcanes", "Montañas", "Cavernas profundas"],
+        "dangerLevel": "legendary",
+        "challengeRating": "24",
+        "stats": {
+          "HP": 546,
+          "AC": 22,
+          "STR": 30,
+          "DEX": 10,
+          "CON": 29,
+          "INT": 18,
+          "WIS": 15,
+          "CHA": 23
+        },
+        "abilities": [
+          {
+            "id": "ability-fire-breath",
+            "name": "Aliento de Fuego",
+            "description": "Exhala un cono de fuego de 90 pies. Cada criatura en el área debe superar una tirada de salvación de Destreza CD 24 o recibir 91 (26d6) de daño de fuego.",
+            "damage": "26d6 fuego",
+            "range": "90 pies (cono)"
+          },
+          {
+            "id": "ability-frightful-presence",
+            "name": "Presencia Aterradora",
+            "description": "Cada criatura a 120 pies que sea consciente del dragón debe superar una tirada de salvación de Sabiduría CD 21 o quedar asustada durante 1 minuto.",
+            "range": "120 pies"
+          }
+        ],
+        "weaknesses": ["Ataques de frío"],
+        "resistances": [],
+        "immunities": ["Fuego"],
+        "loot": ["Tesoro masivo (monedas, gemas, artefactos)", "Escamas de dragón rojo"],
+        "imageUrl": "avatars/red-dragon.jpg",
+        "notes": "No intentes negociar a menos que tengas algo que valga más que tu vida."
       }
     ],
     "lore_items": [

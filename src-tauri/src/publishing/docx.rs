@@ -63,21 +63,17 @@ pub fn generate_docx_bytes(
                     Run::new()
                         .add_text(&document.metadata.title)
                         .size(title_size)
-                        .bold()
+                        .bold(),
                 )
-                .align(AlignmentType::Center)
+                .align(AlignmentType::Center),
         );
 
         // Author
         if let Some(ref author) = document.metadata.author {
             docx = docx.add_paragraph(
                 Paragraph::new()
-                    .add_run(
-                        Run::new()
-                            .add_text(author)
-                            .size(font_size)
-                    )
-                    .align(AlignmentType::Center)
+                    .add_run(Run::new().add_text(author).size(font_size))
+                    .align(AlignmentType::Center),
             );
         }
 
@@ -85,32 +81,24 @@ pub fn generate_docx_bytes(
         if let Some(ref description) = document.metadata.description {
             docx = docx.add_paragraph(
                 Paragraph::new()
-                    .add_run(
-                        Run::new()
-                            .add_text(description)
-                            .size(font_size)
-                            .italic()
-                    )
-                    .align(AlignmentType::Center)
+                    .add_run(Run::new().add_text(description).size(font_size).italic())
+                    .align(AlignmentType::Center),
             );
         }
 
         // Page break after title page
-        docx = docx.add_paragraph(
-            Paragraph::new().add_run(Run::new().add_break(BreakType::Page))
-        );
+        docx = docx.add_paragraph(Paragraph::new().add_run(Run::new().add_break(BreakType::Page)));
     }
 
     // Table of contents (placeholder - actual TOC requires field codes)
     if options.include_toc && !document.chapters.is_empty() {
         docx = docx.add_paragraph(
-            Paragraph::new()
-                .add_run(
-                    Run::new()
-                        .add_text("Table of Contents")
-                        .size(heading_size)
-                        .bold()
-                )
+            Paragraph::new().add_run(
+                Run::new()
+                    .add_text("Table of Contents")
+                    .size(heading_size)
+                    .bold(),
+            ),
         );
 
         for (i, chapter) in document.chapters.iter().enumerate() {
@@ -118,19 +106,12 @@ pub fn generate_docx_bytes(
             let toc_entry = format!("{}. {}", chapter_num, chapter.title);
 
             docx = docx.add_paragraph(
-                Paragraph::new()
-                    .add_run(
-                        Run::new()
-                            .add_text(&toc_entry)
-                            .size(font_size)
-                    )
+                Paragraph::new().add_run(Run::new().add_text(&toc_entry).size(font_size)),
             );
         }
 
         // Page break after TOC
-        docx = docx.add_paragraph(
-            Paragraph::new().add_run(Run::new().add_break(BreakType::Page))
-        );
+        docx = docx.add_paragraph(Paragraph::new().add_run(Run::new().add_break(BreakType::Page)));
     }
 
     // Chapters
@@ -140,13 +121,12 @@ pub fn generate_docx_bytes(
 
         // Chapter heading
         docx = docx.add_paragraph(
-            Paragraph::new()
-                .add_run(
-                    Run::new()
-                        .add_text(&chapter_title)
-                        .size(heading_size)
-                        .bold()
-                )
+            Paragraph::new().add_run(
+                Run::new()
+                    .add_text(&chapter_title)
+                    .size(heading_size)
+                    .bold(),
+            ),
         );
 
         // Empty line after heading
@@ -161,21 +141,15 @@ pub fn generate_docx_bytes(
                 docx = docx.add_paragraph(Paragraph::new());
             } else {
                 docx = docx.add_paragraph(
-                    Paragraph::new()
-                        .add_run(
-                            Run::new()
-                                .add_text(trimmed)
-                                .size(font_size)
-                        )
+                    Paragraph::new().add_run(Run::new().add_text(trimmed).size(font_size)),
                 );
             }
         }
 
         // Page break between chapters (except last)
         if i < document.chapters.len() - 1 {
-            docx = docx.add_paragraph(
-                Paragraph::new().add_run(Run::new().add_break(BreakType::Page))
-            );
+            docx =
+                docx.add_paragraph(Paragraph::new().add_run(Run::new().add_break(BreakType::Page)));
         }
     }
 

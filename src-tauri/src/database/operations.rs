@@ -9,8 +9,8 @@ use rusqlite::{params, Connection, Result};
 
 pub fn create_project(conn: &Connection, project: &Project) -> Result<()> {
     conn.execute(
-        r#"INSERT INTO projects (id, title, author, description, genre, is_rpg_mode_enabled, rpg_system, active_identity_package, origin_package_id, banners, api_keys, creatures, world_rules)
-           VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)"#,
+        r#"INSERT INTO projects (id, title, author, description, genre, is_rpg_mode_enabled, rpg_system, active_identity_package, origin_package_id, project_type, banners, api_keys, creatures, world_rules)
+           VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)"#,
         params![
             project.id,
             project.title,
@@ -21,6 +21,7 @@ pub fn create_project(conn: &Connection, project: &Project) -> Result<()> {
             project.rpg_system,
             project.active_identity_package,
             project.origin_package_id,
+            project.project_type,
             project.banners.as_ref().map(|v| v.to_string()),
             project.api_keys.as_ref().map(|v| v.to_string()),
             project.creatures.as_ref().map(|v| v.to_string()),
@@ -32,7 +33,7 @@ pub fn create_project(conn: &Connection, project: &Project) -> Result<()> {
 
 pub fn get_project(conn: &Connection, id: &str) -> Result<Option<Project>> {
     let mut stmt = conn.prepare(
-        "SELECT id, title, author, description, genre, is_rpg_mode_enabled, rpg_system, active_identity_package, origin_package_id, banners, api_keys, creatures, world_rules FROM projects WHERE id = ?1"
+        "SELECT id, title, author, description, genre, is_rpg_mode_enabled, rpg_system, active_identity_package, origin_package_id, project_type, banners, api_keys, creatures, world_rules FROM projects WHERE id = ?1"
     )?;
 
     let mut rows = stmt.query(params![id])?;
@@ -48,10 +49,19 @@ pub fn get_project(conn: &Connection, id: &str) -> Result<Option<Project>> {
             rpg_system: row.get(6)?,
             active_identity_package: row.get(7)?,
             origin_package_id: row.get(8)?,
-            banners: row.get::<_, Option<String>>(9)?.and_then(|s| serde_json::from_str(&s).ok()),
-            api_keys: row.get::<_, Option<String>>(10)?.and_then(|s| serde_json::from_str(&s).ok()),
-            creatures: row.get::<_, Option<String>>(11)?.and_then(|s| serde_json::from_str(&s).ok()),
-            world_rules: row.get::<_, Option<String>>(12)?.and_then(|s| serde_json::from_str(&s).ok()),
+            project_type: row.get(9)?,
+            banners: row
+                .get::<_, Option<String>>(10)?
+                .and_then(|s| serde_json::from_str(&s).ok()),
+            api_keys: row
+                .get::<_, Option<String>>(11)?
+                .and_then(|s| serde_json::from_str(&s).ok()),
+            creatures: row
+                .get::<_, Option<String>>(12)?
+                .and_then(|s| serde_json::from_str(&s).ok()),
+            world_rules: row
+                .get::<_, Option<String>>(13)?
+                .and_then(|s| serde_json::from_str(&s).ok()),
         }))
     } else {
         Ok(None)
@@ -60,7 +70,7 @@ pub fn get_project(conn: &Connection, id: &str) -> Result<Option<Project>> {
 
 pub fn get_all_projects(conn: &Connection) -> Result<Vec<Project>> {
     let mut stmt = conn.prepare(
-        "SELECT id, title, author, description, genre, is_rpg_mode_enabled, rpg_system, active_identity_package, origin_package_id, banners, api_keys, creatures, world_rules FROM projects ORDER BY updated_at DESC"
+        "SELECT id, title, author, description, genre, is_rpg_mode_enabled, rpg_system, active_identity_package, origin_package_id, project_type, banners, api_keys, creatures, world_rules FROM projects ORDER BY updated_at DESC"
     )?;
 
     let rows = stmt.query_map([], |row| {
@@ -74,10 +84,19 @@ pub fn get_all_projects(conn: &Connection) -> Result<Vec<Project>> {
             rpg_system: row.get(6)?,
             active_identity_package: row.get(7)?,
             origin_package_id: row.get(8)?,
-            banners: row.get::<_, Option<String>>(9)?.and_then(|s| serde_json::from_str(&s).ok()),
-            api_keys: row.get::<_, Option<String>>(10)?.and_then(|s| serde_json::from_str(&s).ok()),
-            creatures: row.get::<_, Option<String>>(11)?.and_then(|s| serde_json::from_str(&s).ok()),
-            world_rules: row.get::<_, Option<String>>(12)?.and_then(|s| serde_json::from_str(&s).ok()),
+            project_type: row.get(9)?,
+            banners: row
+                .get::<_, Option<String>>(10)?
+                .and_then(|s| serde_json::from_str(&s).ok()),
+            api_keys: row
+                .get::<_, Option<String>>(11)?
+                .and_then(|s| serde_json::from_str(&s).ok()),
+            creatures: row
+                .get::<_, Option<String>>(12)?
+                .and_then(|s| serde_json::from_str(&s).ok()),
+            world_rules: row
+                .get::<_, Option<String>>(13)?
+                .and_then(|s| serde_json::from_str(&s).ok()),
         })
     })?;
 
@@ -87,7 +106,8 @@ pub fn get_all_projects(conn: &Connection) -> Result<Vec<Project>> {
 pub fn update_project(conn: &Connection, project: &Project) -> Result<()> {
     conn.execute(
         r#"UPDATE projects SET title = ?2, author = ?3, description = ?4, genre = ?5,
-           is_rpg_mode_enabled = ?6, rpg_system = ?7, active_identity_package = ?8, origin_package_id = ?9, banners = ?10, api_keys = ?11, creatures = ?12, world_rules = ?13, updated_at = CURRENT_TIMESTAMP
+           is_rpg_mode_enabled = ?6, rpg_system = ?7, active_identity_package = ?8, origin_package_id = ?9,
+           project_type = ?10, banners = ?11, api_keys = ?12, creatures = ?13, world_rules = ?14, updated_at = CURRENT_TIMESTAMP
            WHERE id = ?1"#,
         params![
             project.id,
@@ -99,6 +119,7 @@ pub fn update_project(conn: &Connection, project: &Project) -> Result<()> {
             project.rpg_system,
             project.active_identity_package,
             project.origin_package_id,
+            project.project_type,
             project.banners.as_ref().map(|v| v.to_string()),
             project.api_keys.as_ref().map(|v| v.to_string()),
             project.creatures.as_ref().map(|v| v.to_string()),
@@ -307,13 +328,20 @@ pub fn get_characters_by_project(conn: &Connection, project_id: &str) -> Result<
             personality: row.get(7)?,
             history: row.get(8)?,
             notes: row.get(9)?,
-            attributes: row.get::<_, Option<String>>(10)?.and_then(|s| serde_json::from_str(&s).ok()),
-            attribute_history: row.get::<_, Option<String>>(11)?.and_then(|s| serde_json::from_str(&s).ok()),
-            vital_status_history: row.get::<_, Option<String>>(12)?
+            attributes: row
+                .get::<_, Option<String>>(10)?
+                .and_then(|s| serde_json::from_str(&s).ok()),
+            attribute_history: row
+                .get::<_, Option<String>>(11)?
+                .and_then(|s| serde_json::from_str(&s).ok()),
+            vital_status_history: row
+                .get::<_, Option<String>>(12)?
                 .and_then(|s| serde_json::from_str(&s).ok())
                 .unwrap_or_default(),
             current_vital_status: row.get(13)?,
-            visual_position: row.get::<_, Option<String>>(14)?.and_then(|s| serde_json::from_str(&s).ok()),
+            visual_position: row
+                .get::<_, Option<String>>(14)?
+                .and_then(|s| serde_json::from_str(&s).ok()),
             relationships: vec![], // Loaded separately
         })
     })?;
@@ -374,7 +402,10 @@ pub fn create_relationship(conn: &Connection, char_id: &str, rel: &Relationship)
     Ok(())
 }
 
-pub fn get_relationships_by_character(conn: &Connection, character_id: &str) -> Result<Vec<Relationship>> {
+pub fn get_relationships_by_character(
+    conn: &Connection,
+    character_id: &str,
+) -> Result<Vec<Relationship>> {
     let mut stmt = conn.prepare(
         "SELECT id, target_character_id, current_type, current_status, current_description, is_secret, history
          FROM relationships WHERE character_id = ?1"
@@ -388,7 +419,8 @@ pub fn get_relationships_by_character(conn: &Connection, character_id: &str) -> 
             current_status: row.get(3)?,
             current_description: row.get(4)?,
             is_secret: row.get::<_, i32>(5)? != 0,
-            history: row.get::<_, Option<String>>(6)?
+            history: row
+                .get::<_, Option<String>>(6)?
                 .and_then(|s| serde_json::from_str(&s).ok())
                 .unwrap_or_default(),
         })
@@ -462,16 +494,21 @@ pub fn get_locations_by_project(conn: &Connection, project_id: &str) -> Result<V
             description: row.get(5)?,
             significance: row.get(6)?,
             notes: row.get(7)?,
-            gallery: row.get::<_, Option<String>>(8)?
+            gallery: row
+                .get::<_, Option<String>>(8)?
                 .and_then(|s| serde_json::from_str(&s).ok())
                 .unwrap_or_default(),
-            plans: row.get::<_, Option<String>>(9)?
+            plans: row
+                .get::<_, Option<String>>(9)?
                 .and_then(|s| serde_json::from_str(&s).ok())
                 .unwrap_or_default(),
-            connections: row.get::<_, Option<String>>(10)?
+            connections: row
+                .get::<_, Option<String>>(10)?
                 .and_then(|s| serde_json::from_str(&s).ok())
                 .unwrap_or_default(),
-            visual_position: row.get::<_, Option<String>>(11)?.and_then(|s| serde_json::from_str(&s).ok()),
+            visual_position: row
+                .get::<_, Option<String>>(11)?
+                .and_then(|s| serde_json::from_str(&s).ok()),
         })
     })?;
 
@@ -542,7 +579,8 @@ pub fn get_lore_items_by_project(conn: &Connection, project_id: &str) -> Result<
             category: row.get(4)?,
             content: row.get(5)?,
             summary: row.get(6)?,
-            related_entity_ids: row.get::<_, Option<String>>(7)?
+            related_entity_ids: row
+                .get::<_, Option<String>>(7)?
                 .and_then(|s| serde_json::from_str(&s).ok())
                 .unwrap_or_default(),
         })
@@ -601,7 +639,10 @@ pub fn create_timeline_event(conn: &Connection, event: &TimelineEvent) -> Result
     Ok(())
 }
 
-pub fn get_timeline_events_by_project(conn: &Connection, project_id: &str) -> Result<Vec<TimelineEvent>> {
+pub fn get_timeline_events_by_project(
+    conn: &Connection,
+    project_id: &str,
+) -> Result<Vec<TimelineEvent>> {
     let mut stmt = conn.prepare(
         "SELECT id, project_id, title, description, date_mode, date, era, participants, location_id, importance, tags, scene_id, chapter_id
          FROM timeline_events WHERE project_id = ?1 ORDER BY date, created_at"
@@ -616,12 +657,14 @@ pub fn get_timeline_events_by_project(conn: &Connection, project_id: &str) -> Re
             date_mode: row.get(4)?,
             date: row.get(5)?,
             era: row.get(6)?,
-            participants: row.get::<_, Option<String>>(7)?
+            participants: row
+                .get::<_, Option<String>>(7)?
                 .and_then(|s| serde_json::from_str(&s).ok())
                 .unwrap_or_default(),
             location_id: row.get(8)?,
             importance: row.get(9)?,
-            tags: row.get::<_, Option<String>>(10)?
+            tags: row
+                .get::<_, Option<String>>(10)?
                 .and_then(|s| serde_json::from_str(&s).ok())
                 .unwrap_or_default(),
             scene_id: row.get(11)?,
@@ -678,7 +721,7 @@ pub fn clear_database(conn: &Connection) -> Result<()> {
         "locations",
         "characters",
         "projects",
-        "app_settings"
+        "app_settings",
     ];
 
     for table in tables {
@@ -693,7 +736,7 @@ pub fn clear_database(conn: &Connection) -> Result<()> {
 pub fn get_setting(conn: &Connection, key: &str) -> Result<Option<String>> {
     let mut stmt = conn.prepare("SELECT value FROM app_settings WHERE key = ?1")?;
     let mut rows = stmt.query(params![key])?;
-    
+
     if let Some(row) = rows.next()? {
         Ok(Some(row.get(0)?))
     } else {

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useSettingsStore, AIProvider } from '@/stores/useSettingsStore';
 import { useUIStore } from '@/stores/useUIStore';
+import { confirm } from '@/stores/useConfirmStore';
 import { useAgenticChat } from '@/hooks/useAgenticChat';
 import { 
   Send, 
@@ -39,12 +40,12 @@ export const AIAssistantView = () => {
   const { messages, sendMessage, isLoading, clearMessages } = useAgenticChat();
 
   const assistantModes = [
-    { id: 'continue', name: 'Continuar escribiendo', icon: '✍️', prompt: '¿Qué escenas o momentos clave deberían venir a continuación?' },
-    { id: 'suggest', name: 'Sugerir ideas', icon: '💡', prompt: '¿Qué ideas tienes para desarrollar la trama desde este punto? Dame varias opciones creativas.' },
-    { id: 'analyze', name: 'Analizar texto', icon: '🔍', prompt: 'Analiza la estructura narrativa de mi historia hasta ahora. ¿Qué funciona bien y qué podría mejorar?' },
-    { id: 'improve', name: 'Mejorar pasaje', icon: '✨', prompt: 'Sugerencias específicas para mejorar la prosa y el ritmo de lo escrito.' },
-    { id: 'worldbuild', name: 'Expandir mundo', icon: '🌍', prompt: '¿Qué aspectos del worldbuilding debería expandir o profundizar? Dame sugerencias específicas.' },
-    { id: 'characterize', name: 'Desarrollar personaje', icon: '🎭', prompt: 'Ayúdame a desarrollar más profundidad en mis personajes. ¿Qué motivaciones o conflictos internos podría explorar?' },
+    { id: 'continue', name: t('ai.assistantModes.continue'), icon: '✍️', prompt: '¿Qué escenas o momentos clave deberían venir a continuación?' },
+    { id: 'suggest', name: t('ai.assistantModes.suggest'), icon: '💡', prompt: '¿Qué ideas tienes para desarrollar la trama desde este punto? Dame varias opciones creativas.' },
+    { id: 'analyze', name: t('ai.assistantModes.analyze'), icon: '🔍', prompt: 'Analiza la estructura narrativa de mi historia hasta ahora. ¿Qué funciona bien y qué podría mejorar?' },
+    { id: 'improve', name: t('ai.assistantModes.improve'), icon: '✨', prompt: 'Sugerencias específicas para mejorar la prosa y el ritmo de lo escrito.' },
+    { id: 'worldbuild', name: t('ai.assistantModes.worldbuild'), icon: '🌍', prompt: '¿Qué aspectos del worldbuilding debería expandir o profundizar? Dame sugerencias específicas.' },
+    { id: 'characterize', name: t('ai.assistantModes.characterize'), icon: '🎭', prompt: 'Ayúdame a desarrollar más profundidad en mis personajes. ¿Qué motivaciones o conflictos internos podría explorar?' },
   ];
 
   useEffect(() => {
@@ -75,7 +76,7 @@ export const AIAssistantView = () => {
 
   const insertInEditor = (text: string) => {
     if (!currentEditingChapterId) {
-        alert('Por favor abre un capítulo en el editor primero.');
+        alert(t('ai.openChapterFirst'));
         return;
     }
     
@@ -85,7 +86,7 @@ export const AIAssistantView = () => {
         projectActions.updateChapter(currentEditingChapterId, {
             content: chapter.content + '<p></p>' + wrappedText
         });
-        alert('Texto insertado con seguimiento de cambios.');
+        alert(t('ai.textInserted'));
     }
   };
 
@@ -115,7 +116,7 @@ export const AIAssistantView = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
             <Label className="flex items-center gap-2 text-xs">
-              <Cpu className="w-3 h-3" /> Proveedor
+              <Cpu className="w-3 h-3" /> {t('aiAssistantView.provider')}
             </Label>
             <Select value={settings.activeProvider} onValueChange={(v: AIProvider) => settings.setActiveProvider(v)}>
               <SelectTrigger>
@@ -129,7 +130,7 @@ export const AIAssistantView = () => {
 
           <div className="space-y-2">
             <Label className="flex items-center gap-2 text-xs">
-              <Brain className="w-3 h-3" /> Modelo
+              <Brain className="w-3 h-3" /> {t('aiAssistantView.model')}
             </Label>
             <Input 
               value={settings.activeModel} 
@@ -140,7 +141,7 @@ export const AIAssistantView = () => {
 
           <div className="space-y-2">
             <Label className="flex items-center gap-2 text-xs">
-              <Wand2 className="w-3 h-3" /> Modo de Asistencia
+              <Wand2 className="w-3 h-3" /> {t('aiAssistantView.mode')}
             </Label>
             <Select value={selectedMode} onValueChange={setSelectedMode}>
               <SelectTrigger>
@@ -166,7 +167,7 @@ export const AIAssistantView = () => {
           >
             <span className="flex items-center gap-2">
               <Database className="w-4 h-4" />
-              Contexto del Proyecto
+              {t('aiAssistantView.context')}
             </span>
             {showContext ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </Button>
@@ -174,24 +175,24 @@ export const AIAssistantView = () => {
           {showContext && (
             <div className="mt-3 p-4 bg-muted/30 rounded-lg border text-xs grid grid-cols-2 md:grid-cols-4 gap-4 animate-in slide-in-from-top-2 duration-200">
               <div className="space-y-1">
-                <p className="font-semibold text-muted-foreground uppercase">Proyecto</p>
+                <p className="font-semibold text-muted-foreground uppercase">{t('ai.project')}</p>
                 <p>{activeProject?.title}</p>
                 <p className="text-muted-foreground/70">{activeProject?.genre}</p>
               </div>
               <div className="space-y-1">
-                <p className="font-semibold text-muted-foreground uppercase">Entidades</p>
-                <p>{activeProject?.characters.length} Personajes</p>
-                <p>{activeProject?.locations.length} Ubicaciones</p>
+                <p className="font-semibold text-muted-foreground uppercase">{t('ai.characters')}</p>
+                <p>{activeProject?.characters.length} {t('entityList.singular.characters')}</p>
+                <p>{activeProject?.locations.length} {t('entityList.singular.locations')}</p>
               </div>
               <div className="space-y-1">
-                <p className="font-semibold text-muted-foreground uppercase">Contenido</p>
-                <p>{activeProject?.chapters.length} Capítulos</p>
-                <p>{activeProject?.scenes.length} Escenas</p>
+                <p className="font-semibold text-muted-foreground uppercase">{t('sidebar.chapters')}</p>
+                <p>{activeProject?.chapters.length} {t('sidebar.chapters')}</p>
+                <p>{activeProject?.scenes.length} {t('sidebar.scenes')}</p>
               </div>
               <div className="space-y-1">
-                <p className="font-semibold text-muted-foreground uppercase">Estadísticas</p>
-                <p>{activeProject?.chapters.reduce((acc, c) => acc + (c.wordCount || 0), 0)} Palabras</p>
-                <p>{activeProject?.loreItems.length} Lore</p>
+                <p className="font-semibold text-muted-foreground uppercase">{t('sidebar.stats')}</p>
+                <p>{activeProject?.chapters.reduce((acc, c) => acc + (c.wordCount || 0), 0)} {t('statsView.totalWords')}</p>
+                <p>{activeProject?.loreItems.length} {t('sidebar.lore')}</p>
               </div>
             </div>
           )}
@@ -210,10 +211,9 @@ export const AIAssistantView = () => {
                 <Sparkles className="w-8 h-8 text-primary" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold">Brainstorming Creativo</h3>
+                <h3 className="text-lg font-semibold">{t('aiAssistantView.emptyState.title')}</h3>
                 <p className="text-sm max-w-md mt-2 leading-relaxed">
-                  Tengo memoria conversacional y entiendo el contexto de tu proyecto. 
-                  Puedo ayudarte a expandir tu mundo o resolver dudas de la trama.
+                  {t('aiAssistantView.emptyState.description')}
                 </p>
               </div>
               <div className="flex flex-wrap justify-center gap-2 mt-4">
@@ -312,7 +312,7 @@ export const AIAssistantView = () => {
                   handleSend();
                 }
               }}
-              placeholder={t('ai.inputPlaceholder')}
+              placeholder={t('aiAssistantView.inputPlaceholder')}
               className="flex-1 min-h-[100px] max-h-[200px] p-4 bg-background border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none transition-all shadow-inner"
             />
             <div className="flex flex-col gap-2">
@@ -327,14 +327,14 @@ export const AIAssistantView = () => {
           </form>
           <div className="flex items-center justify-between mt-2 px-1">
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">
-              Ctrl + Enter para enviar
+              {t('aiAssistantView.sendInstructions')}
             </p>
             <button 
-              onClick={() => { if(confirm('¿Limpiar historial?')) clearMessages(); }}
+              onClick={async () => { if(await confirm(t('ai.confirmClearChat'), { confirmText: t('aiAssistantView.clearChat') })) clearMessages(); }}
               className="text-[10px] text-muted-foreground hover:text-destructive flex items-center gap-1 transition-colors uppercase tracking-widest font-medium"
             >
               <Trash2 className="w-3 h-3" />
-              Limpiar Chat
+              {t('aiAssistantView.clearChat')}
             </button>
           </div>
         </div>
@@ -344,7 +344,7 @@ export const AIAssistantView = () => {
       <div className="bg-card border rounded-xl p-4 shadow-sm shrink-0">
         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2">
           <Zap className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-          Consultas Rápidas
+          {t('aiAssistantView.quickQueries')}
         </h3>
         <div className="flex flex-wrap gap-2">
           {assistantModes.map(m => (

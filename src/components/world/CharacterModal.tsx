@@ -20,15 +20,17 @@ import {
   SelectValue 
 } from '@/components/ui/select';
 import { useTranslation } from 'react-i18next';
-import { UserPlus, Trash2, User, Sparkles, Upload, Loader2 } from 'lucide-react';
+import { UserPlus, Trash2, User, Sparkles, Upload, Loader2, Dices } from 'lucide-react';
+import { confirm } from '@/stores/useConfirmStore';
 import { AITextArea } from '@/components/ui/ai-textarea';
 import { CharacterAttributeEditor } from '@/components/rpg/CharacterAttributeEditor';
+import { generateRandomCharacter } from '@/lib/fantasyGenerator';
 
 const CHARACTER_ROLES = [
-  { id: 'protagonist', label: 'Protagonista' },
-  { id: 'antagonist', label: 'Antagonista' },
-  { id: 'secondary', label: 'Secundario' },
-  { id: 'supporting', label: 'Apoyo' },
+  { id: 'protagonist', label: 'characterModal.roles.protagonist' },
+  { id: 'antagonist', label: 'characterModal.roles.antagonist' },
+  { id: 'secondary', label: 'characterModal.roles.secondary' },
+  { id: 'supporting', label: 'characterModal.roles.supporting' },
 ];
 
 export const CharacterModal = () => {
@@ -129,21 +131,39 @@ export const CharacterModal = () => {
     closeModal();
   };
 
-  const handleDelete = () => {
-    if (isEditing && confirm(`¿Estás seguro de que quieres eliminar a ${name}?`)) {
+  const handleDelete = async () => {
+    if (isEditing && await confirm(t('characterModal.deleteConfirm', { name }), { variant: 'destructive', confirmText: t('common.delete') })) {
       deleteCharacter(modalData.id);
       closeModal();
     }
+  };
+
+  const handleRandomize = () => {
+    const data = generateRandomCharacter();
+    setName(data.name);
+    setRole(data.role);
+    setPhysicalDescription(data.physicalDescription);
+    setPersonality(data.personality);
+    setHistory(data.history);
+    setNotes(data.notes);
   };
 
   return (
     <Dialog open={activeModal === 'editCharacter'} onOpenChange={() => closeModal()}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] flex flex-col p-0 overflow-hidden">
         <DialogHeader className="p-6 border-b bg-muted/30">
-          <DialogTitle className="flex items-center gap-2">
-            {isEditing ? <User className="w-5 h-5 text-primary" /> : <UserPlus className="w-5 h-5 text-primary" />}
-            {isEditing ? 'Editar Personaje' : 'Nuevo Personaje'}
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center gap-2">
+              {isEditing ? <User className="w-5 h-5 text-primary" /> : <UserPlus className="w-5 h-5 text-primary" />}
+              {isEditing ? t('characterModal.edit') : t('characterModal.new')}
+            </DialogTitle>
+            {!isEditing && (
+              <Button type="button" variant="outline" size="sm" className="gap-2" onClick={handleRandomize}>
+                <Dices className="w-4 h-4" />
+                {t('common.randomize')}
+              </Button>
+            )}
+          </div>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
@@ -171,36 +191,36 @@ export const CharacterModal = () => {
              
              <div className="flex gap-2">
                 <Button type="button" variant="outline" size="sm" className="gap-2" onClick={() => fileInputRef.current?.click()}>
-                   <Upload size={14} /> Subir
+                   <Upload size={14} /> {t('characterModal.upload')}
                 </Button>
                 <Button type="button" variant="outline" size="sm" className="gap-2" onClick={handleGenerateImage} disabled={isGeneratingImage || (!name && !physicalDescription)}>
                    {isGeneratingImage ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-                   Generar con IA
+                   {t('characterModal.generate')}
                 </Button>
              </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="char-name">Nombre</Label>
+              <Label htmlFor="char-name">{t('characterModal.name')}</Label>
               <Input 
                 id="char-name" 
                 value={name} 
                 onChange={(e) => setName(e.target.value)} 
-                placeholder="Nombre del personaje..."
+                placeholder={t('characterModal.namePlaceholder')}
                 required
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="char-role">Rol en la Historia</Label>
+              <Label htmlFor="char-role">{t('characterModal.role')}</Label>
               <Select value={role} onValueChange={(v: any) => setRole(v)}>
                 <SelectTrigger id="char-role">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {CHARACTER_ROLES.map(r => (
-                    <SelectItem key={r.id} value={r.id}>{r.label}</SelectItem>
+                    <SelectItem key={r.id} value={r.id}>{t(r.label)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -209,24 +229,24 @@ export const CharacterModal = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="char-physical">Descripción Física</Label>
+              <Label htmlFor="char-physical">{t('characterModal.physical')}</Label>
               <AITextArea 
                 id="char-physical" 
                 value={physicalDescription} 
                 onChange={(e) => setPhysicalDescription(e.target.value)} 
-                placeholder="Ej: Alto, ojos azules, cicatriz en..."
+                placeholder={t('characterModal.physicalPlaceholder')}
                 className="min-h-[100px]"
                 label="Physical Description"
                 context={`Character Name: ${name}. Role: ${role}`}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="char-personality">Personalidad</Label>
+              <Label htmlFor="char-personality">{t('characterModal.personality')}</Label>
               <AITextArea 
                 id="char-personality" 
                 value={personality} 
                 onChange={(e) => setPersonality(e.target.value)} 
-                placeholder="Ej: Introvertido, valiente, sarcástico..."
+                placeholder={t('characterModal.personalityPlaceholder')}
                 className="min-h-[100px]"
                 label="Personality"
                 context={`Character Name: ${name}. Role: ${role}`}
@@ -235,12 +255,12 @@ export const CharacterModal = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="char-history">Historia / Trasfondo</Label>
+            <Label htmlFor="char-history">{t('characterModal.history')}</Label>
             <AITextArea 
               id="char-history" 
               value={history} 
               onChange={(e) => setHistory(e.target.value)} 
-              placeholder="Origen, motivaciones, eventos pasados..."
+              placeholder={t('characterModal.historyPlaceholder')}
               className="min-h-[120px]"
               label="Backstory"
               context={`Character Name: ${name}. Role: ${role}. Personality: ${personality}`}
@@ -248,12 +268,12 @@ export const CharacterModal = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="char-notes">Notas Privadas</Label>
+            <Label htmlFor="char-notes">{t('characterModal.notes')}</Label>
             <AITextArea 
               id="char-notes" 
               value={notes} 
               onChange={(e) => setNotes(e.target.value)} 
-              placeholder="Secretos, debilidades, planes futuros..."
+              placeholder={t('characterModal.notesPlaceholder')}
               className="min-h-[80px] bg-muted/20"
               label="Private Notes"
               context={`Character Name: ${name}. Role: ${role}`}
@@ -277,7 +297,7 @@ export const CharacterModal = () => {
             {isEditing && (
               <Button type="button" variant="ghost" className="text-destructive hover:bg-destructive/10 hover:text-destructive gap-2" onClick={handleDelete}>
                 <Trash2 className="w-4 h-4" />
-                Eliminar
+                {t('common.delete')}
               </Button>
             )}
           </div>
@@ -286,7 +306,7 @@ export const CharacterModal = () => {
               {t('common.cancel')}
             </Button>
             <Button type="submit" onClick={handleSubmit} disabled={!name.trim()}>
-              {isEditing ? 'Guardar Cambios' : 'Crear Personaje'}
+              {isEditing ? t('common.saveChanges') : t('characterModal.new')}
             </Button>
           </div>
         </DialogFooter>

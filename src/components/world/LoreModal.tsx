@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useUIStore } from '@/stores/useUIStore';
 import { useProjectStore } from '@/stores/useProjectStore';
-import { 
+import { confirm } from '@/stores/useConfirmStore';
+import {
   Dialog, 
   DialogContent, 
   DialogHeader, 
@@ -84,8 +85,8 @@ export const LoreModal = () => {
     closeModal();
   };
 
-  const handleDelete = () => {
-    if (isEditing && confirm('¿Estás seguro de que quieres eliminar esta entrada del lore?')) {
+  const handleDelete = async () => {
+    if (isEditing && await confirm(t('loreModal.deleteConfirm'), { variant: 'destructive', confirmText: t('common.delete') })) {
       deleteLoreItem(modalData.id);
       closeModal();
     }
@@ -97,25 +98,25 @@ export const LoreModal = () => {
         <DialogHeader className="p-6 border-b bg-muted/30">
           <DialogTitle className="flex items-center gap-2">
             <ScrollText className="w-5 h-5 text-primary" />
-            {isEditing ? 'Editar Entrada del Lore' : 'Nueva Entrada del Lore'}
+            {isEditing ? t('loreModal.edit') : t('loreModal.new')}
           </DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="lore-title">Título</Label>
+              <Label htmlFor="lore-title">{t('loreModal.title')}</Label>
               <Input 
                 id="lore-title" 
                 value={title} 
                 onChange={(e) => setTitle(e.target.value)} 
-                placeholder="Nombre de la entrada..."
+                placeholder={t('loreModal.placeholders.title')}
                 required
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="lore-category">Categoría</Label>
+              <Label htmlFor="lore-category">{t('loreModal.category')}</Label>
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger id="lore-category">
                   <SelectValue />
@@ -130,22 +131,22 @@ export const LoreModal = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="lore-summary">Resumen Corto</Label>
+            <Label htmlFor="lore-summary">{t('loreModal.summary')}</Label>
             <Input 
               id="lore-summary" 
               value={summary} 
               onChange={(e) => setSummary(e.target.value)} 
-              placeholder="Una breve descripción para referencia rápida..."
+              placeholder={t('loreModal.placeholders.summary')}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="lore-content">Contenido Detallado</Label>
+            <Label htmlFor="lore-content">{t('loreModal.content')}</Label>
             <AITextArea 
               id="lore-content" 
               value={content} 
               onChange={(e) => setContent(e.target.value)} 
-              placeholder="Escribe aquí toda la información detallada sobre este elemento del mundo..."
+              placeholder={t('loreModal.placeholders.content')}
               className="min-h-[250px] font-serif leading-relaxed"
               label="Lore Content"
               context={`Lore Title: ${title}. Category: ${category}. Summary: ${summary}`}
@@ -158,7 +159,7 @@ export const LoreModal = () => {
             {isEditing && (
               <Button type="button" variant="ghost" className="text-destructive hover:bg-destructive/10 hover:text-destructive gap-2" onClick={handleDelete}>
                 <Trash2 className="w-4 h-4" />
-                Eliminar
+                {t('common.delete')}
               </Button>
             )}
           </div>
@@ -167,7 +168,7 @@ export const LoreModal = () => {
               {t('common.cancel')}
             </Button>
             <Button type="submit" onClick={handleSubmit} disabled={!title.trim()}>
-              {isEditing ? 'Guardar Cambios' : 'Crear Entrada'}
+              {isEditing ? t('common.saveChanges') : t('common.create')}
             </Button>
           </div>
         </DialogFooter>

@@ -246,7 +246,8 @@
     "untitled": "Untitled",
     "words": "words",
     "list": "List",
-    "automatic": "Automatic"
+    "automatic": "Automatic",
+    "randomize": "Randomize"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -397,16 +398,54 @@
     },
     "newProject": {
       "title": "New Project",
+      "new": "New",
+      "stepOf": "Step {{step}} of {{total}}",
+      "steps": {
+        "basics": "Basics",
+        "structure": "Structure",
+        "content": "Content",
+        "identity": "Identity"
+      },
+      "titles": {
+        "basics": "Define your Work",
+        "structure": "What are you creating?",
+        "content": "Initial Inspiration",
+        "identity": "Final Touch"
+      },
       "form": {
-        "title": "Novel Title",
-        "titlePlaceholder": "E.g: The Lighthouse Mystery",
+        "title": "Project Title",
+        "titlePlaceholder": "E.g: The Awakening of the Void",
         "author": "Author",
-        "authorPlaceholder": "Your name",
+        "authorPlaceholder": "Your name or pen name",
         "genre": "Genre",
-        "genrePlaceholder": "E.g: Mystery, Fantasy, Romance",
+        "genrePlaceholder": "Fantasy, Sci-Fi, Mystery...",
         "isPublicPC": "I'm using a public PC",
         "publicPCWarning": "Data will not be saved automatically"
-      }
+      },
+      "types": {
+        "novel": "Narrative Novel",
+        "novelDesc": "Focused on writing, chapters and scenes.",
+        "worldbuilding": "Worldbuilding",
+        "worldbuildingDesc": "World creation, geography and laws.",
+        "rpg": "RPG Campaign",
+        "rpgDesc": "Character management, dice and bestiary."
+      },
+      "packages": {
+        "description": "Add a predefined database so you don't start from scratch.",
+        "blankCanvas": "Blank Canvas",
+        "blankCanvasDesc": "No pre-injected content.",
+        "by": "By"
+      },
+      "preview": {
+        "noTitle": "New Project",
+        "noGenre": "No Genre",
+        "noAuthor": "Anonymous Author",
+        "withPackage": "With Package",
+        "themeNote": "The default visual theme or the selected package theme will be applied upon creation."
+      },
+      "continue": "Continue",
+      "start": "START!",
+      "errorCreating": "Error creating project"
     },
     "projectSettings": {
       "title": "Project Settings",
@@ -416,6 +455,7 @@
         "preferences": "Preferences"
       }
     },
+    "packages": "Packages",
     "apiKeys": {
       "title": "Configure AI APIs",
       "description": "Set up API keys to use AI features",
@@ -825,7 +865,222 @@
       "ready": "Ready"
     }
   },
+  "ragStudio": {
+    "title": "RAG Studio",
+    "subtitle": "Prompt Engineering and Cognitive Adjustment Laboratory",
+    "librarian": {
+      "title": "The Librarian",
+      "type": "Analysis",
+      "description": "This agent receives your question and the project index. Its job is to decide which chapters or cards to read.",
+      "precision": "Precision",
+      "logic": "Strict Logic (0.0)",
+      "creative": "Creative (1.0)"
+    },
+    "writer": {
+      "title": "The Writer",
+      "type": "Generation",
+      "description": "This agent drafts the final answer using the context retrieved by the librarian.",
+      "creativity": "Creativity",
+      "technical": "Technical (0.0)",
+      "literary": "Literary (1.0)"
+    },
+    "actor": {
+      "title": "The Actor",
+      "type": "NPCs",
+      "description": "This agent simulates character personalities for quick chats and direct interactions.",
+      "improvisation": "Improvisation",
+      "robotic": "Robotic (0.0)",
+      "chaotic": "Chaotic (1.0)"
+    },
+    "common": {
+      "systemPrompt": "System Prompt",
+      "vars": "Vars:"
+    }
+  },
+  "imageManager": {
+    "coverImage": "Cover Image",
+    "noImage": "No image selected",
+    "upload": "Upload",
+    "url": "URL",
+    "ai": "AI",
+    "describe": "Describe the image (optional)...",
+    "generate": "Generate Image",
+    "chooseFile": "Choose File"
+  },
+  "packageManager": {
+    "title": "Content and Identity Store",
+    "subtitle": "Inject data libraries or apply visual themes to your project.",
+    "available": "Packages Available",
+    "noPackages": "No packages found",
+    "noPackagesDesc": "Copy your packages to the folder",
+    "howTo": "How to install packages",
+    "active": "Active",
+    "injectable": "Injectable",
+    "visualStyle": "Visual Style",
+    "injectContent": "Inject Content",
+    "styleApplied": "Style Applied",
+    "applyStyle": "Apply Style",
+    "loading": "Searching for installed packages...",
+    "error": "Connection Error",
+    "retry": "Retry",
+    "successInject": "Content injected successfully!",
+    "errorInject": "Error injecting content"
+  },
+  "chapterModal": {
+    "new": "New Chapter",
+    "edit": "Edit Chapter",
+    "titleLabel": "Title",
+    "titlePlaceholder": "Chapter title...",
+    "summaryLabel": "Summary",
+    "summaryPlaceholder": "Brief summary...",
+    "statusLabel": "Status",
+    "create": "Create Chapter",
+    "save": "Save Changes"
+  },
+  "characterModal": {
+    "new": "New Character",
+    "edit": "Edit Character",
+    "upload": "Upload",
+    "generate": "Generate with AI",
+    "name": "Name",
+    "namePlaceholder": "Character name...",
+    "role": "Role in Story",
+    "physical": "Physical Description",
+    "physicalPlaceholder": "E.g: Tall, blue eyes, scar on...",
+    "personality": "Personality",
+    "personalityPlaceholder": "E.g: Introverted, brave, sarcastic...",
+    "history": "History / Backstory",
+    "historyPlaceholder": "Origin, motivations, past events...",
+    "notes": "Private Notes",
+    "notesPlaceholder": "Secrets, weaknesses, future plans...",
+    "deleteConfirm": "Are you sure you want to delete {name}?",
+    "roles": {
+      "protagonist": "Protagonist",
+      "antagonist": "Antagonist",
+      "secondary": "Secondary",
+      "supporting": "Supporting"
+    }
+  },
+  "banners": {
+    "personalize": "Personalize Banner",
+    "change": "Change Banner"
+  },
+  "locationModal": {
+    "new": "New Location",
+    "edit": "Edit {name}",
+    "tabs": {
+      "info": "Information",
+      "gallery": "Gallery",
+      "plans": "Plans",
+      "connections": "Connections"
+    },
+    "labels": {
+      "name": "Name",
+      "type": "Type",
+      "description": "Description",
+      "significance": "Significance / Importance",
+      "notes": "Additional notes",
+      "destiny": "Destination",
+      "distance": "Distance / Time",
+      "travelMethod": "Travel Method"
+    },
+    "placeholders": {
+      "name": "Location name...",
+      "type": "E.g: City, Forest, Castle...",
+      "description": "Describe how this place looks and feels...",
+      "significance": "Why is this place important in your story?...",
+      "notes": "Secrets, climate, population, minor details...",
+      "select": "Select location...",
+      "distance": "E.g: 50km, 2 days...",
+      "travel": "E.g: Walking, Boat, Portal..."
+    },
+    "galleryTitle": "Image Gallery",
+    "plansTitle": "Plans and Maps",
+    "addConnection": "Add Connection",
+    "existingRoutes": "Existing Routes",
+    "noImages": "No files uploaded.",
+    "noConnections": "No connections defined.",
+    "deleteConfirm": "Are you sure you want to delete \"{name}\"?",
+    "create": "Create Location",
+    "done": "Done"
+  },
+  "statsView": {
+    "title": "Dashboard",
+    "subtitle": "Analytical summary of \"{title}\"",
+    "streak": "{days} day streak",
+    "totalWords": "Total Words",
+    "volumeChart": "Volume by Chapter",
+    "volumeSubtitle": "Manuscript length distribution",
+    "dailyGoal": "Daily Goal",
+    "keepGoing": "Keep the writing pace",
+    "basedOn": "Based on your last session. Write {words} more words to reach your goal today.",
+    "recentAchievements": "Recent Achievements"
+  },
+  "aiAssistantView": {
+    "context": "Project Context",
+    "provider": "Provider",
+    "model": "Model",
+    "mode": "Assistance Mode",
+    "inputPlaceholder": "Type your query here... (Ctrl + Enter to send)",
+    "sendInstructions": "Ctrl + Enter to send",
+    "clearChat": "Clear Chat",
+    "quickQueries": "Quick Queries",
+    "emptyState": {
+      "title": "Creative Brainstorming",
+      "description": "I have conversational memory and understand your project context. I can help you expand your world or resolve plot doubts."
+    }
+  },
+  "worldRules": {
+    "modal": {
+      "new": "New World Rule",
+      "edit": "Edit World Rule",
+      "title": "Title",
+      "category": "Category",
+      "customCategory": "Custom Category",
+      "importance": "Importance",
+      "secret": "Secret Knowledge",
+      "summary": "Short Summary",
+      "content": "Detailed Content",
+      "exceptions": "Exceptions",
+      "examples": "Application Examples",
+      "related": "Related Rules",
+      "placeholders": {
+        "title": "Rule name...",
+        "customCategory": "Category name...",
+        "summary": "A brief description of the rule...",
+        "content": "Describe the rule in detail, how it works, its implications...",
+        "exception": "Add an exception...",
+        "exampleTitle": "Example title",
+        "exampleDesc": "Describe the example..."
+      },
+      "deleteConfirm": "Are you sure you want to delete \"{title}\"?"
+    },
+    "categories": {
+      "magic": "Magic",
+      "physics": "Physics",
+      "social": "Social",
+      "combat": "Combat",
+      "economy": "Economy",
+      "religion": "Religion",
+      "nature": "Nature",
+      "technology": "Technology",
+      "temporal": "Temporal",
+      "metaphysical": "Metaphysical",
+      "custom": "Custom"
+    },
+    "importance": {
+      "fundamental": "Fundamental",
+      "major": "Major",
+      "minor": "Minor"
+    }
+  },
   "relationships": {
+    "manager": {
+      "title": "Relationships",
+      "add": "Add",
+      "empty": "No relationships defined.",
+      "unknown": "Unknown"
+    },
     "title": "Relationships",
     "currentState": "Current Relationship State",
     "currentStateLabel": "Current State",
@@ -885,6 +1140,196 @@
       "deleteRelationship": "Are you sure you want to delete this relationship and all its history?"
     }
   },
+  "entityList": {
+    "viewMap": "View Map",
+    "add": "Add",
+    "notFound": "No {type} found in this project.",
+    "singular": {
+      "summary": "Lore",
+      "bestiary": "Creature",
+      "worldRules": "Rule",
+      "characters": "Character",
+      "locations": "Location",
+      "scenes": "Scene"
+    },
+    "titles": {
+      "summary": "Lore Items",
+      "bestiary": "Bestiary",
+      "worldRules": "World Rules",
+      "characters": "Characters",
+      "locations": "Locations",
+      "scenes": "Scenes"
+    }
+  },
+  "chapterList": {
+    "title": "Chapters",
+    "subtitle": "Write and organize your story chapters",
+    "new": "New Chapter",
+    "empty": {
+      "title": "No chapters created yet",
+      "subtitle": "Create your first chapter to start writing"
+    },
+    "add": "Add Chapter",
+    "untitled": "Untitled",
+    "words": "words"
+  },
+  "projectManager": {
+    "title": "Projects",
+    "create": "Create New Project",
+    "searchPlaceholder": "Search projects...",
+    "noProjects": "No projects found.",
+    "backToStats": "Back to Stats",
+    "settingsTitle": "{title} Settings",
+    "noAuthor": "No author specified",
+    "novel": "Novel",
+    "description": "Description",
+    "open": "Open Project",
+    "selectHint": "Select a project to view details"
+  },
+  "projectSettings": {
+    "title": "Project Settings",
+    "save": "Save Changes",
+    "basics": "Basics",
+    "labels": {
+      "title": "Project Title",
+      "author": "Author / Pen Name",
+      "genre": "Main Genre",
+      "type": "Project Type"
+    },
+    "worldbuilder": {
+      "active": "Worldbuilder Mode Active",
+      "description": "Enables world building tools, maps and timelines.",
+      "enabled": "ENABLED"
+    },
+    "visual": {
+      "title": "Visual Customization",
+      "banners": "Project Banners",
+      "bannerSidebar": "Sidebar Banner",
+      "bannerChapters": "Chapter Banner",
+      "identityPackage": "Identity by Package",
+      "currentPackage": "Currently this project uses the visual style of package:",
+      "defaultStyle": "Default PlumAi Style",
+      "change": "Change in Storage"
+    },
+    "danger": {
+      "title": "Critical Actions",
+      "delete": "Delete Project",
+      "deleteWarning": "This action is irreversible and will delete all chapters, characters and assets.",
+      "deletePermanent": "Delete Permanently"
+    }
+  },
+  "settingsModal": {
+    "theme": {
+      "title": "Visual Theme"
+    },
+    "font": {
+      "title": "Professional Typography",
+      "size": "Font Size",
+      "confirm": "Keep new size?",
+      "revert": "Will revert in {seconds} seconds",
+      "keep": "Keep",
+      "undo": "Revert"
+    },
+    "language": "Interface Language",
+    "worldbuilder": "Worldbuilder Mode",
+    "ai": {
+      "title": "Text & AI Configuration",
+      "provider": "Main Provider",
+      "optimization": "Token Optimization",
+      "keys": "API Keys for {provider}",
+      "saved": "saved",
+      "agentic": {
+        "title": "Agentic AI System",
+        "description": "AI analyzes characters and lore to include them only when relevant."
+      },
+      "image": {
+        "title": "Image Generation",
+        "provider": "Image Provider"
+      }
+    },
+    "security": {
+      "title": "Privacy & Protection",
+      "noPassword": "No Master Password",
+      "noPasswordDesc": "Your API Keys are stored in plain text in the browser. We recommend activating protection.",
+      "setPassword": "Set Master Password",
+      "activate": "Activate Protection",
+      "active": "Protection Activated",
+      "activeDesc": "Your sensitive data is encrypted with your master password.",
+      "encryptKeys": "Encrypt API Keys",
+      "encryptKeysDesc": "Requires master password every time you log in.",
+      "changePassword": "Change Password",
+      "danger": "Danger Zone",
+      "removeProtection": "To remove protection completely, enter your current password:",
+      "remove": "Remove"
+    },
+    "integrations": {
+      "title": "External Sync",
+      "github": {
+        "title": "GitHub Sync",
+        "desc": "Sync your projects with private repositories.",
+        "token": "Personal Access Token",
+        "repo": "Repository (user/repo)",
+        "verify": "Verify and Sync"
+      },
+      "dropbox": {
+        "title": "Dropbox",
+        "desc": "Coming soon..."
+      }
+    },
+    "advanced": {
+      "writing": "Writing Experience",
+      "typewriter": {
+        "label": "Typewriter Scroll",
+        "desc": "Keeps the active line centered vertically."
+      },
+      "hemingway": {
+        "label": "Hemingway Mode",
+        "desc": "Disables delete and backspace. Only forward."
+      },
+      "pomodoro": {
+        "label": "Pomodoro Timer",
+        "desc": "Enables a 25/5 timer in the status bar."
+      },
+      "modules": "System Modules",
+      "ragStudio": {
+        "label": "Enable RAG Studio",
+        "desc": "Shows or hides the AI training module in the sidebar."
+      },
+      "aesthetics": "Aesthetics & Polish",
+      "animations": {
+        "label": "Micro-animations",
+        "desc": "Smooth transitions between themes and UI states."
+      },
+      "debug": {
+        "title": "Debugging",
+        "label": "Interactive AI Logs",
+        "desc": "Enables technical console in the bottom bar."
+      }
+    },
+    "data": {
+      "title": "Data Management",
+      "local": {
+        "title": "Local Storage",
+        "desc": "Your data never leaves this device."
+      },
+      "export": "Export Backup",
+      "import": "Import Project",
+      "deleteAll": "Delete All App Data",
+      "cloud": {
+        "title": "Coming Soon",
+        "desc": "Cloud Sync (Google Drive, iCloud)"
+      }
+    },
+    "dangerModal": {
+      "title": "DELETE ABSOLUTELY EVERYTHING?",
+      "description": "This action is irreversible. All projects, characters, settings, and API keys on this device will be deleted.",
+      "confirmText": "To confirm, type DELETE below:",
+      "placeholder": "Type DELETE",
+      "cancel": "Cancel",
+      "confirm": "Yes, delete everything",
+      "deleting": "Deleting..."
+    }
+  },
   "ui": {
     "loreTabs": {
       "summary": "Summary",
@@ -923,6 +1368,7 @@
   },
   "sidebar": {
     "dashboard": "Dashboard",
+    "stats": "Statistics",
     "characters": "Characters",
     "chapters": "Chapters",
     "scenes": "Scenes",
@@ -939,7 +1385,47 @@
     "collapse": "Collapse",
     "expand": "Expand",
     "hide": "Hide menu",
-    "show": "Show menu"
+    "show": "Show menu",
+    "packageStore": "Package Store"
+  },
+  "packageStore": {
+    "title": "Package Store",
+    "subtitle": "Browse, install, and manage content packages",
+    "browse": "Browse",
+    "installedTab": "Installed",
+    "updatesTab": "Updates",
+    "filterAll": "All",
+    "filterContent": "Content",
+    "filterIdentity": "Identity",
+    "filterHybrid": "Hybrid",
+    "searchPlaceholder": "Search packages...",
+    "searchInstalled": "Search installed packages...",
+    "loadingCatalog": "Loading package catalog...",
+    "noPackagesFound": "No packages found",
+    "tryDifferentSearch": "Try a different search term",
+    "noInstalledPackages": "No installed packages",
+    "browseToInstall": "Browse the catalog to install packages",
+    "noUpdates": "All packages are up to date",
+    "install": "Install",
+    "installed": "Installed",
+    "uninstall": "Uninstall",
+    "update": "Update",
+    "version": "Version",
+    "category": "Category",
+    "size": "Size",
+    "registry": "Registry",
+    "requiresVersion": "Requires app version",
+    "installedVersion": "Installed version",
+    "official": "Official",
+    "registries": "Package Registries",
+    "addRegistry": "Add Registry",
+    "removeRegistry": "Remove registry",
+    "registryNamePlaceholder": "Registry name",
+    "registryUrlPlaceholder": "https://github.com/user/repo",
+    "manageRegistries": "Manage registries",
+    "refresh": "Refresh",
+    "disable": "Disable",
+    "enable": "Enable"
   },
   "stats": {
     "totalWords": "Total words:",
@@ -953,12 +1439,17 @@
       "enabled": "Autosave enabled",
       "disabled": "Autosave disabled",
       "saving": "Saving...",
-      "saved": "Saved at {time}"
+      "saved": "Saved at {time}",
+      "unsaved": "Unsaved"
     },
     "ai": {
       "active": "AI ready",
       "inactive": "AI not configured",
       "processing": "AI processing..."
+    },
+    "pomodoro": {
+      "breakTime": "Break time!",
+      "workTime": "Time to write!"
     }
   },
   "timeline": {
@@ -969,8 +1460,15 @@
     "empty": "No events in timeline",
     "emptyHint": "Add events to organize the chronology",
     "viewList": "List",
+    "viewVerticalList": "Vertical List",
     "viewVisual": "Visual",
     "viewEra": "Eras",
+    "viewParallel": "Parallel Lines (Swimlanes)",
+    "noAssignedCharacters": "Events have no assigned characters.",
+    "eventDefaultName": "Event",
+    "crucial": "CRUCIAL",
+    "emptyStateTitle": "No events recorded in the chronology.",
+    "createFirstEvent": "Create the first event",
     "filterAll": "All events",
     "filterAbsolute": "Only with dates",
     "filterRelative": "Only relative",
@@ -989,6 +1487,7 @@
       "high": "High"
     },
     "form": {
+      "titlePlaceholder": "E.g: The Battle of Shadows...",
       "dateMode": "Date Mode",
       "dateModes": {
         "absolute": "Absolute Date",
@@ -1152,5 +1651,39 @@
     "confirm": {
       "deleteEntry": "Are you sure you want to delete this entry?"
     }
+  },
+  "loreModal": {
+    "new": "New Lore Entry",
+    "edit": "Edit Lore Entry",
+    "title": "Title",
+    "category": "Category",
+    "summary": "Short Summary",
+    "content": "Detailed Content",
+    "placeholders": {
+      "title": "Entry name...",
+      "summary": "A brief description for quick reference...",
+      "content": "Write all detailed information here..."
+    },
+    "deleteConfirm": "Are you sure you want to delete this lore entry?"
+  },
+  "characterCard": {
+    "back": "Back to list",
+    "edit": "Edit Data",
+    "save": "Save Changes",
+    "physical": "Physical Description",
+    "personality": "Personality",
+    "placeholders": {
+      "physical": "Describe how they look...",
+      "personality": "Describe how they behave..."
+    },
+    "noStats": "No stats defined"
+  },
+  "relationsDiagram": {
+    "timeline": "Relationship Timeline",
+    "empty": "No relationships",
+    "noDesc": "No description",
+    "legend": "Legend",
+    "reorder": "RE-ORDER",
+    "dragConnect": "DRAG TO CONNECT"
   }
 }

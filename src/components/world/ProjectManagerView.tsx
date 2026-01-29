@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Plus,
   Book,
@@ -12,22 +12,36 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useUIStore } from '@/stores/useUIStore';
-import { db } from '@/lib/db';
+import { dbGetAllProjects, dbDeleteProject } from '@/lib/tauri-bridge';
+import { confirm } from '@/stores/useConfirmStore';
 import type { Project, ProjectType } from '@/types/domain';
 
 import { ProjectConfigContent } from './ProjectConfigContent';
 
 export const ProjectManagerView = () => {
-  const { setActiveProject } = useProjectStore();
-  const { setActiveView, openModal } = useUIStore();
-  const projects = useLiveQuery(() => db.projects.toArray());
+  const { loadProject } = useProjectStore();
+  const { setActiveView, openModal, activeModal } = useUIStore();
+  const [projects, setProjects] = useState<any[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [isSettingsMode, setIsSettingsMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  useTranslation();
+  const { t } = useTranslation();
+
+  const refreshProjects = useCallback(async () => {
+    try {
+      const allProjects = await dbGetAllProjects();
+      setProjects(allProjects);
+    } catch (err) {
+      console.error('Failed to load projects from SQLite:', err);
+    }
+  }, []);
+
+  // Load projects on mount and when modal closes (project may have been created)
+  useEffect(() => {
+    refreshProjects();
+  }, [refreshProjects, activeModal]);
 
   const selectedProject = projects?.find(p => p.id === selectedProjectId);
 
@@ -35,8 +49,8 @@ export const ProjectManagerView = () => {
     openModal('newProject');
   };
 
-  const handleOpenProject = async (project: Project) => {
-    setActiveProject(project);
+  const handleOpenProject = async (project: any) => {
+    await loadProject(project.id);
     setActiveView('lore'); // Switch to main view
   };
 
@@ -48,9 +62,10 @@ export const ProjectManagerView = () => {
 
   const handleDeleteProject = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    if (confirm('Are you sure you want to delete this project?')) {
-      await db.projects.delete(id);
+    if (await confirm(t('project.confirmDelete', { name: '' }), { variant: 'destructive', confirmText: t('common.delete') })) {
+      await dbDeleteProject(id);
       if (selectedProjectId === id) setSelectedProjectId(null);
+      await refreshProjects();
     }
   };
 
@@ -78,11 +93,11 @@ export const ProjectManagerView = () => {
       <div className="w-1/3 min-w-[300px] border-r border-border flex flex-col">
         <div className="p-4 border-b border-border space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold tracking-tight">Projects</h2>
+            <h2 className="text-xl font-bold tracking-tight">{t('projectManager.title')}</h2>
             <button 
               onClick={handleCreateProject}
               className="p-2 bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity"
-              title="Create New Project"
+              title={t('projectManager.create')}
             >
               <Plus className="w-5 h-5" />
             </button>
@@ -91,7 +106,7 @@ export const ProjectManagerView = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input 
               type="text"
-              placeholder="Search projects..."
+              placeholder={t('projectManager.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 bg-secondary/50 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-primary"
@@ -120,16 +135,16 @@ export const ProjectManagerView = () => {
                 </div>
               </div>
               <div className="flex items-center text-xs text-muted-foreground gap-3">
-                <span className="truncate max-w-[100px]">{project.author || 'Unknown Author'}</span>
+                <span className="truncate max-w-[100px]">{project.author || t('project.untitled')}</span>
                 <span>•</span>
-                <span>{project.chapters?.length || 0} chapters</span>
+                <span>{project.chapters?.length || 0} {t('common.list')}</span>
               </div>
             </div>
           ))}
           
           {filteredProjects?.length === 0 && (
             <div className="text-center py-8 text-muted-foreground text-sm">
-              No projects found.
+              {t('projectManager.noProjects')}
             </div>
           )}
         </div>
@@ -148,9 +163,9 @@ export const ProjectManagerView = () => {
               <div className="flex-1 flex flex-col h-full bg-background/50">
                 <div className="p-4 border-b border-border bg-card/30 flex items-center gap-4">
                   <Button variant="ghost" size="sm" onClick={() => setIsSettingsMode(false)} className="rounded-lg h-8 px-2 gap-1 text-xs">
-                    <ArrowLeft size={14} /> Volver a Stats
+                    <ArrowLeft size={14} /> {t('projectManager.backToStats')}
                   </Button>
-                  <h2 className="font-black text-xs uppercase tracking-widest text-muted-foreground">Configuración de {selectedProject.title}</h2>
+                  <h2 className="font-black text-xs uppercase tracking-widest text-muted-foreground">{t('projectManager.settingsTitle', { title: selectedProject.title })}</h2>
                 </div>
                 <ProjectConfigContent project={selectedProject} onSave={() => {}} />
               </div>
@@ -163,18 +178,18 @@ export const ProjectManagerView = () => {
                       <div className="flex items-center gap-4 text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <User className="w-4 h-4" />
-                          <span>{selectedProject.author || 'No author specified'}</span>
+                          <span>{selectedProject.author || t('projectManager.noAuthor')}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           {getProjectTypeIcon(selectedProject.projectType)}
-                          <span className="capitalize">{selectedProject.projectType || 'Novel'}</span>
+                          <span className="capitalize">{selectedProject.projectType || t('projectManager.novel')}</span>
                         </div>
                       </div>
                     </div>
                     <button
                       onClick={(e) => handleEditProject(e, selectedProject)}
                       className="p-2 hover:bg-accent rounded-md transition-colors text-muted-foreground hover:text-foreground border border-transparent hover:border-border"
-                      title="Project Settings"
+                      title={t('project.projectSettings')}
                     >
                       <Settings2 className="w-6 h-6" />
                     </button>
@@ -182,19 +197,19 @@ export const ProjectManagerView = () => {
 
                   <div className="grid grid-cols-2 gap-4 mb-8">
                     <div className="bg-card p-4 rounded-lg border border-border">
-                      <div className="text-sm text-muted-foreground mb-1">Chapters</div>
+                      <div className="text-sm text-muted-foreground mb-1">{t('dashboard.stats.chapters')}</div>
                       <div className="text-2xl font-bold">{selectedProject.chapters?.length || 0}</div>
                     </div>
                     <div className="bg-card p-4 rounded-lg border border-border">
-                      <div className="text-sm text-muted-foreground mb-1">Characters</div>
+                      <div className="text-sm text-muted-foreground mb-1">{t('dashboard.stats.characters')}</div>
                       <div className="text-2xl font-bold">{selectedProject.characters?.length || 0}</div>
                     </div>
                     <div className="bg-card p-4 rounded-lg border border-border">
-                      <div className="text-sm text-muted-foreground mb-1">Locations</div>
+                      <div className="text-sm text-muted-foreground mb-1">{t('sidebar.locations')}</div>
                       <div className="text-2xl font-bold">{selectedProject.locations?.length || 0}</div>
                     </div>
                     <div className="bg-card p-4 rounded-lg border border-border">
-                      <div className="text-sm text-muted-foreground mb-1">Words</div>
+                      <div className="text-sm text-muted-foreground mb-1">{t('dashboard.stats.words')}</div>
                       <div className="text-2xl font-bold">
                         {selectedProject.chapters?.reduce((acc, c) => acc + (c.wordCount || 0), 0) || 0}
                       </div>
@@ -203,7 +218,7 @@ export const ProjectManagerView = () => {
 
                   {selectedProject.description && (
                     <div className="mb-8">
-                      <h3 className="text-lg font-semibold mb-2">Description</h3>
+                      <h3 className="text-lg font-semibold mb-2">{t('projectManager.description')}</h3>
                       <p className="text-muted-foreground leading-relaxed">
                         {selectedProject.description}
                       </p>
@@ -215,7 +230,7 @@ export const ProjectManagerView = () => {
                       onClick={() => handleOpenProject(selectedProject)}
                       className="flex-1 bg-primary text-primary-foreground py-3 rounded-md font-medium hover:opacity-90 transition-opacity shadow-lg shadow-primary/20"
                     >
-                      Open Project
+                      {t('projectManager.open')}
                     </button>
                     <button
                       onClick={(e) => handleDeleteProject(e, selectedProject.id)}
@@ -231,7 +246,7 @@ export const ProjectManagerView = () => {
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground">
             <Book className="w-16 h-16 mb-4 opacity-20" />
-            <p className="text-lg">Select a project to view details</p>
+            <p className="text-lg">{t('projectManager.selectHint')}</p>
           </div>
         )}
       </div>

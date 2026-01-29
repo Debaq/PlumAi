@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useAgenticChat } from '@/hooks/useAgenticChat';
+import { confirm } from '@/stores/useConfirmStore';
 import { Send, X, Sparkles, Loader2, Settings, Trash2 } from 'lucide-react';
 import { useUIStore } from '@/stores/useUIStore';
 import { useProjectStore } from '@/stores/useProjectStore';
@@ -64,7 +65,7 @@ export function AIChat() {
         </div>
         <div className="flex items-center gap-1 shrink-0">
             <button 
-                onClick={() => { if(confirm('Clear history?')) clearMessages(); }} 
+                onClick={async () => { if(await confirm('¿Limpiar historial?', { confirmText: 'Limpiar' })) clearMessages(); }} 
                 className="p-1.5 hover:bg-destructive/10 hover:text-destructive rounded-md transition-colors"
                 title="Clear History"
             >

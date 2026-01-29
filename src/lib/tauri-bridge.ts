@@ -27,8 +27,13 @@ export interface DbProject {
   genre?: string;
   isRpgModeEnabled?: boolean;
   rpgSystem?: string;
+  activeIdentityPackage?: string;
+  originPackageId?: string;
+  projectType?: string;
   banners?: Record<string, string>;
   apiKeys?: unknown;
+  creatures?: unknown;
+  worldRules?: unknown;
 }
 
 export interface DbChapter {
@@ -614,4 +619,65 @@ export async function fsProjectFromJson(bytes: Uint8Array): Promise<ProjectData>
     throw new Error('JSON parsing requires Tauri');
   }
   return invoke<ProjectData>('fs_project_from_json', { bytes: Array.from(bytes) });
+}
+
+// ============================================================================
+// Package Store Commands
+// ============================================================================
+
+import type {
+  RegistrySource,
+  CatalogPackage,
+  InstalledPackageInfo,
+  PackageUpdateInfo,
+} from '../types/packages';
+
+export async function pkgGetRegistries(): Promise<RegistrySource[]> {
+  if (!isTauri()) return [];
+  return invoke<RegistrySource[]>('pkg_get_registries');
+}
+
+export async function pkgAddRegistry(url: string, name: string): Promise<RegistrySource> {
+  if (!isTauri()) throw new Error('Requires Tauri');
+  return invoke<RegistrySource>('pkg_add_registry', { url, name });
+}
+
+export async function pkgRemoveRegistry(registryId: string): Promise<void> {
+  if (!isTauri()) throw new Error('Requires Tauri');
+  return invoke('pkg_remove_registry', { registryId });
+}
+
+export async function pkgToggleRegistry(registryId: string, enabled: boolean): Promise<void> {
+  if (!isTauri()) throw new Error('Requires Tauri');
+  return invoke('pkg_toggle_registry', { registryId, enabled });
+}
+
+export async function pkgFetchCatalog(): Promise<CatalogPackage[]> {
+  if (!isTauri()) return [];
+  return invoke<CatalogPackage[]>('pkg_fetch_catalog');
+}
+
+export async function pkgInstallPackage(registryId: string, packageId: string): Promise<InstalledPackageInfo> {
+  if (!isTauri()) throw new Error('Requires Tauri');
+  return invoke<InstalledPackageInfo>('pkg_install_package', { registryId, packageId });
+}
+
+export async function pkgUpdatePackage(registryId: string, packageId: string): Promise<InstalledPackageInfo> {
+  if (!isTauri()) throw new Error('Requires Tauri');
+  return invoke<InstalledPackageInfo>('pkg_update_package', { registryId, packageId });
+}
+
+export async function pkgUninstallPackage(packageId: string): Promise<void> {
+  if (!isTauri()) throw new Error('Requires Tauri');
+  return invoke('pkg_uninstall_package', { packageId });
+}
+
+export async function pkgGetInstalled(): Promise<InstalledPackageInfo[]> {
+  if (!isTauri()) return [];
+  return invoke<InstalledPackageInfo[]>('pkg_get_installed');
+}
+
+export async function pkgCheckUpdates(): Promise<PackageUpdateInfo[]> {
+  if (!isTauri()) return [];
+  return invoke<PackageUpdateInfo[]>('pkg_check_updates');
 }

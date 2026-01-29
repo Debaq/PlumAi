@@ -176,23 +176,19 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
             genre: dbProject.genre || '',
             isRpgModeEnabled: dbProject.isRpgModeEnabled || false,
             rpgSystem: dbProject.rpgSystem || 'generic',
-            activeIdentityPackage: undefined, // TODO: Add to DB Schema if missing
-            originPackageId: undefined,      // TODO: Add to DB Schema if missing
+            activeIdentityPackage: dbProject.activeIdentityPackage || undefined,
+            originPackageId: dbProject.originPackageId || undefined,
             banners: dbProject.banners as any || {},
             chapters: fullChapters as any[],
             characters: fullCharacters as any[],
             locations: locations as any[],
             loreItems: loreItems as any[],
             timelineEvents: timelineEvents as any[],
-            scenes: [], // Scenes are inside chapters usually, but domain type might have flat list too?
-                        // Domain type has scenes array in Project interface? 
-                        // Let's check domain type definition if possible.
-                        // Assuming scenes are in chapters for structure, but maybe flat list in Project for search.
-                        // Let's flatten them for the Project object.
-            creatures: [], // Not in DB yet
-            worldRules: [], // Not in DB yet
+            scenes: [],
+            creatures: Array.isArray(dbProject.creatures) ? dbProject.creatures : [],
+            worldRules: Array.isArray(dbProject.worldRules) ? dbProject.worldRules : [],
             apiKeys: (dbProject.apiKeys as any) || initialApiKeys,
-            projectType: 'novel' // Default or from DB
+            projectType: (dbProject.projectType as ProjectType) || 'novel'
           };
           
           // Flatten scenes for the project object
@@ -211,13 +207,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
         const updatedProject = { ...activeProject, ...updates };
 
-        await dbUpdateProject({
-            ...updatedProject,
-            apiKeys: JSON.stringify(updatedProject.apiKeys),
-            banners: JSON.stringify(updatedProject.banners || {}),
-            creatures: JSON.stringify(updatedProject.creatures || []),
-            worldRules: JSON.stringify(updatedProject.worldRules || [])
-        } as any);
+        await dbUpdateProject(updatedProject as any);
 
         set({ activeProject: updatedProject });
       },
@@ -243,53 +233,37 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
           apiKeys: initialApiKeys
         };
         
-        // Save to SQLite via bridge
-        // We need to map Domain Project to DbProject.
-        // DbProject definition: id, title, author, description, genre, isRpgModeEnabled, rpgSystem, banners, apiKeys
-        // Note: DbProject doesn't have lists of children. They are separate tables.
-        // Banners and API Keys need JSON stringification if the bridge expects raw types, 
-        // but looking at tauri-bridge.ts, it expects objects for banners/apiKeys? 
-        // "apiKeys?: unknown;" in DbProject interface in bridge.
-        // "banners?: Record<string, string>;"
-        // Let's pass it as is, assuming bridge handles serialization or Tauri does.
-        // Actually, tauri-bridge.ts signatures:
-        // export interface DbProject { ... apiKeys?: unknown; ... }
-        // The Rust command `db_create_project` takes `database::Project`.
-        // `database::Project` in `models.rs` has `api_keys: Option<String>`.
-        // Wait, the Rust side expects `database::Project` struct.
-        // If I pass a JS object, Tauri will try to deserialize it into `database::Project`.
-        // `database::Project` struct fields must match the JS object fields.
-        // `models.rs`: api_keys is Option<String>.
-        // So I should probably stringify apiKeys before sending if the Rust side expects String.
-        // Let's check `src-tauri/src/database/models.rs`.
-        
-        // Assume for now that tauri-bridge interface `DbProject` should match what we pass.
-        // If `apiKeys` is `unknown` in TS, and `Option<String>` in Rust, Tauri won't automatically JSON stringify `unknown` to `String`.
-        // It would try to map object to string and fail.
-        // I should probably update `createNewProject` to handle this mapping.
-        
-        // Actually, let's look at `operations.rs` again.
-        // pub struct Project { ... pub banners: Option<String>, pub api_keys: Option<String> ... }
-        // Yes, they are Strings (JSON).
-        // So I must stringify them in JS before sending.
-        
+        // Rust model uses Option<serde_json::Value> for banners/apiKeys/creatures/worldRules.
+        // Send objects directly — Tauri serializes them as JSON values for serde.
         const projectPayload = {
             id: newProject.id,
             title: newProject.title,
-            author: newProject.author,
-            description: newProject.description,
-            genre: newProject.genre,
+            author: newProject.author || null,
+            description: newProject.description || null,
+            genre: newProject.genre || null,
             isRpgModeEnabled: newProject.isRpgModeEnabled,
-            rpgSystem: newProject.rpgSystem,
-            activeIdentityPackage: newProject.activeIdentityPackage,
-            originPackageId: newProject.originPackageId,
-            banners: JSON.stringify(newProject.banners),
-            apiKeys: JSON.stringify(newProject.apiKeys)
+            rpgSystem: newProject.rpgSystem || null,
+            activeIdentityPackage: newProject.activeIdentityPackage || null,
+            originPackageId: newProject.originPackageId || null,
+            projectType: newProject.projectType || 'novel',
+            banners: newProject.banners || null,
+            apiKeys: newProject.apiKeys || null,
+            creatures: newProject.creatures || null,
+            worldRules: newProject.worldRules || null,
         };
 
-        await dbCreateProject(projectPayload as any);
-        
+        console.log('[createNewProject] payload:', JSON.stringify(projectPayload, null, 2));
+
+        try {
+          await dbCreateProject(projectPayload as any);
+          console.log('[createNewProject] dbCreateProject OK');
+        } catch (dbErr) {
+          console.error('[createNewProject] dbCreateProject FAILED:', dbErr);
+          throw dbErr;
+        }
+
         set({ activeProject: newProject });
+        console.log('[createNewProject] activeProject set OK');
       },
 
       addChapter: async (chapter) => {
@@ -374,16 +348,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
           attributeHistory: []
         } as Character;
         
-        // Bridge call - Stringify JSON fields
-        const payload = {
-            ...newCharacter,
-            attributes: JSON.stringify(newCharacter.attributes),
-            attributeHistory: JSON.stringify(newCharacter.attributeHistory),
-            vitalStatusHistory: JSON.stringify(newCharacter.vitalStatusHistory),
-            visualPosition: newCharacter.visualPosition ? JSON.stringify(newCharacter.visualPosition) : null
-        };
-
-        await dbCreateCharacter(payload as any);
+        await dbCreateCharacter(newCharacter as any);
 
         set((state) => ({
           activeProject: state.activeProject ? {
@@ -409,21 +374,13 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
              }];
         }
 
-        const updatedCharacter = { 
-            ...current, 
-            ...updates, 
-            attributeHistory: newAttributeHistory 
+        const updatedCharacter = {
+            ...current,
+            ...updates,
+            attributeHistory: newAttributeHistory
         };
 
-        const payload = {
-            ...updatedCharacter,
-            attributes: JSON.stringify(updatedCharacter.attributes),
-            attributeHistory: JSON.stringify(updatedCharacter.attributeHistory),
-            vitalStatusHistory: JSON.stringify(updatedCharacter.vitalStatusHistory),
-            visualPosition: updatedCharacter.visualPosition ? JSON.stringify(updatedCharacter.visualPosition) : null
-        };
-
-        await dbUpdateCharacter(payload as any);
+        await dbUpdateCharacter(updatedCharacter as any);
 
         set((state) => ({
           activeProject: state.activeProject ? {
@@ -466,16 +423,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                   currentVitalStatus: status,
                   vitalStatusHistory: [...current.vitalStatusHistory, newEntry]
               };
-              
-              const payload = {
-                ...updatedCharacter,
-                attributes: JSON.stringify(updatedCharacter.attributes),
-                attributeHistory: JSON.stringify(updatedCharacter.attributeHistory),
-                vitalStatusHistory: JSON.stringify(updatedCharacter.vitalStatusHistory),
-                visualPosition: updatedCharacter.visualPosition ? JSON.stringify(updatedCharacter.visualPosition) : null
-              };
 
-              await dbUpdateCharacter(payload as any);
+              await dbUpdateCharacter(updatedCharacter as any);
 
               set((state) => ({
                 activeProject: state.activeProject ? {
@@ -495,16 +444,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
               if (!current) return;
               
               const updatedCharacter = { ...current, visualPosition: position };
-              
-              const payload = {
-                ...updatedCharacter,
-                attributes: JSON.stringify(updatedCharacter.attributes),
-                attributeHistory: JSON.stringify(updatedCharacter.attributeHistory),
-                vitalStatusHistory: JSON.stringify(updatedCharacter.vitalStatusHistory),
-                visualPosition: JSON.stringify(updatedCharacter.visualPosition)
-              };
 
-              await dbUpdateCharacter(payload as any);
+              await dbUpdateCharacter(updatedCharacter as any);
 
               set((state) => ({
                 activeProject: state.activeProject ? {
@@ -529,12 +470,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                     history: []
                 };
 
-                const payload = {
-                    ...newRel,
-                    history: JSON.stringify(newRel.history)
-                };
-
-                await dbCreateRelationship(ownerId, payload as any);
+                await dbCreateRelationship(ownerId, newRel as any);
 
                 set((state) => ({
                     activeProject: state.activeProject ? {
@@ -561,13 +497,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                  
                  const fullEntry = { ...entry, id: crypto.randomUUID(), timestamp: new Date().toISOString() };
                  const updatedRel = { ...rel, history: [...rel.history, fullEntry] };
-                 
-                 const payload = {
-                     ...updatedRel,
-                     history: JSON.stringify(updatedRel.history)
-                 };
-                 
-                 await dbUpdateRelationship(charId, payload as any);
+
+                 await dbUpdateRelationship(charId, updatedRel as any);
                  
                  set((state) => ({
                     activeProject: state.activeProject ? {
@@ -619,16 +550,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                      plans: [],
                      connections: []
                  } as Location;
-                 
-                 const payload = {
-                     ...newLocation,
-                     gallery: JSON.stringify(newLocation.gallery),
-                     plans: JSON.stringify(newLocation.plans),
-                     connections: JSON.stringify(newLocation.connections),
-                     visualPosition: newLocation.visualPosition ? JSON.stringify(newLocation.visualPosition) : null
-                 };
-                 
-                 await dbCreateLocation(payload as any);
+
+                 await dbCreateLocation(newLocation as any);
                  
                  set((state) => ({
                     activeProject: state.activeProject ? {
@@ -646,17 +569,9 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                  if (!current) return;
                  
                  const updated = { ...current, ...updates };
-                 
-                 const payload = {
-                     ...updated,
-                     gallery: JSON.stringify(updated.gallery),
-                     plans: JSON.stringify(updated.plans),
-                     connections: JSON.stringify(updated.connections),
-                     visualPosition: updated.visualPosition ? JSON.stringify(updated.visualPosition) : null
-                 };
-                 
-                 await dbUpdateLocation(payload as any);
-                 
+
+                 await dbUpdateLocation(updated as any);
+
                  set((state) => ({
                     activeProject: state.activeProject ? {
                         ...state.activeProject,
@@ -664,7 +579,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                     } : null
                 }));
             },
-            
+
             deleteLocation: async (id) => {
                  const { activeProject } = get();
                  if (!activeProject) return;
@@ -693,23 +608,15 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                  
                  const newImage = { ...image, id: crypto.randomUUID() };
                  const updates: any = {};
-                 
+
                  // Safe array access
                  const currentList = type === 'gallery' ? (loc.gallery || []) : (loc.plans || []);
                  if (type === 'gallery') updates.gallery = [...currentList, newImage];
                  else updates.plans = [...currentList, newImage];
-                 
+
                  const updated = { ...loc, ...updates };
-                 
-                 const payload = {
-                     ...updated,
-                     gallery: JSON.stringify(updated.gallery || []),
-                     plans: JSON.stringify(updated.plans || []),
-                     connections: JSON.stringify(updated.connections || []),
-                     visualPosition: updated.visualPosition ? JSON.stringify(updated.visualPosition) : null
-                 };
-                 
-                 await dbUpdateLocation(payload as any);
+
+                 await dbUpdateLocation(updated as any);
                  
                  set((state) => ({
                     activeProject: state.activeProject ? {
@@ -731,17 +638,9 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                  else updates.plans = (loc.plans || []).filter(i => i.id !== imageId);
 
                  const updated = { ...loc, ...updates };
-                 
-                 const payload = {
-                     ...updated,
-                     gallery: JSON.stringify(updated.gallery || []),
-                     plans: JSON.stringify(updated.plans || []),
-                     connections: JSON.stringify(updated.connections || []),
-                     visualPosition: updated.visualPosition ? JSON.stringify(updated.visualPosition) : null
-                 };
-                 
-                 await dbUpdateLocation(payload as any);
-                 
+
+                 await dbUpdateLocation(updated as any);
+
                  set((state) => ({
                     activeProject: state.activeProject ? {
                         ...state.activeProject,
@@ -749,7 +648,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                     } : null
                 }));
             },
-            
+
             addLocationConnection: async (locationId, connection) => {
                  const { activeProject } = get();
                  if (!activeProject) return;
@@ -759,16 +658,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                  
                  const newConn = { ...connection, id: crypto.randomUUID() };
                  const updated = { ...loc, connections: [...(loc.connections || []), newConn] };
-                 
-                 const payload = {
-                     ...updated,
-                     gallery: JSON.stringify(updated.gallery || []),
-                     plans: JSON.stringify(updated.plans || []),
-                     connections: JSON.stringify(updated.connections || []),
-                     visualPosition: updated.visualPosition ? JSON.stringify(updated.visualPosition) : null
-                 };
-                 
-                 await dbUpdateLocation(payload as any);
+
+                 await dbUpdateLocation(updated as any);
                  
                  set((state) => ({
                     activeProject: state.activeProject ? {
@@ -786,16 +677,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                  if (!loc) return;
                  
                  const updated = { ...loc, connections: (loc.connections || []).filter(c => c.id !== connectionId) };
-                 
-                 const payload = {
-                     ...updated,
-                     gallery: JSON.stringify(updated.gallery || []),
-                     plans: JSON.stringify(updated.plans || []),
-                     connections: JSON.stringify(updated.connections || []),
-                     visualPosition: updated.visualPosition ? JSON.stringify(updated.visualPosition) : null
-                 };
-                 
-                 await dbUpdateLocation(payload as any);
+
+                 await dbUpdateLocation(updated as any);
                  
                  set((state) => ({
                     activeProject: state.activeProject ? {
@@ -814,13 +697,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                     projectId: activeProject.id,
                     relatedEntityIds: []
                 } as LoreItem;
-                
-                const payload = {
-                    ...newLoreItem,
-                    relatedEntityIds: JSON.stringify(newLoreItem.relatedEntityIds || [])
-                };
-                
-                await dbCreateLoreItem(payload as any);
+
+                await dbCreateLoreItem(newLoreItem as any);
                 
                 set((state) => ({
                     activeProject: state.activeProject ? {
@@ -838,13 +716,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                 if (!current) return;
                 
                 const updated = { ...current, ...updates };
-                
-                const payload = {
-                    ...updated,
-                    relatedEntityIds: JSON.stringify(updated.relatedEntityIds || [])
-                };
-                
-                await dbUpdateLoreItem(payload as any);
+
+                await dbUpdateLoreItem(updated as any);
                 
                 set((state) => ({
                     activeProject: state.activeProject ? {
@@ -881,14 +754,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                     participants: event.participants || [],
                     tags: event.tags || []
                 } as TimelineEvent;
-                
-                const payload = {
-                    ...newEvent,
-                    participants: JSON.stringify(newEvent.participants),
-                    tags: JSON.stringify(newEvent.tags)
-                };
-                
-                await dbCreateTimelineEvent(payload as any);
+
+                await dbCreateTimelineEvent(newEvent as any);
                 
                 set((state) => ({
                     activeProject: state.activeProject ? {
@@ -906,14 +773,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                 if (!current) return;
                 
                 const updated = { ...current, ...updates };
-                
-                const payload = {
-                    ...updated,
-                    participants: JSON.stringify(updated.participants),
-                    tags: JSON.stringify(updated.tags)
-                };
-                
-                await dbUpdateTimelineEvent(payload as any);
+
+                await dbUpdateTimelineEvent(updated as any);
                 
                 set((state) => ({
                     activeProject: state.activeProject ? {
@@ -948,13 +809,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                     id: crypto.randomUUID(),
                     characterIds: scene.characterIds || []
                 } as Scene;
-                
-                const payload = {
-                    ...newScene,
-                    characterIds: JSON.stringify(newScene.characterIds)
-                };
-                
-                await dbCreateScene(payload as any);
+
+                await dbCreateScene(newScene as any);
                 
                 set((state) => ({
                     activeProject: state.activeProject ? {
@@ -972,13 +828,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
                 if (!current) return;
                 
                 const updated = { ...current, ...updates };
-                
-                const payload = {
-                    ...updated,
-                    characterIds: JSON.stringify(updated.characterIds)
-                };
-                
-                await dbUpdateScene(payload as any);
+
+                await dbUpdateScene(updated as any);
                 
                 set((state) => ({
                     activeProject: state.activeProject ? {
@@ -1024,13 +875,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     const updatedProject = { ...activeProject, apiKeys };
     
     // Persist to DB
-    await dbUpdateProject({
-        ...updatedProject,
-        apiKeys: JSON.stringify(updatedProject.apiKeys),
-        banners: JSON.stringify(updatedProject.banners || {}),
-        creatures: JSON.stringify(updatedProject.creatures || []),
-        worldRules: JSON.stringify(updatedProject.worldRules || [])
-    } as any);
+    await dbUpdateProject(updatedProject as any);
     
     set({ activeProject: updatedProject });
   },
@@ -1047,13 +892,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     
     const updatedProject = { ...activeProject, apiKeys };
     
-    await dbUpdateProject({
-        ...updatedProject,
-        apiKeys: JSON.stringify(updatedProject.apiKeys),
-        banners: JSON.stringify(updatedProject.banners || {}),
-        creatures: JSON.stringify(updatedProject.creatures || []),
-        worldRules: JSON.stringify(updatedProject.worldRules || [])
-    } as any);
+    await dbUpdateProject(updatedProject as any);
     
     set({ activeProject: updatedProject });
   },
@@ -1073,13 +912,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     
     const updatedProject = { ...activeProject, apiKeys };
     
-    await dbUpdateProject({
-        ...updatedProject,
-        apiKeys: JSON.stringify(updatedProject.apiKeys),
-        banners: JSON.stringify(updatedProject.banners || {}),
-        creatures: JSON.stringify(updatedProject.creatures || []),
-        worldRules: JSON.stringify(updatedProject.worldRules || [])
-    } as any);
+    await dbUpdateProject(updatedProject as any);
     
     set({ activeProject: updatedProject });
   },
@@ -1097,13 +930,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     
     const updatedProject = { ...activeProject, apiKeys };
     
-    await dbUpdateProject({
-        ...updatedProject,
-        apiKeys: JSON.stringify(updatedProject.apiKeys),
-        banners: JSON.stringify(updatedProject.banners || {}),
-        creatures: JSON.stringify(updatedProject.creatures || []),
-        worldRules: JSON.stringify(updatedProject.worldRules || [])
-    } as any);
+    await dbUpdateProject(updatedProject as any);
     
     set({ activeProject: updatedProject });
   },
@@ -1117,13 +944,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       isRpgModeEnabled: enabled,
     };
     
-    await dbUpdateProject({
-        ...updatedProject,
-        apiKeys: JSON.stringify(updatedProject.apiKeys),
-        banners: JSON.stringify(updatedProject.banners || {}),
-        creatures: JSON.stringify(updatedProject.creatures || []),
-        worldRules: JSON.stringify(updatedProject.worldRules || [])
-    } as any);
+    await dbUpdateProject(updatedProject as any);
     
     set({ activeProject: updatedProject });
   },
@@ -1137,13 +958,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       rpgSystem: system,
     };
     
-    await dbUpdateProject({
-        ...updatedProject,
-        apiKeys: JSON.stringify(updatedProject.apiKeys),
-        banners: JSON.stringify(updatedProject.banners || {}),
-        creatures: JSON.stringify(updatedProject.creatures || []),
-        worldRules: JSON.stringify(updatedProject.worldRules || [])
-    } as any);
+    await dbUpdateProject(updatedProject as any);
     
     set({ activeProject: updatedProject });
   },
@@ -1160,13 +975,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       }
     };
     
-    await dbUpdateProject({
-        ...updatedProject,
-        apiKeys: JSON.stringify(updatedProject.apiKeys),
-        banners: JSON.stringify(updatedProject.banners || {}),
-        creatures: JSON.stringify(updatedProject.creatures || []),
-        worldRules: JSON.stringify(updatedProject.worldRules || [])
-    } as any);
+    await dbUpdateProject(updatedProject as any);
     
     set({ activeProject: updatedProject });
   },
@@ -1181,13 +990,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       isRpgModeEnabled: type === 'rpg' || type === 'worldbuilding' || activeProject.isRpgModeEnabled,
     };
     
-    await dbUpdateProject({
-        ...updatedProject,
-        apiKeys: JSON.stringify(updatedProject.apiKeys),
-        banners: JSON.stringify(updatedProject.banners || {}),
-        creatures: JSON.stringify(updatedProject.creatures || []),
-        worldRules: JSON.stringify(updatedProject.worldRules || [])
-    } as any);
+    await dbUpdateProject(updatedProject as any);
     
     set({ activeProject: updatedProject });
   },
@@ -1208,13 +1011,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       creatures: [...(activeProject.creatures || []), newCreature],
     };
     
-    await dbUpdateProject({
-        ...updatedProject,
-        apiKeys: JSON.stringify(updatedProject.apiKeys),
-        banners: JSON.stringify(updatedProject.banners || {}),
-        creatures: JSON.stringify(updatedProject.creatures || []),
-        worldRules: JSON.stringify(updatedProject.worldRules || [])
-    } as any);
+    await dbUpdateProject(updatedProject as any);
     
     set({ activeProject: updatedProject });
   },
@@ -1230,13 +1027,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       ),
     };
     
-    await dbUpdateProject({
-        ...updatedProject,
-        apiKeys: JSON.stringify(updatedProject.apiKeys),
-        banners: JSON.stringify(updatedProject.banners || {}),
-        creatures: JSON.stringify(updatedProject.creatures || []),
-        worldRules: JSON.stringify(updatedProject.worldRules || [])
-    } as any);
+    await dbUpdateProject(updatedProject as any);
     
     set({ activeProject: updatedProject });
   },
@@ -1250,13 +1041,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       creatures: (activeProject.creatures || []).filter((c) => c.id !== id),
     };
     
-    await dbUpdateProject({
-        ...updatedProject,
-        apiKeys: JSON.stringify(updatedProject.apiKeys),
-        banners: JSON.stringify(updatedProject.banners || {}),
-        creatures: JSON.stringify(updatedProject.creatures || []),
-        worldRules: JSON.stringify(updatedProject.worldRules || [])
-    } as any);
+    await dbUpdateProject(updatedProject as any);
     
     set({ activeProject: updatedProject });
   },
@@ -1280,13 +1065,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       }),
     };
     
-    await dbUpdateProject({
-        ...updatedProject,
-        apiKeys: JSON.stringify(updatedProject.apiKeys),
-        banners: JSON.stringify(updatedProject.banners || {}),
-        creatures: JSON.stringify(updatedProject.creatures || []),
-        worldRules: JSON.stringify(updatedProject.worldRules || [])
-    } as any);
+    await dbUpdateProject(updatedProject as any);
     
     set({ activeProject: updatedProject });
   },
@@ -1306,13 +1085,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       }),
     };
     
-    await dbUpdateProject({
-        ...updatedProject,
-        apiKeys: JSON.stringify(updatedProject.apiKeys),
-        banners: JSON.stringify(updatedProject.banners || {}),
-        creatures: JSON.stringify(updatedProject.creatures || []),
-        worldRules: JSON.stringify(updatedProject.worldRules || [])
-    } as any);
+    await dbUpdateProject(updatedProject as any);
     
     set({ activeProject: updatedProject });
   },
@@ -1333,13 +1106,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       worldRules: [...(activeProject.worldRules || []), newRule],
     };
     
-    await dbUpdateProject({
-        ...updatedProject,
-        apiKeys: JSON.stringify(updatedProject.apiKeys),
-        banners: JSON.stringify(updatedProject.banners || {}),
-        creatures: JSON.stringify(updatedProject.creatures || []),
-        worldRules: JSON.stringify(updatedProject.worldRules || [])
-    } as any);
+    await dbUpdateProject(updatedProject as any);
     
     set({ activeProject: updatedProject });
   },
@@ -1355,13 +1122,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       ),
     };
     
-    await dbUpdateProject({
-        ...updatedProject,
-        apiKeys: JSON.stringify(updatedProject.apiKeys),
-        banners: JSON.stringify(updatedProject.banners || {}),
-        creatures: JSON.stringify(updatedProject.creatures || []),
-        worldRules: JSON.stringify(updatedProject.worldRules || [])
-    } as any);
+    await dbUpdateProject(updatedProject as any);
     
     set({ activeProject: updatedProject });
   },
@@ -1375,13 +1136,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       worldRules: (activeProject.worldRules || []).filter((r) => r.id !== id),
     };
     
-    await dbUpdateProject({
-        ...updatedProject,
-        apiKeys: JSON.stringify(updatedProject.apiKeys),
-        banners: JSON.stringify(updatedProject.banners || {}),
-        creatures: JSON.stringify(updatedProject.creatures || []),
-        worldRules: JSON.stringify(updatedProject.worldRules || [])
-    } as any);
+    await dbUpdateProject(updatedProject as any);
     
     set({ activeProject: updatedProject });
   },
@@ -1405,13 +1160,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       }),
     };
     
-    await dbUpdateProject({
-        ...updatedProject,
-        apiKeys: JSON.stringify(updatedProject.apiKeys),
-        banners: JSON.stringify(updatedProject.banners || {}),
-        creatures: JSON.stringify(updatedProject.creatures || []),
-        worldRules: JSON.stringify(updatedProject.worldRules || [])
-    } as any);
+    await dbUpdateProject(updatedProject as any);
     
     set({ activeProject: updatedProject });
   },
@@ -1431,13 +1180,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       }),
     };
     
-    await dbUpdateProject({
-        ...updatedProject,
-        apiKeys: JSON.stringify(updatedProject.apiKeys),
-        banners: JSON.stringify(updatedProject.banners || {}),
-        creatures: JSON.stringify(updatedProject.creatures || []),
-        worldRules: JSON.stringify(updatedProject.worldRules || [])
-    } as any);
+    await dbUpdateProject(updatedProject as any);
     
     set({ activeProject: updatedProject });
   },
@@ -1452,13 +1195,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       activeIdentityPackage: packageId || undefined
     };
     
-    await dbUpdateProject({
-        ...updatedProject,
-        apiKeys: JSON.stringify(updatedProject.apiKeys),
-        banners: JSON.stringify(updatedProject.banners || {}),
-        creatures: JSON.stringify(updatedProject.creatures || []),
-        worldRules: JSON.stringify(updatedProject.worldRules || [])
-    } as any);
+    await dbUpdateProject(updatedProject as any);
 
     set({ activeProject: updatedProject });
   },

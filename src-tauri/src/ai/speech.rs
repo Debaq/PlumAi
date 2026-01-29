@@ -1,9 +1,12 @@
-use tauri::{AppHandle, Emitter, State, Manager};
-use tauri::path::BaseDirectory;
-use std::sync::{Arc, Mutex, atomic::{AtomicBool, Ordering}};
-use std::path::PathBuf;
-use vosk::{Model, Recognizer, DecodingState};
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
+use std::path::PathBuf;
+use std::sync::{
+    atomic::{AtomicBool, Ordering},
+    Arc, Mutex,
+};
+use tauri::path::BaseDirectory;
+use tauri::{AppHandle, Emitter, Manager, State};
+use vosk::{DecodingState, Model, Recognizer};
 
 pub struct SpeechSession {
     pub running: Arc<AtomicBool>,
@@ -32,7 +35,9 @@ pub async fn start_dictation(
     // Update state
     {
         let mut guard = state.0.lock().map_err(|e| e.to_string())?;
-        *guard = Some(SpeechSession { running: running.clone() });
+        *guard = Some(SpeechSession {
+            running: running.clone(),
+        });
     }
 
     // Spawn thread
@@ -54,19 +59,29 @@ pub async fn stop_dictation(state: State<'_, SpeechState>) -> Result<(), String>
     Ok(())
 }
 
-fn run_recognition_loop(app: AppHandle, language: String, running: Arc<AtomicBool>) -> Result<(), String> {
+fn run_recognition_loop(
+    app: AppHandle,
+    language: String,
+    running: Arc<AtomicBool>,
+) -> Result<(), String> {
     // Resolve model path
-    let lang_dir = if language.to_lowercase().starts_with("es") { "es" } else { "en" };
-    
+    let lang_dir = if language.to_lowercase().starts_with("es") {
+        "es"
+    } else {
+        "en"
+    };
+
     // We assume the models are in src-tauri/models for now.
     // In a production build, we should look in the resource directory.
     // Try to find the resource directory first.
-    
-    let model_path = app.path().resolve(format!("models/{}", lang_dir), BaseDirectory::Resource)
+
+    let model_path = app
+        .path()
+        .resolve(format!("models/{}", lang_dir), BaseDirectory::Resource)
         .unwrap_or_else(|_| PathBuf::from("src-tauri/models").join(lang_dir));
 
     if !model_path.exists() {
-         return Err(format!("Model path not found: {:?}", model_path));
+        return Err(format!("Model path not found: {:?}", model_path));
     }
 
     let model_str = model_path.to_str().ok_or("Invalid path")?;
@@ -75,13 +90,16 @@ fn run_recognition_loop(app: AppHandle, language: String, running: Arc<AtomicBoo
 
     // Setup Audio
     let host = cpal::default_host();
-    let device = host.default_input_device().ok_or("No input device available")?;
-    
+    let device = host
+        .default_input_device()
+        .ok_or("No input device available")?;
+
     let config = device.default_input_config().map_err(|e| e.to_string())?;
     let sample_rate = config.sample_rate().0 as f32;
     let channels = config.channels();
 
-    let mut recognizer = Recognizer::new(&model, sample_rate).ok_or("Could not create recognizer")?;
+    let mut recognizer =
+        Recognizer::new(&model, sample_rate).ok_or("Could not create recognizer")?;
 
     // Channel for audio data
     let (tx, rx) = std::sync::mpsc::channel::<Vec<i16>>();
@@ -96,37 +114,42 @@ fn run_recognition_loop(app: AppHandle, language: String, running: Arc<AtomicBoo
                 move |data: &[i16], _: &_| {
                     let mono_data: Vec<i16> = if channels == 2 {
                         // Simple stereo to mono mixing
-                        data.chunks(2).map(|c| c[0].wrapping_add(c[1]) / 2).collect()
+                        data.chunks(2)
+                            .map(|c| c[0].wrapping_add(c[1]) / 2)
+                            .collect()
                     } else {
                         data.to_vec()
                     };
                     let _ = tx.send(mono_data);
                 },
                 err_fn,
-                None
+                None,
             )
-        },
+        }
         cpal::SampleFormat::F32 => {
             let tx = tx.clone();
             device.build_input_stream(
                 &config.into(),
                 move |data: &[f32], _: &_| {
                     let mono_data: Vec<i16> = if channels == 2 {
-                         data.chunks(2).map(|c| {
-                             let v = (c[0] + c[1]) / 2.0;
-                             (v * 32767.0) as i16
-                         }).collect()
+                        data.chunks(2)
+                            .map(|c| {
+                                let v = (c[0] + c[1]) / 2.0;
+                                (v * 32767.0) as i16
+                            })
+                            .collect()
                     } else {
                         data.iter().map(|&v| (v * 32767.0) as i16).collect()
                     };
                     let _ = tx.send(mono_data);
                 },
                 err_fn,
-                None
+                None,
             )
-        },
-        _ => return Err("Unsupported sample format".into())
-    }.map_err(|e| e.to_string())?;
+        }
+        _ => return Err("Unsupported sample format".into()),
+    }
+    .map_err(|e| e.to_string())?;
 
     stream.play().map_err(|e| e.to_string())?;
 
@@ -138,23 +161,39 @@ fn run_recognition_loop(app: AppHandle, language: String, running: Arc<AtomicBoo
                     // Handle CompleteResult enum (Single or Multiple)
                     let text = match result {
                         vosk::CompleteResult::Single(r) => r.text,
-                        vosk::CompleteResult::Multiple(r) => r.alternatives.first().map(|a| a.text).unwrap_or(""),
+                        vosk::CompleteResult::Multiple(r) => {
+                            r.alternatives.first().map(|a| a.text).unwrap_or("")
+                        }
                     };
-                    
+
                     if !text.is_empty() {
-                        app.emit("dictation-event", DictationEvent { text: text.to_string(), is_final: true }).unwrap_or_default();
+                        app.emit(
+                            "dictation-event",
+                            DictationEvent {
+                                text: text.to_string(),
+                                is_final: true,
+                            },
+                        )
+                        .unwrap_or_default();
                     }
-                },
+                }
                 Ok(DecodingState::Running) => {
                     let partial = recognizer.partial_result();
                     let partial_text = partial.partial;
                     if !partial_text.is_empty() {
-                        app.emit("dictation-event", DictationEvent { text: partial_text.to_string(), is_final: false }).unwrap_or_default();
+                        app.emit(
+                            "dictation-event",
+                            DictationEvent {
+                                text: partial_text.to_string(),
+                                is_final: false,
+                            },
+                        )
+                        .unwrap_or_default();
                     }
-                },
+                }
                 Ok(DecodingState::Failed) => {
                     eprintln!("Vosk decoding failed");
-                },
+                }
                 Err(e) => {
                     eprintln!("Vosk accept_waveform error: {:?}", e);
                 }

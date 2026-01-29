@@ -37,7 +37,7 @@ export const PackageManager = () => {
       setError(null);
     } catch (err: any) {
       console.error('Failed to load packages:', err);
-      setError('No se pudieron cargar los paquetes desde el sistema.');
+      setError(t('packageManager.error'));
     } finally {
       setLoading(false);
     }
@@ -63,11 +63,11 @@ export const PackageManager = () => {
         packageId: pkg.id,
         lang: i18n.language || 'es'
       });
-      alert('¡Contenido inyectado correctamente!');
+      alert(t('packageManager.successInject'));
       // Optionally reload project data here
     } catch (err: any) {
       console.error('Failed to inject content:', err);
-      alert(`Error al inyectar contenido: ${err}`);
+      alert(`${t('packageManager.errorInject')}: ${err}`);
     } finally {
       setLoading(false);
     }
@@ -77,7 +77,7 @@ export const PackageManager = () => {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground font-medium italic">Buscando paquetes instalados...</p>
+        <p className="text-sm text-muted-foreground font-medium italic">{t('packageManager.loading')}</p>
       </div>
     );
   }
@@ -87,10 +87,10 @@ export const PackageManager = () => {
       <div className="p-8 border-2 border-dashed border-destructive/20 rounded-2xl bg-destructive/5 text-center flex flex-col items-center gap-3">
         <AlertCircle className="w-10 h-10 text-destructive opacity-50" />
         <div className="space-y-1">
-          <p className="text-sm font-bold text-destructive">Error de Conexión</p>
+          <p className="text-sm font-bold text-destructive">{t('packageManager.error')}</p>
           <p className="text-xs text-muted-foreground">{error}</p>
         </div>
-        <Button variant="outline" size="sm" onClick={loadPackages} className="mt-2">Reintentar</Button>
+        <Button variant="outline" size="sm" onClick={loadPackages} className="mt-2">{t('packageManager.retry')}</Button>
       </div>
     );
   }
@@ -99,11 +99,11 @@ export const PackageManager = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-black tracking-tight uppercase">Almacén de Contenido e Identidad</h3>
-          <p className="text-sm text-muted-foreground">Inyecta bibliotecas de datos o aplica temas visuales a tu proyecto.</p>
+          <h3 className="text-lg font-black tracking-tight uppercase">{t('packageManager.title')}</h3>
+          <p className="text-sm text-muted-foreground">{t('packageManager.subtitle')}</p>
         </div>
         <Badge variant="secondary" className="px-3 py-1 rounded-lg">
-          {packages.length} Paquetes Disponibles
+          {packages.length} {t('packageManager.available')}
         </Badge>
       </div>
 
@@ -113,13 +113,13 @@ export const PackageManager = () => {
             <Package className="w-10 h-10 text-muted-foreground/30" />
           </div>
           <div className="max-w-xs space-y-2">
-            <p className="text-sm font-bold">No se encontraron paquetes</p>
+            <p className="text-sm font-bold">{t('packageManager.noPackages')}</p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Copia tus paquetes en la carpeta <code className="bg-muted px-1 rounded">packages</code> del directorio de la aplicación para verlos aquí.
+              {t('packageManager.noPackagesDesc')} <code className="bg-muted px-1 rounded">packages</code>
             </p>
           </div>
           <Button variant="outline" size="sm" className="gap-2 mt-2">
-            <Plus size={14} /> Cómo instalar paquetes
+            <Plus size={14} /> {t('packageManager.howTo')}
           </Button>
         </div>
       ) : (
@@ -150,7 +150,7 @@ export const PackageManager = () => {
                       </Badge>
                       {isActive && (
                         <Badge className="text-[10px] font-black uppercase tracking-widest px-2 bg-primary">
-                          Activo
+                          {t('packageManager.active')}
                         </Badge>
                       )}
                     </div>
@@ -158,7 +158,7 @@ export const PackageManager = () => {
 
                   <div>
                     <h4 className="font-bold text-md tracking-tight group-hover:text-primary transition-colors">{meta.name}</h4>
-                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter mb-2">Por {pkg.author}</p>
+                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tighter mb-2">{t('modals.newProject.packages.by')} {pkg.author}</p>
                     <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
                       {meta.description}
                     </p>
@@ -167,12 +167,12 @@ export const PackageManager = () => {
                   <div className="flex flex-wrap gap-2 pt-2">
                     {pkg.content && (
                       <div className="flex items-center gap-1 text-[9px] font-black bg-muted px-2 py-0.5 rounded text-muted-foreground uppercase">
-                        <User size={10} /> Inyectable
+                        <User size={10} /> {t('packageManager.injectable')}
                       </div>
                     )}
                     {pkg.styles && (
                       <div className="flex items-center gap-1 text-[9px] font-black bg-muted px-2 py-0.5 rounded text-muted-foreground uppercase">
-                        <Palette size={10} /> Estilo Visual
+                        <Palette size={10} /> {t('packageManager.visualStyle')}
                       </div>
                     )}
                   </div>
@@ -186,7 +186,7 @@ export const PackageManager = () => {
                       disabled={loading}
                     >
                       <Download size={14} />
-                      Inyectar Contenido
+                      {t('packageManager.injectContent')}
                     </Button>
                   ) : null}
                   
@@ -198,7 +198,7 @@ export const PackageManager = () => {
                       disabled={loading}
                     >
                       {isActive ? <Check size={14} /> : <Palette size={14} />}
-                      {isActive ? 'Estilo Aplicado' : 'Aplicar Estilo'}
+                      {isActive ? t('packageManager.styleApplied') : t('packageManager.applyStyle')}
                     </Button>
                   ) : null}
                   <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 rounded-xl" title="Más información">

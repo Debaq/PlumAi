@@ -165,8 +165,43 @@ pub fn init_database(conn: &Connection) -> Result<()> {
             key TEXT PRIMARY KEY,
             value TEXT NOT NULL
         );
+
+        -- Installed packages table (Package Store)
+        CREATE TABLE IF NOT EXISTS installed_packages (
+            id TEXT PRIMARY KEY,
+            version TEXT NOT NULL,
+            author TEXT NOT NULL,
+            category TEXT NOT NULL,
+            registry_id TEXT NOT NULL,
+            metadata TEXT NOT NULL,
+            checksum TEXT NOT NULL,
+            size_bytes INTEGER DEFAULT 0,
+            install_path TEXT NOT NULL,
+            installed_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+        );
         "#,
     )?;
+
+    // Migrations: add columns that may be missing on older databases.
+    // ALTER TABLE ... ADD COLUMN fails if the column already exists,
+    // so we silently ignore errors for each statement.
+    let migrations = [
+        "ALTER TABLE projects ADD COLUMN active_identity_package TEXT",
+        "ALTER TABLE projects ADD COLUMN origin_package_id TEXT",
+        "ALTER TABLE projects ADD COLUMN creatures TEXT",
+        "ALTER TABLE projects ADD COLUMN world_rules TEXT",
+        "ALTER TABLE projects ADD COLUMN project_type TEXT DEFAULT 'novel'",
+        "ALTER TABLE characters ADD COLUMN origin_package_id TEXT",
+        "ALTER TABLE lore_items ADD COLUMN origin_package_id TEXT",
+    ];
+
+    for sql in &migrations {
+        if let Err(e) = conn.execute(sql, []) {
+            // "duplicate column name" is expected if column already exists
+            log::debug!("Migration skipped ({}): {}", e, sql);
+        }
+    }
 
     log::info!("Database schema initialized successfully");
     Ok(())

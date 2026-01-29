@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { useUIStore } from '@/stores/useUIStore';
 import { Button } from '@/components/ui/button';
 import { AITextArea } from '@/components/ui/ai-textarea';
+import { useTranslation } from 'react-i18next';
 
 interface CharacterCardProps {
   character: Character;
@@ -15,6 +16,7 @@ interface CharacterCardProps {
 }
 
 export const CharacterCard = ({ character, onBack }: CharacterCardProps) => {
+  const { t } = useTranslation();
   const { updateCharacter } = useProjectStore();
   const { openModal } = useUIStore();
   const [physicalDescription, setPhysicalDescription] = useState(character.physicalDescription || '');
@@ -34,17 +36,17 @@ export const CharacterCard = ({ character, onBack }: CharacterCardProps) => {
       <div className="flex justify-between items-center">
         <div className="flex gap-4 items-center">
           <button onClick={onBack} className="flex items-center text-sm text-muted-foreground hover:text-primary transition-colors">
-            <ArrowLeft className="w-4 h-4 mr-1" /> Volver a la lista
+            <ArrowLeft className="w-4 h-4 mr-1" /> {t('characterCard.back')}
           </button>
           <Button variant="ghost" size="sm" className="gap-2 h-8 text-muted-foreground" onClick={() => openModal('editCharacter', character)}>
             <Edit className="w-3.5 h-3.5" />
-            Editar Datos
+            {t('characterCard.edit')}
           </Button>
         </div>
         {hasChanges && (
           <Button size="sm" className="gap-2 h-8" onClick={handleSave}>
             <Save className="w-3 h-3" />
-            Guardar Cambios
+            {t('characterCard.save')}
           </Button>
         )}
       </div>
@@ -55,7 +57,7 @@ export const CharacterCard = ({ character, onBack }: CharacterCardProps) => {
             <h2 className="text-3xl font-bold tracking-tight">{character.name}</h2>
             <div className="flex gap-2 mt-2">
               <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-primary/10 text-primary border border-primary/20">
-                {character.role}
+                {t(`characterModal.roles.${character.role}`)}
               </span>
             </div>
           </div>
@@ -66,7 +68,7 @@ export const CharacterCard = ({ character, onBack }: CharacterCardProps) => {
           <div className="lg:col-span-2 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Descripción Física</label>
+                  <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">{t('characterCard.physical')}</label>
                   <AITextArea
                     className="min-h-[150px]"
                     value={physicalDescription}
@@ -74,13 +76,13 @@ export const CharacterCard = ({ character, onBack }: CharacterCardProps) => {
                       setPhysicalDescription(e.target.value);
                       setHasChanges(true);
                     }}
-                    placeholder="Escribe cómo se ve..."
+                    placeholder={t('characterCard.placeholders.physical')}
                     label="Physical Description"
                     context={`Character: ${character.name}`}
                   />
                </div>
                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">Personalidad</label>
+                  <label className="text-xs font-bold uppercase text-muted-foreground tracking-wider">{t('characterCard.personality')}</label>
                   <AITextArea
                     className="min-h-[150px]"
                     value={personality}
@@ -88,7 +90,7 @@ export const CharacterCard = ({ character, onBack }: CharacterCardProps) => {
                       setPersonality(e.target.value);
                       setHasChanges(true);
                     }}
-                    placeholder="Escribe cómo se comporta..."
+                    placeholder={t('characterCard.placeholders.personality')}
                     label="Personality"
                     context={`Character: ${character.name}`}
                   />

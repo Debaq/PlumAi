@@ -64,6 +64,9 @@ tauri-plugin-fs = "2"
 # Phase 8: Auto-updater
 tauri-plugin-updater = "2"
 
+# Hash verification
+sha2 = "0.10"
+
 # Utilities
 chrono = "0.4"
 uuid = { version = "1", features = ["v4"] }

@@ -101,7 +101,7 @@ export const ContextBanner = ({ context }: ContextBannerProps) => {
                   onClick={handleUploadClick}
                >
                   <ImageIcon size={12} />
-                  {customBanner ? 'Cambiar Banner' : 'Personalizar Banner'}
+                  {customBanner ? t('banners.change') : t('banners.personalize')}
                </Button>
             </div>
         </div>

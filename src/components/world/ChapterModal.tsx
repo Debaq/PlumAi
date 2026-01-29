@@ -20,8 +20,10 @@ import { useUIStore } from '@/stores/useUIStore';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { ImageManager } from '@/components/ui/ImageManager';
 import { AITextArea } from '@/components/ui/ai-textarea';
+import { useTranslation } from 'react-i18next';
 
 export const ChapterModal = () => {
+  const { t } = useTranslation();
   const { activeModal, modalData, closeModal } = useUIStore();
   const { activeProject, addChapter, updateChapter } = useProjectStore();
   
@@ -81,7 +83,7 @@ export const ChapterModal = () => {
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {activeModal === 'newChapter' ? 'New Chapter' : 'Edit Chapter'}
+            {activeModal === 'newChapter' ? t('chapterModal.new') : t('chapterModal.edit')}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
@@ -96,49 +98,49 @@ export const ChapterModal = () => {
           />
 
           <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title">{t('chapterModal.titleLabel')}</Label>
             <Input
               id="title"
               value={title}
               onChange={(e: any) => setTitle(e.target.value)}
-              placeholder="Chapter title..."
+              placeholder={t('chapterModal.titlePlaceholder')}
               required
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="summary">Summary</Label>
+            <Label htmlFor="summary">{t('chapterModal.summaryLabel')}</Label>
             <AITextArea
               id="summary"
               className="min-h-[80px]"
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
-              placeholder="Brief summary..."
+              placeholder={t('chapterModal.summaryPlaceholder')}
               label="Chapter Summary"
               context={`Chapter Title: ${title}`}
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
+            <Label htmlFor="status">{t('chapterModal.statusLabel')}</Label>
             <Select value={status} onValueChange={(value: any) => setStatus(value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="in_review">In Review</SelectItem>
-                <SelectItem value="final">Final</SelectItem>
+                <SelectItem value="draft">{t('chapters.form.statuses.draft')}</SelectItem>
+                <SelectItem value="in_review">{t('chapters.form.statuses.review')}</SelectItem>
+                <SelectItem value="final">{t('chapters.form.statuses.final')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           
           <DialogFooter>
             <Button type="button" variant="outline" onClick={closeModal}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit">
-              {activeModal === 'newChapter' ? 'Create Chapter' : 'Save Changes'}
+              {activeModal === 'newChapter' ? t('chapterModal.create') : t('chapterModal.save')}
             </Button>
           </DialogFooter>
         </form>

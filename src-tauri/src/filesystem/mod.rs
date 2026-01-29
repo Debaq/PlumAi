@@ -49,14 +49,10 @@ pub struct ProjectData {
 }
 
 /// Save a project to a .pluma file
-pub fn save_project(
-    data: &ProjectData,
-    output_path: &Path,
-) -> Result<(), FilesystemError> {
+pub fn save_project(data: &ProjectData, output_path: &Path) -> Result<(), FilesystemError> {
     let file = File::create(output_path)?;
     let mut zip = ZipWriter::new(file);
-    let options = SimpleFileOptions::default()
-        .compression_method(zip::CompressionMethod::Deflated);
+    let options = SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated);
 
     // Write manifest
     let manifest = ProjectManifest {

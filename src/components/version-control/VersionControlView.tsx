@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useVersionControlStore } from '@/stores/useVersionControlStore';
 import { useProjectStore } from '@/stores/useProjectStore';
+import { confirm } from '@/stores/useConfirmStore';
 import { GitBranch, GitCommit, GitMerge, Clock, RotateCcw, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -50,8 +51,8 @@ export const VersionControlView = () => {
     setIsBranchModalOpen(false);
   };
 
-  const handleRestore = (commitId: string) => {
-    if (confirm('Are you sure you want to restore this version? Current unsaved changes will be lost.')) {
+  const handleRestore = async (commitId: string) => {
+    if (await confirm('¿Restaurar esta versión? Los cambios no guardados se perderán.', { variant: 'destructive', confirmText: 'Restaurar' })) {
       const snapshot = restoreCommit(commitId);
       if (snapshot) {
         setActiveProject(snapshot);

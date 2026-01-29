@@ -21,7 +21,8 @@ export const CharacterGridCard = ({ character, onClick }: CharacterGridCardProps
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status?: string) => {
+    if (!status) return 'text-muted-foreground';
     const s = status.toLowerCase();
     if (s.includes('alive') || s.includes('vivo') || s.includes('healthy') || s.includes('sano')) return 'text-green-500';
     if (s.includes('dead') || s.includes('muerto')) return 'text-red-500';
@@ -60,7 +61,7 @@ export const CharacterGridCard = ({ character, onClick }: CharacterGridCardProps
                 {character.name}
             </h3>
             <p className={`text-[10px] font-bold uppercase tracking-widest ${getStatusColor(character.currentVitalStatus)}`}>
-                {character.currentVitalStatus}
+                {character.currentVitalStatus || 'unknown'}
             </p>
         </div>
       </div>

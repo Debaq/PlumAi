@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useUIStore } from '@/stores/useUIStore';
 import { useProjectStore } from '@/stores/useProjectStore';
+import { confirm } from '@/stores/useConfirmStore';
 import { generateImageAI } from '@/lib/ai/client-ai';
 import {
   Dialog,
@@ -244,8 +245,8 @@ export const CreatureModal = () => {
     closeModal();
   };
 
-  const handleDelete = () => {
-    if (isEditing && confirm(`¿Estás seguro de que quieres eliminar a ${name}?`)) {
+  const handleDelete = async () => {
+    if (isEditing && await confirm(`¿Estás seguro de que quieres eliminar a ${name}?`, { variant: 'destructive', confirmText: 'Eliminar' })) {
       deleteCreature(modalData.id);
       closeModal();
     }

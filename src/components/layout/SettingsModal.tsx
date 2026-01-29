@@ -5,6 +5,8 @@ import { useUIStore } from '@/stores/useUIStore';
 import { useTranslation } from 'react-i18next';
 import { CryptoService } from '@/lib/crypto';
 import { dbClearAllData } from '@/lib/tauri-bridge';
+import { toast } from 'sonner';
+import { useConfirmStore } from '@/stores/useConfirmStore';
 import {
   Dialog,
   DialogContent,
@@ -51,6 +53,7 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
   const { activeModal, closeModal, activeSettingsTab } = useUIStore();
   const settings = useSettingsStore();
   const { activeProject, setActiveProject, clearActiveProject, addApiKey, deleteApiKey, setDefaultApiKey } = useProjectStore();
+  const { confirm, prompt } = useConfirmStore();
   
   const [newKeyName, setNewKeyName] = useState('');
   const [newKeyValue, setNewKeyValue] = useState('');
@@ -139,7 +142,7 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
       setMasterPassword('');
       setConfirmPassword('');
       setSecurityError('');
-      alert('Contraseña maestra configurada correctamente');
+      toast.success('Contraseña maestra configurada correctamente');
     } catch (err) {
       setSecurityError('Error al configurar la contraseña');
     }
@@ -170,7 +173,7 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
       setMasterPassword('');
       setConfirmPassword('');
       setSecurityError('');
-      alert('Contraseña maestra actualizada');
+      toast.success('Contraseña maestra actualizada');
     } catch (err) {
       setSecurityError('Error al actualizar la contraseña');
     }
@@ -184,11 +187,12 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
         return;
       }
 
-      if (confirm('¿Seguro que quieres eliminar la protección por contraseña? Tus API keys quedarán expuestas en el almacenamiento local.')) {
+      if (await confirm('¿Seguro que quieres eliminar la protección por contraseña? Tus API keys quedarán expuestas en el almacenamiento local.', { variant: 'destructive', confirmText: 'Eliminar Protección' })) {
         settings.setMasterPassword(null);
         settings.setEncryptApiKeys(false);
         setCurrentPassword('');
         setSecurityError('');
+        toast.success('Protección eliminada correctamente');
       }
     } catch (err) {
       setSecurityError('Error al eliminar la contraseña');
@@ -221,6 +225,7 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
     });
     setNewKeyName('');
     setNewKeyValue('');
+    toast.success('API Key guardada');
   };
 
   const handleLanguageChange = (lang: AppLanguage) => {
@@ -235,14 +240,14 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
     let filename = `${activeProject.title || 'project'}-backup.json`;
 
     if (settings.masterPasswordHash) {
-      const shouldEncrypt = confirm('¿Deseas encriptar este backup con tu contraseña maestra? Solo podrás importarlo usando la misma contraseña.');
+      const shouldEncrypt = await confirm('¿Deseas encriptar este backup con tu contraseña maestra? Solo podrás importarlo usando la misma contraseña.');
       if (shouldEncrypt) {
-        const password = prompt('Introduce tu contraseña maestra para encriptar:');
+        const password = await prompt('Introduce tu contraseña maestra para encriptar:', { inputType: 'password', inputPlaceholder: 'Contraseña Maestra' });
         if (!password) return;
 
         const hash = await CryptoService.hashPassword(password);
         if (hash !== settings.masterPasswordHash) {
-          alert('Contraseña incorrecta. El backup no se ha exportado.');
+          toast.error('Contraseña incorrecta. El backup no se ha exportado.');
           return;
         }
 
@@ -263,6 +268,7 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
     a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
+    toast.success('Backup exportado exitosamente');
   };
 
   const handleImport = () => {
@@ -279,24 +285,24 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
           let projectData = JSON.parse(event.target.result);
 
           if (projectData._encrypted) {
-            const password = prompt('Este archivo está encriptado. Introduce la contraseña:');
+            const password = await prompt('Este archivo está encriptado. Introduce la contraseña:', { inputType: 'password' });
             if (!password) return;
 
             try {
               projectData = await CryptoService.decryptProject(projectData, password);
             } catch (err) {
-              alert('Contraseña incorrecta o archivo corrupto');
+              toast.error('Contraseña incorrecta o archivo corrupto');
               return;
             }
           }
 
-          if (confirm(`¿Importar proyecto "${projectData.title || projectData.projectInfo?.title}"? Esto reemplazará el proyecto actual.`)) {
+          if (await confirm(`¿Importar proyecto "${projectData.title || projectData.projectInfo?.title}"? Esto reemplazará el proyecto actual.`, { confirmText: 'Importar', variant: 'destructive' })) {
             setActiveProject(projectData);
-            alert('Proyecto importado correctamente');
+            toast.success('Proyecto importado correctamente');
           }
         } catch (err) {
           console.error('Error al importar:', err);
-          alert('Error al procesar el archivo');
+          toast.error('Error al procesar el archivo');
         }
       };
       reader.readAsText(file);
@@ -330,7 +336,7 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
       window.location.href = '/';
     } catch (error) {
       console.error('Error deleting all data:', error);
-      alert('Error al eliminar los datos de la base de datos.');
+      toast.error('Error al eliminar los datos de la base de datos.');
       setIsDeleting(false);
     }
   };
@@ -376,7 +382,7 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
             <div>
               <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                 <Palette className="w-4 h-4" />
-                Tema Visual
+                {t('settingsModal.theme.title')}
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {themes.map((t) => (
@@ -402,7 +408,7 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
             <div>
               <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                 <Type className="w-4 h-4" />
-                Tipografía Profesional
+                {t('settingsModal.font.title')}
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                 {fonts.map((f) => (
@@ -429,7 +435,7 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
             <div>
               <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                 <Maximize className="w-4 h-4" />
-                Tamaño de Fuente
+                {t('settingsModal.font.size')}
               </h3>
               <div className="flex flex-wrap gap-2">
                 {sizes.map((s) => (
@@ -447,7 +453,7 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
             {/* Language and RPG Mode */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-border">
               <div className="space-y-2">
-                <Label className="text-muted-foreground uppercase text-[10px] font-bold tracking-widest px-1">Idioma de la Interfaz</Label>
+                <Label className="text-muted-foreground uppercase text-[10px] font-bold tracking-widest px-1">{t('settingsModal.language')}</Label>
                 <Select value={settings.language} onValueChange={(v: AppLanguage) => handleLanguageChange(v)}>
                   <SelectTrigger className="h-12 rounded-xl bg-card border-2">
                     <SelectValue />
@@ -462,7 +468,7 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
               <div className="space-y-2">
                 <Label className="text-muted-foreground uppercase text-[10px] font-bold tracking-widest px-1 flex items-center gap-2">
                   <Dices className="w-3 h-3" />
-                  Modo Worldbuilder
+                  {t('settingsModal.worldbuilder')}
                 </Label>
                 <div className="flex items-center justify-between p-3 border-2 rounded-xl bg-card h-12">
                   <span className="text-xs font-medium">{t('ai.settings.worldbuilder.enable')}</span>
@@ -483,16 +489,16 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
           <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-10 duration-300">
             <div className="bg-primary text-primary-foreground px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-6 border border-white/10 backdrop-blur-md">
               <div className="flex flex-col">
-                <span className="text-sm font-bold">¿Mantener el nuevo tamaño?</span>
-                <span className="text-[10px] opacity-80 uppercase tracking-widest">Se revertirá en {countdown} segundos</span>
+                <span className="text-sm font-bold">{t('settingsModal.font.confirm')}</span>
+                <span className="text-[10px] opacity-80 uppercase tracking-widest">{t('settingsModal.font.revert', { seconds: countdown })}</span>
               </div>
               <div className="flex gap-2">
                 <Button variant="secondary" size="sm" onClick={handleConfirmSize} className="rounded-lg h-9 font-bold px-4 text-primary bg-white hover:bg-white/90 transition-colors">
-                  Mantener
+                  {t('settingsModal.font.keep')}
                 </Button>
                 <Button variant="ghost" size="sm" onClick={handleRevertSize} className="rounded-lg h-9 font-bold px-4 hover:bg-white/10 flex gap-2 text-white border border-white/20">
                   <Undo2 size={14} />
-                  Revertir
+                  {t('settingsModal.font.undo')}
                 </Button>
               </div>
             </div>
@@ -506,11 +512,11 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
             <div>
               <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                 <Type className="w-4 h-4" />
-                Configuración de Texto e IA
+                {t('settingsModal.ai.title')}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-[10px] uppercase font-bold ml-1">Proveedor Principal</Label>
+                  <Label className="text-[10px] uppercase font-bold ml-1">{t('settingsModal.ai.provider')}</Label>
                   <Select value={settings.activeProvider} onValueChange={(v: AIProvider) => settings.setActiveProvider(v)}>
                     <SelectTrigger className="h-11 border-2 rounded-xl bg-card">
                       <SelectValue />
@@ -524,16 +530,16 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-[10px] uppercase font-bold ml-1">Optimización de Tokens</Label>
+                  <Label className="text-[10px] uppercase font-bold ml-1">{t('settingsModal.ai.optimization')}</Label>
                   <Select value={settings.tokenOptimizationLevel} onValueChange={(v: TokenOptimizationLevel) => settings.setTokenLevel(v)}>
                     <SelectTrigger className="h-11 border-2 rounded-xl bg-card">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="minimal">⚡ Mínimo (~1,000 tokens)</SelectItem>
-                      <SelectItem value="normal">⚖️ Normal (~3,000 tokens)</SelectItem>
-                      <SelectItem value="complete">📚 Completo (~8,000 tokens)</SelectItem>
-                      <SelectItem value="unlimited">🚀 Sin límite</SelectItem>
+                      <SelectItem value="minimal">{t('settings.tokenLevels.minimal')}</SelectItem>
+                      <SelectItem value="normal">{t('settings.tokenLevels.normal')}</SelectItem>
+                      <SelectItem value="complete">{t('settings.tokenLevels.complete')}</SelectItem>
+                      <SelectItem value="unlimited">{t('settings.tokenLevels.unlimited')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -542,8 +548,8 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
               {/* Key Management */}
               <div className="mt-6 space-y-4">
                 <div className="flex items-center justify-between px-1">
-                  <Label className="font-bold">API Keys para {providers.find(p => p.id === settings.activeProvider)?.name}</Label>
-                  <Badge variant="outline" className="rounded-lg">{activeProject?.apiKeys?.text?.[settings.activeProvider]?.length || 0} guardadas</Badge>
+                  <Label className="font-bold">{t('settingsModal.ai.keys', { provider: providers.find(p => p.id === settings.activeProvider)?.name })}</Label>
+                  <Badge variant="outline" className="rounded-lg">{activeProject?.apiKeys?.text?.[settings.activeProvider]?.length || 0} {t('settingsModal.ai.saved')}</Badge>
                 </div>
                 
                 <div className="flex gap-2">
@@ -596,10 +602,10 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
               <div className="space-y-1">
                 <Label className="flex items-center gap-2 cursor-pointer font-bold" htmlFor="agentic-mode-ia">
                   <Brain className="w-4 h-4 text-primary" />
-                  Sistema de IA Agéntica
+                  {t('settingsModal.ai.agentic.title')}
                 </Label>
                 <p className="text-[10px] text-muted-foreground font-medium">
-                  La IA analiza personajes y lore para incluirlos solo cuando son relevantes.
+                  {t('settingsModal.ai.agentic.description')}
                 </p>
               </div>
               <input 
@@ -615,11 +621,11 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
             <div className="pt-6 border-t border-border">
               <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                 <ImageIcon className="w-4 h-4" />
-                Generación de Imágenes
+                {t('settingsModal.ai.image.title')}
               </h3>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="text-[10px] uppercase font-bold ml-1">Proveedor de Imagen</Label>
+                  <Label className="text-[10px] uppercase font-bold ml-1">{t('settingsModal.ai.image.provider')}</Label>
                   <Select defaultValue="googleImagen">
                     <SelectTrigger className="h-11 border-2 rounded-xl bg-card">
                       <SelectValue />
@@ -649,33 +655,33 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
         {activeSettingsTab === 'security' && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200 max-w-3xl mx-auto pb-20">
             <div>
-              <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">Privacidad y Protección</h3>
+              <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">{t('settingsModal.security.title')}</h3>
               
               {!settings.masterPasswordHash ? (
                 <div className="space-y-4">
                   <div className="p-4 border-2 border-yellow-500/20 bg-yellow-500/5 rounded-2xl flex gap-3">
                     <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0" />
                     <div className="space-y-1">
-                      <p className="text-sm font-bold">Sin Contraseña Maestra</p>
+                      <p className="text-sm font-bold">{t('settingsModal.security.noPassword')}</p>
                       <p className="text-xs text-muted-foreground">
-                        Tus API Keys se guardan en texto plano en el navegador. Recomendamos activar la protección.
+                        {t('settingsModal.security.noPasswordDesc')}
                       </p>
                     </div>
                   </div>
 
                   <div className="space-y-4 p-6 border-2 rounded-2xl bg-card">
-                    <Label className="text-lg font-black">Configurar Contraseña Maestra</Label>
+                    <Label className="text-lg font-black">{t('settingsModal.security.setPassword')}</Label>
                     <div className="space-y-3">
                       <Input 
                         type="password" 
-                        placeholder="Nueva Contraseña" 
+                        placeholder={t('modals.export.password')}
                         value={masterPassword}
                         onChange={(e) => setMasterPassword(e.target.value)}
                         className="h-12 rounded-xl"
                       />
                       <Input 
                         type="password" 
-                        placeholder="Confirmar Contraseña" 
+                        placeholder={t('modals.export.confirmPassword')} 
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         className="h-12 rounded-xl"
@@ -683,7 +689,7 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
                       {securityError && <p className="text-xs text-destructive font-bold">{securityError}</p>}
                       <Button className="w-full h-12 gap-2 rounded-xl text-md font-bold" onClick={handleSetMasterPassword}>
                         <Lock className="w-4 h-4" />
-                        Activar Protección
+                        {t('settingsModal.security.activate')}
                       </Button>
                     </div>
                   </div>
@@ -693,9 +699,9 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
                   <div className="p-4 border-2 border-green-500/20 bg-green-500/5 rounded-2xl flex gap-3">
                     <Shield className="w-5 h-5 text-green-500 shrink-0" />
                     <div className="space-y-1">
-                      <p className="text-sm font-bold text-green-600">Protección Activada</p>
+                      <p className="text-sm font-bold text-green-600">{t('settingsModal.security.active')}</p>
                       <p className="text-xs text-muted-foreground">
-                        Tus datos sensibles están encriptados con tu contraseña maestra.
+                        {t('settingsModal.security.activeDesc')}
                       </p>
                     </div>
                   </div>
@@ -704,10 +710,10 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
                     <div className="space-y-1">
                       <Label className="flex items-center gap-2 font-bold">
                         <Key className="w-4 h-4 text-primary" />
-                        Encriptar API Keys
+                        {t('settingsModal.security.encryptKeys')}
                       </Label>
                       <p className="text-xs text-muted-foreground">
-                        Requiere la contraseña maestra cada vez que inicies sesión.
+                        {t('settingsModal.security.encryptKeysDesc')}
                       </p>
                     </div>
                     <input 
@@ -721,7 +727,7 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
                   {!isChangingPassword ? (
                     <div className="flex gap-2">
                       <Button variant="outline" className="flex-1 h-12 rounded-xl border-2 font-bold" onClick={() => setIsChangingPassword(true)}>
-                        Cambiar Contraseña
+                        {t('settingsModal.security.changePassword')}
                       </Button>
                       <Button variant="ghost" className="text-destructive hover:bg-destructive/10 h-12 rounded-xl font-bold" onClick={() => setIsChangingPassword(false)}>
                         <Trash2 className="w-4 h-4" />
@@ -729,11 +735,11 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
                     </div>
                   ) : (
                     <div className="space-y-3 p-6 border-2 rounded-2xl bg-card">
-                      <Label className="font-bold">Cambiar Contraseña Maestra</Label>
+                      <Label className="font-bold">{t('settingsModal.security.changePassword')}</Label>
                       <div className="space-y-3">
                         <Input 
                           type="password" 
-                          placeholder="Contraseña Actual" 
+                          placeholder={t('modals.password.password')} 
                           value={currentPassword}
                           onChange={(e) => setCurrentPassword(e.target.value)}
                           className="h-12 rounded-xl"
@@ -741,22 +747,22 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
                         <hr className="my-2 border-border" />
                         <Input 
                           type="password" 
-                          placeholder="Nueva Contraseña" 
+                          placeholder={t('modals.export.password')} 
                           value={masterPassword}
                           onChange={(e) => setMasterPassword(e.target.value)}
                           className="h-12 rounded-xl"
                         />
                         <Input 
                           type="password" 
-                          placeholder="Confirmar Nueva Contraseña" 
+                          placeholder={t('modals.export.confirmPassword')} 
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           className="h-12 rounded-xl"
                         />
                         {securityError && <p className="text-xs text-destructive font-bold">{securityError}</p>}
                         <div className="flex gap-2">
-                          <Button variant="ghost" className="flex-1 h-12 rounded-xl font-bold" onClick={() => setIsChangingPassword(false)}>Cancelar</Button>
-                          <Button className="flex-1 h-12 rounded-xl font-bold" onClick={handleChangePassword}>Actualizar</Button>
+                          <Button variant="ghost" className="flex-1 h-12 rounded-xl font-bold" onClick={() => setIsChangingPassword(false)}>{t('common.cancel')}</Button>
+                          <Button className="flex-1 h-12 rounded-xl font-bold" onClick={handleChangePassword}>{t('common.saveChanges')}</Button>
                         </div>
                       </div>
                     </div>
@@ -764,18 +770,18 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
 
                   {!isChangingPassword && (
                     <div className="pt-4 border-t border-border">
-                      <Label className="text-destructive block mb-2 font-black uppercase tracking-tighter">Zona de Peligro</Label>
+                      <Label className="text-destructive block mb-2 font-black uppercase tracking-tighter">{t('settingsModal.security.danger')}</Label>
                       <div className="space-y-2 p-4 border-2 border-destructive/20 rounded-2xl bg-destructive/5">
-                        <p className="text-xs text-muted-foreground font-medium">Para eliminar la protección por completo, introduce tu contraseña actual:</p>
+                        <p className="text-xs text-muted-foreground font-medium">{t('settingsModal.security.removeProtection')}</p>
                         <div className="flex gap-2">
                           <Input 
                             type="password" 
-                            placeholder="Contraseña Actual" 
+                            placeholder={t('modals.password.password')}
                             className="flex-1 h-11 rounded-xl"
                             value={currentPassword}
                             onChange={(e) => setCurrentPassword(e.target.value)}
                           />
-                          <Button variant="destructive" className="h-11 rounded-xl px-6 font-bold" onClick={handleRemovePassword}>Eliminar</Button>
+                          <Button variant="destructive" className="h-11 rounded-xl px-6 font-bold" onClick={handleRemovePassword}>{t('settingsModal.security.remove')}</Button>
                         </div>
                       </div>
                     </div>
@@ -790,7 +796,7 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
         {activeSettingsTab === 'integrations' && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200 max-w-3xl mx-auto pb-20">
             <div>
-              <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">Sincronización Externa</h3>
+              <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">{t('settingsModal.integrations.title')}</h3>
               <div className="space-y-6">
                 {/* GitHub */}
                 <div className="p-6 border-2 rounded-2xl bg-card space-y-4 shadow-sm">
@@ -799,13 +805,13 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
                       <GitBranch className="w-6 h-6 text-primary" />
                     </div>
                     <div>
-                      <p className="text-md font-black">GitHub Sync</p>
-                      <p className="text-xs text-muted-foreground">Sincroniza tus proyectos con repositorios privados.</p>
+                      <p className="text-md font-black">{t('settingsModal.integrations.github.title')}</p>
+                      <p className="text-xs text-muted-foreground">{t('settingsModal.integrations.github.desc')}</p>
                     </div>
                   </div>
                   <div className="space-y-3">
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] uppercase font-black text-muted-foreground ml-1">Personal Access Token</Label>
+                      <Label className="text-[10px] uppercase font-black text-muted-foreground ml-1">{t('settingsModal.integrations.github.token')}</Label>
                       <Input 
                         type="password" 
                         placeholder="ghp_..." 
@@ -815,7 +821,7 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-[10px] uppercase font-black text-muted-foreground ml-1">Repositorio (usuario/repo)</Label>
+                      <Label className="text-[10px] uppercase font-black text-muted-foreground ml-1">{t('settingsModal.integrations.github.repo')}</Label>
                       <Input 
                         placeholder="nombre/mi-obra-maestra" 
                         value={settings.githubRepo || ''} 
@@ -825,7 +831,7 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
                     </div>
                     <Button className="w-full h-11 rounded-xl gap-2 text-xs font-bold border-2" variant="outline" disabled={!settings.githubToken}>
                       <Save size={14} />
-                      Verificar y Sincronizar
+                      {t('settingsModal.integrations.github.verify')}
                     </Button>
                   </div>
                 </div>
@@ -837,8 +843,8 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
                         <ExternalLink className="w-6 h-6 text-blue-500" />
                       </div>
                       <div>
-                        <p className="text-md font-bold">Dropbox</p>
-                        <p className="text-xs text-muted-foreground italic">Próximamente...</p>
+                        <p className="text-md font-bold">{t('settingsModal.integrations.dropbox.title')}</p>
+                        <p className="text-xs text-muted-foreground italic">{t('settingsModal.integrations.dropbox.desc')}</p>
                       </div>
                    </div>
                 </div>
@@ -851,29 +857,29 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
         {activeSettingsTab === 'advanced' && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200 max-w-3xl mx-auto pb-20">
             <div>
-              <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">Experiencia de Escritura</h3>
+              <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">{t('settingsModal.advanced.writing')}</h3>
               <div className="grid grid-cols-1 gap-3">
                 <ToggleItem 
                   id="typewriter" 
                   icon={Type} 
-                  label="Typewriter Scroll" 
-                  description="Mantiene la línea activa centrada verticalmente." 
+                  label={t('settingsModal.advanced.typewriter.label')}
+                  description={t('settingsModal.advanced.typewriter.desc')}
                   checked={settings.typewriterMode} 
                   onChange={settings.setTypewriterMode} 
                 />
                 <ToggleItem 
                   id="hemingway" 
                   icon={Zap} 
-                  label="Modo Hemingway" 
-                  description="Desactiva borrar y retroceso. Solo hacia adelante." 
+                  label={t('settingsModal.advanced.hemingway.label')}
+                  description={t('settingsModal.advanced.hemingway.desc')}
                   checked={settings.hemingwayMode} 
                   onChange={settings.setHemingwayMode} 
                 />
                 <ToggleItem 
                   id="pomodoro" 
                   icon={Maximize} 
-                  label="Temporizador Pomodoro" 
-                  description="Habilita un timer de 25/5 en la barra de estado." 
+                  label={t('settingsModal.advanced.pomodoro.label')}
+                  description={t('settingsModal.advanced.pomodoro.desc')}
                   checked={settings.pomodoroEnabled} 
                   onChange={settings.setPomodoroEnabled} 
                 />
@@ -881,13 +887,13 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
             </div>
 
             <div className="pt-6 border-t border-border">
-              <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">Módulos del Sistema</h3>
+              <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">{t('settingsModal.advanced.modules')}</h3>
               <div className="grid grid-cols-1 gap-3">
                 <ToggleItem 
                   id="rag-studio-toggle" 
                   icon={Layers} 
-                  label="Habilitar RAG Studio" 
-                  description="Muestra u oculta el módulo de entrenamiento de IA en el menú lateral." 
+                  label={t('settingsModal.advanced.ragStudio.label')}
+                  description={t('settingsModal.advanced.ragStudio.desc')}
                   checked={settings.ragStudioEnabled} 
                   onChange={settings.setRagStudioEnabled} 
                 />
@@ -895,13 +901,13 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
             </div>
 
             <div className="pt-6 border-t border-border">
-              <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">Estética y Pulido</h3>
+              <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">{t('settingsModal.advanced.aesthetics')}</h3>
               <div className="grid grid-cols-1 gap-3">
                 <ToggleItem 
                   id="animations" 
                   icon={Palette} 
-                  label="Micro-animaciones" 
-                  description="Transiciones suaves entre temas y estados de UI." 
+                  label={t('settingsModal.advanced.animations.label')}
+                  description={t('settingsModal.advanced.animations.desc')}
                   checked={settings.animationsEnabled} 
                   onChange={settings.setAnimationsEnabled} 
                 />
@@ -909,15 +915,15 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
             </div>
 
             <div className="pt-6 border-t border-border">
-              <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">Depuración</h3>
+              <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">{t('settingsModal.advanced.debug.title')}</h3>
               <div className="flex items-center justify-between p-4 border-2 rounded-2xl bg-card/50">
                 <div className="space-y-1">
                   <Label className="flex items-center gap-2 cursor-pointer font-bold" htmlFor="debug-logs">
                     <Terminal className="w-4 h-4 text-primary" />
-                    Logs de IA Interactivos
+                    {t('settingsModal.advanced.debug.label')}
                   </Label>
                   <p className="text-xs text-muted-foreground font-medium">
-                    Habilita la consola técnica en la barra inferior.
+                    {t('settingsModal.advanced.debug.desc')}
                   </p>
                 </div>
                 <input 
@@ -936,7 +942,7 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
         {activeSettingsTab === 'data' && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200 max-w-3xl mx-auto pb-20">
             <div>
-              <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">Gestión de Datos</h3>
+              <h3 className="text-sm font-semibold mb-4 uppercase tracking-wider text-muted-foreground">{t('settingsModal.data.title')}</h3>
               <div className="space-y-4">
                 <div className="p-6 border-2 rounded-2xl bg-card space-y-4 shadow-sm">
                   <div className="flex items-center gap-3">
@@ -944,19 +950,19 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
                       <Shield className="w-6 h-6 text-primary" />
                     </div>
                     <div>
-                      <p className="text-md font-black">Almacenamiento Local</p>
-                      <p className="text-xs text-muted-foreground font-medium">Tus datos nunca salen de este dispositivo.</p>
+                      <p className="text-md font-black">{t('settingsModal.data.local.title')}</p>
+                      <p className="text-xs text-muted-foreground font-medium">{t('settingsModal.data.local.desc')}</p>
                     </div>
                   </div>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                     <Button variant="outline" className="justify-start gap-3 h-12 rounded-xl border-2 font-bold" onClick={handleExportAll}>
                       <Save className="w-4 h-4" />
-                      Exportar Backup
+                      {t('settingsModal.data.export')}
                     </Button>
                     <Button variant="outline" className="justify-start gap-3 h-12 rounded-xl border-2 font-bold" onClick={handleImport}>
                       <Plus className="w-4 h-4" />
-                      Importar Proyecto
+                      {t('settingsModal.data.import')}
                     </Button>
                     <Button 
                       variant="outline" 
@@ -964,7 +970,7 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
                       onClick={handleInitiateDelete}
                     >
                       <Trash2 className="w-4 h-4" />
-                      Eliminar Todos los Datos de la App
+                      {t('settingsModal.data.deleteAll')}
                     </Button>
                   </div>
                 </div>
@@ -972,8 +978,8 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
                 <div className="p-6 rounded-2xl bg-muted/30 border-2 border-dashed flex flex-col items-center justify-center gap-3 text-center">
                   <ExternalLink className="w-8 h-8 text-muted-foreground/30" />
                   <div>
-                    <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Próximamente</p>
-                    <p className="text-xs text-muted-foreground opacity-60">Sincronización en la Nube (Google Drive, iCloud)</p>
+                    <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">{t('settingsModal.data.cloud.title')}</p>
+                    <p className="text-xs text-muted-foreground opacity-60">{t('settingsModal.data.cloud.desc')}</p>
                   </div>
                 </div>
               </div>
@@ -984,7 +990,7 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
 
       {!isView && (
         <DialogFooter className="p-4 border-t border-border bg-muted/20 shrink-0">
-          <Button variant="secondary" onClick={() => closeModal()} className="rounded-xl font-bold px-8">Cerrar</Button>
+          <Button variant="secondary" onClick={() => closeModal()} className="rounded-xl font-bold px-8">{t('common.close')}</Button>
         </DialogFooter>
       )}
     </div>
@@ -1010,23 +1016,22 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
             </div>
             <div className="space-y-2 text-center">
               <DialogTitle className="text-xl font-black text-destructive tracking-tight">
-                ¿ELIMINAR ABSOLUTAMENTE TODO?
+                {t('settingsModal.dangerModal.title')}
               </DialogTitle>
               <DialogDescription className="text-muted-foreground">
-                Esta acción es <span className="font-bold text-foreground">irreversible</span>.
-                Se borrarán todos los proyectos, personajes, configuraciones y claves API de este dispositivo.
+                <span className="font-bold text-foreground">{t('settingsModal.dangerModal.description')}</span>
               </DialogDescription>
             </div>
           </DialogHeader>
 
           <div className="py-6 space-y-4">
             <div className="p-4 bg-muted/30 rounded-xl border-2 border-dashed text-xs text-center text-muted-foreground">
-              Para confirmar, escribe <span className="font-black select-all text-foreground">ELIMINAR</span> a continuación:
+              {t('settingsModal.dangerModal.confirmText')} <span className="font-black select-all text-foreground">ELIMINAR</span>
             </div>
             <Input 
               value={deleteConfirmationText}
               onChange={(e) => setDeleteConfirmationText(e.target.value)}
-              placeholder="Escribe ELIMINAR"
+              placeholder={t('settingsModal.dangerModal.placeholder')}
               className="text-center font-bold tracking-widest h-12 rounded-xl border-2 focus-visible:ring-destructive"
             />
           </div>
@@ -1038,7 +1043,7 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
               className="rounded-xl font-bold h-11"
               disabled={isDeleting}
             >
-              Cancelar
+              {t('settingsModal.dangerModal.cancel')}
             </Button>
             <Button 
               variant="destructive" 
@@ -1047,7 +1052,7 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
               className="rounded-xl font-bold h-11 px-8 gap-2 shadow-lg shadow-destructive/20"
             >
               {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-              {isDeleting ? 'Eliminando...' : 'Sí, eliminar todo'}
+              {isDeleting ? t('settingsModal.dangerModal.deleting') : t('settingsModal.dangerModal.confirm')}
             </Button>
           </DialogFooter>
         </DialogContent>

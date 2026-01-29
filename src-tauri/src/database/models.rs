@@ -22,6 +22,8 @@ pub struct Project {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub origin_package_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub project_type: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub banners: Option<serde_json::Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub api_keys: Option<serde_json::Value>,
@@ -79,6 +81,7 @@ pub struct Scene {
 #[serde(rename_all = "camelCase")]
 pub struct Character {
     pub id: String,
+    #[serde(default)]
     pub project_id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub origin_package_id: Option<String>,
@@ -156,6 +159,7 @@ pub struct Location {
 #[serde(rename_all = "camelCase")]
 pub struct LoreItem {
     pub id: String,
+    #[serde(default)]
     pub project_id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub origin_package_id: Option<String>,

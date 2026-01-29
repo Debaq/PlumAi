@@ -96,26 +96,18 @@ export const EntityList = () => {
       <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-bold capitalize">
-            {activeLoreTab === 'summary' ? 'Lore Items' :
-             activeLoreTab === 'bestiary' ? 'Bestiario' :
-             activeLoreTab === 'worldRules' ? 'Reglas del Mundo' :
-             activeLoreTab}
+            {t(`entityList.titles.${activeLoreTab}`)}
           </h2>
           <div className="flex gap-2">
              {activeLoreTab === 'locations' && (
                 <Button size="sm" variant="secondary" className="gap-2" onClick={handleViewMap}>
                   <Map className="w-4 h-4" />
-                  Ver Mapa
+                  {t('entityList.viewMap')}
                 </Button>
              )}
              <Button size="sm" className="gap-2" onClick={handleAddNew}>
                 <Plus className="w-4 h-4" />
-                Añadir {
-                  activeLoreTab === 'summary' ? 'Lore' :
-                  activeLoreTab === 'bestiary' ? 'Criatura' :
-                  activeLoreTab === 'worldRules' ? 'Regla' :
-                  activeLoreTab.slice(0, -1)
-                }
+                {t('entityList.add')} {t(`entityList.singular.${activeLoreTab}`)}
              </Button>
           </div>
         </div>
@@ -170,7 +162,7 @@ export const EntityList = () => {
           })}
           {list.length === 0 && (
             <div className="col-span-full py-12 text-center border-2 border-dashed border-border rounded-xl">
-               <p className="text-muted-foreground">No {activeLoreTab === 'bestiary' ? 'criaturas' : activeLoreTab === 'worldRules' ? 'reglas' : activeLoreTab} found in this project.</p>
+               <p className="text-muted-foreground">{t('entityList.notFound', { type: t(`entityList.titles.${activeLoreTab}`) })}</p>
             </div>
           )}
         </div>

@@ -28,7 +28,7 @@ export const StatusBar = () => {
       setTimeLeft(nextIsBreak ? 5 * 60 : 25 * 60);
       setIsRunning(false);
       // Play a sound or notification here if possible
-      alert(nextIsBreak ? "¡Tiempo de descanso!" : "¡A escribir!");
+      alert(nextIsBreak ? t('status.pomodoro.breakTime') : t('status.pomodoro.workTime'));
     }
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [isRunning, timeLeft, isBreak]);
@@ -94,7 +94,7 @@ export const StatusBar = () => {
         )}
         <div className="flex items-center gap-1.5">
           <span className={`w-2 h-2 rounded-full transition-colors ${isAIActive ? 'bg-green-500 animate-pulse' : 'bg-muted-foreground/50'}`}></span>
-          <span>{isAIActive ? t('aiStatus.active') : t('aiStatus.inactive')}</span>
+          <span>{isAIActive ? t('status.ai.active') : t('status.ai.inactive')}</span>
         </div>
         <button 
           onClick={toggleLanguage}

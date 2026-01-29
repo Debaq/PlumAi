@@ -366,10 +366,7 @@ pub fn publish_pdf(
 }
 
 #[tauri::command]
-pub fn publish_pdf_bytes(
-    document: ExportDocument,
-    options: PdfOptions,
-) -> Result<Vec<u8>, String> {
+pub fn publish_pdf_bytes(document: ExportDocument, options: PdfOptions) -> Result<Vec<u8>, String> {
     publishing::generate_pdf_bytes(&document, &options).map_err(|e| e.to_string())
 }
 

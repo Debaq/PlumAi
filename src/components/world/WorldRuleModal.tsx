@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useUIStore } from '@/stores/useUIStore';
 import { useProjectStore } from '@/stores/useProjectStore';
+import { confirm } from '@/stores/useConfirmStore';
 import {
   Dialog,
   DialogContent,
@@ -24,24 +25,24 @@ import { BookOpen, Trash2, Plus, X, Sparkles, Wand2, Atom, Users, Swords, Coins,
 import { AITextArea } from '@/components/ui/ai-textarea';
 import type { WorldRuleCategory, WorldRuleImportance, WorldRuleExample } from '@/types/domain';
 
-const RULE_CATEGORIES: { id: WorldRuleCategory; label: string; icon: any; color: string }[] = [
-  { id: 'magic', label: 'Magia', icon: Wand2, color: 'text-purple-500' },
-  { id: 'physics', label: 'Física', icon: Atom, color: 'text-blue-500' },
-  { id: 'social', label: 'Social', icon: Users, color: 'text-green-500' },
-  { id: 'combat', label: 'Combate', icon: Swords, color: 'text-red-500' },
-  { id: 'economy', label: 'Economía', icon: Coins, color: 'text-yellow-500' },
-  { id: 'religion', label: 'Religión', icon: Church, color: 'text-amber-500' },
-  { id: 'nature', label: 'Naturaleza', icon: Leaf, color: 'text-emerald-500' },
-  { id: 'technology', label: 'Tecnología', icon: Cpu, color: 'text-cyan-500' },
-  { id: 'temporal', label: 'Temporal', icon: Clock, color: 'text-indigo-500' },
-  { id: 'metaphysical', label: 'Metafísica', icon: Ghost, color: 'text-pink-500' },
-  { id: 'custom', label: 'Personalizado', icon: HelpCircle, color: 'text-gray-500' },
+const RULE_CATEGORIES: { id: WorldRuleCategory; labelKey: string; icon: any; color: string }[] = [
+  { id: 'magic', labelKey: 'worldRules.categories.magic', icon: Wand2, color: 'text-purple-500' },
+  { id: 'physics', labelKey: 'worldRules.categories.physics', icon: Atom, color: 'text-blue-500' },
+  { id: 'social', labelKey: 'worldRules.categories.social', icon: Users, color: 'text-green-500' },
+  { id: 'combat', labelKey: 'worldRules.categories.combat', icon: Swords, color: 'text-red-500' },
+  { id: 'economy', labelKey: 'worldRules.categories.economy', icon: Coins, color: 'text-yellow-500' },
+  { id: 'religion', labelKey: 'worldRules.categories.religion', icon: Church, color: 'text-amber-500' },
+  { id: 'nature', labelKey: 'worldRules.categories.nature', icon: Leaf, color: 'text-emerald-500' },
+  { id: 'technology', labelKey: 'worldRules.categories.technology', icon: Cpu, color: 'text-cyan-500' },
+  { id: 'temporal', labelKey: 'worldRules.categories.temporal', icon: Clock, color: 'text-indigo-500' },
+  { id: 'metaphysical', labelKey: 'worldRules.categories.metaphysical', icon: Ghost, color: 'text-pink-500' },
+  { id: 'custom', labelKey: 'worldRules.categories.custom', icon: HelpCircle, color: 'text-gray-500' },
 ];
 
-const IMPORTANCE_LEVELS: { id: WorldRuleImportance; label: string; color: string }[] = [
-  { id: 'fundamental', label: 'Fundamental', color: 'bg-red-500' },
-  { id: 'major', label: 'Mayor', color: 'bg-yellow-500' },
-  { id: 'minor', label: 'Menor', color: 'bg-green-500' },
+const IMPORTANCE_LEVELS: { id: WorldRuleImportance; labelKey: string; color: string }[] = [
+  { id: 'fundamental', labelKey: 'worldRules.importance.fundamental', color: 'bg-red-500' },
+  { id: 'major', labelKey: 'worldRules.importance.major', color: 'bg-yellow-500' },
+  { id: 'minor', labelKey: 'worldRules.importance.minor', color: 'bg-green-500' },
 ];
 
 export const WorldRuleModal = () => {
@@ -161,8 +162,8 @@ export const WorldRuleModal = () => {
     closeModal();
   };
 
-  const handleDelete = () => {
-    if (isEditing && confirm(`¿Estás seguro de que quieres eliminar "${title}"?`)) {
+  const handleDelete = async () => {
+    if (isEditing && await confirm(t('worldRules.modal.deleteConfirm', { title }), { variant: 'destructive', confirmText: t('common.delete') })) {
       deleteWorldRule(modalData.id);
       closeModal();
     }
@@ -176,7 +177,7 @@ export const WorldRuleModal = () => {
         <DialogHeader className="p-6 border-b bg-muted/30">
           <DialogTitle className="flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-primary" />
-            {isEditing ? 'Editar Regla del Mundo' : 'Nueva Regla del Mundo'}
+            {isEditing ? t('worldRules.modal.edit') : t('worldRules.modal.new')}
           </DialogTitle>
         </DialogHeader>
 
@@ -184,18 +185,18 @@ export const WorldRuleModal = () => {
           {/* Basic Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="rule-title">Título</Label>
+              <Label htmlFor="rule-title">{t('worldRules.modal.title')}</Label>
               <Input
                 id="rule-title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Nombre de la regla..."
+                placeholder={t('worldRules.modal.placeholders.title')}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="rule-category">Categoría</Label>
+              <Label htmlFor="rule-category">{t('worldRules.modal.category')}</Label>
               <Select value={category} onValueChange={(v: string) => setCategory(v as WorldRuleCategory)}>
                 <SelectTrigger id="rule-category">
                   <SelectValue />
@@ -207,7 +208,7 @@ export const WorldRuleModal = () => {
                       <SelectItem key={cat.id} value={cat.id}>
                         <div className="flex items-center gap-2">
                           <Icon size={14} className={cat.color} />
-                          {cat.label}
+                          {t(cat.labelKey)}
                         </div>
                       </SelectItem>
                     );
@@ -219,19 +220,19 @@ export const WorldRuleModal = () => {
 
           {category === 'custom' && (
             <div className="space-y-2">
-              <Label htmlFor="rule-custom-category">Categoría Personalizada</Label>
+              <Label htmlFor="rule-custom-category">{t('worldRules.modal.customCategory')}</Label>
               <Input
                 id="rule-custom-category"
                 value={customCategory}
                 onChange={(e) => setCustomCategory(e.target.value)}
-                placeholder="Nombre de la categoría..."
+                placeholder={t('worldRules.modal.placeholders.customCategory')}
               />
             </div>
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="rule-importance">Importancia</Label>
+              <Label htmlFor="rule-importance">{t('worldRules.modal.importance')}</Label>
               <Select value={importance} onValueChange={(v: string) => setImportance(v as WorldRuleImportance)}>
                 <SelectTrigger id="rule-importance">
                   <SelectValue />
@@ -241,7 +242,7 @@ export const WorldRuleModal = () => {
                     <SelectItem key={level.id} value={level.id}>
                       <div className="flex items-center gap-2">
                         <div className={`w-2 h-2 rounded-full ${level.color}`} />
-                        {level.label}
+                        {t(level.labelKey)}
                       </div>
                     </SelectItem>
                   ))}
@@ -259,28 +260,28 @@ export const WorldRuleModal = () => {
               />
               <Label htmlFor="rule-secret" className="flex items-center gap-2 cursor-pointer">
                 <EyeOff size={14} className="text-muted-foreground" />
-                Conocimiento Secreto
+                {t('worldRules.modal.secret')}
               </Label>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="rule-summary">Resumen Corto</Label>
+            <Label htmlFor="rule-summary">{t('worldRules.modal.summary')}</Label>
             <Input
               id="rule-summary"
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
-              placeholder="Una breve descripción de la regla..."
+              placeholder={t('worldRules.modal.placeholders.summary')}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="rule-content">Contenido Detallado</Label>
+            <Label htmlFor="rule-content">{t('worldRules.modal.content')}</Label>
             <AITextArea
               id="rule-content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Describe la regla en detalle, cómo funciona, sus implicaciones..."
+              placeholder={t('worldRules.modal.placeholders.content')}
               className="min-h-[180px] font-serif leading-relaxed"
               label="Rule Content"
               context={`Rule: ${title}. Category: ${category}. Importance: ${importance}`}
@@ -289,7 +290,7 @@ export const WorldRuleModal = () => {
 
           {/* Exceptions */}
           <div className="space-y-3 border-t pt-4">
-            <Label>Excepciones</Label>
+            <Label>{t('worldRules.modal.exceptions')}</Label>
             <div className="flex flex-wrap gap-2 mb-2">
               {exceptions.map((ex, i) => (
                 <Badge key={i} variant="outline" className="gap-1 pr-1 border-orange-500/30 text-orange-500">
@@ -302,7 +303,7 @@ export const WorldRuleModal = () => {
             </div>
             <div className="flex gap-2">
               <Input
-                placeholder="Añadir una excepción..."
+                placeholder={t('worldRules.modal.placeholders.exception')}
                 value={exceptionInput}
                 onChange={(e) => setExceptionInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addException())}
@@ -318,17 +319,17 @@ export const WorldRuleModal = () => {
             <div className="flex items-center justify-between">
               <Label className="flex items-center gap-2">
                 <Sparkles size={14} />
-                Ejemplos de Aplicación
+                {t('worldRules.modal.examples')}
               </Label>
               <Button type="button" variant="outline" size="sm" onClick={addExample} className="gap-1">
-                <Plus size={14} /> Añadir
+                <Plus size={14} /> {t('entityList.add')}
               </Button>
             </div>
             {examples.map((example, index) => (
               <div key={example.id} className="p-3 border rounded-lg space-y-2 bg-muted/20">
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Título del ejemplo"
+                    placeholder={t('worldRules.modal.placeholders.exampleTitle')}
                     value={example.title}
                     onChange={(e) => updateExample(index, 'title', e.target.value)}
                     className="flex-1"
@@ -338,7 +339,7 @@ export const WorldRuleModal = () => {
                   </Button>
                 </div>
                 <AITextArea
-                  placeholder="Describe el ejemplo..."
+                  placeholder={t('worldRules.modal.placeholders.exampleDesc')}
                   value={example.description}
                   onChange={(e) => updateExample(index, 'description', e.target.value)}
                   className="min-h-[60px]"
@@ -352,7 +353,7 @@ export const WorldRuleModal = () => {
           {/* Related Rules */}
           {otherRules.length > 0 && (
             <div className="space-y-3 border-t pt-4">
-              <Label>Reglas Relacionadas</Label>
+              <Label>{t('worldRules.modal.related')}</Label>
               <div className="flex flex-wrap gap-2">
                 {otherRules.map(rule => {
                   const isSelected = relatedRuleIds.includes(rule.id);
@@ -379,7 +380,7 @@ export const WorldRuleModal = () => {
             {isEditing && (
               <Button type="button" variant="ghost" className="text-destructive hover:bg-destructive/10 hover:text-destructive gap-2" onClick={handleDelete}>
                 <Trash2 className="w-4 h-4" />
-                Eliminar
+                {t('common.delete')}
               </Button>
             )}
           </div>
@@ -388,7 +389,7 @@ export const WorldRuleModal = () => {
               {t('common.cancel')}
             </Button>
             <Button type="submit" onClick={handleSubmit} disabled={!title.trim()}>
-              {isEditing ? 'Guardar Cambios' : 'Crear Regla'}
+              {isEditing ? t('common.saveChanges') : t('worldRules.modal.new')}
             </Button>
           </div>
         </DialogFooter>

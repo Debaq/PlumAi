@@ -76,12 +76,21 @@ export const Header = () => {
     }
   };
 
+  const handleDrag = async (e: React.MouseEvent) => {
+    if (e.button !== 0) return;
+    if ((e.target as HTMLElement).closest('button, input, select, textarea, a')) return;
+    try {
+      await appWindow.startDragging();
+    } catch (err) {
+      console.error('Failed to start dragging:', err);
+    }
+  };
+
   return (
-    <header 
+    <header
+      onMouseDown={handleDrag}
       className="h-[48px] bg-card border-b border-border flex items-center justify-between shrink-0 z-50 fixed top-0 left-0 right-0 select-none"
     >
-      {/* Drag Region - Absolute overlay to not interfere with button clicks */}
-      <div data-tauri-drag-region className="absolute inset-0 w-full h-full z-0" />
 
       {/* Left: Logo & Project Info */}
       <div className="relative z-10 flex items-center gap-4 shrink-0 px-4 pointer-events-none">
@@ -98,11 +107,11 @@ export const Header = () => {
       </div>
 
       {/* Center: Contextual Controls */}
-      <div className="relative z-10 flex-1 flex items-center justify-center min-w-0 px-4">
+      <div className="relative z-10 flex-1 flex items-center justify-center min-w-0 px-4 pointer-events-none">
 
         {/* Lore Tabs */}
         {(activeView === 'lore' || activeView === 'entities') && (
-          <div className="flex items-center bg-accent/50 p-1 rounded-md">
+          <div className="flex items-center bg-accent/50 p-1 rounded-md pointer-events-auto">
             <button
               onClick={() => setActiveLoreTab('summary')}
               className={`flex items-center gap-1.5 px-3 py-1 rounded-sm text-xs font-medium transition-colors ${activeLoreTab === 'summary' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
@@ -160,16 +169,16 @@ export const Header = () => {
             {!activeProject && (
               <button 
                 onClick={() => setActiveView('projects')} 
-                className="p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground transition-colors" 
+                className="p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground transition-colors pointer-events-auto" 
                 title="Back to Projects"
               >
                 <ArrowLeft size={18} />
               </button>
             )}
-            <div className="flex items-center bg-accent/50 p-1 rounded-md overflow-x-auto max-w-full no-scrollbar">
+            <div className="flex items-center bg-accent/50 p-1 rounded-md overflow-x-auto max-w-full no-scrollbar pointer-events-auto">
               <SettingsTabButton id="general" icon={Settings} label={t('modals.projectSettings.tabs.general')} current={activeSettingsTab} set={setActiveSettingsTab} />
               <SettingsTabButton id="ia" icon={Brain} label={t('modals.projectSettings.tabs.api')} current={activeSettingsTab} set={setActiveSettingsTab} />
-              <SettingsTabButton id="packages" icon={Package} label={t('packages')} current={activeSettingsTab} set={setActiveSettingsTab} />
+              <SettingsTabButton id="packages" icon={Package} label={t('modals.packages')} current={activeSettingsTab} set={setActiveSettingsTab} />
               <SettingsTabButton id="security" icon={Shield} label={t('modals.settings.dataManagement.title')} current={activeSettingsTab} set={setActiveSettingsTab} />
               <SettingsTabButton id="integrations" icon={GitBranch} label={t('modals.settings.textAPIs')} current={activeSettingsTab} set={setActiveSettingsTab} />
               <SettingsTabButton id="advanced" icon={Terminal} label={t('modals.settings.tokenOptimization')} current={activeSettingsTab} set={setActiveSettingsTab} />
@@ -181,7 +190,7 @@ export const Header = () => {
         {/* Editor Toolbar */}
         {activeView === 'editor' && (
           <div className="flex items-center gap-4 w-full max-w-2xl">
-            <button onClick={() => setActiveView('chapters')} className="p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground transition-colors" title="Back to Chapters">
+            <button onClick={() => setActiveView('chapters')} className="p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground transition-colors pointer-events-auto" title="Back to Chapters">
               <ArrowLeft size={18} />
             </button>
 
@@ -190,7 +199,7 @@ export const Header = () => {
             </div>
 
             <div className="flex items-center gap-2">
-               <button onClick={() => openModal('settings')} className="p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground transition-colors" title={t('editor.toolbar.settings')}>
+               <button onClick={() => openModal('settings')} className="p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground transition-colors pointer-events-auto" title={t('editor.toolbar.settings')}>
                  <Settings size={16} />
                </button>
 
@@ -204,7 +213,7 @@ export const Header = () => {
 
                <button
                  onClick={toggleEditorZenMode}
-                 className="p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground transition-colors"
+                 className="p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground transition-colors pointer-events-auto"
                  title={editorZenMode ? "Exit Zen Mode" : "Zen Mode"}
                >
                  {editorZenMode ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
@@ -223,31 +232,31 @@ export const Header = () => {
       </div>
 
       {/* Right: Window Controls */}
-      <div className="relative z-10 flex items-center shrink-0 h-full">
+      <div className="relative z-10 flex items-center shrink-0 h-full pointer-events-none">
         <button
           onClick={handleFullscreen}
-          className="w-10 h-full flex items-center justify-center hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+          className="w-10 h-full flex items-center justify-center hover:bg-accent text-muted-foreground hover:text-foreground transition-colors pointer-events-auto"
           title={t('common.windowControls.fullscreen')}
         >
           <Maximize size={16} />
         </button>
         <button
           onClick={handleMinimize}
-          className="w-10 h-full flex items-center justify-center hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+          className="w-10 h-full flex items-center justify-center hover:bg-accent text-muted-foreground hover:text-foreground transition-colors pointer-events-auto"
           title={t('common.windowControls.minimize')}
         >
           <Minus size={16} />
         </button>
         <button
           onClick={handleMaximize}
-          className="w-10 h-full flex items-center justify-center hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+          className="w-10 h-full flex items-center justify-center hover:bg-accent text-muted-foreground hover:text-foreground transition-colors pointer-events-auto"
           title={t('common.windowControls.maximize')}
         >
           <Square size={14} />
         </button>
         <button
           onClick={handleClose}
-          className="w-10 h-full flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground text-muted-foreground transition-colors"
+          className="w-10 h-full flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground text-muted-foreground transition-colors pointer-events-auto"
           title={t('common.windowControls.close')}
         >
           <X size={18} />

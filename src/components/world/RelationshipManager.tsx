@@ -3,6 +3,7 @@ import { Plus, Heart } from 'lucide-react';
 import { useUIStore } from '@/stores/useUIStore';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from 'react-i18next';
 
 interface RelationshipManagerProps {
   characterId: string;
@@ -10,11 +11,12 @@ interface RelationshipManagerProps {
 }
 
 export const RelationshipManager = ({ characterId, relationships }: RelationshipManagerProps) => {
+  const { t } = useTranslation();
   const { openModal } = useUIStore();
   const { activeProject } = useProjectStore();
 
   const getTargetName = (id: string) => {
-    return activeProject?.characters.find(c => c.id === id)?.name || 'Unknown';
+    return activeProject?.characters.find(c => c.id === id)?.name || t('relationships.manager.unknown');
   };
 
   return (
@@ -22,7 +24,7 @@ export const RelationshipManager = ({ characterId, relationships }: Relationship
       <div className="p-4 border-b bg-muted/30 flex justify-between items-center">
         <h3 className="font-semibold flex items-center gap-2 text-sm">
           <Heart className="w-4 h-4 text-primary" />
-          Relaciones
+          {t('relationships.manager.title')}
         </h3>
         <Button 
           variant="outline" 
@@ -30,14 +32,14 @@ export const RelationshipManager = ({ characterId, relationships }: Relationship
           className="h-7 text-[10px] gap-1 px-2"
           onClick={() => openModal('editRelationship', { ownerId: characterId })}
         >
-          <Plus className="w-3 h-3" /> Añadir
+          <Plus className="w-3 h-3" /> {t('relationships.manager.add')}
         </Button>
       </div>
 
       <div className="p-4 space-y-3">
         {relationships.length === 0 ? (
           <div className="py-8 text-center border-2 border-dashed rounded-lg opacity-40">
-            <p className="text-xs italic text-muted-foreground">No hay relaciones definidas.</p>
+            <p className="text-xs italic text-muted-foreground">{t('relationships.manager.empty')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-2">

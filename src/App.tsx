@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';
 import { StatusBar } from '@/components/layout/StatusBar';
@@ -43,14 +44,17 @@ import { ProjectManagerView } from '@/components/world/ProjectManagerView';
 import { ProjectSettingsView } from '@/components/world/ProjectSettingsView';
 
 import { ProjectSettingsModal } from '@/components/world/ProjectSettingsModal';
+import { PackageStoreView } from '@/components/packages';
 
 import { useBannerStore } from '@/stores/useBannerStore';
+import { Toaster } from 'sonner';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 function App() {
   const { t } = useTranslation();
   const { activeView, isSidebarOpen, activeLoreTab, editorZenMode } = useUIStore();
   const { activeProject } = useProjectStore();
-  const { theme, fontSize, animationsEnabled, initializeSettings } = useSettingsStore();
+  const { theme, fontSize, animationsEnabled, language, initializeSettings } = useSettingsStore();
   const { initializeBanners } = useBannerStore();
 
   useAutoSnapshot();
@@ -59,6 +63,13 @@ function App() {
     initializeSettings();
     initializeBanners();
   }, [initializeSettings, initializeBanners]);
+
+  // Sync stored language with i18next whenever it changes
+  useEffect(() => {
+    if (language && i18n.language !== language) {
+      i18n.changeLanguage(language);
+    }
+  }, [language]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -138,6 +149,8 @@ function App() {
         return <ProjectManagerView />;
       case 'projectSettings':
         return <ProjectSettingsView />;
+      case 'packageStore':
+        return <PackageStoreView />;
       default:
         return (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
@@ -176,6 +189,8 @@ function App() {
   return (
     <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden">
       <LoadingScreen />
+      <Toaster position="top-center" richColors theme={theme as any} />
+      <ConfirmDialog />
       {!editorZenMode && <Header />}
       {!editorZenMode && <Sidebar /> }
       <ChapterModal />

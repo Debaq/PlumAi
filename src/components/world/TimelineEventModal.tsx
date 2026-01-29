@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useUIStore } from '@/stores/useUIStore';
 import { useProjectStore } from '@/stores/useProjectStore';
+import { confirm } from '@/stores/useConfirmStore';
 import { TimelineEvent } from '@/types/domain';
 import { 
   Dialog, 
@@ -94,8 +95,8 @@ export const TimelineEventModal = () => {
     closeModal();
   };
 
-  const handleDelete = () => {
-    if (isEditing && confirm('¿Estás seguro de que quieres eliminar este evento?')) {
+  const handleDelete = async () => {
+    if (isEditing && await confirm(t('timeline.confirm.deleteEvent'), { variant: 'destructive', confirmText: t('common.delete') })) {
       deleteTimelineEvent(modalData.id);
       closeModal();
     }
@@ -124,7 +125,7 @@ export const TimelineEventModal = () => {
         <DialogHeader className="p-6 border-b bg-muted/30">
           <DialogTitle className="flex items-center gap-2">
             <Calendar className="w-5 h-5 text-primary" />
-            {isEditing ? 'Editar Evento' : 'Nuevo Evento'}
+            {isEditing ? t('timeline.edit') : t('timeline.new')}
           </DialogTitle>
         </DialogHeader>
         
@@ -132,19 +133,19 @@ export const TimelineEventModal = () => {
           {/* Main Info */}
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="event-title">Nombre del Evento</Label>
+              <Label htmlFor="event-title">{t('timeline.form.event')}</Label>
               <Input 
                 id="event-title" 
                 value={title} 
                 onChange={(e) => setTitle(e.target.value)} 
-                placeholder="Ej: La Batalla de las Sombras..."
+                placeholder={t('timeline.form.titlePlaceholder')}
                 required
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Modo de Fecha</Label>
+                <Label>{t('timeline.form.dateMode')}</Label>
                 <div className="flex gap-1 bg-muted p-1 rounded-lg">
                   {(['absolute', 'relative', 'era'] as const).map((mode) => (
                     <button
@@ -155,22 +156,22 @@ export const TimelineEventModal = () => {
                         dateMode === mode ? 'bg-background shadow-sm text-primary' : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
-                      {mode}
+                      {t(`timeline.dateMode.${mode}`)}
                     </button>
                   ))}
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label>Importancia</Label>
+                <Label>{t('timeline.form.importance')}</Label>
                 <Select value={importance} onValueChange={(v: any) => setImportance(v)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="low">Baja</SelectItem>
-                    <SelectItem value="medium">Media</SelectItem>
-                    <SelectItem value="high">Alta</SelectItem>
+                    <SelectItem value="low">{t('timeline.importance.low')}</SelectItem>
+                    <SelectItem value="medium">{t('timeline.importance.medium')}</SelectItem>
+                    <SelectItem value="high">{t('timeline.importance.high')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -178,24 +179,24 @@ export const TimelineEventModal = () => {
 
             {dateMode === 'absolute' && (
               <div className="space-y-2 animate-in slide-in-from-top-2 duration-200">
-                <Label htmlFor="event-date">Fecha</Label>
+                <Label htmlFor="event-date">{t('timeline.form.date')}</Label>
                 <Input 
                   id="event-date" 
                   value={date} 
                   onChange={(e) => setDate(e.target.value)} 
-                  placeholder="Ej: Año 124, 3 de Marzo..."
+                  placeholder={t('timeline.form.datePlaceholder')}
                 />
               </div>
             )}
 
             {dateMode === 'era' && (
               <div className="space-y-2 animate-in slide-in-from-top-2 duration-200">
-                <Label htmlFor="event-era">Era/Época</Label>
+                <Label htmlFor="event-era">{t('timeline.form.era')}</Label>
                 <Input 
                   id="event-era" 
                   value={era} 
                   onChange={(e) => setEra(e.target.value)} 
-                  placeholder="Ej: Segunda Era, Reino de Eldoria..."
+                  placeholder={t('timeline.form.eraPlaceholder')}
                 />
               </div>
             )}
@@ -204,19 +205,19 @@ export const TimelineEventModal = () => {
               <div className="p-3 bg-blue-500/5 border border-blue-500/20 rounded-lg flex gap-3 animate-in slide-in-from-top-2 duration-200">
                 <Info className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
                 <p className="text-xs text-blue-700 dark:text-blue-300">
-                  El orden relativo se define arrastrando eventos en la vista de Timeline.
+                  {t('timeline.form.relativeInfo')}
                 </p>
               </div>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="event-description">Descripción</Label>
+            <Label htmlFor="event-description">{t('timeline.form.description')}</Label>
             <textarea 
               id="event-description" 
               value={description} 
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)} 
-              placeholder="¿Qué sucedió en este evento?..."
+              placeholder={t('timeline.form.descriptionPlaceholder')}
               className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
@@ -225,7 +226,7 @@ export const TimelineEventModal = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-3">
               <Label className="flex items-center gap-2">
-                <User className="w-3 h-3" /> Participantes
+                <User className="w-3 h-3" /> {t('timeline.form.participants')}
               </Label>
               <div className="border rounded-lg p-2 max-h-[150px] overflow-y-auto space-y-1 bg-card/50">
                 {activeProject?.characters.map(char => (
@@ -239,20 +240,20 @@ export const TimelineEventModal = () => {
                     <span className="text-xs">{char.name}</span>
                   </label>
                 ))}
-                {activeProject?.characters.length === 0 && <p className="text-[10px] text-muted-foreground p-2 italic">No hay personajes creados.</p>}
+                {activeProject?.characters.length === 0 && <p className="text-[10px] text-muted-foreground p-2 italic">{t('timeline.form.noCharacters')}</p>}
               </div>
             </div>
 
             <div className="space-y-3">
               <Label className="flex items-center gap-2">
-                <MapPin className="w-3 h-3" /> Ubicación
+                <MapPin className="w-3 h-3" /> {t('timeline.form.location')}
               </Label>
               <Select value={locationId} onValueChange={setLocationId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Sin ubicación" />
+                  <SelectValue placeholder={t('timeline.form.noLocation')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Sin ubicación</SelectItem>
+                  <SelectItem value="none">{t('timeline.form.noLocation')}</SelectItem>
                   {activeProject?.locations.map(loc => (
                     <SelectItem key={loc.id} value={loc.id}>{loc.name}</SelectItem>
                   ))}
@@ -260,12 +261,12 @@ export const TimelineEventModal = () => {
               </Select>
 
               <div className="pt-2 space-y-2">
-                <Label>Etiquetas</Label>
+                <Label>{t('timeline.form.tags')}</Label>
                 <div className="flex gap-2">
                   <Input 
                     value={tagInput} 
                     onChange={(e) => setTagInput(e.target.value)} 
-                    placeholder="Añadir tag..." 
+                    placeholder={t('timeline.form.tagsPlaceholder')}
                     className="h-8 text-xs"
                     onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
                   />
@@ -289,7 +290,7 @@ export const TimelineEventModal = () => {
             {isEditing && (
               <Button type="button" variant="ghost" className="text-destructive hover:bg-destructive/10 hover:text-destructive gap-2" onClick={handleDelete}>
                 <Trash2 className="w-4 h-4" />
-                Eliminar
+                {t('common.delete')}
               </Button>
             )}
           </div>
@@ -298,7 +299,7 @@ export const TimelineEventModal = () => {
               {t('common.cancel')}
             </Button>
             <Button type="submit" onClick={handleSubmit} disabled={!title.trim()}>
-              {isEditing ? 'Guardar Cambios' : 'Crear Evento'}
+              {isEditing ? t('common.saveChanges') : t('timeline.form.event')}
             </Button>
           </div>
         </DialogFooter>

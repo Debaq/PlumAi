@@ -19,7 +19,8 @@ import {
   Settings,
   Save,
   Skull,
-  BookCheck
+  BookCheck,
+  Package
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -314,6 +315,21 @@ export const Sidebar = () => {
             <span className="truncate flex-1 text-left">{t('common.save')} & {t('common.close')}</span>
           </button>
         )}
+
+        <button
+          onClick={() => setActiveView('packageStore')}
+          className={`
+            flex items-center w-full px-3 py-2 text-sm rounded-md
+            transition-colors
+            ${activeView === 'packageStore'
+              ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+              : 'text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+            }
+          `}
+        >
+          <Package className="w-4 h-4 mr-3 shrink-0" />
+          <span className="truncate flex-1 text-left">{t('sidebar.packageStore', 'Package Store')}</span>
+        </button>
 
         <button
           onClick={handleSettingsClick}

@@ -33,7 +33,7 @@ import { Badge } from '@/components/ui/badge';
 export const NewProjectModal = () => {
   const { i18n, t } = useTranslation();
   const { activeModal, closeModal, openModal } = useUIStore();
-  const { createNewProject, applyPackageIdentity } = useProjectStore();
+  const { createNewProject, applyPackageIdentity, loadProject } = useProjectStore();
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -81,39 +81,55 @@ export const NewProjectModal = () => {
 
     try {
       // 1. Create the project
+      console.log('[NewProjectModal] Step 1: Creating project...', { title, author, genre, projectType });
       await createNewProject({
         title: title.trim(),
         author: author.trim(),
         genre: genre.trim(),
         projectType
       });
+      console.log('[NewProjectModal] Step 1: OK');
 
-      // We need the ID of the project we just created. 
+      // We need the ID of the project we just created.
       // Since createNewProject sets it in the store, we can try to get it.
       const activeProject = useProjectStore.getState().activeProject;
-      
+      console.log('[NewProjectModal] activeProject:', activeProject?.id, activeProject?.title);
+
       if (activeProject && selectedPackageId) {
         const pkg = availablePackages.find(p => p.id === selectedPackageId);
-        
+        console.log('[NewProjectModal] Step 2: Package selected:', selectedPackageId, pkg?.category);
+
         // 2. Inject Content if hybrid or content
         if (pkg?.category === 'content' || pkg?.category === 'hybrid') {
+          console.log('[NewProjectModal] Step 2a: Injecting package content...');
           await invoke('inject_package_content', {
             projectId: activeProject.id,
             packageId: pkg.id,
             lang: i18n.language || 'es'
           });
+          console.log('[NewProjectModal] Step 2a: OK');
         }
 
         // 3. Apply Identity if hybrid or identity
         if (pkg?.category === 'identity' || pkg?.category === 'hybrid') {
+          console.log('[NewProjectModal] Step 3: Applying package identity...');
           await applyPackageIdentity(pkg.id);
+          console.log('[NewProjectModal] Step 3: OK');
         }
+
+        // 4. Reload project from DB so the store picks up injected content
+        console.log('[NewProjectModal] Step 4: Reloading project from DB...');
+        await loadProject(activeProject.id);
+        console.log('[NewProjectModal] Step 4: OK');
       }
 
+      console.log('[NewProjectModal] All steps done, closing modal');
       closeModal();
     } catch (err) {
-      console.error('Error creating project with wizard:', err);
-      alert('Error al crear el proyecto');
+      console.error('[NewProjectModal] ERROR:', err);
+      console.error('[NewProjectModal] Error type:', typeof err);
+      console.error('[NewProjectModal] Error stringified:', JSON.stringify(err));
+      alert(t('modals.newProject.errorCreating') + '\n\n' + String(err));
     } finally {
       setLoading(false);
     }
@@ -128,19 +144,19 @@ export const NewProjectModal = () => {
             <div className="space-y-8">
               <div className="flex items-center gap-2 text-primary font-black uppercase tracking-tighter">
                 <Sparkles size={20} />
-                <span>Nuevo</span>
+                <span>{t('modals.newProject.new')}</span>
               </div>
-              
+
               <div className="space-y-6">
-                <StepIndicator current={step} target={1} label="Fundamentos" />
-                <StepIndicator current={step} target={2} label="Estructura" />
-                <StepIndicator current={step} target={3} label="Contenido" />
-                <StepIndicator current={step} target={4} label="Identidad" />
+                <StepIndicator current={step} target={1} label={t('modals.newProject.steps.basics')} />
+                <StepIndicator current={step} target={2} label={t('modals.newProject.steps.structure')} />
+                <StepIndicator current={step} target={3} label={t('modals.newProject.steps.content')} />
+                <StepIndicator current={step} target={4} label={t('modals.newProject.steps.identity')} />
               </div>
             </div>
 
             <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10">
-               <p className="text-[10px] font-bold text-primary uppercase tracking-widest text-center">Paso {step} de 4</p>
+               <p className="text-[10px] font-bold text-primary uppercase tracking-widest text-center">{t('modals.newProject.stepOf', { step, total: 4 })}</p>
             </div>
           </div>
 
@@ -148,10 +164,10 @@ export const NewProjectModal = () => {
           <div className="flex-1 flex flex-col overflow-hidden">
             <DialogHeader className="p-6 pb-2">
               <DialogTitle className="text-2xl font-black tracking-tight flex items-center gap-2">
-                {step === 1 && "Define tu Obra"}
-                {step === 2 && "¿Qué estás creando?"}
-                {step === 3 && "Inspiración Inicial"}
-                {step === 4 && "Toque Final"}
+                {step === 1 && t('modals.newProject.titles.basics')}
+                {step === 2 && t('modals.newProject.titles.structure')}
+                {step === 3 && t('modals.newProject.titles.content')}
+                {step === 4 && t('modals.newProject.titles.identity')}
               </DialogTitle>
             </DialogHeader>
 
@@ -160,30 +176,30 @@ export const NewProjectModal = () => {
               {step === 1 && (
                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                   <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest ml-1">Título del Proyecto</Label>
-                    <Input 
-                      value={title} 
-                      onChange={e => setTitle(e.target.value)} 
-                      placeholder="Ej: El Despertar del Vacío"
+                    <Label className="text-[10px] font-black uppercase tracking-widest ml-1">{t('modals.newProject.form.title')}</Label>
+                    <Input
+                      value={title}
+                      onChange={e => setTitle(e.target.value)}
+                      placeholder={t('modals.newProject.form.titlePlaceholder')}
                       className="h-12 rounded-xl border-2 focus:border-primary transition-all"
                       autoFocus
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest ml-1">Autor</Label>
-                    <Input 
-                      value={author} 
-                      onChange={e => setAuthor(e.target.value)} 
-                      placeholder="Tu nombre o seudónimo"
+                    <Label className="text-[10px] font-black uppercase tracking-widest ml-1">{t('modals.newProject.form.author')}</Label>
+                    <Input
+                      value={author}
+                      onChange={e => setAuthor(e.target.value)}
+                      placeholder={t('modals.newProject.form.authorPlaceholder')}
                       className="h-12 rounded-xl border-2"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest ml-1">Género</Label>
-                    <Input 
-                      value={genre} 
-                      onChange={e => setGenre(e.target.value)} 
-                      placeholder="Fantasía, Sci-Fi, Policiaca..."
+                    <Label className="text-[10px] font-black uppercase tracking-widest ml-1">{t('modals.newProject.form.genre')}</Label>
+                    <Input
+                      value={genre}
+                      onChange={e => setGenre(e.target.value)}
+                      placeholder={t('modals.newProject.form.genrePlaceholder')}
                       className="h-12 rounded-xl border-2"
                     />
                   </div>
@@ -194,24 +210,24 @@ export const NewProjectModal = () => {
               {step === 2 && (
                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                   <div className="grid grid-cols-1 gap-3">
-                    <TypeCard 
+                    <TypeCard
                       icon={Book}
-                      title="Novela Narrativa"
-                      desc="Enfocado en la escritura, capítulos y escenas."
+                      title={t('modals.newProject.types.novel')}
+                      desc={t('modals.newProject.types.novelDesc')}
                       selected={projectType === 'novel'}
                       onClick={() => setProjectType('novel')}
                     />
-                    <TypeCard 
+                    <TypeCard
                       icon={Globe2}
-                      title="Worldbuilding"
-                      desc="Creación de mundos, geografía y leyes."
+                      title={t('modals.newProject.types.worldbuilding')}
+                      desc={t('modals.newProject.types.worldbuildingDesc')}
                       selected={projectType === 'worldbuilding'}
                       onClick={() => setProjectType('worldbuilding')}
                     />
-                    <TypeCard 
+                    <TypeCard
                       icon={Dices}
-                      title="Campaña de Rol"
-                      desc="Gestión de personajes, dados y bestiario."
+                      title={t('modals.newProject.types.rpg')}
+                      desc={t('modals.newProject.types.rpgDesc')}
                       selected={projectType === 'rpg'}
                       onClick={() => setProjectType('rpg')}
                     />
@@ -222,17 +238,17 @@ export const NewProjectModal = () => {
               {/* STEP 3: CONTENT PACKS */}
               {step === 3 && (
                 <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-                  <p className="text-xs text-muted-foreground mb-4">Añade una base de datos predefinida para no empezar de cero.</p>
+                  <p className="text-xs text-muted-foreground mb-4">{t('modals.newProject.packages.description')}</p>
                   <div className="space-y-2">
-                    <div 
+                    <div
                       className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between ${!selectedPackageId ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/30'}`}
                       onClick={() => setSelectedPackageId(null)}
                     >
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-muted rounded-lg text-muted-foreground"><Package size={18} /></div>
                         <div>
-                          <p className="text-sm font-bold">Lienzo en Blanco</p>
-                          <p className="text-[10px] text-muted-foreground">Sin contenido pre-inyectado.</p>
+                          <p className="text-sm font-bold">{t('modals.newProject.packages.blankCanvas')}</p>
+                          <p className="text-[10px] text-muted-foreground">{t('modals.newProject.packages.blankCanvasDesc')}</p>
                         </div>
                       </div>
                       {!selectedPackageId && <Check className="text-primary" size={18} />}
@@ -241,7 +257,7 @@ export const NewProjectModal = () => {
                     {availablePackages.map(pkg => {
                       const meta = pkg.metadata[i18n.language || 'es'] || pkg.metadata['en'];
                       return (
-                        <div 
+                        <div
                           key={pkg.id}
                           className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center justify-between ${selectedPackageId === pkg.id ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/30'}`}
                           onClick={() => setSelectedPackageId(pkg.id)}
@@ -250,7 +266,7 @@ export const NewProjectModal = () => {
                             <div className="p-2 bg-blue-500/10 text-blue-500 rounded-lg"><Layers size={18} /></div>
                             <div>
                               <p className="text-sm font-bold">{meta.name}</p>
-                              <p className="text-[10px] text-muted-foreground">{pkg.category.toUpperCase()} • Por {pkg.author}</p>
+                              <p className="text-[10px] text-muted-foreground">{pkg.category.toUpperCase()} • {t('modals.newProject.packages.by')} {pkg.author}</p>
                             </div>
                           </div>
                           {selectedPackageId === pkg.id && <Check className="text-primary" size={18} />}
@@ -269,19 +285,19 @@ export const NewProjectModal = () => {
                       <Sparkles size={32} />
                     </div>
                     <div>
-                      <h4 className="text-lg font-black tracking-tight">{title || "Nuevo Proyecto"}</h4>
-                      <p className="text-xs text-muted-foreground uppercase font-bold tracking-widest">{projectType.toUpperCase()} • {genre || "Sin Género"}</p>
+                      <h4 className="text-lg font-black tracking-tight">{title || t('modals.newProject.preview.noTitle')}</h4>
+                      <p className="text-xs text-muted-foreground uppercase font-bold tracking-widest">{projectType.toUpperCase()} • {genre || t('modals.newProject.preview.noGenre')}</p>
                     </div>
                     <div className="flex justify-center gap-2">
-                      <Badge variant="outline" className="rounded-lg">{author || "Autor Anónimo"}</Badge>
-                      {selectedPackageId && <Badge className="rounded-lg bg-blue-500">Con Paquete</Badge>}
+                      <Badge variant="outline" className="rounded-lg">{author || t('modals.newProject.preview.noAuthor')}</Badge>
+                      {selectedPackageId && <Badge className="rounded-lg bg-blue-500">{t('modals.newProject.preview.withPackage')}</Badge>}
                     </div>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-muted/20 border border-dashed flex items-center gap-3">
                     <Palette size={20} className="text-muted-foreground" />
                     <p className="text-[10px] text-muted-foreground font-medium leading-relaxed italic">
-                      Se aplicará el tema visual por defecto o el del paquete seleccionado al finalizar la creación.
+                      {t('modals.newProject.preview.themeNote')}
                     </p>
                   </div>
                 </div>
@@ -290,26 +306,26 @@ export const NewProjectModal = () => {
 
             <DialogFooter className="p-6 pt-2 border-t border-border/50 flex gap-2">
               <Button variant="ghost" className="rounded-xl h-11 px-6 font-bold" onClick={handlePrev} disabled={loading}>
-                {step === 1 ? t('common.cancel') : "Anterior"}
+                {step === 1 ? t('common.cancel') : t('common.previous')}
               </Button>
               <div className="flex-1" />
               {step < 4 ? (
-                <Button 
-                  className="rounded-xl h-11 px-8 gap-2 font-bold" 
-                  onClick={handleNext} 
+                <Button
+                  className="rounded-xl h-11 px-8 gap-2 font-bold"
+                  onClick={handleNext}
                   disabled={step === 1 && !title.trim()}
                 >
-                  Continuar
+                  {t('modals.newProject.continue')}
                   <ArrowRight size={16} />
                 </Button>
               ) : (
-                <Button 
-                  className="rounded-xl h-11 px-10 gap-2 font-black bg-primary text-primary-foreground hover:opacity-90" 
+                <Button
+                  className="rounded-xl h-11 px-10 gap-2 font-black bg-primary text-primary-foreground hover:opacity-90"
                   onClick={handleCreate}
                   disabled={loading}
                 >
                   {loading ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
-                  ¡EMPEZAR!
+                  {t('modals.newProject.start')}
                 </Button>
               )}
             </DialogFooter>

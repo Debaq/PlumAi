@@ -1,0 +1,380 @@
+{
+  "en": {
+    "character": {
+      "names": [
+        "Aldric Stormborn", "Elara Nightbloom", "Theron Ashvale", "Seraphina Duskwood",
+        "Kael Ironhart", "Lyanna Frostmere", "Dorian Blackthorn", "Isolde Moonveil",
+        "Fenric Shadowbane", "Rowena Brightforge", "Cedric Wolfcrest", "Mirael Starweave",
+        "Gareth Stonewall", "Thessaly Windwhisper", "Oberon Firecrown", "Vivienne Silverleaf",
+        "Magnus Dreadmoor", "Calista Sunforge", "Roderick Grimshaw", "Ophelia Rainsong",
+        "Lucan Voidwalker", "Sable Thornheart", "Arcturus Flamecrest", "Nerissa Deepvale",
+        "Hadrian Warfang", "Elowen Misthollow", "Valtor Dawnbringer", "Astrid Bloodraven",
+        "Caspian Runekeeper", "Freya Emberstorm", "Silas Gravehallow", "Morgana Crystalpeak",
+        "Tormund Ironjaw", "Elspeth Gloomweald", "Zephyr Cloudstrider", "Illyria Tidecaller",
+        "Brennan Oakheart", "Sylvaine Dawnmist", "Voss Nightrender", "Cordelia Starfall"
+      ],
+      "roles": ["protagonist", "antagonist", "secondary", "supporting"],
+      "physicalDescription": {
+        "build": [
+          "Tall and lean with wiry muscles,",
+          "Short and stocky with powerful arms,",
+          "Average height with an athletic build,",
+          "Imposingly large with broad shoulders,",
+          "Slender and graceful in movement,",
+          "Compact and agile with quick reflexes,"
+        ],
+        "face": [
+          "sharp angular features and penetrating eyes.",
+          "a weathered face marked by years of hardship.",
+          "soft rounded features that belie inner strength.",
+          "a stern expression with deep-set calculating eyes.",
+          "delicate features framed by high cheekbones.",
+          "a scarred visage that tells countless stories."
+        ],
+        "hair": [
+          "Long dark hair often braided for battle.",
+          "Silver-white hair that shimmers in moonlight.",
+          "Wild red curls that seem untamable.",
+          "Close-cropped hair revealing a tattooed scalp.",
+          "Flowing golden locks worn loose and free.",
+          "Raven-black hair streaked with grey at the temples."
+        ],
+        "distinctive": [
+          "A jagged scar runs across one eyebrow.",
+          "Their eyes shift color depending on mood.",
+          "An ancient symbol is tattooed on their left hand.",
+          "They always wear a pendant of unknown origin.",
+          "One hand is covered by an ornate metal gauntlet.",
+          "A faint glow emanates from beneath their skin."
+        ]
+      },
+      "personality": {
+        "core": [
+          "Fiercely loyal to those who earn their trust,",
+          "Quietly observant, rarely speaking without purpose,",
+          "Bold and reckless, always first into danger,",
+          "Cunning and calculating, seeing three moves ahead,",
+          "Warm-hearted and generous despite a tough exterior,",
+          "Stoic and disciplined, emotions kept tightly guarded,"
+        ],
+        "quirk": [
+          "with a dry sense of humor that surfaces at the worst moments.",
+          "and an obsessive habit of collecting old maps.",
+          "though they hum old folk tunes when nervous.",
+          "but prone to talking to themselves when thinking.",
+          "and an unusual fondness for stray animals.",
+          "yet they quote ancient proverbs in everyday conversation."
+        ],
+        "flaw": [
+          "Their greatest weakness is an inability to forgive betrayal.",
+          "They struggle with a deep-seated fear of abandonment.",
+          "Pride often clouds their judgment in critical moments.",
+          "A tendency to lie makes trust difficult to build.",
+          "They carry guilt from a past failure that haunts them.",
+          "An addiction to power corrupts their best intentions."
+        ]
+      },
+      "history": {
+        "origin": [
+          "Born in a remote mountain village to a family of healers,",
+          "Raised as an orphan on the streets of a great city,",
+          "The youngest heir of a once-powerful noble house,",
+          "A former soldier who deserted after witnessing atrocity,",
+          "Trained from childhood in a secret monastic order,",
+          "Once a scholar at the Grand Academy before its fall,"
+        ],
+        "turningPoint": [
+          "their life changed when a mysterious stranger arrived with a warning.",
+          "everything shattered the night their home was destroyed by fire.",
+          "they discovered a hidden power within during a moment of despair.",
+          "a forbidden pact sealed their fate and granted dark abilities.",
+          "an expedition into ancient ruins revealed a truth about their bloodline.",
+          "a betrayal by their closest ally forced them onto a new path."
+        ],
+        "motivation": [
+          "Now they seek redemption for past sins while protecting the innocent.",
+          "They pursue vengeance against those who destroyed everything they loved.",
+          "Driven by curiosity, they search for knowledge lost to the ages.",
+          "They fight to restore their family's honor and reclaim what was stolen.",
+          "Their sole purpose is to prevent an ancient prophecy from coming true.",
+          "They wander seeking a place to belong after years of exile."
+        ]
+      },
+      "notes": [
+        "May hold the key to an ancient prophecy. Consider revealing this gradually.",
+        "Has a secret connection to another character that neither is aware of yet.",
+        "Could potentially switch allegiances mid-story for dramatic effect.",
+        "Their true identity is hidden behind a carefully constructed persona.",
+        "Possesses a rare artifact whose full power is yet to be unlocked.",
+        "Their loyalty will be tested by a devastating moral dilemma.",
+        "A recurring dream hints at events from a past life or future vision.",
+        "Their mentor figure still influences them, alive or otherwise."
+      ]
+    },
+    "location": {
+      "names": [
+        "The Shattered Spire", "Whispering Hollows", "Ashenmere Keep",
+        "The Verdant Labyrinth", "Crystalvein Caverns", "Duskfall Harbor",
+        "The Ironbound Citadel", "Starweald Forest", "The Sunken Cathedral",
+        "Thornwall Village", "The Obsidian Gate", "Mistpeak Summit",
+        "The Floating Bazaar", "Embertide Coast", "Nighthollow Marsh",
+        "The Frozen Throne", "Runestone Circle", "The Gilded Undercroft",
+        "Serpent's Cradle Bay", "The Silent Archive",
+        "Crimson Dune Wastes", "The Luminous Grotto", "Stormwatch Tower",
+        "The Wailing Steppes", "Hearthstone Village", "The Bone Garden",
+        "Skyreach Monastery", "The Iron Bazaar", "Deepmire Swamplands",
+        "The Ember Throne Hall"
+      ],
+      "types": [
+        "Fortified Castle", "Dense Forest", "Underground Cavern",
+        "Coastal Port Town", "Mountain Fortress", "Ancient Ruins",
+        "Sacred Temple", "Floating Island", "Swamp Settlement",
+        "Desert Oasis", "Volcanic Forge", "Underwater City",
+        "Sky Citadel", "Enchanted Grove", "Frozen Wasteland"
+      ],
+      "description": {
+        "atmosphere": [
+          "An eerie silence blankets this place, broken only by distant echoes.",
+          "The air here thrums with barely contained magical energy.",
+          "Warm firelight and the smell of spices create an inviting atmosphere.",
+          "A perpetual twilight bathes everything in hues of purple and gold.",
+          "The constant sound of rushing water defines the character of this place.",
+          "An oppressive darkness clings to every surface and shadow."
+        ],
+        "feature": [
+          "Massive stone pillars carved with forgotten runes line the main path.",
+          "Bioluminescent plants cast an otherworldly glow across the landscape.",
+          "Intricate mechanical devices of unknown purpose dot the area.",
+          "Crystal formations grow from the walls, humming with inner light.",
+          "Ancient trees with silver bark form a natural cathedral overhead.",
+          "Crumbling statues of long-dead kings watch over every threshold."
+        ],
+        "detail": [
+          "Local inhabitants speak of strange lights that appear at midnight.",
+          "The ground here bears scorch marks from a battle fought centuries ago.",
+          "Hidden passages connect this location to places no map reveals.",
+          "A peculiar species of bird nests here, found nowhere else in the world.",
+          "The water from the central well is said to have healing properties.",
+          "Time seems to pass differently here; hours feel like minutes."
+        ]
+      },
+      "significance": {
+        "narrative": [
+          "This is where the protagonist's journey truly begins.",
+          "A pivotal confrontation between factions takes place here.",
+          "The truth about the world's history lies buried in this place.",
+          "This serves as the sanctuary where heroes regroup and plan.",
+          "A great betrayal unfolds within these walls.",
+          "The final battle's outcome may be decided by whoever controls this location."
+        ],
+        "function": [
+          "It serves as a crossroads where multiple character arcs intersect.",
+          "This location conceals a portal to another realm or dimension.",
+          "It acts as a prison for an ancient and dangerous entity.",
+          "Resources found here are vital to the survival of a community.",
+          "It functions as a neutral ground where enemies must cooperate.",
+          "The location itself is sentient and reacts to events in the story."
+        ]
+      },
+      "notes": [
+        "Consider how weather and seasons change the feel of this place.",
+        "Local legends about this location could become a subplot.",
+        "The architecture reflects a culture that no longer exists.",
+        "This place has a dark secret that only one character knows.",
+        "A rare resource found here could drive political conflict.",
+        "The location may transform dramatically by the story's climax.",
+        "Hidden rooms or passages could be revealed through exploration.",
+        "The history of this place mirrors the protagonist's inner journey."
+      ]
+    }
+  },
+  "es": {
+    "character": {
+      "names": [
+        "Aldric Tempestad", "Elara Nocheflor", "Theron Cenizavalle", "Seraphina Boscoscuro",
+        "Kael Corazondehierro", "Lyanna Escarchamar", "Dorian Espinegra", "Isolde Veloluna",
+        "Fenric Baneasombra", "Rowena Forjallama", "Cedric Lobocresta", "Mirael Tejedorestrella",
+        "Gareth Murodepiedra", "Thessaly Susurroviento", "Oberon Coronadefuego", "Vivienne Hojaplata",
+        "Magnus Paromomuerto", "Calista Forjasol", "Roderick Muecagris", "Ophelia Cantolluvia",
+        "Lucan Caminantedelvacio", "Sable Corazondeespina", "Arcturus Crestallama", "Nerissa Valleprofundo",
+        "Hadrian Colmilloguerra", "Elowen Hondonadaneblina", "Valtor Portadordelaurora", "Astrid Cuervosangre",
+        "Caspian Guardaruna", "Freya Tormascua", "Silas Tumbavacia", "Morgana Picacristal",
+        "Tormund Mandibulahierro", "Elspeth Bosquepenumbra", "Zephyr Caminanubes", "Illyria Clamamareas",
+        "Brennan Corazonderoble", "Sylvaine Brumadelalba", "Voss Desgarranoche", "Cordelia Estrellaerante"
+      ],
+      "roles": ["protagonist", "antagonist", "secondary", "supporting"],
+      "physicalDescription": {
+        "build": [
+          "Alto y delgado con musculos fibrosos,",
+          "Bajo y robusto con brazos poderosos,",
+          "De estatura media con complexion atletica,",
+          "Imponentemente grande con hombros anchos,",
+          "Esbelto y gracil en cada movimiento,",
+          "Compacto y agil con reflejos rapidos,"
+        ],
+        "face": [
+          "rasgos angulosos afilados y ojos penetrantes.",
+          "un rostro curtido marcado por anos de adversidad.",
+          "facciones suaves y redondeadas que ocultan una fuerza interior.",
+          "una expresion severa con ojos hundidos y calculadores.",
+          "rasgos delicados enmarcados por pomulos altos.",
+          "un rostro cicatrizado que cuenta incontables historias."
+        ],
+        "hair": [
+          "Cabello largo y oscuro, a menudo trenzado para la batalla.",
+          "Pelo blanco plateado que brilla bajo la luz de la luna.",
+          "Rizos rojos salvajes que parecen indomables.",
+          "Cabello rapado que revela un cuero cabelludo tatuado.",
+          "Mechones dorados que fluyen sueltos y libres.",
+          "Cabello negro azabache con mechones grises en las sienes."
+        ],
+        "distinctive": [
+          "Una cicatriz dentada cruza una de sus cejas.",
+          "Sus ojos cambian de color segun su estado de animo.",
+          "Un simbolo antiguo esta tatuado en su mano izquierda.",
+          "Siempre lleva un colgante de origen desconocido.",
+          "Una mano esta cubierta por un guantelete metalico ornamentado.",
+          "Un brillo tenue emana de debajo de su piel."
+        ]
+      },
+      "personality": {
+        "core": [
+          "Ferozmente leal a quienes se ganan su confianza,",
+          "Silenciosamente observador, rara vez habla sin proposito,",
+          "Audaz y temerario, siempre el primero en el peligro,",
+          "Astuto y calculador, siempre tres pasos adelante,",
+          "De buen corazon y generoso pese a su exterior rudo,",
+          "Estoico y disciplinado, las emociones bien guardadas,"
+        ],
+        "quirk": [
+          "con un humor seco que surge en los peores momentos.",
+          "y un habito obsesivo de coleccionar mapas antiguos.",
+          "aunque tararea canciones populares cuando esta nervioso.",
+          "pero con tendencia a hablar solo cuando piensa.",
+          "y un carino inusual por los animales callejeros.",
+          "aunque cita proverbios antiguos en la conversacion cotidiana."
+        ],
+        "flaw": [
+          "Su mayor debilidad es la incapacidad de perdonar la traicion.",
+          "Lucha con un miedo profundo al abandono.",
+          "El orgullo nubla su juicio en momentos criticos.",
+          "Una tendencia a mentir dificulta construir confianza.",
+          "Carga con la culpa de un fracaso pasado que lo atormenta.",
+          "Una adiccion al poder corrompe sus mejores intenciones."
+        ]
+      },
+      "history": {
+        "origin": [
+          "Nacido en un remoto pueblo de montana en una familia de sanadores,",
+          "Criado como huerfano en las calles de una gran ciudad,",
+          "El heredero mas joven de una casa noble otrora poderosa,",
+          "Un antiguo soldado que deserto tras presenciar una atrocidad,",
+          "Entrenado desde la infancia en una orden monastica secreta,",
+          "Otrora erudito en la Gran Academia antes de su caida,"
+        ],
+        "turningPoint": [
+          "su vida cambio cuando un extrano misterioso llego con una advertencia.",
+          "todo se desmorono la noche que su hogar fue destruido por el fuego.",
+          "descubrio un poder oculto en su interior durante un momento de desesperacion.",
+          "un pacto prohibido sello su destino y le otorgo habilidades oscuras.",
+          "una expedicion a ruinas antiguas revelo una verdad sobre su linaje.",
+          "la traicion de su aliado mas cercano lo forzo a tomar un nuevo camino."
+        ],
+        "motivation": [
+          "Ahora busca redencion por pecados pasados mientras protege a los inocentes.",
+          "Persigue venganza contra quienes destruyeron todo lo que amaba.",
+          "Impulsado por la curiosidad, busca conocimiento perdido en las eras.",
+          "Lucha por restaurar el honor de su familia y reclamar lo robado.",
+          "Su unico proposito es evitar que una antigua profecia se cumpla.",
+          "Vaga buscando un lugar al que pertenecer tras anos de exilio."
+        ]
+      },
+      "notes": [
+        "Podria ser clave en una profecia antigua. Considerar revelarlo gradualmente.",
+        "Tiene una conexion secreta con otro personaje que ninguno conoce aun.",
+        "Podria cambiar de bando a mitad de la historia para generar drama.",
+        "Su verdadera identidad esta oculta tras una persona cuidadosamente construida.",
+        "Posee un artefacto raro cuyo poder completo aun no se ha desbloqueado.",
+        "Su lealtad sera puesta a prueba por un dilema moral devastador.",
+        "Un sueno recurrente insinua eventos de una vida pasada o vision futura.",
+        "Su figura de mentor aun lo influencia, vivo o no."
+      ]
+    },
+    "location": {
+      "names": [
+        "La Aguja Quebrada", "Los Susurros Huecos", "Fortaleza Cenizamar",
+        "El Laberinto Verdante", "Cavernas Venacristal", "Puerto Caida del Crepusculo",
+        "La Ciudadela de Hierro", "Bosque Estrelado", "La Catedral Sumergida",
+        "Aldea Muroespina", "La Puerta de Obsidiana", "Cumbre Picobruma",
+        "El Bazar Flotante", "Costa Mareabrasa", "Pantano Hondonada Nocturna",
+        "El Trono Helado", "Circulo de Runas", "La Boveda Dorada",
+        "Bahia Cuna de la Serpiente", "El Archivo Silente",
+        "Desierto de Dunas Carmesi", "La Gruta Luminosa", "Torre Vigiatormenta",
+        "Las Estepas Lamentosas", "Aldea Piedrahogar", "El Jardin de Huesos",
+        "Monasterio Alcanzacielos", "El Bazar de Hierro", "Cienagas de Miraprofunda",
+        "La Sala del Trono de Ascuas"
+      ],
+      "types": [
+        "Castillo Fortificado", "Bosque Denso", "Caverna Subterranea",
+        "Puerto Costero", "Fortaleza de Montana", "Ruinas Antiguas",
+        "Templo Sagrado", "Isla Flotante", "Asentamiento Pantanoso",
+        "Oasis en el Desierto", "Forja Volcanica", "Ciudad Submarina",
+        "Ciudadela Celeste", "Arboleda Encantada", "Paramo Helado"
+      ],
+      "description": {
+        "atmosphere": [
+          "Un silencio inquietante cubre este lugar, roto solo por ecos distantes.",
+          "El aire aqui vibra con energia magica apenas contenida.",
+          "La luz calida del fuego y el aroma de especias crean un ambiente acogedor.",
+          "Un crepusculo perpetuo bana todo en tonos purpura y dorado.",
+          "El sonido constante del agua corriente define el caracter de este lugar.",
+          "Una oscuridad opresiva se aferra a cada superficie y sombra."
+        ],
+        "feature": [
+          "Pilares de piedra masivos tallados con runas olvidadas bordean el camino principal.",
+          "Plantas bioluminiscentes proyectan un resplandor sobrenatural sobre el paisaje.",
+          "Intrincados dispositivos mecanicos de proposito desconocido salpican el area.",
+          "Formaciones de cristal crecen de las paredes, zumbando con luz interior.",
+          "Arboles ancestrales de corteza plateada forman una catedral natural en lo alto.",
+          "Estatuas desmoronadas de reyes muertos vigilan cada umbral."
+        ],
+        "detail": [
+          "Los habitantes locales hablan de luces extranas que aparecen a medianoche.",
+          "El suelo aqui muestra marcas de quemaduras de una batalla de hace siglos.",
+          "Pasadizos ocultos conectan este lugar con sitios que ningun mapa revela.",
+          "Una especie peculiar de ave anida aqui, sin encontrarse en ningun otro lugar.",
+          "Se dice que el agua del pozo central tiene propiedades curativas.",
+          "El tiempo parece pasar diferente aqui; las horas se sienten como minutos."
+        ]
+      },
+      "significance": {
+        "narrative": [
+          "Aqui es donde el viaje del protagonista realmente comienza.",
+          "Una confrontacion crucial entre facciones tiene lugar aqui.",
+          "La verdad sobre la historia del mundo yace enterrada en este lugar.",
+          "Sirve como santuario donde los heroes se reagrupan y planifican.",
+          "Una gran traicion se desarrolla entre estos muros.",
+          "El resultado de la batalla final puede decidirse por quien controle esta ubicacion."
+        ],
+        "function": [
+          "Funciona como encrucijada donde multiples arcos de personajes se cruzan.",
+          "Esta ubicacion oculta un portal a otro reino o dimension.",
+          "Actua como prision para una entidad antigua y peligrosa.",
+          "Los recursos encontrados aqui son vitales para la supervivencia de una comunidad.",
+          "Funciona como terreno neutral donde los enemigos deben cooperar.",
+          "La ubicacion en si es consciente y reacciona a los eventos de la historia."
+        ]
+      },
+      "notes": [
+        "Considera como el clima y las estaciones cambian la sensacion de este lugar.",
+        "Las leyendas locales sobre esta ubicacion podrian convertirse en una subtrama.",
+        "La arquitectura refleja una cultura que ya no existe.",
+        "Este lugar tiene un secreto oscuro que solo un personaje conoce.",
+        "Un recurso raro encontrado aqui podria impulsar un conflicto politico.",
+        "La ubicacion podria transformarse dramaticamente para el climax de la historia.",
+        "Habitaciones o pasadizos ocultos podrian revelarse mediante exploracion.",
+        "La historia de este lugar refleja el viaje interior del protagonista."
+      ]
+    }
+  }
+}

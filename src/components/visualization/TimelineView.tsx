@@ -32,6 +32,12 @@ export const TimelineView = () => {
     return activeProject.locations.find(l => l.id === id)?.name || id;
   };
 
+  const getSceneImage = (sceneId?: string) => {
+    if (!sceneId) return null;
+    const scene = activeProject.scenes.find(s => s.id === sceneId);
+    return scene?.image;
+  };
+
   const renderParallelView = () => {
     // 1. Get characters involved in at least one event
     const involvedCharacterIds = new Set<string>();
@@ -39,7 +45,7 @@ export const TimelineView = () => {
     
     const characters = activeProject.characters.filter(c => involvedCharacterIds.has(c.id));
     if (characters.length === 0 && sortedEvents.length > 0) {
-        return <div className="p-8 text-center text-muted-foreground">Events have no assigned characters.</div>;
+        return <div className="p-8 text-center text-muted-foreground">{t('timeline.noAssignedCharacters')}</div>;
     }
 
     // 2. Map global index to each event for alignment
@@ -55,7 +61,7 @@ export const TimelineView = () => {
                <div className="flex relative" style={{ width: sortedEvents.length * 200 }}>
                   {sortedEvents.map((e, i) => (
                     <div key={e.id} className="absolute text-[10px] text-muted-foreground w-40 truncate border-l pl-1" style={{ left: i * 200 }}>
-                        {e.date || `Event ${i+1}`}
+                        {e.date || `${t('timeline.eventDefaultName')} ${i+1}`}
                     </div>
                   ))}
                </div>
@@ -114,30 +120,30 @@ export const TimelineView = () => {
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <Calendar className="text-primary" />
-            Línea de Tiempo
+            {t('timeline.title')}
           </h2>
-          <p className="text-sm text-muted-foreground">Cronología oficial de tu mundo y trama.</p>
+          <p className="text-sm text-muted-foreground">{t('timeline.subtitle')}</p>
         </div>
         <div className="flex gap-2">
             <div className="flex items-center bg-muted p-1 rounded-lg border">
                 <button 
                    onClick={() => setViewMode('list')}
                    className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-background shadow text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                   title="Lista Vertical"
+                   title={t('timeline.viewVerticalList')}
                 >
                     <Rows size={14} />
                 </button>
                 <button 
                    onClick={() => setViewMode('parallel')}
                    className={`p-1.5 rounded-md transition-all ${viewMode === 'parallel' ? 'bg-background shadow text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                   title="Lineas Paralelas (Swimlanes)"
+                   title={t('timeline.viewParallel')}
                 >
                     <GitGraph size={14} />
                 </button>
             </div>
             <Button onClick={() => openModal('timelineEvent')} className="gap-2">
               <Plus size={16} />
-              Nuevo Evento
+              {t('timeline.new')}
             </Button>
         </div>
       </div>
@@ -209,8 +215,19 @@ export const TimelineView = () => {
                     )}
                   </div>
 
+                  {/* Scene Image */}
+                  {getSceneImage(event.sceneId) && (
+                    <div className="shrink-0 w-full md:w-48 aspect-video rounded-lg overflow-hidden border border-border shadow-sm bg-muted self-start">
+                      <img 
+                        src={getSceneImage(event.sceneId)} 
+                        alt="Scene" 
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                      />
+                    </div>
+                  )}
+
                   <div className="shrink-0 flex md:flex-col gap-2 items-end">
-                     {event.importance === 'high' && <Badge className="bg-orange-500 text-[9px]">CRUCIAL</Badge>}
+                     {event.importance === 'high' && <Badge className="bg-orange-500 text-[9px]">{t('timeline.crucial')}</Badge>}
                   </div>
                 </div>
               </div>
@@ -220,8 +237,8 @@ export const TimelineView = () => {
           {sortedEvents.length === 0 && (
             <div className="ml-8 py-12 text-center border-2 border-dashed border-border rounded-xl">
               <Calendar size={48} className="mx-auto mb-4 opacity-10" />
-              <p className="text-muted-foreground">No hay eventos registrados en la cronología.</p>
-              <Button variant="link" onClick={() => openModal('timelineEvent')}>Crear el primer evento</Button>
+              <p className="text-muted-foreground">{t('timeline.emptyStateTitle')}</p>
+              <Button variant="link" onClick={() => openModal('timelineEvent')}>{t('timeline.createFirstEvent')}</Button>
             </div>
           )}
         </div>

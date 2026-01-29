@@ -1,27 +1,35 @@
+pub mod catalog;
+pub mod db;
+pub mod error;
+pub mod installer;
+pub mod migration;
 pub mod models;
+pub mod registry;
 
+use models::PackageManifest;
 use std::fs;
 use std::path::PathBuf;
-use models::PackageManifest;
 use tauri::{AppHandle, Manager};
 
 pub fn get_packages_dir(app: &AppHandle) -> Result<PathBuf, String> {
-    let app_dir = app.path().app_data_dir()
+    let app_dir = app
+        .path()
+        .app_data_dir()
         .map_err(|_| "Could not find app data directory".to_string())?;
-    
+
     let packages_dir = app_dir.join("packages");
-    
+
     if !packages_dir.exists() {
         fs::create_dir_all(&packages_dir)
             .map_err(|e| format!("Failed to create packages directory: {}", e))?;
     }
-    
+
     Ok(packages_dir)
 }
 
 pub fn list_available_packages(app: &AppHandle) -> Result<Vec<PackageManifest>, String> {
     let mut packages = Vec::new();
-    
+
     // 1. Scan System App Data directory
     if let Ok(dir) = get_packages_dir(app) {
         scan_directory(dir, &mut packages);
@@ -66,4 +74,3 @@ fn scan_directory(dir: PathBuf, packages: &mut Vec<PackageManifest>) {
         }
     }
 }
-

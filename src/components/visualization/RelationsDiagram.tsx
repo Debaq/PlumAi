@@ -176,7 +176,7 @@ export const RelationsDiagram = () => {
           <div className="flex justify-between items-center px-1">
             <h3 className="font-black flex items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
               <List size={14} className="text-primary" />
-              Cronología de Vínculos
+              {t('relationsDiagram.timeline')}
             </h3>
             <Badge variant="outline" className="text-[9px] font-bold">{allRelationships.length}</Badge>
           </div>
@@ -185,7 +185,7 @@ export const RelationsDiagram = () => {
             {allRelationships.length === 0 ? (
               <div className="py-12 text-center border-2 border-dashed rounded-2xl opacity-30 flex flex-col items-center gap-3">
                 <Heart size={32} />
-                <p className="text-[10px] uppercase font-bold tracking-wider">Sin relaciones</p>
+                <p className="text-[10px] uppercase font-bold tracking-wider">{t('relationsDiagram.empty')}</p>
               </div>
             ) : (
               allRelationships.map((rel) => {
@@ -209,7 +209,7 @@ export const RelationsDiagram = () => {
                     </div>
                     
                     <p className="text-[11px] text-muted-foreground leading-relaxed italic line-clamp-2 mb-3 bg-muted/30 p-2 rounded-lg">
-                      "{rel.currentDescription || 'Sin descripción'}"
+                      "{rel.currentDescription || t('relationsDiagram.noDesc')}"
                     </p>
 
                     <div className="flex items-center justify-between">
@@ -217,9 +217,9 @@ export const RelationsDiagram = () => {
                         <span 
                           className="text-[8px] font-black uppercase px-2 py-0.5 rounded-full border border-primary/10 bg-primary/5 text-primary"
                         >
-                          {rel.currentType}
+                          {t(`characters.form.relationTypes.${rel.currentType}`)}
                         </span>
-                        {rel.isSecret && <Badge className="bg-red-500/10 text-red-500 border-none text-[8px] h-4">SECRETO</Badge>}
+                        {rel.isSecret && <Badge className="bg-red-500/10 text-red-500 border-none text-[8px] h-4">{t('worldRules.modal.secret').toUpperCase()}</Badge>}
                       </div>
                       <div className="flex items-center gap-1 text-[9px] text-muted-foreground font-bold">
                         <History size={10} />
@@ -238,13 +238,13 @@ export const RelationsDiagram = () => {
           <div className="absolute top-6 left-6 z-10 flex flex-col gap-4">
             <div className="bg-background/80 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl">
               <h4 className="text-[9px] font-black mb-3 uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
-                <Layout size={10} /> Leyenda
+                <Layout size={10} /> {t('relationsDiagram.legend')}
               </h4>
               <div className="grid grid-cols-2 gap-x-6 gap-y-2">
                 {Object.entries(RELATION_COLORS).slice(0, 10).map(([type, color]) => (
                   <div key={type} className="flex items-center gap-2 group cursor-default">
                     <div className="w-2 h-2 rounded-full shadow-sm" style={{ backgroundColor: color }} />
-                    <span className="text-[10px] capitalize font-bold text-foreground/70 group-hover:text-foreground transition-colors">{type}</span>
+                    <span className="text-[10px] capitalize font-bold text-foreground/70 group-hover:text-foreground transition-colors">{t(`characters.form.relationTypes.${type}`)}</span>
                   </div>
                 ))}
               </div>
@@ -252,14 +252,14 @@ export const RelationsDiagram = () => {
 
             <div className="flex gap-2">
               <Button variant="secondary" size="sm" className="h-8 rounded-xl gap-2 text-[10px] font-bold shadow-lg" onClick={autoLayout}>
-                <Maximize size={12} /> RE-ORDENAR
+                <Maximize size={12} /> {t('relationsDiagram.reorder')}
               </Button>
             </div>
           </div>
 
           <div className="absolute bottom-6 left-6 z-10">
              <div className="bg-primary/10 backdrop-blur-md border border-primary/20 px-4 py-2 rounded-full text-[10px] font-black text-primary flex items-center gap-2">
-                <Sparkles size={12} /> ARRASTRA PARA CONECTAR
+                <Sparkles size={12} /> {t('relationsDiagram.dragConnect')}
              </div>
           </div>
 
@@ -271,13 +271,11 @@ export const RelationsDiagram = () => {
             onNodeDragStop={onNodeDragStop}
             onConnect={onConnect}
             fitView
-            attributionPosition="bottom-right"
           >
-            <Background gap={24} size={1} color="var(--border)" />
-            <Controls className="!bg-background/80 !backdrop-blur-md !border-border !rounded-xl !shadow-2xl" />
+            <Background />
+            <Controls />
           </ReactFlow>
         </div>
-
       </div>
     </div>
   );

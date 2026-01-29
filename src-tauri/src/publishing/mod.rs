@@ -2,11 +2,11 @@
 //!
 //! Provides native document generation capabilities.
 
-mod pdf;
 mod docx;
+mod pdf;
 
-pub use pdf::*;
 pub use docx::*;
+pub use pdf::*;
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;

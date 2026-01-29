@@ -1,5 +1,6 @@
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useUIStore } from '@/stores/useUIStore';
+import { confirm } from '@/stores/useConfirmStore';
 import { useTranslation } from 'react-i18next';
 import { BookOpen, Trash2, Edit, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -14,9 +15,9 @@ export const ChapterList = () => {
 
   const chapters = activeProject.chapters.sort((a, b) => (a.order || 0) - (b.order || 0));
 
-  const handleDelete = (e: React.MouseEvent, id: string) => {
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    if (confirm('Are you sure you want to delete this chapter?')) {
+    if (await confirm(t('chapters.delete.message'), { variant: 'destructive', confirmText: t('common.delete') })) {
       deleteChapter(id);
     }
   };
@@ -46,23 +47,23 @@ export const ChapterList = () => {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <BookOpen className="text-primary" />
-            Chapters
+            {t('chapterList.title')}
           </h1>
-          <p className="text-sm text-muted-foreground">Write and organize your story chapters</p>
+          <p className="text-sm text-muted-foreground">{t('chapterList.subtitle')}</p>
         </div>
         <Button onClick={() => openModal('newChapter')} className="gap-2">
           <Plus size={16} />
-          New Chapter
+          {t('chapterList.new')}
         </Button>
       </div>
 
       {chapters.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-border rounded-xl text-center">
           <BookOpen size={48} className="text-muted-foreground/20 mb-4" />
-          <p className="text-lg font-medium text-muted-foreground">No chapters created yet</p>
-          <p className="text-sm text-muted-foreground/60 mb-6">Create your first chapter to start writing</p>
+          <p className="text-lg font-medium text-muted-foreground">{t('chapterList.empty.title')}</p>
+          <p className="text-sm text-muted-foreground/60 mb-6">{t('chapterList.empty.subtitle')}</p>
           <Button variant="outline" onClick={() => openModal('newChapter')}>
-            Add Chapter
+            {t('chapterList.add')}
           </Button>
         </div>
       ) : (
@@ -78,10 +79,10 @@ export const ChapterList = () => {
               </div>
               
               <div className="flex-1 min-width-0">
-                <h3 className="font-bold text-lg truncate">{chapter.title || 'Untitled'}</h3>
+                <h3 className="font-bold text-lg truncate">{chapter.title || t('chapterList.untitled')}</h3>
                 <div className="flex items-center gap-4 mt-1">
                   <span className="text-xs text-muted-foreground">
-                    {chapter.wordCount} words
+                    {chapter.wordCount} {t('chapterList.words')}
                   </span>
                   <Badge variant="outline" className={`text-[10px] uppercase font-bold px-2 py-0 ${getStatusColor(chapter.status)}`}>
                     {chapter.status.replace('_', ' ')}

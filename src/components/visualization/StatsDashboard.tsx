@@ -1,5 +1,6 @@
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
+import { useTranslation } from 'react-i18next';
 import { 
   BarChart, 
   Bar, 
@@ -23,10 +24,11 @@ import {
 import { Badge } from '@/components/ui/badge';
 
 export const StatsDashboard = () => {
+  const { t } = useTranslation();
   const { activeProject } = useProjectStore();
   const { dailyWordGoal } = useSettingsStore();
 
-  if (!activeProject) return <div className="p-8 text-center opacity-50 italic">Carga un proyecto para ver estadísticas.</div>;
+  if (!activeProject) return <div className="p-8 text-center opacity-50 italic">{t('project.noProjectLoaded')}</div>;
 
   const totalWords = activeProject.chapters.reduce((acc, chap) => acc + (chap.wordCount || 0), 0);
   const characterCount = activeProject.characters.length;
@@ -63,23 +65,23 @@ export const StatsDashboard = () => {
     <div className="p-8 space-y-8 animate-in fade-in duration-700 max-w-7xl mx-auto pb-24">
       <div className="flex justify-between items-end">
         <div>
-          <h2 className="text-3xl font-black tracking-tight">Dashboard</h2>
-          <p className="text-muted-foreground text-sm">Resumen analítico de "{activeProject.title}"</p>
+          <h2 className="text-3xl font-black tracking-tight">{t('statsView.title')}</h2>
+          <p className="text-muted-foreground text-sm">{t('statsView.subtitle', { title: activeProject.title })}</p>
         </div>
         <div className="flex gap-2">
           <Badge variant="outline" className="h-8 rounded-xl gap-2 bg-primary/5 text-primary border-primary/20">
             <Flame className="w-3.5 h-3.5 fill-primary" />
-            Racha de {writingStreak} días
+            {t('statsView.streak', { days: writingStreak })}
           </Badge>
         </div>
       </div>
 
       {/* Primary Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatsCard icon={PenTool} label="Palabras Totales" value={totalWords.toLocaleString()} color="bg-primary" />
-        <StatsCard icon={BookOpen} label="Capítulos" value={chapterCount} color="bg-blue-500" />
-        <StatsCard icon={Users} label="Personajes" value={characterCount} color="bg-purple-500" />
-        <StatsCard icon={MapPin} label="Ubicaciones" value={locationCount} color="bg-green-500" />
+        <StatsCard icon={PenTool} label={t('statsView.totalWords')} value={totalWords.toLocaleString()} color="bg-primary" />
+        <StatsCard icon={BookOpen} label={t('dashboard.stats.chapters')} value={chapterCount} color="bg-blue-500" />
+        <StatsCard icon={Users} label={t('dashboard.stats.characters')} value={characterCount} color="bg-purple-500" />
+        <StatsCard icon={MapPin} label={t('sidebar.locations')} value={locationCount} color="bg-green-500" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -90,9 +92,9 @@ export const StatsDashboard = () => {
             <div>
               <h3 className="text-lg font-black flex items-center gap-2">
                 <TrendingUp className="text-primary w-5 h-5" />
-                Volumen por Capítulo
+                {t('statsView.volumeChart')}
               </h3>
-              <p className="text-xs text-muted-foreground">Distribución de longitud del manuscrito</p>
+              <p className="text-xs text-muted-foreground">{t('statsView.volumeSubtitle')}</p>
             </div>
           </div>
           
@@ -153,9 +155,9 @@ export const StatsDashboard = () => {
             <div className="space-y-1 relative z-10">
               <h3 className="text-xl font-black flex items-center gap-2">
                 <Target className="w-5 h-5" />
-                Meta Diaria
+                {t('statsView.dailyGoal')}
               </h3>
-              <p className="text-white/70 text-xs font-medium uppercase tracking-tighter">Mantén el ritmo de escritura</p>
+              <p className="text-white/70 text-xs font-medium uppercase tracking-tighter">{t('statsView.keepGoing')}</p>
             </div>
 
             <div className="space-y-4 relative z-10">
@@ -177,14 +179,14 @@ export const StatsDashboard = () => {
               </div>
               
               <p className="text-[10px] leading-relaxed text-white/60">
-                Basado en tu última sesión. Escribe {dailyWordGoal - (totalWords % dailyWordGoal)} palabras más para alcanzar tu objetivo hoy.
+                {t('statsView.basedOn', { words: dailyWordGoal - (totalWords % dailyWordGoal) })}
               </p>
             </div>
           </div>
 
           <div className="bg-card border border-border/50 p-6 rounded-3xl space-y-4">
             <h4 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-              <Flame className="w-3 h-3 text-orange-500" /> Logros Recientes
+              <Flame className="w-3 h-3 text-orange-500" /> {t('statsView.recentAchievements')}
             </h4>
             <div className="space-y-2">
               <AchievementItem label="Primeras 1,000 palabras" date="Ayer" checked />

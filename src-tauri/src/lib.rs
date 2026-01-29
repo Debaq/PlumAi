@@ -14,22 +14,41 @@ use database::DbState;
 use rusqlite::Connection;
 use std::sync::Mutex;
 use tauri::Manager;
+use tauri_plugin_log::{Target, TargetKind};
+use log::LevelFilter;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(
+            tauri_plugin_log::Builder::default()
+                .targets([
+                    Target::new(TargetKind::Stdout),
+                    Target::new(TargetKind::Webview),
+                ])
+                .level(LevelFilter::Error)
+                .level_for("plumai_lib", LevelFilter::Debug)
+                .build(),
+        )
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
-            // Setup logging in debug mode
-            if cfg!(debug_assertions) {
-                app.handle().plugin(
-                    tauri_plugin_log::Builder::default()
-                        .level(log::LevelFilter::Info)
-                        .build(),
-                )?;
+            // Setup Ctrl+R reload in debug mode
+            #[cfg(debug_assertions)]
+            {
+                if let Some(window) = app.get_webview_window("main") {
+                    let script = r#"
+                        window.addEventListener('keydown', (e) => {
+                            if (e.ctrlKey && e.key === 'r') {
+                                console.log('🔄 Forzando recarga desde el teclado...');
+                                window.location.reload();
+                            }
+                        });
+                    "#;
+                    window.eval(script)?;
+                }
             }
 
             // Initialize database
@@ -47,6 +66,12 @@ pub fn run() {
 
             // Initialize schema
             database::init_database(&conn).expect("Failed to initialize database");
+
+            // Migrate local packages to DB
+            let packages_dir = app_dir.join("packages");
+            if let Err(e) = packages::migration::migrate_local_packages(&conn, &packages_dir) {
+                log::warn!("Package migration warning: {}", e);
+            }
 
             // Store connection in app state
             app.manage(DbState(Mutex::new(conn)));
@@ -121,11 +146,22 @@ pub fn run() {
             commands::fs_load_project,
             commands::fs_project_to_json,
             commands::fs_project_from_json,
-            // Packages
+            // Packages (legacy)
             commands::get_available_packages,
             commands::get_package_by_id,
             commands::resolve_package_asset,
             commands::inject_package_content,
+            // Package Store
+            commands::pkg_get_registries,
+            commands::pkg_add_registry,
+            commands::pkg_remove_registry,
+            commands::pkg_toggle_registry,
+            commands::pkg_fetch_catalog,
+            commands::pkg_install_package,
+            commands::pkg_update_package,
+            commands::pkg_uninstall_package,
+            commands::pkg_get_installed,
+            commands::pkg_check_updates,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

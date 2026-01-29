@@ -123,8 +123,8 @@ pub fn decrypt(encrypted: &EncryptedData, password: &str) -> Result<String, Cryp
 /// Encrypt JSON data
 #[allow(dead_code)]
 pub fn encrypt_json<T: Serialize>(data: &T, password: &str) -> Result<EncryptedData, CryptoError> {
-    let json = serde_json::to_string(data)
-        .map_err(|e| CryptoError::EncryptionFailed(e.to_string()))?;
+    let json =
+        serde_json::to_string(data).map_err(|e| CryptoError::EncryptionFailed(e.to_string()))?;
     encrypt(&json, password)
 }
 
