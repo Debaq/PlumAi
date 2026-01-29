@@ -29,11 +29,13 @@ import { LocationModal } from '@/components/world/LocationModal';
 import { RelationshipModal } from '@/components/world/RelationshipModal';
 import { CreatureModal } from '@/components/world/CreatureModal';
 import { WorldRuleModal } from '@/components/world/WorldRuleModal';
+import { NpcModal } from '@/components/world/NpcModal';
 import { CommandPalette } from '@/components/ui/command-palette';
 import { ImagesGallery } from '@/components/world/ImagesGallery';
 import { AIAssistantView } from '@/components/ai/AIAssistantView';
 import { VersionControlView } from '@/components/version-control/VersionControlView';
 import { PublishingView } from '@/components/world/PublishingView';
+import { ZineView } from '@/components/publishing/ZineView';
 import { AppLock } from '@/components/layout/AppLock';
 import { useAutoSnapshot } from '@/hooks/useAutoSnapshot';
 import { WorldbuilderPanel } from '@/components/rpg/WorldbuilderPanel';
@@ -52,7 +54,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
 function App() {
   const { t } = useTranslation();
-  const { activeView, isSidebarOpen, activeLoreTab, editorZenMode } = useUIStore();
+  const { activeView, isSidebarOpen, activeLoreTab, editorZenMode, activePublishingTab } = useUIStore();
   const { activeProject } = useProjectStore();
   const { theme, fontSize, animationsEnabled, language, initializeSettings } = useSettingsStore();
   const { initializeBanners } = useBannerStore();
@@ -121,6 +123,7 @@ function App() {
         if (activeLoreTab === 'scenes') return <EntityList />;
         if (activeLoreTab === 'map') return <TopologicalMap />;
         if (activeLoreTab === 'bestiary') return <EntityList />;
+        if (activeLoreTab === 'npcs') return <EntityList />;
         if (activeLoreTab === 'worldRules') return <EntityList />;
         return <EntityList />;
       case 'chapters':
@@ -132,6 +135,7 @@ function App() {
       case 'versionControl':
         return <VersionControlView />;
       case 'publishing':
+        if (activePublishingTab === 'zines') return <ZineView />;
         return <PublishingView />;
       case 'relations':
         return <RelationsDiagram />;
@@ -178,6 +182,7 @@ function App() {
       if (activeLoreTab === 'events') return 'events';
       if (activeLoreTab === 'scenes') return 'scenes';
       if (activeLoreTab === 'bestiary') return 'bestiary';
+      if (activeLoreTab === 'npcs') return 'npcs';
       if (activeLoreTab === 'worldRules') return 'worldRules';
       return 'lore';
     }
@@ -206,6 +211,7 @@ function App() {
       <RelationshipModal />
       <CreatureModal />
       <WorldRuleModal />
+      <NpcModal />
       <CommandPalette />
 
       <main

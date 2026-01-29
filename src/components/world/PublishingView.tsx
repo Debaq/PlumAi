@@ -17,11 +17,20 @@ import {
 } from 'lucide-react';
 import { PublishingEngine, type PublishingOptions } from '@/lib/publishing/PublishingEngine';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
 import { Chapter } from '@/types/domain';
 import { AgenticService } from '@/lib/ai/agentic-service';
 import { generateTextAI } from '@/lib/ai/client-ai';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { Sparkles, Loader2 } from 'lucide-react';
+import { PublishingTabBar } from '@/components/publishing/PublishingTabBar';
+import { BookPreviewModal } from '@/components/publishing/BookPreviewModal';
 
 export const PublishingView: React.FC = () => {
   const { activeProject } = useProjectStore();
@@ -154,6 +163,7 @@ export const PublishingView: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-6 max-w-5xl mx-auto p-6 pb-24 animate-in fade-in duration-500 overflow-y-auto h-full">
+      <PublishingTabBar />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -187,27 +197,35 @@ export const PublishingView: React.FC = () => {
               <div className="p-4 pt-0 border-t border-dashed space-y-4 animate-in slide-in-from-top-2 duration-300">
                 <div className="space-y-2 mt-4">
                   <label className="text-sm font-medium">{t('publishing.bookSize.title')}</label>
-                  <select 
+                  <Select 
                     value={options.bookSize}
-                    onChange={(e) => setOptions(prev => ({ ...prev, bookSize: e.target.value }))}
-                    className="w-full p-2 bg-background border rounded-md text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                    onValueChange={(val: string) => setOptions(prev => ({ ...prev, bookSize: val }))}
                   >
-                    <option value="kdp5x8">{t('publishing.bookSize.options.kdp5x8')}</option>
-                    <option value="kdp6x9">{t('publishing.bookSize.options.kdp6x9')}</option>
-                    <option value="kdp8.5x11">{t('publishing.bookSize.options.kdp8.5x11')}</option>
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t('publishing.bookSize.title')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="kdp5x8">{t('publishing.bookSize.options.kdp5x8')}</SelectItem>
+                      <SelectItem value="kdp6x9">{t('publishing.bookSize.options.kdp6x9')}</SelectItem>
+                      <SelectItem value="kdp8.5x11">{t('publishing.bookSize.options.kdp8.5x11')}</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium">{t('publishing.paperType.label')}</label>
-                  <select 
+                  <Select 
                     value={options.paperType}
-                    onChange={(e) => setOptions(prev => ({ ...prev, paperType: e.target.value as any }))}
-                    className="w-full p-2 bg-background border rounded-md text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                    onValueChange={(val: any) => setOptions(prev => ({ ...prev, paperType: val }))}
                   >
-                    <option value="cream">{t('publishing.paperType.cream')}</option>
-                    <option value="white">{t('publishing.paperType.white')}</option>
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue placeholder={t('publishing.paperType.label')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cream">{t('publishing.paperType.cream')}</SelectItem>
+                      <SelectItem value="white">{t('publishing.paperType.white')}</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="p-3 bg-muted/50 rounded-lg flex items-center gap-3 text-xs text-muted-foreground">
@@ -540,42 +558,13 @@ export const PublishingView: React.FC = () => {
         </div>
       </div>
 
-      {/* PRINT PREVIEW MODAL */}
-      {isPreviewOpen && (
-        <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center p-12 overflow-hidden animate-in fade-in duration-500">
-          <div className="absolute top-8 right-8 flex gap-4">
-             <Button variant="outline" className="border-white/20 text-white hover:bg-white/10" onClick={() => setIsPreviewOpen(false)}>
-                Cerrar Vista
-             </Button>
-          </div>
-
-          <div className="w-full max-w-5xl h-full flex items-center justify-center">
-            {/* Left Page */}
-            <div className="w-1/2 aspect-[2/3] bg-[#f9f4e8] shadow-2xl rounded-l-md border-r border-black/10 p-12 overflow-hidden relative">
-               <div className="absolute top-8 left-8 text-[10px] uppercase font-black tracking-widest text-muted-foreground/40">{options.author}</div>
-               <div className="prose prose-sm prose-stone h-full overflow-hidden text-justify leading-relaxed">
-                  <h3 className="text-center mb-8 font-serif uppercase tracking-widest">{activeProject.chapters[0]?.title}</h3>
-                  <p className="indent-8 first:indent-0">{activeProject.chapters[0]?.content.replace(/<[^>]+>/g, '').substring(0, 800)}...</p>
-               </div>
-               <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-xs font-bold text-muted-foreground/30">1</div>
-            </div>
-
-            {/* Right Page */}
-            <div className="w-1/2 aspect-[2/3] bg-[#f9f4e8] shadow-2xl rounded-r-md border-l border-black/10 p-12 overflow-hidden relative">
-               <div className="absolute top-8 right-8 text-[10px] uppercase font-black tracking-widest text-muted-foreground/40">{options.title}</div>
-               <div className="prose prose-sm prose-stone h-full overflow-hidden text-justify leading-relaxed">
-                  <p className="indent-8">{activeProject.chapters[0]?.content.replace(/<[^>]+>/g, '').substring(800, 1800)}...</p>
-               </div>
-               <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-xs font-bold text-muted-foreground/30">2</div>
-            </div>
-
-            {/* Spine Shadow */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-[75%] bg-gradient-to-r from-black/10 via-black/20 to-black/10 blur-sm pointer-events-none" />
-          </div>
-
-          <p className="mt-8 text-white/50 text-xs font-bold uppercase tracking-[0.3em]">Vista "Libro Abierto" • Previsualización de Márgenes y Medianil</p>
-        </div>
-      )}
+      <BookPreviewModal
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        title={options.title}
+        author={options.author}
+        chapters={activeProject.chapters}
+      />
     </div>
   );
 };

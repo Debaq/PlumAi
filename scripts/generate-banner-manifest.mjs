@@ -22,7 +22,8 @@ const categories = [
     'relations',
     'bestiary',
     'worldRules',
-    'sidebar'
+    'sidebar',
+    'npcs'
 ];
 
 async function convertPngToWebp(dirPath) {

@@ -20,7 +20,8 @@ import {
   Save,
   Skull,
   BookCheck,
-  Package
+  Package,
+  UserRound
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -32,9 +33,10 @@ export const Sidebar = () => {
     toggleSidebar, 
     isRpgPanelOpen, 
     toggleRpgPanel, 
-    setActiveLoreTab, 
+    setActiveLoreTab,
     activeLoreTab,
-    goBack
+    goBack,
+    setActivePublishingTab
   } = useUIStore();
   const { ragStudioEnabled } = useSettingsStore();
   const { rotateBanner } = useBannerStore();
@@ -225,7 +227,7 @@ export const Sidebar = () => {
                   setActiveView('lore');
                   setActiveLoreTab('summary');
                 }}
-                isActive={activeView === 'lore' && !['bestiary', 'worldRules'].includes(activeLoreTab)}
+                isActive={activeView === 'lore' && !['bestiary', 'npcs', 'worldRules'].includes(activeLoreTab)}
               />
               <NavItem view="chapters" icon={Book} label={t('sidebar.chapters')} count={activeProject.chapters.length} />
               <NavItem view="scenes" icon={Film} label={t('sidebar.scenes')} count={activeProject.scenes?.length || 0} />
@@ -235,7 +237,7 @@ export const Sidebar = () => {
 
               <NavItem view="projectSettings" icon={Settings} label={t('sidebar.projectSettings')} />
               <NavItem view="versionControl" icon={GitBranch} label={t('sidebar.versionControl')} />
-              <NavItem view="publishing" icon={BookMarked} label={t('sidebar.publishing')} />
+              <NavItem view="publishing" icon={BookMarked} label={t('sidebar.publishing')} onClick={() => { setActiveView('publishing'); setActivePublishingTab('book'); }} />
               <NavItem view="stats" icon={BarChart} label={t('sidebar.stats')} />
               <NavItem view="aiAssistant" icon={Sparkles} label={t('sidebar.aiAssistant')} />
 
@@ -261,6 +263,17 @@ export const Sidebar = () => {
                       setActiveLoreTab('bestiary');
                     }}
                     isActive={activeView === 'lore' && activeLoreTab === 'bestiary'}
+                  />
+                  <NavItem
+                    view="lore"
+                    icon={UserRound}
+                    label={t('sidebar.npcs')}
+                    count={activeProject.npcs?.length || 0}
+                    onClick={() => {
+                      setActiveView('lore');
+                      setActiveLoreTab('npcs');
+                    }}
+                    isActive={activeView === 'lore' && activeLoreTab === 'npcs'}
                   />
                   <NavItem
                     view="lore"

@@ -62,7 +62,7 @@ export const StatsDashboard = () => {
   );
 
   return (
-    <div className="p-8 space-y-8 animate-in fade-in duration-700 max-w-7xl mx-auto pb-24">
+    <div className="p-8 space-y-8 animate-in fade-in duration-700 max-w-7xl mx-auto pb-24 flex-1 overflow-y-auto min-h-0 w-full">
       <div className="flex justify-between items-end">
         <div>
           <h2 className="text-3xl font-black tracking-tight">{t('statsView.title')}</h2>

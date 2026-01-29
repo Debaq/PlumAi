@@ -75,16 +75,6 @@ export const ContextBanner = ({ context }: ContextBannerProps) => {
         </div>
 
         <div className="animate-in fade-in slide-in-from-right-4 duration-700 flex flex-col items-end gap-2">
-            <Button 
-                variant="outline" 
-                size="sm" 
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20 backdrop-blur-sm gap-2"
-                onClick={() => toggleRpgMode(false)}
-            >
-                <ShieldOff size={14} />
-                {t('common.cancel')} {t('ai.settings.worldbuilder.title')}
-            </Button>
-
             {/* Personalize Button (Visible on Hover or if custom set) */}
             <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                <input 

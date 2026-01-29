@@ -1,4 +1,4 @@
-export type PackageCategory = 'content' | 'identity' | 'hybrid';
+export type PackageCategory = 'content' | 'identity' | 'hybrid' | 'template';
 
 export interface PackageMetadata {
   name: string;
@@ -17,6 +17,7 @@ export interface PackageContent {
   creatures?: any[];
   characters?: any[];
   lore_items?: any[];
+  zine_templates?: any[];
 }
 
 export interface PackageManifest {

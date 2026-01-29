@@ -20,6 +20,7 @@ pub enum PackageCategory {
     Content,
     Identity,
     Hybrid,
+    Template,
 }
 
 impl std::fmt::Display for PackageCategory {
@@ -28,6 +29,7 @@ impl std::fmt::Display for PackageCategory {
             PackageCategory::Content => write!(f, "content"),
             PackageCategory::Identity => write!(f, "identity"),
             PackageCategory::Hybrid => write!(f, "hybrid"),
+            PackageCategory::Template => write!(f, "template"),
         }
     }
 }
@@ -52,6 +54,7 @@ pub struct PackageContent {
     pub creatures: Option<Vec<serde_json::Value>>,
     pub characters: Option<Vec<serde_json::Value>>,
     pub lore_items: Option<Vec<serde_json::Value>>,
+    pub zine_templates: Option<Vec<serde_json::Value>>,
 }
 
 // ============================================================================

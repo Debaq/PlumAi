@@ -9,8 +9,8 @@ use rusqlite::{params, Connection, Result};
 
 pub fn create_project(conn: &Connection, project: &Project) -> Result<()> {
     conn.execute(
-        r#"INSERT INTO projects (id, title, author, description, genre, is_rpg_mode_enabled, rpg_system, active_identity_package, origin_package_id, project_type, banners, api_keys, creatures, world_rules)
-           VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)"#,
+        r#"INSERT INTO projects (id, title, author, description, genre, is_rpg_mode_enabled, rpg_system, active_identity_package, origin_package_id, project_type, banners, api_keys, creatures, world_rules, npcs)
+           VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)"#,
         params![
             project.id,
             project.title,
@@ -26,6 +26,7 @@ pub fn create_project(conn: &Connection, project: &Project) -> Result<()> {
             project.api_keys.as_ref().map(|v| v.to_string()),
             project.creatures.as_ref().map(|v| v.to_string()),
             project.world_rules.as_ref().map(|v| v.to_string()),
+            project.npcs.as_ref().map(|v| v.to_string()),
         ],
     )?;
     Ok(())
@@ -33,7 +34,7 @@ pub fn create_project(conn: &Connection, project: &Project) -> Result<()> {
 
 pub fn get_project(conn: &Connection, id: &str) -> Result<Option<Project>> {
     let mut stmt = conn.prepare(
-        "SELECT id, title, author, description, genre, is_rpg_mode_enabled, rpg_system, active_identity_package, origin_package_id, project_type, banners, api_keys, creatures, world_rules FROM projects WHERE id = ?1"
+        "SELECT id, title, author, description, genre, is_rpg_mode_enabled, rpg_system, active_identity_package, origin_package_id, project_type, banners, api_keys, creatures, world_rules, npcs FROM projects WHERE id = ?1"
     )?;
 
     let mut rows = stmt.query(params![id])?;
@@ -62,6 +63,9 @@ pub fn get_project(conn: &Connection, id: &str) -> Result<Option<Project>> {
             world_rules: row
                 .get::<_, Option<String>>(13)?
                 .and_then(|s| serde_json::from_str(&s).ok()),
+            npcs: row
+                .get::<_, Option<String>>(14)?
+                .and_then(|s| serde_json::from_str(&s).ok()),
         }))
     } else {
         Ok(None)
@@ -70,7 +74,7 @@ pub fn get_project(conn: &Connection, id: &str) -> Result<Option<Project>> {
 
 pub fn get_all_projects(conn: &Connection) -> Result<Vec<Project>> {
     let mut stmt = conn.prepare(
-        "SELECT id, title, author, description, genre, is_rpg_mode_enabled, rpg_system, active_identity_package, origin_package_id, project_type, banners, api_keys, creatures, world_rules FROM projects ORDER BY updated_at DESC"
+        "SELECT id, title, author, description, genre, is_rpg_mode_enabled, rpg_system, active_identity_package, origin_package_id, project_type, banners, api_keys, creatures, world_rules, npcs FROM projects ORDER BY updated_at DESC"
     )?;
 
     let rows = stmt.query_map([], |row| {
@@ -97,6 +101,9 @@ pub fn get_all_projects(conn: &Connection) -> Result<Vec<Project>> {
             world_rules: row
                 .get::<_, Option<String>>(13)?
                 .and_then(|s| serde_json::from_str(&s).ok()),
+            npcs: row
+                .get::<_, Option<String>>(14)?
+                .and_then(|s| serde_json::from_str(&s).ok()),
         })
     })?;
 
@@ -107,7 +114,7 @@ pub fn update_project(conn: &Connection, project: &Project) -> Result<()> {
     conn.execute(
         r#"UPDATE projects SET title = ?2, author = ?3, description = ?4, genre = ?5,
            is_rpg_mode_enabled = ?6, rpg_system = ?7, active_identity_package = ?8, origin_package_id = ?9,
-           project_type = ?10, banners = ?11, api_keys = ?12, creatures = ?13, world_rules = ?14, updated_at = CURRENT_TIMESTAMP
+           project_type = ?10, banners = ?11, api_keys = ?12, creatures = ?13, world_rules = ?14, npcs = ?15, updated_at = CURRENT_TIMESTAMP
            WHERE id = ?1"#,
         params![
             project.id,
@@ -124,6 +131,7 @@ pub fn update_project(conn: &Connection, project: &Project) -> Result<()> {
             project.api_keys.as_ref().map(|v| v.to_string()),
             project.creatures.as_ref().map(|v| v.to_string()),
             project.world_rules.as_ref().map(|v| v.to_string()),
+            project.npcs.as_ref().map(|v| v.to_string()),
         ],
     )?;
     Ok(())

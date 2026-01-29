@@ -24,7 +24,7 @@
       "label": "Instruction for AI",
       "placeholder": "Tell the AI what you want it to do...",
       "examples": {
-        "write": "Example: Write a chapter where {character} discovers a secret",
+        "write": "Example: Write a chapter where {{character}} discovers a secret",
         "assist": "Example: Suggest improvements for this paragraph"
       }
     },
@@ -114,14 +114,14 @@
       }
     },
     "stats": {
-      "words": "{count} words",
-      "scenes": "{count} scenes",
-      "modified": "Modified: {date}"
+      "words": "{{count}} words",
+      "scenes": "{{count}} scenes",
+      "modified": "Modified: {{date}}"
     },
     "openEditor": "Open in Editor",
     "delete": {
       "title": "Delete Chapter",
-      "message": "Are you sure you want to delete Chapter {number}?",
+      "message": "Are you sure you want to delete Chapter {{number}}?",
       "warning": "This action cannot be undone"
     }
   },
@@ -192,7 +192,7 @@
     },
     "delete": {
       "title": "Delete Character",
-      "message": "Are you sure you want to delete {name}?",
+      "message": "Are you sure you want to delete {{name}}?",
       "warning": "This action cannot be undone"
     }
   },
@@ -286,7 +286,7 @@
       "undo": "Undo",
       "redo": "Redo"
     },
-    "wordCount": "{count} words",
+    "wordCount": "{{count}} words",
     "saving": "Saving...",
     "saved": "Saved",
     "zenMode": "Zen mode",
@@ -392,7 +392,7 @@
       "description": "Get started by creating a new project or loading an existing one",
       "newProject": "Create New Project",
       "loadProject": "Load Existing Project",
-      "continueProject": "Continue with \"{projectName}\"",
+      "continueProject": "Continue with \"{{projectName}}\"",
       "justLook": "Just Look Around",
       "getStarted": "Get Started"
     },
@@ -528,7 +528,7 @@
       "title": "Import Project",
       "description": "Load a project from a PLUMA file (*.pluma)",
       "selectFile": "Select file",
-      "selected": "File selected: {filename}",
+      "selected": "File selected: {{filename}}",
       "warning": "This will replace the current project",
       "success": "Project imported",
       "encryptedFile": "Encrypted File"
@@ -556,7 +556,7 @@
       "title": "Relationship and its History"
     },
     "vitalStatus": {
-      "title": "Vital Status of {name}"
+      "title": "Vital Status of {{name}}"
     },
     "newRelationship": {
       "title": "New Relationship"
@@ -676,7 +676,7 @@
       },
       "messages": {
         "apiKeyExists": "This API key is already saved",
-        "apiKeySaved": "API key saved as \"{name}\"",
+        "apiKeySaved": "API key saved as \"{{name}}\"",
         "errorSavingKey": "Error saving API key",
         "testingConnection": "Testing connection...",
         "connectionSuccess": "✓ Connection successful",
@@ -709,7 +709,7 @@
       "projectCreated": "Project created successfully",
       "projectSaved": "Project saved",
       "projectLoaded": "Project loaded",
-      "projectLoadedDesc": "Project \"{projectName}\" loaded successfully",
+      "projectLoadedDesc": "Project \"{{projectName}}\" loaded successfully",
       "characterCreated": "Character created",
       "characterUpdated": "Character updated",
       "characterDeleted": "Character deleted",
@@ -732,13 +732,13 @@
       "loreUpdated": "Lore entry updated",
       "loreDeleted": "Lore entry deleted",
       "commitCreated": "Commit created successfully",
-      "commitCreatedDesc": "Commit {commitId} created",
+      "commitCreatedDesc": "Commit {{commitId}} created",
       "checkoutSuccess": "Checkout successful",
-      "checkoutSuccessDesc": "State changed to commit {commitId}",
+      "checkoutSuccessDesc": "State changed to commit {{commitId}}",
       "forkCreated": "Fork created successfully",
-      "forkCreatedDesc": "Fork {forkName} created",
+      "forkCreatedDesc": "Fork {{forkName}} created",
       "treeCreated": "Structure created successfully",
-      "treeCreatedDesc": "Structure {treeName} created",
+      "treeCreatedDesc": "Structure {{treeName}} created",
       "treeFailed": "Error creating structure",
       "treeFailedDesc": "Could not create structure"
     },
@@ -760,7 +760,7 @@
   },
   "project": {
     "untitled": "Untitled",
-    "confirmDelete": "Delete project {name}?",
+    "confirmDelete": "Delete project {{name}}?",
     "deleted": "Project deleted",
     "createNew": "Create New Project",
     "new": "New Project"
@@ -793,6 +793,7 @@
       "yearPlaceholder": "2025",
       "description": "Description",
       "descriptionPlaceholder": "Book synopsis...",
+      "generateBlurbIA": "Generate Blurb with AI",
       "genre": "Genre",
       "genrePlaceholder": "Fantasy, Science Fiction, Romance...",
       "language": "Language",
@@ -856,6 +857,63 @@
       "exportDOCX": "Export DOCX",
       "success": "Book exported successfully",
       "error": "Error exporting book"
+    },
+    "tabs": {
+      "book": "Book",
+      "zines": "Zine's"
+    },
+    "zine": {
+      "title": "Zine's",
+      "subtitle": "Create printable zines from your chapters",
+      "format": {
+        "title": "Physical Format",
+        "subtitle": "Choose paper size and fold type",
+        "halfLetter": "Half Letter",
+        "halfLetterDesc": "Letter sheet, half-fold, 2 pages per sheet",
+        "miniZine": "Mini Zine",
+        "miniZineDesc": "1 sheet = 8 mini pages, cut & fold",
+        "a5": "A5",
+        "a5Desc": "A4 sheet, saddle-stitch, 2 pages per sheet",
+        "quarterLetter": "Quarter Letter",
+        "quarterLetterDesc": "Letter sheet, quarter-fold, 4 pages per sheet"
+      },
+      "template": {
+        "title": "Visual Template",
+        "subtitle": "Choose the visual style",
+        "bundled": "Bundled",
+        "package": "Package",
+        "punkDiy": "Punk / DIY",
+        "punkDiyDesc": "Courier, dashed borders, corner marks, high contrast",
+        "cleanMinimal": "Clean / Minimal",
+        "cleanMinimalDesc": "Times, no borders, subtle header line, generous margins"
+      },
+      "metadata": {
+        "title": "Zine Info",
+        "zineTitle": "Zine Title",
+        "zineTitlePlaceholder": "Your zine title",
+        "author": "Author / Collective",
+        "authorPlaceholder": "Author or collective name",
+        "issueNumber": "Issue #",
+        "issueNumberPlaceholder": "#1",
+        "date": "Date",
+        "datePlaceholder": "January 2026"
+      },
+      "export": {
+        "title": "Export",
+        "exportPDF": "Export PDF",
+        "previewReader": "Preview (Reader)",
+        "foldGuides": "Fold guides",
+        "registrationMarks": "Registration marks",
+        "impositionMode": "Imposition",
+        "readerSpread": "Reader Spread",
+        "printerSpread": "Printer Spread",
+        "infoNote": "The PDF will be generated with imposition for printing. Print double-sided, fold, and staple."
+      },
+      "validation": {
+        "noTitle": "Zine title is missing",
+        "noChapters": "No chapters selected",
+        "noTemplate": "No template selected"
+      }
     },
     "validation": {
       "warnings": "Warnings",
@@ -953,7 +1011,7 @@
     "historyPlaceholder": "Origin, motivations, past events...",
     "notes": "Private Notes",
     "notesPlaceholder": "Secrets, weaknesses, future plans...",
-    "deleteConfirm": "Are you sure you want to delete {name}?",
+    "deleteConfirm": "Are you sure you want to delete {{name}}?",
     "roles": {
       "protagonist": "Protagonist",
       "antagonist": "Antagonist",
@@ -967,7 +1025,7 @@
   },
   "locationModal": {
     "new": "New Location",
-    "edit": "Edit {name}",
+    "edit": "Edit {{name}}",
     "tabs": {
       "info": "Information",
       "gallery": "Gallery",
@@ -1000,20 +1058,20 @@
     "existingRoutes": "Existing Routes",
     "noImages": "No files uploaded.",
     "noConnections": "No connections defined.",
-    "deleteConfirm": "Are you sure you want to delete \"{name}\"?",
+    "deleteConfirm": "Are you sure you want to delete \"{{name}}\"?",
     "create": "Create Location",
     "done": "Done"
   },
   "statsView": {
     "title": "Dashboard",
-    "subtitle": "Analytical summary of \"{title}\"",
-    "streak": "{days} day streak",
+    "subtitle": "Analytical summary of \"{{title}}\"",
+    "streak": "{{days}} day streak",
     "totalWords": "Total Words",
     "volumeChart": "Volume by Chapter",
     "volumeSubtitle": "Manuscript length distribution",
     "dailyGoal": "Daily Goal",
     "keepGoing": "Keep the writing pace",
-    "basedOn": "Based on your last session. Write {words} more words to reach your goal today.",
+    "basedOn": "Based on your last session. Write {{words}} more words to reach your goal today.",
     "recentAchievements": "Recent Achievements"
   },
   "aiAssistantView": {
@@ -1028,6 +1086,83 @@
     "emptyState": {
       "title": "Creative Brainstorming",
       "description": "I have conversational memory and understand your project context. I can help you expand your world or resolve plot doubts."
+    }
+  },
+  "npcs": {
+    "modal": {
+      "new": "New NPC",
+      "edit": "Edit NPC",
+      "deleteConfirm": "Are you sure you want to delete \"{{name}}\"?"
+    },
+    "fields": {
+      "name": "Name",
+      "namePlaceholder": "NPC name...",
+      "description": "Description",
+      "descriptionPlaceholder": "General description of the NPC...",
+      "personality": "Personality",
+      "personalityPlaceholder": "Personality traits, behavior...",
+      "role": "Role / Occupation",
+      "rolePlaceholder": "E.g: Blacksmith, Merchant, Guard...",
+      "faction": "Faction",
+      "factionPlaceholder": "E.g: Thieves Guild, Royal Order...",
+      "disposition": "Disposition",
+      "importance": "Importance",
+      "stats": "Stats",
+      "inventory": "Inventory",
+      "inventoryPlaceholder": "E.g: Rusty Sword, Potion...",
+      "quests": "Quests",
+      "questName": "Quest name",
+      "questDescription": "Quest description",
+      "questStatus": "Status",
+      "dialogues": "Key Dialogues",
+      "dialogueContext": "Context",
+      "dialogueContextPlaceholder": "E.g: First meeting, In combat...",
+      "dialogueText": "Dialogue",
+      "dialogueTextPlaceholder": "What the NPC says...",
+      "secrets": "Secrets",
+      "secretsPlaceholder": "E.g: Is an undercover spy...",
+      "relationships": "NPC Relationships",
+      "relationTarget": "Related NPC",
+      "relationType": "Relationship type",
+      "relationDescription": "Description",
+      "schedule": "Schedule / Routine",
+      "schedulePlaceholder": "Describe the NPC's daily routine...",
+      "linkedCharacter": "Linked Character",
+      "linkedCharacterHint": "Link to an existing Lore character",
+      "locations": "Related Locations",
+      "notes": "Notes",
+      "notesPlaceholder": "Author's private notes..."
+    },
+    "disposition": {
+      "friendly": "Friendly",
+      "neutral": "Neutral",
+      "hostile": "Hostile",
+      "unknown": "Unknown"
+    },
+    "importance": {
+      "key": "Key",
+      "major": "Major",
+      "minor": "Minor",
+      "secondary": "Secondary"
+    },
+    "questStatus": {
+      "available": "Available",
+      "active": "Active",
+      "completed": "Completed",
+      "failed": "Failed"
+    },
+    "card": {
+      "back": "Back to NPCs",
+      "edit": "Edit NPC",
+      "save": "Save Changes",
+      "noStats": "No stats defined",
+      "questCount": "{{count}} quests",
+      "noQuests": "No quests",
+      "noDialogues": "No dialogues",
+      "noSecrets": "No secrets",
+      "noRelationships": "No relationships",
+      "noLinkedCharacter": "No linked character",
+      "noSchedule": "No routine defined"
     }
   },
   "worldRules": {
@@ -1053,7 +1188,7 @@
         "exampleTitle": "Example title",
         "exampleDesc": "Describe the example..."
       },
-      "deleteConfirm": "Are you sure you want to delete \"{title}\"?"
+      "deleteConfirm": "Are you sure you want to delete \"{{title}}\"?"
     },
     "categories": {
       "magic": "Magic",
@@ -1143,10 +1278,11 @@
   "entityList": {
     "viewMap": "View Map",
     "add": "Add",
-    "notFound": "No {type} found in this project.",
+    "notFound": "No {{type}} found in this project.",
     "singular": {
       "summary": "Lore",
       "bestiary": "Creature",
+      "npcs": "NPC",
       "worldRules": "Rule",
       "characters": "Character",
       "locations": "Location",
@@ -1155,6 +1291,7 @@
     "titles": {
       "summary": "Lore Items",
       "bestiary": "Bestiary",
+      "npcs": "NPCs",
       "worldRules": "World Rules",
       "characters": "Characters",
       "locations": "Locations",
@@ -1179,7 +1316,7 @@
     "searchPlaceholder": "Search projects...",
     "noProjects": "No projects found.",
     "backToStats": "Back to Stats",
-    "settingsTitle": "{title} Settings",
+    "settingsTitle": "{{title}} Settings",
     "noAuthor": "No author specified",
     "novel": "Novel",
     "description": "Description",
@@ -1226,7 +1363,7 @@
       "title": "Professional Typography",
       "size": "Font Size",
       "confirm": "Keep new size?",
-      "revert": "Will revert in {seconds} seconds",
+      "revert": "Will revert in {{seconds}} seconds",
       "keep": "Keep",
       "undo": "Revert"
     },
@@ -1236,7 +1373,7 @@
       "title": "Text & AI Configuration",
       "provider": "Main Provider",
       "optimization": "Token Optimization",
-      "keys": "API Keys for {provider}",
+      "keys": "API Keys for {{provider}}",
       "saved": "saved",
       "agentic": {
         "title": "Agentic AI System",
@@ -1386,6 +1523,11 @@
     "expand": "Expand",
     "hide": "Hide menu",
     "show": "Show menu",
+    "ragStudio": "RAG Studio",
+    "projectSettings": "Project Settings",
+    "bestiary": "Bestiary",
+    "npcs": "NPCs",
+    "worldRules": "World Rules",
     "packageStore": "Package Store"
   },
   "packageStore": {
@@ -1425,7 +1567,8 @@
     "manageRegistries": "Manage registries",
     "refresh": "Refresh",
     "disable": "Disable",
-    "enable": "Enable"
+    "enable": "Enable",
+    "filterTemplate": "Template"
   },
   "stats": {
     "totalWords": "Total words:",
@@ -1434,12 +1577,12 @@
     "totalScenes": "Scenes:"
   },
   "status": {
-    "words": "{count} words",
+    "words": "{{count}} words",
     "autosave": {
       "enabled": "Autosave enabled",
       "disabled": "Autosave disabled",
       "saving": "Saving...",
-      "saved": "Saved at {time}",
+      "saved": "Saved at {{time}}",
       "unsaved": "Unsaved"
     },
     "ai": {
@@ -1532,8 +1675,8 @@
   },
   "validation": {
     "required": "This field is required",
-    "minLength": "Minimum {min} characters",
-    "maxLength": "Maximum {max} characters",
+    "minLength": "Minimum {{min}} characters",
+    "maxLength": "Maximum {{max}} characters",
     "invalid": "Invalid value"
   },
   "versionControl": {

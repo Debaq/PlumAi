@@ -34,6 +34,7 @@ export interface DbProject {
   apiKeys?: unknown;
   creatures?: unknown;
   worldRules?: unknown;
+  npcs?: unknown;
 }
 
 export interface DbChapter {

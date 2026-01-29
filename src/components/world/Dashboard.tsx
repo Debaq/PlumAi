@@ -66,7 +66,7 @@ export const Dashboard = () => {
   ];
 
   return (
-    <div className="p-6 space-y-8 animate-in fade-in duration-500 flex-1 overflow-y-auto">
+    <div className="p-6 space-y-8 animate-in fade-in duration-500 flex-1 overflow-y-auto min-h-0">
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {stats.map((stat) => (

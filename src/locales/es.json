@@ -24,7 +24,7 @@
       "label": "Instrucción para la IA",
       "placeholder": "Escribe qué quieres que haga la IA...",
       "examples": {
-        "write": "Ejemplo: Escribe un capítulo donde {character} descubre un secreto",
+        "write": "Ejemplo: Escribe un capítulo donde {{character}} descubre un secreto",
         "assist": "Ejemplo: Sugiere mejoras para este párrafo"
       }
     },
@@ -114,14 +114,14 @@
       }
     },
     "stats": {
-      "words": "{count} palabras",
-      "scenes": "{count} escenas",
-      "modified": "Modificado: {date}"
+      "words": "{{count}} palabras",
+      "scenes": "{{count}} escenas",
+      "modified": "Modificado: {{date}}"
     },
     "openEditor": "Abrir en Editor",
     "delete": {
       "title": "Eliminar Capítulo",
-      "message": "¿Estás seguro de que quieres eliminar el Capítulo {number}?",
+      "message": "¿Estás seguro de que quieres eliminar el Capítulo {{number}}?",
       "warning": "Esta acción no se puede deshacer"
     }
   },
@@ -192,7 +192,7 @@
     },
     "delete": {
       "title": "Eliminar Personaje",
-      "message": "¿Estás seguro de que quieres eliminar a {name}?",
+      "message": "¿Estás seguro de que quieres eliminar a {{name}}?",
       "warning": "Esta acción no se puede deshacer"
     }
   },
@@ -253,7 +253,7 @@
     "dangerZone": "Zona de Peligro",
     "packageStorage": "Almacén de Paquetes",
     "ai": "IA",
-    "askAI": "Preguntar a la IA: \"{query}\"",
+    "askAI": "Preguntar a la IA: \"{{query}}\"",
     "clearPackageCache": "Limpiar Caché de Paquetes",
     "clearPackageCacheDesc": "Elimina los archivos temporales de los paquetes inyectados.",
     "danger": "Peligro",
@@ -309,7 +309,7 @@
       "redo": "Rehacer",
       "settings": "Configuración del Capítulo"
     },
-    "wordCount": "{count} palabras",
+    "wordCount": "{{count}} palabras",
     "saving": "Guardando...",
     "saved": "Guardado",
     "zenMode": "Modo sin distracciones",
@@ -415,7 +415,7 @@
       "description": "Comienza creando un nuevo proyecto o carga uno existente",
       "newProject": "Crear Nuevo Proyecto",
       "loadProject": "Cargar Proyecto Existente",
-      "continueProject": "Continuar con \"{projectName}\"",
+      "continueProject": "Continuar con \"{{projectName}}\"",
       "justLook": "Solo Mirar",
       "getStarted": "Comenzar"
     },
@@ -551,7 +551,7 @@
       "title": "Importar Proyecto",
       "description": "Carga un proyecto desde archivo PLUMA (*.pluma)",
       "selectFile": "Seleccionar archivo",
-      "selected": "Archivo seleccionado: {filename}",
+      "selected": "Archivo seleccionado: {{filename}}",
       "warning": "Esto reemplazará el proyecto actual",
       "success": "Proyecto importado",
       "encryptedFile": "Archivo Encriptado"
@@ -579,7 +579,7 @@
       "title": "Relación y su Historia"
     },
     "vitalStatus": {
-      "title": "Estado Vital de {name}"
+      "title": "Estado Vital de {{name}}"
     },
     "newRelationship": {
       "title": "Nueva Relación"
@@ -699,7 +699,7 @@
       },
       "messages": {
         "apiKeyExists": "Esta API key ya está guardada",
-        "apiKeySaved": "API key guardada como \"{name}\"",
+        "apiKeySaved": "API key guardada como \"{{name}}\"",
         "errorSavingKey": "Error al guardar la API key",
         "testingConnection": "Probando conexión...",
         "connectionSuccess": "✓ Conexión exitosa",
@@ -732,7 +732,7 @@
       "projectCreated": "Proyecto creado exitosamente",
       "projectSaved": "Proyecto guardado",
       "projectLoaded": "Proyecto cargado",
-      "projectLoadedDesc": "Proyecto \"{projectName}\" cargado correctamente",
+      "projectLoadedDesc": "Proyecto \"{{projectName}}\" cargado correctamente",
       "characterCreated": "Personaje creado",
       "characterUpdated": "Personaje actualizado",
       "characterDeleted": "Personaje eliminado",
@@ -755,13 +755,13 @@
       "loreUpdated": "Elemento de lore actualizado",
       "loreDeleted": "Elemento de lore eliminado",
       "commitCreated": "Commit creado exitosamente",
-      "commitCreatedDesc": "Commit {commitId} creado",
+      "commitCreatedDesc": "Commit {{commitId}} creado",
       "checkoutSuccess": "Checkout exitoso",
-      "checkoutSuccessDesc": "Estado cambiado al commit {commitId}",
+      "checkoutSuccessDesc": "Estado cambiado al commit {{commitId}}",
       "forkCreated": "Fork creado exitosamente",
-      "forkCreatedDesc": "Fork {forkName} creado",
+      "forkCreatedDesc": "Fork {{forkName}} creado",
       "treeCreated": "Estructura creada exitosamente",
-      "treeCreatedDesc": "Estructura {treeName} creada",
+      "treeCreatedDesc": "Estructura {{treeName}} creada",
       "treeFailed": "Error creando estructura",
       "treeFailedDesc": "No se pudo crear la estructura"
     },
@@ -785,7 +785,7 @@
     "untitled": "Sin título",
     "noProjectLoaded": "No hay proyecto cargado",
     "projectSettings": "Configuración del Proyecto",
-    "confirmDelete": "¿Eliminar el proyecto {name}?",
+    "confirmDelete": "¿Eliminar el proyecto {{name}}?",
     "deleted": "Proyecto eliminado",
     "createNew": "Crear Nuevo Proyecto",
     "new": "Nuevo Proyecto"
@@ -818,6 +818,7 @@
       "yearPlaceholder": "2025",
       "description": "Descripción",
       "descriptionPlaceholder": "Sinopsis del libro...",
+      "generateBlurbIA": "Generar Sinopsis con IA",
       "genre": "Género",
       "genrePlaceholder": "Fantasía, Ciencia Ficción, Romance...",
       "language": "Idioma",
@@ -881,6 +882,63 @@
       "exportDOCX": "Exportar DOCX",
       "success": "Libro exportado correctamente",
       "error": "Error al exportar el libro"
+    },
+    "tabs": {
+      "book": "Libro",
+      "zines": "Zine's"
+    },
+    "zine": {
+      "title": "Zine's",
+      "subtitle": "Crea zines imprimibles desde tus capítulos",
+      "format": {
+        "title": "Formato Físico",
+        "subtitle": "Elige tamaño de papel y tipo de plegado",
+        "halfLetter": "Media Carta",
+        "halfLetterDesc": "Hoja carta, plegado a la mitad, 2 pág/hoja",
+        "miniZine": "Mini Zine",
+        "miniZineDesc": "1 hoja = 8 mini páginas, corte y plegado",
+        "a5": "A5",
+        "a5Desc": "Hoja A4, cuadernillo, 2 pág/hoja",
+        "quarterLetter": "Cuarto de Carta",
+        "quarterLetterDesc": "Hoja carta, plegado en cuartos, 4 pág/hoja"
+      },
+      "template": {
+        "title": "Plantilla Visual",
+        "subtitle": "Elige el estilo visual",
+        "bundled": "Incluida",
+        "package": "Paquete",
+        "punkDiy": "Punk / DIY",
+        "punkDiyDesc": "Courier, bordes punteados, marcas de esquina, alto contraste",
+        "cleanMinimal": "Limpio / Minimal",
+        "cleanMinimalDesc": "Times, sin bordes, línea header sutil, márgenes generosos"
+      },
+      "metadata": {
+        "title": "Info del Zine",
+        "zineTitle": "Título del Zine",
+        "zineTitlePlaceholder": "El título de tu zine",
+        "author": "Autor / Colectivo",
+        "authorPlaceholder": "Nombre del autor o colectivo",
+        "issueNumber": "Número",
+        "issueNumberPlaceholder": "#1",
+        "date": "Fecha",
+        "datePlaceholder": "Enero 2026"
+      },
+      "export": {
+        "title": "Exportar",
+        "exportPDF": "Exportar PDF",
+        "previewReader": "Vista Previa (Lectura)",
+        "foldGuides": "Guías de plegado",
+        "registrationMarks": "Marcas de registro",
+        "impositionMode": "Imposición",
+        "readerSpread": "Modo Lectura",
+        "printerSpread": "Modo Impresión",
+        "infoNote": "El PDF se generará con imposición para imprimir. Imprime a doble cara, pliega y engrapa."
+      },
+      "validation": {
+        "noTitle": "Falta el título del zine",
+        "noChapters": "No hay capítulos seleccionados",
+        "noTemplate": "No hay plantilla seleccionada"
+      }
     },
     "validation": {
       "warnings": "Advertencias",
@@ -1012,7 +1070,7 @@
     "historyPlaceholder": "Origen, motivaciones, eventos pasados...",
     "notes": "Notas Privadas",
     "notesPlaceholder": "Secretos, debilidades, planes futuros...",
-    "deleteConfirm": "¿Estás seguro de que quieres eliminar a {name}?",
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar a {{name}}?",
     "roles": {
       "protagonist": "Protagonista",
       "antagonist": "Antagonista",
@@ -1026,7 +1084,7 @@
   },
   "locationModal": {
     "new": "Nueva Ubicación",
-    "edit": "Editar {name}",
+    "edit": "Editar {{name}}",
     "tabs": {
       "info": "Información",
       "gallery": "Galería",
@@ -1059,20 +1117,20 @@
     "existingRoutes": "Rutas Existentes",
     "noImages": "No hay archivos cargados.",
     "noConnections": "No hay conexiones definidas.",
-    "deleteConfirm": "¿Estás seguro de que quieres eliminar \"{name}\"?",
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar \"{{name}}\"?",
     "create": "Crear Ubicación",
     "done": "Listo"
   },
   "statsView": {
     "title": "Dashboard",
-    "subtitle": "Resumen analítico de \"{title}\"",
-    "streak": "Racha de {days} días",
+    "subtitle": "Resumen analítico de \"{{title}}\"",
+    "streak": "Racha de {{days}} días",
     "totalWords": "Palabras Totales",
     "volumeChart": "Volumen por Capítulo",
     "volumeSubtitle": "Distribución de longitud del manuscrito",
     "dailyGoal": "Meta Diaria",
     "keepGoing": "Mantén el ritmo de escritura",
-    "basedOn": "Basado en tu última sesión. Escribe {words} palabras más para alcanzar tu objetivo hoy.",
+    "basedOn": "Basado en tu última sesión. Escribe {{words}} palabras más para alcanzar tu objetivo hoy.",
     "recentAchievements": "Logros Recientes"
   },
   "aiAssistantView": {
@@ -1087,6 +1145,83 @@
     "emptyState": {
       "title": "Brainstorming Creativo",
       "description": "Tengo memoria conversacional y entiendo el contexto de tu proyecto. Puedo ayudarte a expandir tu mundo o resolver dudas de la trama."
+    }
+  },
+  "npcs": {
+    "modal": {
+      "new": "Nuevo NPC",
+      "edit": "Editar NPC",
+      "deleteConfirm": "¿Estás seguro de que quieres eliminar a \"{{name}}\"?"
+    },
+    "fields": {
+      "name": "Nombre",
+      "namePlaceholder": "Nombre del NPC...",
+      "description": "Descripción",
+      "descriptionPlaceholder": "Descripción general del NPC...",
+      "personality": "Personalidad",
+      "personalityPlaceholder": "Rasgos de personalidad, comportamiento...",
+      "role": "Rol / Ocupación",
+      "rolePlaceholder": "Ej: Herrero, Comerciante, Guardia...",
+      "faction": "Facción",
+      "factionPlaceholder": "Ej: Gremio de Ladrones, Orden Real...",
+      "disposition": "Disposición",
+      "importance": "Importancia",
+      "stats": "Estadísticas",
+      "inventory": "Inventario",
+      "inventoryPlaceholder": "Ej: Espada oxidada, Poción...",
+      "quests": "Misiones",
+      "questName": "Nombre de la misión",
+      "questDescription": "Descripción de la misión",
+      "questStatus": "Estado",
+      "dialogues": "Diálogos Clave",
+      "dialogueContext": "Contexto",
+      "dialogueContextPlaceholder": "Ej: Al conocerse, En combate...",
+      "dialogueText": "Diálogo",
+      "dialogueTextPlaceholder": "Lo que dice el NPC...",
+      "secrets": "Secretos",
+      "secretsPlaceholder": "Ej: Es un espía encubierto...",
+      "relationships": "Relaciones con NPCs",
+      "relationTarget": "NPC relacionado",
+      "relationType": "Tipo de relación",
+      "relationDescription": "Descripción",
+      "schedule": "Horario / Rutina",
+      "schedulePlaceholder": "Describe la rutina diaria del NPC...",
+      "linkedCharacter": "Personaje Vinculado",
+      "linkedCharacterHint": "Vincular a un personaje existente del Lore",
+      "locations": "Ubicaciones Relacionadas",
+      "notes": "Notas",
+      "notesPlaceholder": "Notas privadas del autor..."
+    },
+    "disposition": {
+      "friendly": "Amistoso",
+      "neutral": "Neutral",
+      "hostile": "Hostil",
+      "unknown": "Desconocido"
+    },
+    "importance": {
+      "key": "Clave",
+      "major": "Mayor",
+      "minor": "Menor",
+      "secondary": "Secundario"
+    },
+    "questStatus": {
+      "available": "Disponible",
+      "active": "Activa",
+      "completed": "Completada",
+      "failed": "Fallida"
+    },
+    "card": {
+      "back": "Volver a NPCs",
+      "edit": "Editar NPC",
+      "save": "Guardar Cambios",
+      "noStats": "Sin estadísticas",
+      "questCount": "{{count}} misiones",
+      "noQuests": "Sin misiones",
+      "noDialogues": "Sin diálogos",
+      "noSecrets": "Sin secretos",
+      "noRelationships": "Sin relaciones",
+      "noLinkedCharacter": "Sin personaje vinculado",
+      "noSchedule": "Sin rutina definida"
     }
   },
   "worldRules": {
@@ -1112,7 +1247,7 @@
         "exampleTitle": "Título del ejemplo",
         "exampleDesc": "Describe el ejemplo..."
       },
-      "deleteConfirm": "¿Estás seguro de que quieres eliminar \"{title}\"?"
+      "deleteConfirm": "¿Estás seguro de que quieres eliminar \"{{title}}\"?"
     },
     "categories": {
       "magic": "Magia",
@@ -1202,10 +1337,11 @@
   "entityList": {
     "viewMap": "Ver Mapa",
     "add": "Añadir",
-    "notFound": "No se encontraron elementos de tipo {type} en este proyecto.",
+    "notFound": "No se encontraron elementos de tipo {{type}} en este proyecto.",
     "singular": {
       "summary": "Lore",
       "bestiary": "Criatura",
+      "npcs": "NPC",
       "worldRules": "Regla",
       "characters": "Personaje",
       "locations": "Ubicación",
@@ -1214,6 +1350,7 @@
     "titles": {
       "summary": "Lore Items",
       "bestiary": "Bestiario",
+      "npcs": "NPCs",
       "worldRules": "Reglas del Mundo",
       "characters": "Personajes",
       "locations": "Ubicaciones",
@@ -1238,7 +1375,7 @@
     "searchPlaceholder": "Buscar proyectos...",
     "noProjects": "No se encontraron proyectos.",
     "backToStats": "Volver a Estadísticas",
-    "settingsTitle": "Configuración de {title}",
+    "settingsTitle": "Configuración de {{title}}",
     "noAuthor": "Autor no especificado",
     "novel": "Novela",
     "description": "Descripción",
@@ -1285,7 +1422,7 @@
       "title": "Tipografía Profesional",
       "size": "Tamaño de Fuente",
       "confirm": "¿Mantener el nuevo tamaño?",
-      "revert": "Se revertirá en {seconds} segundos",
+      "revert": "Se revertirá en {{seconds}} segundos",
       "keep": "Mantener",
       "undo": "Revertir"
     },
@@ -1295,7 +1432,7 @@
       "title": "Configuración de Texto e IA",
       "provider": "Proveedor Principal",
       "optimization": "Optimización de Tokens",
-      "keys": "API Keys para {provider}",
+      "keys": "API Keys para {{provider}}",
       "saved": "guardadas",
       "agentic": {
         "title": "Sistema de IA Agéntica",
@@ -1448,6 +1585,7 @@
     "ragStudio": "RAG Studio",
     "projectSettings": "Configuración del Proyecto",
     "bestiary": "Bestiario",
+    "npcs": "NPCs",
     "worldRules": "Reglas del Mundo",
     "packageStore": "Tienda de Paquetes"
   },
@@ -1488,7 +1626,8 @@
     "manageRegistries": "Gestionar registros",
     "refresh": "Actualizar",
     "disable": "Desactivar",
-    "enable": "Activar"
+    "enable": "Activar",
+    "filterTemplate": "Plantilla"
   },
   "stats": {
     "totalWords": "Palabras totales:",
@@ -1497,12 +1636,12 @@
     "totalScenes": "Escenas:"
   },
   "status": {
-    "words": "{count} palabras",
+    "words": "{{count}} palabras",
     "autosave": {
       "enabled": "Autoguardado activo",
       "disabled": "Autoguardado desactivado",
       "saving": "Guardando...",
-      "saved": "Guardado a las {time}",
+      "saved": "Guardado a las {{time}}",
       "unsaved": "Sin guardar"
     },
     "ai": {
@@ -1595,8 +1734,8 @@
   },
   "validation": {
     "required": "Este campo es requerido",
-    "minLength": "Mínimo {min} caracteres",
-    "maxLength": "Máximo {max} caracteres",
+    "minLength": "Mínimo {{min}} caracteres",
+    "maxLength": "Máximo {{max}} caracteres",
     "invalid": "Valor inválido"
   },
   "versionControl": {

@@ -76,6 +76,52 @@ export interface WorldRule {
   isSecret?: boolean;
 }
 
+// NPC Types
+export type NpcDisposition = 'friendly' | 'neutral' | 'hostile' | 'unknown';
+export type NpcImportance = 'key' | 'major' | 'minor' | 'secondary';
+
+export interface NpcQuest {
+  id: string;
+  name: string;
+  description?: string;
+  status: 'available' | 'active' | 'completed' | 'failed';
+}
+
+export interface NpcDialogue {
+  id: string;
+  context: string;
+  dialogue: string;
+}
+
+export interface NpcRelationship {
+  id: string;
+  targetNpcId: string;
+  type: string;
+  description?: string;
+}
+
+export interface Npc {
+  id: string;
+  name: string;
+  imageUrl?: string;
+  description?: string;
+  personality?: string;
+  role?: string;
+  faction?: string;
+  disposition: NpcDisposition;
+  importance: NpcImportance;
+  stats: Record<string, number | string>;
+  inventory?: string[];
+  quests?: NpcQuest[];
+  dialogues?: NpcDialogue[];
+  secrets?: string[];
+  relationships?: NpcRelationship[];
+  schedule?: string;
+  relatedLocationIds?: string[];
+  linkedCharacterId?: string;
+  notes?: string;
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -96,6 +142,7 @@ export interface Project {
   scenes: Scene[];
   creatures?: Creature[]; // Bestiary
   worldRules?: WorldRule[]; // World Rules
+  npcs?: Npc[]; // NPCs
   apiKeys?: ProjectApiKeys;
 }
 

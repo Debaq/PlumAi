@@ -10,8 +10,10 @@ import { CreatureCard } from './CreatureCard';
 import { CreatureGridCard } from './CreatureGridCard';
 import { WorldRuleCard } from './WorldRuleCard';
 import { WorldRuleGridCard } from './WorldRuleGridCard';
+import { NpcCard } from './NpcCard';
+import { NpcGridCard } from './NpcGridCard';
 import { Button } from '@/components/ui/button';
-import { Plus, Map } from 'lucide-react';
+import { Plus, Map, Users, MapPin, Clapperboard, Book, Ghost, Scale, UserRound } from 'lucide-react';
 
 export const EntityList = () => {
   const { t } = useTranslation();
@@ -33,6 +35,7 @@ export const EntityList = () => {
       case 'locations': openModal('editLocation'); break;
       case 'scenes': openModal('newScene'); break;
       case 'bestiary': openModal('editCreature'); break;
+      case 'npcs': openModal('editNpc'); break;
       case 'worldRules': openModal('editWorldRule'); break;
     }
   };
@@ -53,6 +56,27 @@ export const EntityList = () => {
     setActiveLoreTab('map');
   };
 
+  const getEmptyStateConfig = () => {
+    switch (activeLoreTab) {
+      case 'characters':
+        return { icon: Users, title: t('characters.empty'), subtitle: t('characters.emptyHint') };
+      case 'locations':
+        return { icon: MapPin, title: t('locations.empty'), subtitle: t('locations.emptyHint') };
+      case 'scenes':
+        return { icon: Clapperboard, title: t('scenes.empty'), subtitle: t('scenes.emptyHint') };
+      case 'summary':
+        return { icon: Book, title: t('lore.empty'), subtitle: t('lore.emptyHint') };
+      case 'bestiary':
+        return { icon: Ghost, title: t('entityList.notFound', { type: t('entityList.titles.bestiary') }), subtitle: t('common.create') + ' ' + t('entityList.singular.bestiary') };
+      case 'npcs':
+        return { icon: UserRound, title: t('entityList.notFound', { type: t('entityList.titles.npcs') }), subtitle: t('common.create') + ' ' + t('entityList.singular.npcs') };
+      case 'worldRules':
+        return { icon: Scale, title: t('entityList.notFound', { type: t('entityList.titles.worldRules') }), subtitle: t('common.create') + ' ' + t('entityList.singular.worldRules') };
+      default:
+        return { icon: Book, title: t('entityList.notFound', { type: t(`entityList.titles.${activeLoreTab}`) }), subtitle: t('common.create') };
+    }
+  };
+
   const renderContent = () => {
     // List View
     const getList = () => {
@@ -62,6 +86,7 @@ export const EntityList = () => {
         case 'scenes': return activeProject.scenes || [];
         case 'summary': return activeProject.loreItems;
         case 'bestiary': return activeProject.creatures || [];
+        case 'npcs': return activeProject.npcs || [];
         case 'worldRules': return activeProject.worldRules || [];
         default: return [];
       }
@@ -84,6 +109,10 @@ export const EntityList = () => {
         const creature = (activeProject.creatures || []).find(c => c.id === selectedEntityId);
         return creature ? <CreatureCard creature={creature} onBack={() => setSelectedEntityId(null)} /> : <div>Creature not found</div>;
       }
+      if (activeLoreTab === 'npcs') {
+        const npc = (activeProject.npcs || []).find(n => n.id === selectedEntityId);
+        return npc ? <NpcCard npc={npc} onBack={() => setSelectedEntityId(null)} /> : <div>NPC not found</div>;
+      }
       if (activeLoreTab === 'worldRules') {
         const rule = (activeProject.worldRules || []).find(r => r.id === selectedEntityId);
         return rule ? <WorldRuleCard rule={rule} onBack={() => setSelectedEntityId(null)} /> : <div>Rule not found</div>;
@@ -91,6 +120,8 @@ export const EntityList = () => {
     }
 
     const list = getList();
+    const emptyConfig = getEmptyStateConfig();
+    const EmptyIcon = emptyConfig.icon;
 
     return (
       <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -132,6 +163,15 @@ export const EntityList = () => {
                 />
               );
             }
+            if (activeLoreTab === 'npcs') {
+              return (
+                <NpcGridCard
+                  key={item.id}
+                  npc={item}
+                  onClick={() => handleEntityClick(item)}
+                />
+              );
+            }
             if (activeLoreTab === 'worldRules') {
               return (
                 <WorldRuleGridCard
@@ -161,8 +201,13 @@ export const EntityList = () => {
             );
           })}
           {list.length === 0 && (
-            <div className="col-span-full py-12 text-center border-2 border-dashed border-border rounded-xl">
-               <p className="text-muted-foreground">{t('entityList.notFound', { type: t(`entityList.titles.${activeLoreTab}`) })}</p>
+            <div className="col-span-full flex flex-col items-center justify-center py-20 border-2 border-dashed border-border rounded-xl text-center">
+               <EmptyIcon size={48} className="text-muted-foreground/20 mb-4" />
+               <p className="text-lg font-medium text-muted-foreground">{emptyConfig.title}</p>
+               <p className="text-sm text-muted-foreground/60 mb-6">{emptyConfig.subtitle}</p>
+               <Button variant="outline" onClick={handleAddNew}>
+                 {t('entityList.add')} {t(`entityList.singular.${activeLoreTab}`)}
+               </Button>
             </div>
           )}
         </div>
@@ -171,7 +216,7 @@ export const EntityList = () => {
   };
 
   return (
-    <div className="p-6 flex-1 overflow-y-auto">
+    <div className="p-6 flex-1 overflow-y-auto min-h-0">
       {renderContent()}
     </div>
   );

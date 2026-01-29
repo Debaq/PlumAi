@@ -21,6 +21,7 @@ const CATEGORIES: { key: PackageCategoryFilter; labelKey: string; fallback: stri
   { key: 'content', labelKey: 'packageStore.filterContent', fallback: 'Content' },
   { key: 'identity', labelKey: 'packageStore.filterIdentity', fallback: 'Identity' },
   { key: 'hybrid', labelKey: 'packageStore.filterHybrid', fallback: 'Hybrid' },
+  { key: 'template', labelKey: 'packageStore.filterTemplate', fallback: 'Template' },
 ];
 
 export default function PackageStoreView() {

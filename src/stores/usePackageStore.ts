@@ -14,7 +14,7 @@ import {
 } from '../lib/tauri-bridge';
 
 export type PackageStoreTab = 'browse' | 'installed' | 'updates';
-export type PackageCategoryFilter = 'all' | 'content' | 'identity' | 'hybrid';
+export type PackageCategoryFilter = 'all' | 'content' | 'identity' | 'hybrid' | 'template';
 
 interface PackageStoreState {
   activeTab: PackageStoreTab;

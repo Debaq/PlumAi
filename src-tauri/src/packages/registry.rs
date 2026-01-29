@@ -4,7 +4,7 @@ use super::models::{RegistryIndex, RegistrySource};
 pub fn official_registry() -> RegistrySource {
     RegistrySource {
         id: "plumai-official".to_string(),
-        url: "https://github.com/Debaq/PlumAi-Packages".to_string(),
+        url: "https://github.com/studio33-lab/plumai-store".to_string(),
         name: "PlumAi Official Packages".to_string(),
         enabled: true,
         is_official: true,

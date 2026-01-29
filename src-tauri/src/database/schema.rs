@@ -21,6 +21,7 @@ pub fn init_database(conn: &Connection) -> Result<()> {
             api_keys TEXT, -- JSON (encrypted)
             creatures TEXT, -- JSON
             world_rules TEXT, -- JSON
+            npcs TEXT, -- JSON
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
             updated_at TEXT DEFAULT CURRENT_TIMESTAMP
         );
@@ -194,6 +195,7 @@ pub fn init_database(conn: &Connection) -> Result<()> {
         "ALTER TABLE projects ADD COLUMN project_type TEXT DEFAULT 'novel'",
         "ALTER TABLE characters ADD COLUMN origin_package_id TEXT",
         "ALTER TABLE lore_items ADD COLUMN origin_package_id TEXT",
+        "ALTER TABLE projects ADD COLUMN npcs TEXT",
     ];
 
     for sql in &migrations {

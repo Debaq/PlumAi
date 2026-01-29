@@ -1,11 +1,12 @@
 // src/stores/useUIStore.ts
 import { create } from 'zustand';
 
-type ModalType = 'newProject' | 'welcome' | 'editCharacter' | 'newChapter' | 'editChapter' | 'newScene' | 'editScene' | 'loreItem' | 'timelineEvent' | 'editLocation' | 'editRelationship' | 'settings' | 'editCreature' | 'editWorldRule' | 'projectSettings' | null;
+type ModalType = 'newProject' | 'welcome' | 'editCharacter' | 'newChapter' | 'editChapter' | 'newScene' | 'editScene' | 'loreItem' | 'timelineEvent' | 'editLocation' | 'editRelationship' | 'settings' | 'editCreature' | 'editWorldRule' | 'editNpc' | 'projectSettings' | null;
 type ViewType = 'editor' | 'relations' | 'timeline' | 'stats' | 'entities' | 'lore' | 'chapters' | 'scenes' | 'images' | 'publishing' | 'aiAssistant' | 'versionControl' | 'rpgTools' | 'ragStudio' | 'settings' | 'projects' | 'projectSettings' | 'packageStore';
 type EditorSaveStatus = 'saved' | 'saving' | 'unsaved';
-type LoreTab = 'summary' | 'characters' | 'relations' | 'events' | 'locations' | 'scenes' | 'map' | 'bestiary' | 'worldRules';
+type LoreTab = 'summary' | 'characters' | 'relations' | 'events' | 'locations' | 'scenes' | 'map' | 'bestiary' | 'npcs' | 'worldRules';
 type SettingsTab = 'general' | 'ia' | 'security' | 'data' | 'integrations' | 'advanced' | 'packages';
+type PublishingTab = 'book' | 'zines';
 
 interface UIState {
   isSidebarOpen: boolean;
@@ -21,7 +22,8 @@ interface UIState {
   activeSettingsTab: SettingsTab;
   isLocked: boolean;
   isRpgPanelOpen: boolean;
-  
+  activePublishingTab: PublishingTab;
+
   toggleSidebar: () => void;
   openModal: (modal: ModalType, data?: any) => void;
   closeModal: () => void;
@@ -35,6 +37,7 @@ interface UIState {
   setActiveSettingsTab: (tab: SettingsTab) => void;
   setLocked: (locked: boolean) => void;
   toggleRpgPanel: () => void;
+  setActivePublishingTab: (tab: PublishingTab) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -51,6 +54,7 @@ export const useUIStore = create<UIState>((set) => ({
   activeSettingsTab: 'general',
   isLocked: false,
   isRpgPanelOpen: false,
+  activePublishingTab: 'book',
   toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
   openModal: (modal, data = null) => set({ activeModal: modal, modalData: data }),
   closeModal: () => set({ activeModal: null, modalData: null }),
@@ -70,4 +74,5 @@ export const useUIStore = create<UIState>((set) => ({
   setActiveSettingsTab: (tab) => set({ activeSettingsTab: tab }),
   setLocked: (isLocked) => set({ isLocked }),
   toggleRpgPanel: () => set((state) => ({ isRpgPanelOpen: !state.isRpgPanelOpen })),
+  setActivePublishingTab: (tab) => set({ activePublishingTab: tab }),
 }));

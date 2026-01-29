@@ -17,6 +17,7 @@ const categoryColors: Record<string, string> = {
   content: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
   identity: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
   hybrid: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+  template: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
 };
 
 function formatSize(bytes: number): string {

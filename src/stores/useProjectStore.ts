@@ -10,7 +10,7 @@ import {
   dbCreateLoreItem, dbGetLoreItemsByProject, dbUpdateLoreItem, dbDeleteLoreItem,
   dbCreateTimelineEvent, dbGetTimelineEventsByProject, dbUpdateTimelineEvent, dbDeleteTimelineEvent
 } from '@/lib/tauri-bridge';
-import type { Project, Chapter, Character, Location, Scene, ProjectApiKeys, ApiKeyEntry, VitalStatusEntry, LoreItem, TimelineEvent, RelationshipHistoryEntry, LocationImage, LocationConnection, Creature, CreatureAbility, WorldRule, WorldRuleExample, ProjectType } from '@/types/domain';
+import type { Project, Chapter, Character, Location, Scene, ProjectApiKeys, ApiKeyEntry, VitalStatusEntry, LoreItem, TimelineEvent, RelationshipHistoryEntry, LocationImage, LocationConnection, Creature, CreatureAbility, WorldRule, WorldRuleExample, ProjectType, Npc, NpcQuest, NpcDialogue } from '@/types/domain';
 
 interface ProjectState {
   activeProject: Project | null;
@@ -89,7 +89,16 @@ interface ProjectState {
   deleteWorldRule: (id: string) => void;
   addWorldRuleExample: (ruleId: string, example: Omit<WorldRuleExample, 'id'>) => void;
   removeWorldRuleExample: (ruleId: string, exampleId: string) => void;
-  
+
+  // NPCs
+  addNpc: (npc: Omit<Npc, 'id'>) => void;
+  updateNpc: (id: string, updates: Partial<Npc>) => void;
+  deleteNpc: (id: string) => void;
+  addNpcQuest: (npcId: string, quest: Omit<NpcQuest, 'id'>) => void;
+  removeNpcQuest: (npcId: string, questId: string) => void;
+  addNpcDialogue: (npcId: string, dialogue: Omit<NpcDialogue, 'id'>) => void;
+  removeNpcDialogue: (npcId: string, dialogueId: string) => void;
+
   // Packages
   applyPackageIdentity: (packageId: string | null) => Promise<void>;
 }
@@ -120,6 +129,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
           projectType: project.projectType || 'novel',
           creatures: project.creatures || [],
           worldRules: project.worldRules || [],
+          npcs: project.npcs || [],
           apiKeys: project.apiKeys || initialApiKeys
         }
       }),
@@ -187,6 +197,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
             scenes: [],
             creatures: Array.isArray(dbProject.creatures) ? dbProject.creatures : [],
             worldRules: Array.isArray(dbProject.worldRules) ? dbProject.worldRules : [],
+            npcs: Array.isArray((dbProject as any).npcs) ? (dbProject as any).npcs : [],
             apiKeys: (dbProject.apiKeys as any) || initialApiKeys,
             projectType: (dbProject.projectType as ProjectType) || 'novel'
           };
@@ -230,9 +241,10 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
           scenes: [],
           creatures: [],
           worldRules: [],
+          npcs: [],
           apiKeys: initialApiKeys
         };
-        
+
         // Rust model uses Option<serde_json::Value> for banners/apiKeys/creatures/worldRules.
         // Send objects directly — Tauri serializes them as JSON values for serde.
         const projectPayload = {
@@ -250,6 +262,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
             apiKeys: newProject.apiKeys || null,
             creatures: newProject.creatures || null,
             worldRules: newProject.worldRules || null,
+            npcs: newProject.npcs || null,
         };
 
         console.log('[createNewProject] payload:', JSON.stringify(projectPayload, null, 2));
@@ -1182,6 +1195,107 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     
     await dbUpdateProject(updatedProject as any);
     
+    set({ activeProject: updatedProject });
+  },
+
+  // NPCs
+  addNpc: async (npc) => {
+    const { activeProject } = get();
+    if (!activeProject) return;
+    const newNpc: Npc = {
+      ...npc,
+      id: crypto.randomUUID(),
+      stats: npc.stats || {},
+      quests: npc.quests || [],
+      dialogues: npc.dialogues || [],
+    };
+    const updatedProject = {
+      ...activeProject,
+      npcs: [...(activeProject.npcs || []), newNpc],
+    };
+    await dbUpdateProject(updatedProject as any);
+    set({ activeProject: updatedProject });
+  },
+
+  updateNpc: async (id, updates) => {
+    const { activeProject } = get();
+    if (!activeProject) return;
+    const updatedProject = {
+      ...activeProject,
+      npcs: (activeProject.npcs || []).map((n) =>
+        n.id === id ? { ...n, ...updates } : n
+      ),
+    };
+    await dbUpdateProject(updatedProject as any);
+    set({ activeProject: updatedProject });
+  },
+
+  deleteNpc: async (id) => {
+    const { activeProject } = get();
+    if (!activeProject) return;
+    const updatedProject = {
+      ...activeProject,
+      npcs: (activeProject.npcs || []).filter((n) => n.id !== id),
+    };
+    await dbUpdateProject(updatedProject as any);
+    set({ activeProject: updatedProject });
+  },
+
+  addNpcQuest: async (npcId, quest) => {
+    const { activeProject } = get();
+    if (!activeProject) return;
+    const updatedProject = {
+      ...activeProject,
+      npcs: (activeProject.npcs || []).map((n) => {
+        if (n.id !== npcId) return n;
+        const newQuest: NpcQuest = { ...quest, id: crypto.randomUUID() };
+        return { ...n, quests: [...(n.quests || []), newQuest] };
+      }),
+    };
+    await dbUpdateProject(updatedProject as any);
+    set({ activeProject: updatedProject });
+  },
+
+  removeNpcQuest: async (npcId, questId) => {
+    const { activeProject } = get();
+    if (!activeProject) return;
+    const updatedProject = {
+      ...activeProject,
+      npcs: (activeProject.npcs || []).map((n) => {
+        if (n.id !== npcId) return n;
+        return { ...n, quests: (n.quests || []).filter((q) => q.id !== questId) };
+      }),
+    };
+    await dbUpdateProject(updatedProject as any);
+    set({ activeProject: updatedProject });
+  },
+
+  addNpcDialogue: async (npcId, dialogue) => {
+    const { activeProject } = get();
+    if (!activeProject) return;
+    const updatedProject = {
+      ...activeProject,
+      npcs: (activeProject.npcs || []).map((n) => {
+        if (n.id !== npcId) return n;
+        const newDialogue: NpcDialogue = { ...dialogue, id: crypto.randomUUID() };
+        return { ...n, dialogues: [...(n.dialogues || []), newDialogue] };
+      }),
+    };
+    await dbUpdateProject(updatedProject as any);
+    set({ activeProject: updatedProject });
+  },
+
+  removeNpcDialogue: async (npcId, dialogueId) => {
+    const { activeProject } = get();
+    if (!activeProject) return;
+    const updatedProject = {
+      ...activeProject,
+      npcs: (activeProject.npcs || []).map((n) => {
+        if (n.id !== npcId) return n;
+        return { ...n, dialogues: (n.dialogues || []).filter((d) => d.id !== dialogueId) };
+      }),
+    };
+    await dbUpdateProject(updatedProject as any);
     set({ activeProject: updatedProject });
   },
 
