@@ -1443,6 +1443,38 @@
         "provider": "Proveedor de Imagen"
       }
     },
+    "voice": {
+      "tabName": "Voz",
+      "engineTitle": "Motor de Reconocimiento",
+      "recommended": "Recomendado",
+      "engines": {
+        "vosk": "Vosk",
+        "voskDesc": "Reconocimiento offline ligero. Funciona sin conexión a internet.",
+        "sherpa": "Sherpa-ONNX",
+        "sherpaDesc": "Motor neural local con modelos Whisper/Zipformer. Funciona offline.",
+        "whisper": "OpenAI Whisper",
+        "whisperDesc": "API en la nube. Usa tu clave API existente (OpenAI, Groq, etc.). Alta precisión."
+      },
+      "modeTitle": "Modo de Reconocimiento",
+      "modes": {
+        "writerName": "Escritor Solitario",
+        "writerDesc": "Procesa tras pausas naturales. Ideal para dictar narrativa con calma.",
+        "dungeonName": "Caos de Mazmorra",
+        "dungeonDesc": "Respuesta rápida. Identifica quién habla en partidas de rol."
+      },
+      "modelsTitle": "Modelos Disponibles",
+      "noModels": "No hay modelos disponibles para este motor. Verifica tu conexión a internet.",
+      "noModelsWhisper": "Whisper API no requiere modelos locales. Solo necesitas una API key.",
+      "default": "Por defecto",
+      "installed": "Instalado",
+      "download": "Descargar",
+      "refresh": "Actualizar",
+      "whisperTitle": "Configuración de Whisper API",
+      "whisperApiKey": "API Key de OpenAI",
+      "whisperNote": "Tu clave se usa solo para transcripción de audio. Se envía directamente a la API de OpenAI.",
+      "startDictation": "Iniciar Dictado",
+      "stopDictation": "Detener Dictado"
+    },
     "security": {
       "title": "Privacidad y Protección",
       "noPassword": "Sin Contraseña Maestra",
@@ -1652,7 +1684,10 @@
     "pomodoro": {
       "breakTime": "¡Tiempo de descanso!",
       "workTime": "¡A escribir!"
-    }
+    },
+    "recording": "Grabando",
+    "downloading": "Descargando",
+    "modelReady": "Modelo listo"
   },
   "timeline": {
     "title": "Línea Temporal",
@@ -1852,6 +1887,39 @@
     },
     "confirm": {
       "deleteEntry": "¿Estás seguro de que quieres eliminar esta entrada?"
+    }
+  },
+  "workspace": {
+    "setup": {
+      "title": "Configurar Workspace",
+      "description": "PlumAi guarda tus proyectos, backups y modelos en una carpeta de tu PC. Elige dónde quieres que se almacenen.",
+      "pathLabel": "Carpeta del workspace",
+      "pathHint": "Se crearán subcarpetas para proyectos, backups, modelos y paquetes.",
+      "selectFolder": "Seleccionar carpeta",
+      "confirm": "Crear workspace",
+      "ready": "Workspace listo",
+      "readyDesc": "Tu workspace ha sido creado correctamente. Ya puedes empezar a crear proyectos.",
+      "start": "Comenzar",
+      "migrating": "Migrando datos",
+      "migratingDesc": "Estamos moviendo tus proyectos existentes al nuevo workspace...",
+      "migratedCount": "Se migraron {{count}} proyectos existentes al workspace."
+    },
+    "settings": {
+      "title": "Workspace",
+      "desc": "Carpeta donde se guardan proyectos, backups y modelos.",
+      "changeFolder": "Cambiar carpeta",
+      "selectNew": "Seleccionar nueva carpeta",
+      "moveConfirm": "¿Mover workspace de {{from}} a {{to}}? Se copiarán todos los archivos.",
+      "moveButton": "Mover workspace",
+      "moveSuccess": "Workspace movido correctamente",
+      "moving": "Moviendo..."
+    },
+    "status": {
+      "ready": "Workspace",
+      "syncing": "Sincronizando...",
+      "synced": "Sincronizado",
+      "error": "Error de sync",
+      "unavailable": "No disponible"
     }
   }
 }

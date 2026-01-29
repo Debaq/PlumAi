@@ -1,29 +1,33 @@
 
-
 import { Editor } from '@tiptap/react';
 import { Bold, Italic, Strikethrough, Heading1, Heading2, List, ListOrdered, Mic, MicOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSpeechStore } from '@/stores/useSpeechStore';
+import type { RecognitionResult } from '@/types/speech';
 
 interface ToolbarProps {
   editor: Editor | null;
 }
 
 export function Toolbar({ editor }: ToolbarProps) {
-  const { i18n } = useTranslation();
-  const [isRecording, setIsRecording] = useState(false);
+  const { t } = useTranslation();
+  const { isRecording, startDictation, stopDictation } = useSpeechStore();
 
   useEffect(() => {
     let unlisten: (() => void) | undefined;
 
     const setupListener = async () => {
-      unlisten = await listen('dictation-event', (event: any) => {
+      unlisten = await listen<RecognitionResult>('dictation-event', (event) => {
         const payload = event.payload;
-        if (editor && payload?.text && payload?.is_final) {
-          editor.chain().focus().insertContent(payload.text + " ").run();
+        if (editor && payload?.text && payload?.isFinal) {
+          // Support speaker_id for RPG mode
+          const prefix = payload.speakerId
+            ? `[${payload.speakerId}]: `
+            : '';
+          editor.chain().focus().insertContent(prefix + payload.text + " ").run();
         }
       });
     };
@@ -38,21 +42,18 @@ export function Toolbar({ editor }: ToolbarProps) {
   // Ensure recording stops on unmount
   useEffect(() => {
     return () => {
-      invoke('stop_dictation').catch(() => {});
+      stopDictation().catch(() => {});
     };
   }, []);
 
   const toggleDictation = async () => {
     if (isRecording) {
-      await invoke('stop_dictation');
-      setIsRecording(false);
+      await stopDictation();
     } else {
       try {
-        await invoke('start_dictation', { language: i18n.language });
-        setIsRecording(true);
+        await startDictation();
       } catch (error) {
         console.error("Dictation failed:", error);
-        setIsRecording(false);
       }
     }
   };
@@ -144,7 +145,7 @@ export function Toolbar({ editor }: ToolbarProps) {
           "p-2 rounded hover:bg-gray-200 transition-colors",
           isRecording ? 'bg-red-100 text-red-600 animate-pulse' : 'text-gray-500'
         )}
-        title={isRecording ? "Stop Dictation" : "Start Dictation"}
+        title={isRecording ? t('settingsModal.voice.stopDictation') : t('settingsModal.voice.startDictation')}
       >
         {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
       </button>

@@ -219,7 +219,7 @@ export const TimelineView = () => {
                   {getSceneImage(event.sceneId) && (
                     <div className="shrink-0 w-full md:w-48 aspect-video rounded-lg overflow-hidden border border-border shadow-sm bg-muted self-start">
                       <img 
-                        src={getSceneImage(event.sceneId)} 
+                        src={getSceneImage(event.sceneId) ?? undefined} 
                         alt="Scene" 
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
                       />

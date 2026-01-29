@@ -623,6 +623,171 @@ export async function fsProjectFromJson(bytes: Uint8Array): Promise<ProjectData>
 }
 
 // ============================================================================
+// Speech Recognition Commands
+// ============================================================================
+
+import type { SpeechConfig, SpeechModelInfo, SpeechStatus } from '../types/speech';
+
+export async function speechGetAvailableModels(): Promise<SpeechModelInfo[]> {
+  if (!isTauri()) return [];
+  return invoke<SpeechModelInfo[]>('speech_get_available_models');
+}
+
+export async function speechGetInstalledModels(): Promise<string[]> {
+  if (!isTauri()) return [];
+  return invoke<string[]>('speech_get_installed_models');
+}
+
+export async function speechDownloadModel(modelId: string): Promise<void> {
+  if (!isTauri()) throw new Error('Requires Tauri');
+  return invoke('speech_download_model', { modelId });
+}
+
+export async function speechCancelDownload(): Promise<void> {
+  if (!isTauri()) throw new Error('Requires Tauri');
+  return invoke('speech_cancel_download');
+}
+
+export async function speechDeleteModel(modelId: string): Promise<void> {
+  if (!isTauri()) throw new Error('Requires Tauri');
+  return invoke('speech_delete_model', { modelId });
+}
+
+export async function speechGetConfig(): Promise<SpeechConfig> {
+  if (!isTauri()) return { engine: 'vosk', language: 'es' };
+  return invoke<SpeechConfig>('speech_get_config');
+}
+
+export async function speechSetConfig(config: SpeechConfig): Promise<void> {
+  if (!isTauri()) throw new Error('Requires Tauri');
+  return invoke('speech_set_config', { config });
+}
+
+export async function speechCheckStatus(): Promise<SpeechStatus> {
+  if (!isTauri()) throw new Error('Requires Tauri');
+  return invoke<SpeechStatus>('speech_check_status');
+}
+
+export async function speechCheckLibs(): Promise<boolean> {
+  if (!isTauri()) return false;
+  return invoke<boolean>('speech_check_libs');
+}
+
+export async function speechDownloadLibs(): Promise<void> {
+  if (!isTauri()) throw new Error('Requires Tauri');
+  return invoke('speech_download_libs');
+}
+
+// ============================================================================
+// Workspace Commands
+// ============================================================================
+
+export async function wsGetDefaultPath(): Promise<string> {
+  if (!isTauri()) throw new Error('Requires Tauri');
+  return invoke<string>('ws_get_default_path');
+}
+
+export async function wsGetWorkspacePath(): Promise<string | null> {
+  if (!isTauri()) return null;
+  return invoke<string | null>('ws_get_workspace_path');
+}
+
+export async function wsSetWorkspacePath(path: string): Promise<void> {
+  if (!isTauri()) throw new Error('Requires Tauri');
+  return invoke('ws_set_workspace_path', { path });
+}
+
+export async function wsIsFirstLaunch(): Promise<boolean> {
+  if (!isTauri()) return false;
+  return invoke<boolean>('ws_is_first_launch');
+}
+
+export async function wsInitializeWorkspace(path: string): Promise<void> {
+  if (!isTauri()) throw new Error('Requires Tauri');
+  return invoke('ws_initialize_workspace', { path });
+}
+
+export async function wsValidatePath(path: string): Promise<boolean> {
+  if (!isTauri()) return false;
+  return invoke<boolean>('ws_validate_path', { path });
+}
+
+export async function wsSaveProjectToFolder(projectId: string): Promise<string> {
+  if (!isTauri()) throw new Error('Requires Tauri');
+  return invoke<string>('ws_save_project_to_folder', { projectId });
+}
+
+export async function wsLoadProjectFromFolder(projectId: string): Promise<boolean> {
+  if (!isTauri()) throw new Error('Requires Tauri');
+  return invoke<boolean>('ws_load_project_from_folder', { projectId });
+}
+
+export async function wsProjectFolderExists(projectId: string): Promise<boolean> {
+  if (!isTauri()) return false;
+  return invoke<boolean>('ws_project_folder_exists', { projectId });
+}
+
+export async function wsGetProjectPath(projectId: string): Promise<string | null> {
+  if (!isTauri()) return null;
+  return invoke<string | null>('ws_get_project_path', { projectId });
+}
+
+export async function wsCompressProject(projectId: string, projectTitle: string): Promise<string> {
+  if (!isTauri()) throw new Error('Requires Tauri');
+  return invoke<string>('ws_compress_project', { projectId, projectTitle });
+}
+
+export async function wsDecompressProject(backupPath: string): Promise<string> {
+  if (!isTauri()) throw new Error('Requires Tauri');
+  return invoke<string>('ws_decompress_project', { backupPath });
+}
+
+export async function wsListBackups(projectSlug: string): Promise<string[]> {
+  if (!isTauri()) return [];
+  return invoke<string[]>('ws_list_backups', { projectSlug });
+}
+
+export async function wsCloseProject(projectId: string, projectTitle: string): Promise<void> {
+  if (!isTauri()) throw new Error('Requires Tauri');
+  return invoke('ws_close_project', { projectId, projectTitle });
+}
+
+export async function wsSaveImage(projectId: string, category: string, imageData: string): Promise<string> {
+  if (!isTauri()) throw new Error('Requires Tauri');
+  return invoke<string>('ws_save_image', { projectId, category, imageData });
+}
+
+export async function wsResolveImage(projectId: string, relativePath: string): Promise<string> {
+  if (!isTauri()) throw new Error('Requires Tauri');
+  return invoke<string>('ws_resolve_image', { projectId, relativePath });
+}
+
+export async function wsSyncToDisk(projectId: string): Promise<void> {
+  if (!isTauri()) throw new Error('Requires Tauri');
+  return invoke('ws_sync_to_disk', { projectId });
+}
+
+export async function wsSyncFromDisk(projectId: string): Promise<void> {
+  if (!isTauri()) throw new Error('Requires Tauri');
+  return invoke('ws_sync_from_disk', { projectId });
+}
+
+export async function wsMigrateExistingData(): Promise<number> {
+  if (!isTauri()) return 0;
+  return invoke<number>('ws_migrate_existing_data');
+}
+
+export async function wsOpenProject(projectId: string): Promise<string> {
+  if (!isTauri()) throw new Error('Requires Tauri');
+  return invoke<string>('ws_open_project', { projectId });
+}
+
+export async function wsMoveWorkspace(newPath: string): Promise<void> {
+  if (!isTauri()) throw new Error('Requires Tauri');
+  return invoke('ws_move_workspace', { newPath });
+}
+
+// ============================================================================
 // Package Store Commands
 // ============================================================================
 

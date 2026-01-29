@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import i18n from '@/i18n';
 import { Sidebar } from '@/components/layout/Sidebar';
@@ -42,8 +42,10 @@ import { WorldbuilderPanel } from '@/components/rpg/WorldbuilderPanel';
 import { RagStudioView } from '@/components/ai/RagStudioView';
 import { AIConsole } from '@/components/ai/AIConsole';
 import { useSettingsStore } from '@/stores/useSettingsStore';
+import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { ProjectManagerView } from '@/components/world/ProjectManagerView';
 import { ProjectSettingsView } from '@/components/world/ProjectSettingsView';
+import { WorkspaceSetup } from '@/components/layout/WorkspaceSetup';
 
 import { ProjectSettingsModal } from '@/components/world/ProjectSettingsModal';
 import { PackageStoreView } from '@/components/packages';
@@ -58,12 +60,20 @@ function App() {
   const { activeProject } = useProjectStore();
   const { theme, fontSize, animationsEnabled, language, initializeSettings } = useSettingsStore();
   const { initializeBanners } = useBannerStore();
+  const { checkFirstLaunch } = useWorkspaceStore();
+  const [showWorkspaceSetup, setShowWorkspaceSetup] = useState(false);
 
   useAutoSnapshot();
 
   useEffect(() => {
     initializeSettings();
     initializeBanners();
+    checkFirstLaunch().then(() => {
+      const wsState = useWorkspaceStore.getState();
+      if (wsState.isFirstLaunch) {
+        setShowWorkspaceSetup(true);
+      }
+    });
   }, [initializeSettings, initializeBanners]);
 
   // Sync stored language with i18next whenever it changes
@@ -190,6 +200,14 @@ function App() {
   };
 
   const bannerContext = getBannerContext();
+
+  if (showWorkspaceSetup) {
+    return (
+      <div className="h-screen bg-background text-foreground overflow-hidden">
+        <WorkspaceSetup onComplete={() => setShowWorkspaceSetup(false)} />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden">

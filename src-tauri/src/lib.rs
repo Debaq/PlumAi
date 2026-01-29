@@ -9,6 +9,7 @@ mod database;
 mod filesystem;
 mod packages;
 mod publishing;
+mod workspace;
 
 use database::DbState;
 use rusqlite::Connection;
@@ -73,9 +74,48 @@ pub fn run() {
                 log::warn!("Package migration warning: {}", e);
             }
 
+            // Create installation directories
+            let installation_dir = app_dir.join("installation");
+            let dirs_to_create = [
+                installation_dir.join("libs").join("onnxruntime"),
+                installation_dir.join("libs").join("sherpa-onnx"),
+                installation_dir.join("models").join("vosk"),
+                installation_dir.join("models").join("sherpa"),
+                installation_dir.join("models").join("downloads"),
+                installation_dir.join("manifests"),
+            ];
+            for dir in &dirs_to_create {
+                std::fs::create_dir_all(dir).unwrap_or_else(|e| {
+                    log::warn!("Failed to create directory {:?}: {}", dir, e);
+                });
+            }
+
             // Store connection in app state
             app.manage(DbState(Mutex::new(conn)));
             app.manage(ai::speech::SpeechState(Mutex::new(None)));
+
+            // Initialize workspace state from DB setting
+            {
+                let db_state = app.state::<DbState>();
+                let db_conn = db_state.0.lock().expect("Failed to lock DB for workspace init");
+                let ws_path = database::get_setting(&db_conn, "workspace_path")
+                    .unwrap_or(None);
+                if let Some(ref path) = ws_path {
+                    // Verify workspace is accessible
+                    if workspace::config::is_workspace_accessible(std::path::Path::new(path)) {
+                        log::info!("Workspace loaded: {}", path);
+                    } else {
+                        log::warn!("Workspace not accessible: {}", path);
+                    }
+                }
+                app.manage(workspace::WorkspaceState(Mutex::new(ws_path)));
+            }
+
+            // Auto-setup: verify runtime readiness in background
+            let app_handle = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                ai::speech::downloader::ensure_runtime_ready(&app_handle).await;
+            });
 
             log::info!("PlumAi application started");
             Ok(())
@@ -133,6 +173,16 @@ pub fn run() {
             commands::ai_chat,
             ai::speech::start_dictation,
             ai::speech::stop_dictation,
+            ai::speech::speech_get_available_models,
+            ai::speech::speech_get_installed_models,
+            ai::speech::speech_download_model,
+            ai::speech::speech_cancel_download,
+            ai::speech::speech_delete_model,
+            ai::speech::speech_get_config,
+            ai::speech::speech_set_config,
+            ai::speech::speech_check_status,
+            ai::speech::speech_check_libs,
+            ai::speech::speech_download_libs,
             // Crypto
             commands::crypto_encrypt,
             commands::crypto_decrypt,
@@ -162,6 +212,28 @@ pub fn run() {
             commands::pkg_uninstall_package,
             commands::pkg_get_installed,
             commands::pkg_check_updates,
+            // Workspace
+            commands::ws_get_default_path,
+            commands::ws_get_workspace_path,
+            commands::ws_set_workspace_path,
+            commands::ws_is_first_launch,
+            commands::ws_initialize_workspace,
+            commands::ws_validate_path,
+            commands::ws_save_project_to_folder,
+            commands::ws_load_project_from_folder,
+            commands::ws_project_folder_exists,
+            commands::ws_get_project_path,
+            commands::ws_compress_project,
+            commands::ws_decompress_project,
+            commands::ws_list_backups,
+            commands::ws_close_project,
+            commands::ws_save_image,
+            commands::ws_resolve_image,
+            commands::ws_sync_to_disk,
+            commands::ws_sync_from_disk,
+            commands::ws_migrate_existing_data,
+            commands::ws_open_project,
+            commands::ws_move_workspace,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -211,7 +211,7 @@ export const ProjectManagerView = () => {
                     <div className="bg-card p-4 rounded-lg border border-border">
                       <div className="text-sm text-muted-foreground mb-1">{t('dashboard.stats.words')}</div>
                       <div className="text-2xl font-bold">
-                        {selectedProject.chapters?.reduce((acc, c) => acc + (c.wordCount || 0), 0) || 0}
+                        {selectedProject.chapters?.reduce((acc: number, c: any) => acc + (c.wordCount || 0), 0) || 0}
                       </div>
                     </div>
                   </div>

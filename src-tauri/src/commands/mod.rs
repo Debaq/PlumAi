@@ -9,7 +9,9 @@ use crate::crypto::{self, EncryptedData};
 use crate::database::{self, DbConn};
 use crate::filesystem::{self, ProjectData};
 use crate::publishing::{self, DocxOptions, ExportDocument, PdfOptions};
+use crate::workspace::{self, WorkspaceState};
 use std::path::PathBuf;
+use tauri::State;
 
 pub mod packages;
 
@@ -412,6 +414,357 @@ pub fn fs_project_to_json(data: ProjectData) -> Result<Vec<u8>, String> {
 #[tauri::command]
 pub fn fs_project_from_json(bytes: Vec<u8>) -> Result<ProjectData, String> {
     filesystem::project_from_json_bytes(&bytes).map_err(|e| e.to_string())
+}
+
+// ============================================================================
+// Workspace Commands
+// ============================================================================
+
+#[tauri::command]
+pub fn ws_get_default_path() -> Result<String, String> {
+    let path = workspace::config::get_default_workspace_path()?;
+    Ok(path.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+pub fn ws_get_workspace_path(
+    ws: State<'_, WorkspaceState>,
+) -> Result<Option<String>, String> {
+    let lock = ws.0.lock().map_err(|e| e.to_string())?;
+    Ok(lock.clone())
+}
+
+#[tauri::command]
+pub fn ws_set_workspace_path(
+    ws: State<'_, WorkspaceState>,
+    db: DbConn<'_>,
+    path: String,
+) -> Result<(), String> {
+    let p = PathBuf::from(&path);
+    workspace::config::validate_workspace_path(&p)?;
+
+    // Store in DB setting
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    database::set_setting(&conn, "workspace_path", &path).map_err(|e| e.to_string())?;
+
+    // Update state
+    let mut lock = ws.0.lock().map_err(|e| e.to_string())?;
+    *lock = Some(path);
+
+    Ok(())
+}
+
+#[tauri::command]
+pub fn ws_is_first_launch(db: DbConn<'_>) -> Result<bool, String> {
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    let path = database::get_setting(&conn, "workspace_path").map_err(|e| e.to_string())?;
+    Ok(path.is_none())
+}
+
+#[tauri::command]
+pub fn ws_initialize_workspace(
+    ws: State<'_, WorkspaceState>,
+    db: DbConn<'_>,
+    path: String,
+) -> Result<(), String> {
+    let p = PathBuf::from(&path);
+    workspace::config::validate_workspace_path(&p)?;
+    workspace::config::create_workspace_structure(&p)?;
+
+    // Store in DB
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    database::set_setting(&conn, "workspace_path", &path).map_err(|e| e.to_string())?;
+
+    // Update state
+    let mut lock = ws.0.lock().map_err(|e| e.to_string())?;
+    *lock = Some(path);
+
+    log::info!("Workspace initialized");
+    Ok(())
+}
+
+#[tauri::command]
+pub fn ws_validate_path(path: String) -> Result<bool, String> {
+    let p = PathBuf::from(&path);
+    match workspace::config::validate_workspace_path(&p) {
+        Ok(()) => Ok(true),
+        Err(_) => Ok(false),
+    }
+}
+
+// --- Project Filesystem Commands ---
+
+#[tauri::command]
+pub fn ws_save_project_to_folder(
+    ws: State<'_, WorkspaceState>,
+    db: DbConn<'_>,
+    project_id: String,
+) -> Result<String, String> {
+    let ws_path = get_ws_path(&ws)?;
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+
+    workspace::sync::sync_sql_to_filesystem(&conn, &PathBuf::from(&ws_path), &project_id)?;
+
+    let project_path = workspace::project_fs::find_project_folder(&PathBuf::from(&ws_path), &project_id)
+        .ok_or("Project folder not found after sync")?;
+
+    Ok(project_path.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+pub fn ws_load_project_from_folder(
+    ws: State<'_, WorkspaceState>,
+    db: DbConn<'_>,
+    project_id: String,
+) -> Result<bool, String> {
+    let ws_path = get_ws_path(&ws)?;
+    let ws_pathbuf = PathBuf::from(&ws_path);
+
+    let project_path = workspace::project_fs::find_project_folder(&ws_pathbuf, &project_id)
+        .ok_or("Project folder not found")?;
+
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    workspace::sync::sync_filesystem_to_sql(&conn, &project_path)?;
+
+    Ok(true)
+}
+
+#[tauri::command]
+pub fn ws_project_folder_exists(
+    ws: State<'_, WorkspaceState>,
+    project_id: String,
+) -> Result<bool, String> {
+    let ws_path = get_ws_path(&ws)?;
+    Ok(workspace::project_fs::find_project_folder(&PathBuf::from(&ws_path), &project_id).is_some())
+}
+
+#[tauri::command]
+pub fn ws_get_project_path(
+    ws: State<'_, WorkspaceState>,
+    project_id: String,
+) -> Result<Option<String>, String> {
+    let ws_path = get_ws_path(&ws)?;
+    Ok(workspace::project_fs::find_project_folder(&PathBuf::from(&ws_path), &project_id)
+        .map(|p| p.to_string_lossy().to_string()))
+}
+
+// --- Backup Commands ---
+
+#[tauri::command]
+pub fn ws_compress_project(
+    ws: State<'_, WorkspaceState>,
+    project_id: String,
+    project_title: String,
+) -> Result<String, String> {
+    let ws_path = get_ws_path(&ws)?;
+    let ws_pathbuf = PathBuf::from(&ws_path);
+
+    let project_path = workspace::project_fs::find_project_folder(&ws_pathbuf, &project_id)
+        .ok_or("Project folder not found")?;
+
+    let slug = workspace::project_fs::project_slug(&project_title, &project_id);
+    let backup_dir = ws_pathbuf.join("backups");
+
+    let backup_path = workspace::backup::compress_project(&project_path, &backup_dir, &slug)?;
+    Ok(backup_path.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+pub fn ws_decompress_project(
+    ws: State<'_, WorkspaceState>,
+    backup_path: String,
+) -> Result<String, String> {
+    let ws_path = get_ws_path(&ws)?;
+    let ws_pathbuf = PathBuf::from(&ws_path);
+    let projects_dir = ws_pathbuf.join("projects");
+
+    let project_path = workspace::backup::decompress_project(&PathBuf::from(&backup_path), &projects_dir)?;
+    Ok(project_path.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+pub fn ws_list_backups(
+    ws: State<'_, WorkspaceState>,
+    project_slug: String,
+) -> Result<Vec<String>, String> {
+    let ws_path = get_ws_path(&ws)?;
+    let backup_dir = PathBuf::from(&ws_path).join("backups");
+
+    let backups = workspace::backup::list_backups(&backup_dir, &project_slug)?;
+    Ok(backups.iter().map(|p| p.to_string_lossy().to_string()).collect())
+}
+
+#[tauri::command]
+pub fn ws_close_project(
+    ws: State<'_, WorkspaceState>,
+    db: DbConn<'_>,
+    project_id: String,
+    project_title: String,
+) -> Result<(), String> {
+    let ws_path = get_ws_path(&ws)?;
+    let ws_pathbuf = PathBuf::from(&ws_path);
+
+    // 1. Sync SQL -> filesystem
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    workspace::sync::sync_sql_to_filesystem(&conn, &ws_pathbuf, &project_id)?;
+
+    // 2. Compress to .pluma backup
+    if let Some(project_path) = workspace::project_fs::find_project_folder(&ws_pathbuf, &project_id) {
+        let slug = workspace::project_fs::project_slug(&project_title, &project_id);
+        let backup_dir = ws_pathbuf.join("backups");
+        workspace::backup::compress_project(&project_path, &backup_dir, &slug)?;
+
+        // 3. Cleanup old backups (keep 5)
+        workspace::backup::cleanup_old_backups(&backup_dir, &slug, 5)?;
+    }
+
+    log::info!("Project {} closed with backup", project_id);
+    Ok(())
+}
+
+// --- Image Commands ---
+
+#[tauri::command]
+pub fn ws_save_image(
+    ws: State<'_, WorkspaceState>,
+    project_id: String,
+    category: String,
+    image_data: String,
+) -> Result<String, String> {
+    let ws_path = get_ws_path(&ws)?;
+    let ws_pathbuf = PathBuf::from(&ws_path);
+
+    let project_path = workspace::project_fs::find_project_folder(&ws_pathbuf, &project_id)
+        .ok_or("Project folder not found")?;
+
+    workspace::images::save_image_from_base64(&project_path, &category, &image_data)
+}
+
+#[tauri::command]
+pub fn ws_resolve_image(
+    ws: State<'_, WorkspaceState>,
+    project_id: String,
+    relative_path: String,
+) -> Result<String, String> {
+    let ws_path = get_ws_path(&ws)?;
+    let ws_pathbuf = PathBuf::from(&ws_path);
+
+    let project_path = workspace::project_fs::find_project_folder(&ws_pathbuf, &project_id)
+        .ok_or("Project folder not found")?;
+
+    let resolved = workspace::images::resolve_image_path(&project_path, &relative_path);
+    Ok(resolved.to_string_lossy().to_string())
+}
+
+// --- Sync Commands ---
+
+#[tauri::command]
+pub fn ws_sync_to_disk(
+    ws: State<'_, WorkspaceState>,
+    db: DbConn<'_>,
+    project_id: String,
+) -> Result<(), String> {
+    let ws_path = get_ws_path(&ws)?;
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    workspace::sync::sync_sql_to_filesystem(&conn, &PathBuf::from(&ws_path), &project_id)
+}
+
+#[tauri::command]
+pub fn ws_sync_from_disk(
+    ws: State<'_, WorkspaceState>,
+    db: DbConn<'_>,
+    project_id: String,
+) -> Result<(), String> {
+    let ws_path = get_ws_path(&ws)?;
+    let ws_pathbuf = PathBuf::from(&ws_path);
+
+    let project_path = workspace::project_fs::find_project_folder(&ws_pathbuf, &project_id)
+        .ok_or("Project folder not found")?;
+
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    workspace::sync::sync_filesystem_to_sql(&conn, &project_path)?;
+    Ok(())
+}
+
+// --- Migration Commands ---
+
+#[tauri::command]
+pub fn ws_migrate_existing_data(
+    ws: State<'_, WorkspaceState>,
+    db: DbConn<'_>,
+) -> Result<usize, String> {
+    let ws_path = get_ws_path(&ws)?;
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    workspace::migration::migrate_all_projects(&conn, &PathBuf::from(&ws_path))
+}
+
+// --- Open/Close Hybrid Commands ---
+
+#[tauri::command]
+pub fn ws_open_project(
+    ws: State<'_, WorkspaceState>,
+    db: DbConn<'_>,
+    project_id: String,
+) -> Result<String, String> {
+    let ws_path = get_ws_path(&ws)?;
+    let ws_pathbuf = PathBuf::from(&ws_path);
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+
+    // 1. Check if folder exists -> load from folder, sync to SQL
+    if let Some(project_path) = workspace::project_fs::find_project_folder(&ws_pathbuf, &project_id) {
+        workspace::sync::sync_filesystem_to_sql(&conn, &project_path)?;
+        return Ok("folder".to_string());
+    }
+
+    // 2. Check if .pluma backup exists -> decompress, load, sync to SQL
+    let projects = database::get_all_projects(&conn).map_err(|e| e.to_string())?;
+    if let Some(project) = projects.iter().find(|p| p.id == project_id) {
+        let slug = workspace::project_fs::project_slug(&project.title, &project.id);
+        let backup_dir = ws_pathbuf.join("backups");
+        let backups = workspace::backup::list_backups(&backup_dir, &slug)?;
+
+        if let Some(latest_backup) = backups.first() {
+            let projects_dir = ws_pathbuf.join("projects");
+            let project_path = workspace::backup::decompress_project(latest_backup, &projects_dir)?;
+            workspace::sync::sync_filesystem_to_sql(&conn, &project_path)?;
+            return Ok("backup".to_string());
+        }
+    }
+
+    // 3. Fallback -> create folder from SQL
+    workspace::sync::sync_sql_to_filesystem(&conn, &ws_pathbuf, &project_id)?;
+    Ok("sql".to_string())
+}
+
+// --- Move Workspace Command ---
+
+#[tauri::command]
+pub fn ws_move_workspace(
+    ws: State<'_, WorkspaceState>,
+    db: DbConn<'_>,
+    new_path: String,
+) -> Result<(), String> {
+    let old_path = get_ws_path(&ws)?;
+    let old = PathBuf::from(&old_path);
+    let new = PathBuf::from(&new_path);
+
+    workspace::config::move_workspace(&old, &new)?;
+
+    // Update DB setting
+    let conn = db.0.lock().map_err(|e| e.to_string())?;
+    database::set_setting(&conn, "workspace_path", &new_path).map_err(|e| e.to_string())?;
+
+    // Update state
+    let mut lock = ws.0.lock().map_err(|e| e.to_string())?;
+    *lock = Some(new_path);
+
+    Ok(())
+}
+
+/// Helper: get workspace path from state or return error
+fn get_ws_path(ws: &State<'_, WorkspaceState>) -> Result<String, String> {
+    let lock = ws.0.lock().map_err(|e| e.to_string())?;
+    lock.clone().ok_or_else(|| "Workspace not configured".to_string())
 }
 
 #[cfg(test)]

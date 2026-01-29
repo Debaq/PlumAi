@@ -5,7 +5,7 @@ type ModalType = 'newProject' | 'welcome' | 'editCharacter' | 'newChapter' | 'ed
 type ViewType = 'editor' | 'relations' | 'timeline' | 'stats' | 'entities' | 'lore' | 'chapters' | 'scenes' | 'images' | 'publishing' | 'aiAssistant' | 'versionControl' | 'rpgTools' | 'ragStudio' | 'settings' | 'projects' | 'projectSettings' | 'packageStore';
 type EditorSaveStatus = 'saved' | 'saving' | 'unsaved';
 type LoreTab = 'summary' | 'characters' | 'relations' | 'events' | 'locations' | 'scenes' | 'map' | 'bestiary' | 'npcs' | 'worldRules';
-type SettingsTab = 'general' | 'ia' | 'security' | 'data' | 'integrations' | 'advanced' | 'packages';
+type SettingsTab = 'general' | 'ia' | 'voice' | 'security' | 'data' | 'integrations' | 'advanced' | 'packages';
 type PublishingTab = 'book' | 'zines';
 
 interface UIState {

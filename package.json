@@ -20,6 +20,7 @@
     "@radix-ui/react-label": "^2.1.8",
     "@radix-ui/react-slot": "^1.2.4",
     "@tauri-apps/api": "^2.9.1",
+    "@tauri-apps/plugin-dialog": "^2.6.0",
     "@tauri-apps/plugin-log": "^2.8.0",
     "@tiptap/extension-mention": "^3.16.0",
     "@tiptap/extension-placeholder": "^3.16.0",

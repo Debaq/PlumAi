@@ -1,5 +1,6 @@
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useUIStore } from '@/stores/useUIStore';
+import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { useTranslation } from 'react-i18next';
 import {
   Settings,
@@ -20,7 +21,9 @@ import {
   Terminal,
   Database,
   Brain,
-  Package
+  Package,
+  Mic,
+  Save
 } from 'lucide-react';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 
@@ -178,6 +181,7 @@ export const Header = () => {
             <div className="flex items-center bg-accent/50 p-1 rounded-md overflow-x-auto max-w-full no-scrollbar pointer-events-auto">
               <SettingsTabButton id="general" icon={Settings} label={t('modals.projectSettings.tabs.general')} current={activeSettingsTab} set={setActiveSettingsTab} />
               <SettingsTabButton id="ia" icon={Brain} label={t('modals.projectSettings.tabs.api')} current={activeSettingsTab} set={setActiveSettingsTab} />
+              <SettingsTabButton id="voice" icon={Mic} label={t('settingsModal.voice.tabName')} current={activeSettingsTab} set={setActiveSettingsTab} />
               <SettingsTabButton id="packages" icon={Package} label={t('modals.packages')} current={activeSettingsTab} set={setActiveSettingsTab} />
               <SettingsTabButton id="security" icon={Shield} label={t('modals.settings.dataManagement.title')} current={activeSettingsTab} set={setActiveSettingsTab} />
               <SettingsTabButton id="integrations" icon={GitBranch} label={t('modals.settings.textAPIs')} current={activeSettingsTab} set={setActiveSettingsTab} />
@@ -233,6 +237,15 @@ export const Header = () => {
 
       {/* Right: Window Controls */}
       <div className="relative z-10 flex items-center shrink-0 h-full pointer-events-none">
+        {activeProject && useWorkspaceStore.getState().isInitialized && (
+          <button
+            onClick={() => useProjectStore.getState().saveProject()}
+            className="w-10 h-full flex items-center justify-center hover:bg-accent text-muted-foreground hover:text-foreground transition-colors pointer-events-auto"
+            title={t('workspace.status.syncing')}
+          >
+            <Save size={15} />
+          </button>
+        )}
         <button
           onClick={handleFullscreen}
           className="w-10 h-full flex items-center justify-center hover:bg-accent text-muted-foreground hover:text-foreground transition-colors pointer-events-auto"

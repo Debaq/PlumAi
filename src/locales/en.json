@@ -1384,6 +1384,38 @@
         "provider": "Image Provider"
       }
     },
+    "voice": {
+      "tabName": "Voice",
+      "engineTitle": "Recognition Engine",
+      "recommended": "Recommended",
+      "engines": {
+        "vosk": "Vosk",
+        "voskDesc": "Lightweight offline recognition. Works without internet connection.",
+        "sherpa": "Sherpa-ONNX",
+        "sherpaDesc": "Local neural engine with Whisper/Zipformer models. Works offline.",
+        "whisper": "OpenAI Whisper",
+        "whisperDesc": "Cloud API. Uses your existing API key (OpenAI, Groq, etc.). High accuracy."
+      },
+      "modeTitle": "Recognition Mode",
+      "modes": {
+        "writerName": "Solo Writer",
+        "writerDesc": "Processes after natural pauses. Ideal for calm narrative dictation.",
+        "dungeonName": "Dungeon Chaos",
+        "dungeonDesc": "Fast response. Identifies who speaks in RPG sessions."
+      },
+      "modelsTitle": "Available Models",
+      "noModels": "No models available for this engine. Check your internet connection.",
+      "noModelsWhisper": "Whisper API does not require local models. You only need an API key.",
+      "default": "Default",
+      "installed": "Installed",
+      "download": "Download",
+      "refresh": "Refresh",
+      "whisperTitle": "Whisper API Configuration",
+      "whisperApiKey": "OpenAI API Key",
+      "whisperNote": "Your key is only used for audio transcription. It is sent directly to the OpenAI API.",
+      "startDictation": "Start Dictation",
+      "stopDictation": "Stop Dictation"
+    },
     "security": {
       "title": "Privacy & Protection",
       "noPassword": "No Master Password",
@@ -1593,7 +1625,10 @@
     "pomodoro": {
       "breakTime": "Break time!",
       "workTime": "Time to write!"
-    }
+    },
+    "recording": "Recording",
+    "downloading": "Downloading",
+    "modelReady": "Model ready"
   },
   "timeline": {
     "title": "Timeline",
@@ -1828,5 +1863,38 @@
     "legend": "Legend",
     "reorder": "RE-ORDER",
     "dragConnect": "DRAG TO CONNECT"
+  },
+  "workspace": {
+    "setup": {
+      "title": "Configure Workspace",
+      "description": "PlumAi stores your projects, backups and models in a folder on your PC. Choose where to store them.",
+      "pathLabel": "Workspace folder",
+      "pathHint": "Subfolders will be created for projects, backups, models and packages.",
+      "selectFolder": "Select folder",
+      "confirm": "Create workspace",
+      "ready": "Workspace ready",
+      "readyDesc": "Your workspace has been created successfully. You can now start creating projects.",
+      "start": "Get started",
+      "migrating": "Migrating data",
+      "migratingDesc": "We are moving your existing projects to the new workspace...",
+      "migratedCount": "{{count}} existing projects were migrated to the workspace."
+    },
+    "settings": {
+      "title": "Workspace",
+      "desc": "Folder where projects, backups and models are stored.",
+      "changeFolder": "Change folder",
+      "selectNew": "Select new folder",
+      "moveConfirm": "Move workspace from {{from}} to {{to}}? All files will be copied.",
+      "moveButton": "Move workspace",
+      "moveSuccess": "Workspace moved successfully",
+      "moving": "Moving..."
+    },
+    "status": {
+      "ready": "Workspace",
+      "syncing": "Syncing...",
+      "synced": "Synced",
+      "error": "Sync error",
+      "unavailable": "Unavailable"
+    }
   }
 }

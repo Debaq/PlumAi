@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 export const PackageManager = () => {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { activeProject, applyPackageIdentity } = useProjectStore();
   const [packages, setPackages] = useState<PackageManifest[]>([]);
   const [loading, setLoading] = useState(true);

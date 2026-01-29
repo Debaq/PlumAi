@@ -5,6 +5,7 @@ import { useUIStore } from '@/stores/useUIStore';
 import { useTranslation } from 'react-i18next';
 import { CryptoService } from '@/lib/crypto';
 import { dbClearAllData } from '@/lib/tauri-bridge';
+import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { toast } from 'sonner';
 import { useConfirmStore } from '@/stores/useConfirmStore';
 import {
@@ -21,6 +22,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { PackageManager } from './PackageManager';
+import { VoiceSettings } from './VoiceSettings';
 import { 
   Settings, 
   Brain, 
@@ -45,7 +47,10 @@ import {
   Image as ImageIcon,
   Layers,
   AlertOctagon,
-  Loader2
+  Loader2,
+  FolderOpen,
+  HardDrive,
+  ArrowRight
 } from 'lucide-react';
 
 export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
@@ -644,6 +649,13 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
           </div>
         )}
 
+        {/* VOICE */}
+        {activeSettingsTab === 'voice' && (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-200 max-w-5xl mx-auto pb-20">
+            <VoiceSettings />
+          </div>
+        )}
+
         {/* PACKAGES */}
         {activeSettingsTab === 'packages' && (
           <div className="animate-in fade-in slide-in-from-bottom-2 duration-200 max-w-5xl mx-auto pb-20">
@@ -975,6 +987,8 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
                   </div>
                 </div>
                 
+                <WorkspaceSection />
+
                 <div className="p-6 rounded-2xl bg-muted/30 border-2 border-dashed flex flex-col items-center justify-center gap-3 text-center">
                   <ExternalLink className="w-8 h-8 text-muted-foreground/30" />
                   <div>
@@ -1077,6 +1091,72 @@ export const SettingsModal = ({ isView = false }: { isView?: boolean }) => {
       {/* Danger Modal Rendering for normal mode */}
       <DangerModal />
     </>
+  );
+};
+
+const WorkspaceSection = () => {
+  const { t } = useTranslation();
+  const { workspacePath, isInitialized, moveWorkspace } = useWorkspaceStore();
+  const { confirm } = useConfirmStore();
+  const [isMoving, setIsMoving] = useState(false);
+
+  const handleChangeFolder = async () => {
+    try {
+      const dialogModule = await import('@tauri-apps/plugin-dialog');
+      const open = dialogModule.open;
+      const selected = await open({
+        directory: true,
+        title: t('workspace.settings.selectNew'),
+      });
+      if (!selected || selected === workspacePath) return;
+
+      const confirmed = await confirm(
+        t('workspace.settings.moveConfirm', { from: workspacePath, to: selected }),
+        { confirmText: t('workspace.settings.moveButton'), variant: 'destructive' }
+      );
+      if (!confirmed) return;
+
+      setIsMoving(true);
+      await moveWorkspace(selected as string);
+      setIsMoving(false);
+      toast.success(t('workspace.settings.moveSuccess'));
+    } catch (err) {
+      setIsMoving(false);
+      toast.error(String(err));
+    }
+  };
+
+  if (!isInitialized) return null;
+
+  return (
+    <div className="p-6 border-2 rounded-2xl bg-card space-y-4 shadow-sm">
+      <div className="flex items-center gap-3">
+        <div className="p-3 bg-primary/5 rounded-full border">
+          <HardDrive className="w-6 h-6 text-primary" />
+        </div>
+        <div>
+          <p className="text-md font-black">{t('workspace.settings.title')}</p>
+          <p className="text-xs text-muted-foreground font-medium">{t('workspace.settings.desc')}</p>
+        </div>
+      </div>
+
+      <div className="p-3 bg-muted/30 rounded-xl border">
+        <div className="flex items-center gap-2">
+          <FolderOpen className="w-4 h-4 text-muted-foreground shrink-0" />
+          <code className="text-[11px] text-muted-foreground truncate flex-1">{workspacePath}</code>
+        </div>
+      </div>
+
+      <Button
+        variant="outline"
+        className="w-full h-11 rounded-xl border-2 font-bold gap-2"
+        onClick={handleChangeFolder}
+        disabled={isMoving}
+      >
+        {isMoving ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
+        {isMoving ? t('workspace.settings.moving') : t('workspace.settings.changeFolder')}
+      </Button>
+    </div>
   );
 };
 

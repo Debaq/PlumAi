@@ -1,15 +1,19 @@
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useLogStore } from '@/stores/useLogStore';
+import { useSpeechStore } from '@/stores/useSpeechStore';
+import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { WorldbuilderStatusBar } from '@/components/rpg/WorldbuilderStatusBar';
 import { useTranslation } from 'react-i18next';
-import { Terminal, Timer, Coffee, Play, Pause, RefreshCw } from 'lucide-react';
+import { Terminal, Timer, Coffee, Play, Pause, RefreshCw, Download, X, FolderOpen, AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 
 export const StatusBar = () => {
   const { activeProject } = useProjectStore();
   const { language, setLanguage, enableLogs, pomodoroEnabled } = useSettingsStore();
   const { toggleConsole } = useLogStore();
+  const { isRecording, activeDownloads, cancelDownload } = useSpeechStore();
+  const { syncStatus, workspacePath, isInitialized: wsInitialized } = useWorkspaceStore();
   const { t, i18n } = useTranslation();
   const totalWords = activeProject?.chapters.reduce((acc, ch) => acc + (ch.wordCount || 0), 0) || 0;
 
@@ -79,9 +83,55 @@ export const StatusBar = () => {
             </div>
           </div>
         )}
+
+        {isRecording && (
+          <div className="flex items-center gap-1.5 border-l border-border pl-4 h-full">
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+            <span className="text-[10px] text-red-500 font-bold">{t('status.recording')}</span>
+          </div>
+        )}
+
+        {activeDownloads.length > 0 && (
+          <div className="flex items-center gap-2 border-l border-border pl-4 h-full">
+            <Download size={12} className="text-primary animate-bounce" />
+            <span className="text-[10px] truncate max-w-[120px]">{activeDownloads[0].itemId}</span>
+            <div className="w-20 h-1.5 bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary rounded-full transition-all"
+                style={{ width: `${Math.round(activeDownloads[0].percent)}%` }}
+              />
+            </div>
+            <span className="text-[10px] font-mono">{Math.round(activeDownloads[0].percent)}%</span>
+            {activeDownloads.length > 1 && (
+              <span className="text-[10px] text-muted-foreground">+{activeDownloads.length - 1}</span>
+            )}
+            <button
+              onClick={() => cancelDownload()}
+              className="p-0.5 hover:text-destructive transition-colors"
+            >
+              <X size={10} />
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-4 h-full">
+        {wsInitialized && (
+          <div className="flex items-center gap-1.5 border-l border-border pl-4 h-full" title={workspacePath || ''}>
+            {syncStatus === 'syncing' && <Loader2 size={11} className="text-primary animate-spin" />}
+            {syncStatus === 'synced' && <CheckCircle2 size={11} className="text-green-500" />}
+            {syncStatus === 'error' && <AlertTriangle size={11} className="text-yellow-500" />}
+            {syncStatus === 'idle' && <FolderOpen size={11} className="text-muted-foreground" />}
+            {syncStatus === 'unavailable' && <AlertTriangle size={11} className="text-destructive" />}
+            <span className="text-[10px] truncate max-w-[120px]">
+              {syncStatus === 'syncing' ? t('workspace.status.syncing') :
+               syncStatus === 'synced' ? t('workspace.status.synced') :
+               syncStatus === 'error' ? t('workspace.status.error') :
+               syncStatus === 'unavailable' ? t('workspace.status.unavailable') :
+               t('workspace.status.ready')}
+            </span>
+          </div>
+        )}
         {enableLogs && (
           <button 
             onClick={toggleConsole}

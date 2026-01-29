@@ -3,14 +3,14 @@ import { useProjectStore } from '@/stores/useProjectStore';
 import { useBannerStore } from '@/stores/useBannerStore';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { ShieldOff, ImageIcon } from 'lucide-react';
+import { ImageIcon } from 'lucide-react';
 
 interface ContextBannerProps {
   context: string; // 'lore', 'chapters', 'scenes', etc.
 }
 
 export const ContextBanner = ({ context }: ContextBannerProps) => {
-  const { activeProject, toggleRpgMode, setContextBanner } = useProjectStore();
+  const { activeProject, setContextBanner } = useProjectStore();
   const { initializeBanners, getBanner } = useBannerStore();
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement>(null);

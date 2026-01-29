@@ -315,21 +315,17 @@ pub async fn pkg_update_package(
 ) -> Result<InstalledPackageInfo, String> {
     let packages_dir = crate::packages::get_packages_dir(&app)?;
 
-    // Get source and uninstall old version
+    // Get source for the registry
     let source = {
         let conn = db.0.lock().map_err(|e| e.to_string())?;
         let sources = load_registries_from_conn(&conn);
-        let source = sources
+        sources
             .into_iter()
             .find(|s| s.id == registry_id)
-            .ok_or_else(|| format!("Registry '{}' not found", registry_id))?;
-
-        // Uninstall old version (sync)
-        installer::uninstall_package(&conn, &packages_dir, &package_id)?;
-        source
+            .ok_or_else(|| format!("Registry '{}' not found", registry_id))?
     }; // MutexGuard dropped here
 
-    // Async: fetch registry and download new version
+    // Async: fetch registry and download new version (replaces files on disk)
     let index = registry::fetch_registry(&source).await?;
     let entry = index
         .packages
@@ -339,10 +335,10 @@ pub async fn pkg_update_package(
 
     let info = installer::download_and_extract_package(&source, entry, &packages_dir).await?;
 
-    // Register new version in DB
+    // Update existing record in DB (preserves installed_at, sets updated_at)
     {
         let conn = db.0.lock().map_err(|e| e.to_string())?;
-        installer::register_package(&conn, &info)?;
+        installer::update_package_record(&conn, &info)?;
     }
 
     Ok(info)

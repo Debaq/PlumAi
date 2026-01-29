@@ -1,6 +1,6 @@
 // src/stores/useProjectStore.ts
 import { create } from 'zustand';
-import { 
+import {
   dbCreateProject, dbGetProject, dbUpdateProject,
   dbCreateChapter, dbGetChaptersByProject, dbUpdateChapter, dbDeleteChapter,
   dbCreateScene, dbGetScenesByChapter, dbUpdateScene, dbDeleteScene,
@@ -10,6 +10,7 @@ import {
   dbCreateLoreItem, dbGetLoreItemsByProject, dbUpdateLoreItem, dbDeleteLoreItem,
   dbCreateTimelineEvent, dbGetTimelineEventsByProject, dbUpdateTimelineEvent, dbDeleteTimelineEvent
 } from '@/lib/tauri-bridge';
+import { useWorkspaceStore } from './useWorkspaceStore';
 import type { Project, Chapter, Character, Location, Scene, ProjectApiKeys, ApiKeyEntry, VitalStatusEntry, LoreItem, TimelineEvent, RelationshipHistoryEntry, LocationImage, LocationConnection, Creature, CreatureAbility, WorldRule, WorldRuleExample, ProjectType, Npc, NpcQuest, NpcDialogue } from '@/types/domain';
 
 interface ProjectState {
@@ -137,16 +138,46 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       clearActiveProject: () => set({ activeProject: null }),
 
       saveProject: async () => {
-        // No-op or trigger explicit save if needed, but we save atomically now.
-        // Maybe sync to cloud or export backup?
+        const { activeProject } = get();
+        if (!activeProject) return;
+        // Sync to workspace disk if configured
+        try {
+          const ws = useWorkspaceStore.getState();
+          if (ws.isInitialized) {
+            await ws.syncProjectToDisk(activeProject.id);
+          }
+        } catch (error) {
+          console.warn('Workspace sync failed (non-blocking):', error);
+        }
       },
 
       closeProject: async () => {
+        const { activeProject } = get();
+        if (activeProject) {
+          try {
+            const ws = useWorkspaceStore.getState();
+            if (ws.isInitialized) {
+              await ws.closeProject(activeProject.id, activeProject.title);
+            }
+          } catch (error) {
+            console.warn('Workspace close failed (non-blocking):', error);
+          }
+        }
         set({ activeProject: null });
       },
 
       loadProject: async (id: string) => {
         try {
+          // Try workspace hybrid open first
+          try {
+            const ws = useWorkspaceStore.getState();
+            if (ws.isInitialized) {
+              await ws.openProject(id);
+            }
+          } catch (wsErr) {
+            console.warn('Workspace open failed, loading from SQL:', wsErr);
+          }
+
           const dbProject = await dbGetProject(id);
           if (!dbProject) return;
 
@@ -277,6 +308,16 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
         set({ activeProject: newProject });
         console.log('[createNewProject] activeProject set OK');
+
+        // Create workspace folder
+        try {
+          const ws = useWorkspaceStore.getState();
+          if (ws.isInitialized) {
+            await ws.syncProjectToDisk(newProject.id);
+          }
+        } catch (wsErr) {
+          console.warn('Workspace folder creation failed (non-blocking):', wsErr);
+        }
       },
 
       addChapter: async (chapter) => {

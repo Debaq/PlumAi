@@ -121,6 +121,12 @@ pub fn register_package(conn: &Connection, info: &InstalledPackageInfo) -> Resul
         .map_err(|e| format!("Failed to register package in DB: {}", e))
 }
 
+/// Update an installed package record in the database (preserves installed_at).
+pub fn update_package_record(conn: &Connection, info: &InstalledPackageInfo) -> Result<(), String> {
+    db::update_installed_package(conn, info)
+        .map_err(|e| format!("Failed to update package in DB: {}", e))
+}
+
 /// Uninstall a package: remove from disk and database.
 pub fn uninstall_package(conn: &Connection, packages_dir: &Path, package_id: &str) -> Result<(), String> {
     // Remove directory

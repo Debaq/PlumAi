@@ -44,10 +44,7 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "resources": [
-      "models/en",
-      "models/es"
-    ],
+    "resources": [],
     "category": "Productivity",
     "shortDescription": "AI-powered creative writing assistant",
     "longDescription": "PlumAi is a comprehensive creative writing assistant with AI integration, worldbuilding tools, and professional publishing capabilities.",
